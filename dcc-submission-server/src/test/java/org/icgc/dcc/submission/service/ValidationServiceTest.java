@@ -32,9 +32,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.Set;
 
-import lombok.SneakyThrows;
-import lombok.val;
-
 import org.icgc.dcc.submission.core.model.Outcome;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -60,6 +57,9 @@ import org.mockito.stubbing.Answer;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+
+import lombok.SneakyThrows;
+import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ValidationServiceTest {

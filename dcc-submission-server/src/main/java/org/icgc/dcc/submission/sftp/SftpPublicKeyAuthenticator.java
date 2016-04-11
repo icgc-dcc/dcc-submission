@@ -25,12 +25,6 @@ import java.io.OutputStream;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
@@ -39,6 +33,12 @@ import org.apache.sshd.server.PublickeyAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
 
 import com.google.common.base.Charsets;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Adds public key authentication support for a single {@link #knownKey}. This is mainly for use with deployments that

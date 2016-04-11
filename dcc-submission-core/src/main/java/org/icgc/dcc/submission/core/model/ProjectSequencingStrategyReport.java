@@ -19,9 +19,6 @@ package org.icgc.dcc.submission.core.model;
 
 import java.util.Map;
 
-import lombok.Data;
-import lombok.ToString;
-
 import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
@@ -30,6 +27,9 @@ import org.mongodb.morphia.annotations.Indexes;
 import org.mongodb.morphia.annotations.Property;
 
 import com.fasterxml.jackson.annotation.JsonView;
+
+import lombok.Data;
+import lombok.ToString;
 
 @Entity(noClassnameStored = true)
 @ToString

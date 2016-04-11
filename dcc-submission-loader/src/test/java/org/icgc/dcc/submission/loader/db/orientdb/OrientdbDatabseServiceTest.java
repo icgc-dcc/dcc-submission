@@ -22,7 +22,6 @@ import static org.icgc.dcc.submission.loader.db.orientdb.OrientdbDatabseService.
 import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIELD_NAME;
 import static org.icgc.dcc.submission.loader.util.Services.createSubmissionService;
 import static org.icgc.dcc.submission.loader.util.Strings.capitalize;
-import lombok.val;
 
 import org.icgc.dcc.submission.loader.meta.SubmissionMetadataService;
 import org.junit.After;
@@ -34,6 +33,8 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
+
+import lombok.val;
 
 @Ignore("Should consider dropping OrientDB support")
 public class OrientdbDatabseServiceTest {

@@ -21,13 +21,13 @@ import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIEL
 
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.loader.meta.CodeListValuesDecoder;
 
 import com.orientechnologies.orient.core.record.impl.ODocument;
+
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class OrientdbRecordConverter {

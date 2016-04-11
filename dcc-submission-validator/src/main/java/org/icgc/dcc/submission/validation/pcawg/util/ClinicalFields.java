@@ -24,10 +24,10 @@ import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFields.SP
 
 import java.util.Map;
 
+import org.icgc.dcc.submission.validation.sample.core.SpecimenTypeCategory;
+
 import lombok.val;
 import lombok.experimental.UtilityClass;
-
-import org.icgc.dcc.submission.validation.sample.core.SpecimenTypeCategory;
 
 @UtilityClass
 public class ClinicalFields {

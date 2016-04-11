@@ -29,16 +29,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Cleanup;
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.loader.cli.ClientOptions;
 import org.icgc.dcc.submission.loader.model.FileTypePath;
 import org.icgc.dcc.submission.loader.model.Project;
 
 import com.google.common.base.Stopwatch;
+
+import lombok.Cleanup;
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SubmissionLoader {

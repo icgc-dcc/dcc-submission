@@ -21,7 +21,6 @@ import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.RESULTS;
 import static java.lang.String.format;
 import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.COUNT_INCREMENT;
-import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.common.cascading.CascadingFunctions.Counter;
 import org.icgc.dcc.common.cascading.CascadingFunctions.EmitNothing;
@@ -36,6 +35,7 @@ import cascading.pipe.SubAssembly;
 import cascading.pipe.assembly.Unique;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Counts unique occurrences of the given field.

@@ -23,10 +23,10 @@ import static org.icgc.dcc.common.core.model.FieldNames.NormalizerFieldNames.NOR
 
 import java.util.UUID;
 
-import lombok.val;
-
 import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -36,8 +36,7 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
-
-import com.google.common.annotations.VisibleForTesting;
+import lombok.val;
 
 /**
  * Step in charge of generating a primary key for each observations.

@@ -18,9 +18,6 @@
 package org.icgc.dcc.submission.loader;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import lombok.Cleanup;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.loader.util.AbstractPostgressTest;
 import org.junit.Test;
@@ -28,6 +25,10 @@ import org.junit.Test;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
+
+import lombok.Cleanup;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ClientMainIntegrationTest extends AbstractPostgressTest {

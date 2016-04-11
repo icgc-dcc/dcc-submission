@@ -18,14 +18,15 @@
 package org.icgc.dcc.submission.core.state;
 
 import static lombok.AccessLevel.NONE;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
 
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * Default implementation of the {@link StateContext} contract.

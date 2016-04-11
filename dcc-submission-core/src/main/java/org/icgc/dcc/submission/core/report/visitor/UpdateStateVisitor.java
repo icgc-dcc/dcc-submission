@@ -19,8 +19,6 @@ package org.icgc.dcc.submission.core.report.visitor;
 
 import java.util.Set;
 
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
@@ -34,6 +32,8 @@ import org.icgc.dcc.submission.core.report.ReportElement;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
+
+import lombok.val;
 
 /**
  * Refreshes stale {@link ReportElement} states based on non-state attributes and transitive relationships.

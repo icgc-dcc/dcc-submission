@@ -19,11 +19,11 @@ package org.icgc.dcc.submission.generator.config;
 
 import java.io.File;
 
-import lombok.SneakyThrows;
-import lombok.Value;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
+import lombok.SneakyThrows;
+import lombok.Value;
 
 @Value
 public class GeneratorConfigFile {

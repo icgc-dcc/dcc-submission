@@ -24,13 +24,13 @@ import static org.icgc.dcc.common.core.util.Strings2.unquote;
 
 import java.util.Map;
 
-import lombok.NonNull;
-
 import org.icgc.dcc.common.core.collect.SerializableMaps;
 
 import com.google.common.base.Function;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigObject;
+
+import lombok.NonNull;
 
 /**
  * TODO: move to core? (would need typesafe config)

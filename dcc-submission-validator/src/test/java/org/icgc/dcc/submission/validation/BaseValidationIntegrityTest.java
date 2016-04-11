@@ -25,9 +25,6 @@ import java.io.File;
 import java.net.URL;
 import java.util.List;
 
-import lombok.SneakyThrows;
-import lombok.val;
-
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
@@ -52,6 +49,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
+
+import lombok.SneakyThrows;
+import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)
 public abstract class BaseValidationIntegrityTest {

@@ -18,11 +18,12 @@
 package org.icgc.dcc.submission.validation.core;
 
 import static lombok.AccessLevel.PRIVATE;
+
+import org.icgc.dcc.submission.validation.ValidationExecutor;
+
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
-
-import org.icgc.dcc.submission.validation.ValidationExecutor;
 
 /**
  * Utility methods for {@link Validator}s.

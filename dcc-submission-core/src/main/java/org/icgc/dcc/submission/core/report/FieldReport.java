@@ -18,16 +18,17 @@
 package org.icgc.dcc.submission.core.report;
 
 import static com.google.common.collect.ComparisonChain.start;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
 import org.mongodb.morphia.annotations.Embedded;
 
 import com.mongodb.BasicDBObject;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * Reports on a file field.

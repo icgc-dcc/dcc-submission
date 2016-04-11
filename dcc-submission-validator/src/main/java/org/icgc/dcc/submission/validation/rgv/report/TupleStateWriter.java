@@ -25,14 +25,14 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import lombok.val;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+
+import lombok.val;
 
 public class TupleStateWriter implements Closeable {
 

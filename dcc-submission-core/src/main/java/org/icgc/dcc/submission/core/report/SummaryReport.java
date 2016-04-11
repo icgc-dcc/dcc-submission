@@ -17,13 +17,13 @@
  */
 package org.icgc.dcc.submission.core.report;
 
+import org.mongodb.morphia.annotations.Embedded;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-
-import org.mongodb.morphia.annotations.Embedded;
 
 /**
  * Represents a generic name-value summary metric.

@@ -27,9 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import lombok.NonNull;
-import lombok.val;
-
 import org.icgc.dcc.submission.core.model.Record;
 import org.icgc.dcc.submission.validation.pcawg.core.Clinical;
 
@@ -37,6 +34,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+
+import lombok.NonNull;
+import lombok.val;
 
 public class ClinicalIndex {
 

@@ -33,12 +33,6 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Cleanup;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.cascading.CascadingContext;
@@ -46,11 +40,16 @@ import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.core.util.Extensions;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
+import com.google.common.io.LineReader;
+
 import cascading.flow.FlowConnector;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
-
-import com.google.common.io.LineReader;
+import lombok.Cleanup;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class BaseSubmissionPlatformStrategy implements SubmissionPlatformStrategy {

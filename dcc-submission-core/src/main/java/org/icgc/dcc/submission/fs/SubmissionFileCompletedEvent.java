@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.fs;
 
 import static org.icgc.dcc.submission.fs.SubmissionFileEventType.FILE_REMOVED;
+
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 

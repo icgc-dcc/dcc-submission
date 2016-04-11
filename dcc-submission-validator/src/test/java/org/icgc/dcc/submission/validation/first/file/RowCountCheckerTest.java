@@ -26,8 +26,6 @@ import static org.mockito.Mockito.when;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 
-import lombok.val;
-
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -41,6 +39,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+
+import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RowCountCheckerTest {

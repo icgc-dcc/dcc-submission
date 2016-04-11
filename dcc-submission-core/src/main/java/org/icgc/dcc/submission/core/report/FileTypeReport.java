@@ -22,13 +22,6 @@ import static org.icgc.dcc.submission.core.report.FileTypeState.getDefaultState;
 
 import java.util.Set;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.util.Serdes.FileTypeDeserializer;
 import org.icgc.dcc.submission.core.util.Serdes.FileTypeSerializer;
@@ -36,6 +29,13 @@ import org.mongodb.morphia.annotations.Embedded;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.val;
 
 /**
  * Reports on a {@link FileType}.

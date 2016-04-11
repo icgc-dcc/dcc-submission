@@ -20,12 +20,13 @@ package org.icgc.dcc.submission.validation.rgv.core;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.SGV_P_TYPE;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_P_TYPE;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.validation.rgv.accessor.SgvPrimaryFieldAccessor;
 import org.icgc.dcc.submission.validation.rgv.accessor.SsmPrimaryFieldAccessor;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor(access = PRIVATE)

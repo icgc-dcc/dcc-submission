@@ -17,13 +17,13 @@
  */
 package org.icgc.dcc.submission.validation.key.data;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
 import org.icgc.dcc.submission.validation.key.core.KVFileType;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
 import com.google.common.base.Optional;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Context object representing the surrounding context of a row under processing.

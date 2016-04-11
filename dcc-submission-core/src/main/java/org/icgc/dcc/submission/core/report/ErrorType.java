@@ -39,13 +39,13 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.ValueType;
 
 import com.google.common.collect.ImmutableMap;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * Represents a validation {@link Error} classification.

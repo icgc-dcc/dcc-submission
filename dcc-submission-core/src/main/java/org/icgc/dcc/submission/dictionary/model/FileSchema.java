@@ -33,10 +33,6 @@ import java.util.Set;
 
 import javax.validation.Valid;
 
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.val;
-
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.Dictionaries;
@@ -53,6 +49,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.val;
 
 /**
  * Describes a file schema that contains {@code Field}s and that is part of a {@code Dictionary}

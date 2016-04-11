@@ -19,14 +19,13 @@ package org.icgc.dcc.submission.loader.util;
 
 import javax.sql.DataSource;
 
-import lombok.SneakyThrows;
-import lombok.val;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import lombok.SneakyThrows;
+import lombok.val;
 import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;
 
 public abstract class AbstractPostgressTest {

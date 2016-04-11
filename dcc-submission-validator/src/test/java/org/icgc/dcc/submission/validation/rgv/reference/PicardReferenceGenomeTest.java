@@ -1,9 +1,10 @@
 package org.icgc.dcc.submission.validation.rgv.reference;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import net.sf.picard.PicardException;
 
 import org.junit.Test;
+
+import net.sf.picard.PicardException;
 
 public class PicardReferenceGenomeTest {
 

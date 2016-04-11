@@ -19,10 +19,10 @@ package org.icgc.dcc.submission.validation.primary.core;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import com.google.common.collect.ImmutableList;
 
 @Getter
 public class RestrictionTypeSchema {

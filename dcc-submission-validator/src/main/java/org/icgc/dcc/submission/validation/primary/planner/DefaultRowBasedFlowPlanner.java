@@ -24,7 +24,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.icgc.dcc.submission.validation.cascading.StructuralCheckFunction.LINE_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.OFFSET_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.primary.core.FlowType.ROW_BASED;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.cascading.ForbiddenValuesFunction;
@@ -48,6 +47,7 @@ import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 class DefaultRowBasedFlowPlanner extends BaseFileFlowPlanner implements RowBasedFlowPlanner {

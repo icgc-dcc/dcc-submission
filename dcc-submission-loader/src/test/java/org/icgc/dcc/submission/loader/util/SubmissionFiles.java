@@ -18,10 +18,11 @@
 package org.icgc.dcc.submission.loader.util;
 
 import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.common.core.meta.FileDictionaryResolver;
 import org.icgc.dcc.common.core.meta.Resolver.DictionaryResolver;
+
+import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class SubmissionFiles {

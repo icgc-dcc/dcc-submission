@@ -23,10 +23,10 @@ import static org.apache.commons.io.FileUtils.forceMkdir;
 
 import java.io.File;
 
-import lombok.SneakyThrows;
-
 import org.junit.Before;
 import org.junit.Test;
+
+import lombok.SneakyThrows;
 
 public class GeneratorIntegrationTest {
 

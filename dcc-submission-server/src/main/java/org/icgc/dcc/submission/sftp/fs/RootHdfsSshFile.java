@@ -25,15 +25,15 @@ import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 import java.io.IOException;
 import java.util.List;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
 import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.sftp.SftpContext;
 
 import com.google.common.base.Optional;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RootHdfsSshFile extends HdfsSshFile {

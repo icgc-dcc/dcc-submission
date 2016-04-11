@@ -23,11 +23,11 @@ import java.io.BufferedReader;
 import java.io.StringReader;
 import java.util.List;
 
+import org.icgc.dcc.common.core.util.Joiners;
+
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
-
-import org.icgc.dcc.common.core.util.Joiners;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class Readers {

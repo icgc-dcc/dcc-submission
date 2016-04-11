@@ -20,13 +20,13 @@ package org.icgc.dcc.submission.validation.pcawg.core;
 import java.util.Iterator;
 import java.util.List;
 
-import lombok.Value;
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.Record;
 
 import com.google.common.collect.Iterators;
+
+import lombok.Value;
+import lombok.val;
 
 @Value
 public class Clinical implements Iterable<List<Record>> {

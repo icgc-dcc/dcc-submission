@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.rgv.util;
 
 import static com.google.common.primitives.Ints.tryParse;
 import static lombok.AccessLevel.PRIVATE;
+
 import lombok.NoArgsConstructor;
 import lombok.val;
 

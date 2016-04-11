@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.core.state;
 
 import static java.lang.String.format;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 

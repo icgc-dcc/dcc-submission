@@ -22,10 +22,6 @@ import static lombok.AccessLevel.PROTECTED;
 
 import java.util.List;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.experimental.Accessors;
-
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Key;
 import org.mongodb.morphia.Morphia;
@@ -40,6 +36,10 @@ import com.mysema.query.mongodb.morphia.MorphiaQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
+
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.experimental.Accessors;
 
 @Accessors(fluent = true)
 public abstract class AbstractRepository<E, Q extends EntityPath<E>> {

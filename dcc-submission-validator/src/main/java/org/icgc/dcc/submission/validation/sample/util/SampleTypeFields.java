@@ -18,9 +18,10 @@
 package org.icgc.dcc.submission.validation.sample.util;
 
 import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.submission.validation.sample.SampleTypeValidator;
+
+import lombok.NoArgsConstructor;
 
 /**
  * Dictionary defined field names required to implement the requirements of the {@link SampleTypeValidator}.

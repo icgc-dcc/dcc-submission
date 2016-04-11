@@ -24,8 +24,6 @@ import static org.icgc.dcc.submission.dictionary.model.SummaryType.AVERAGE;
 
 import java.util.List;
 
-import lombok.val;
-
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
@@ -36,6 +34,8 @@ import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 import org.junit.Test;
 
 import com.mongodb.BasicDBObject;
+
+import lombok.val;
 
 public class DictionaryValidatorTest {
 

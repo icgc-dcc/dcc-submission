@@ -21,14 +21,14 @@ import static org.icgc.dcc.submission.core.model.QProjectDataTypeReport.projectD
 
 import java.util.List;
 
-import lombok.NonNull;
-
 import org.icgc.dcc.submission.core.model.ProjectDataTypeReport;
 import org.icgc.dcc.submission.core.model.QProjectDataTypeReport;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 
 import com.google.inject.Inject;
+
+import lombok.NonNull;
 
 public class ProjectDataTypeReportRepository extends AbstractRepository<ProjectDataTypeReport, QProjectDataTypeReport> {
 

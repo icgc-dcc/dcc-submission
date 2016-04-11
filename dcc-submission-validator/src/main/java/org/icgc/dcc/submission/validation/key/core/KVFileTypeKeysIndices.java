@@ -22,12 +22,12 @@ import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.
 
 import java.util.List;
 
+import org.icgc.dcc.submission.validation.key.data.KVKey;
+import org.icgc.dcc.submission.validation.key.data.KVRow;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.val;
-
-import org.icgc.dcc.submission.validation.key.data.KVKey;
-import org.icgc.dcc.submission.validation.key.data.KVRow;
 
 /**
  * Represents the indices for the keys that are relevant to a particular {@link KVFileType}.

@@ -18,9 +18,9 @@
 package org.icgc.dcc.submission.http.jersey;
 
 import static javax.ws.rs.BindingPriority.HEADER_DECORATOR;
-import static org.icgc.dcc.common.core.util.VersionUtils.getApiVersion;
-import static org.icgc.dcc.common.core.util.VersionUtils.getCommitId;
-import static org.icgc.dcc.common.core.util.VersionUtils.getVersion;
+import static org.icgc.dcc.common.core.dcc.Versions.getApiVersion;
+import static org.icgc.dcc.common.core.dcc.Versions.getCommitId;
+import static org.icgc.dcc.common.core.dcc.Versions.getVersion;
 
 import java.io.IOException;
 
@@ -30,9 +30,9 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.Provider;
 
-import lombok.val;
-
 import org.icgc.dcc.submission.web.util.Versions;
+
+import lombok.val;
 
 /**
  * Adds system version and commit id to each response.

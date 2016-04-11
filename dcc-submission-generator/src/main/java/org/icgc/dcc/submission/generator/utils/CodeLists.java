@@ -24,14 +24,14 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.ImmutableList;
+
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Initializes and stores {@link CodeList}s.

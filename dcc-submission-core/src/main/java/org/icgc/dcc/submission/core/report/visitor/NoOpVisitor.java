@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
-import lombok.NonNull;
-
 import org.icgc.dcc.submission.core.report.DataTypeReport;
 import org.icgc.dcc.submission.core.report.ErrorReport;
 import org.icgc.dcc.submission.core.report.FileReport;
@@ -26,6 +24,8 @@ import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.core.report.ReportElement;
 import org.icgc.dcc.submission.core.report.ReportVisitor;
+
+import lombok.NonNull;
 
 /**
  * All operations have no side-effects.

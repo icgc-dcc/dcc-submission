@@ -20,10 +20,11 @@ package org.icgc.dcc.submission.generator.utils;
 import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.core.model.FileTypes.FILE_EXTENSION;
-import lombok.NoArgsConstructor;
-import lombok.val;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
+
+import lombok.NoArgsConstructor;
+import lombok.val;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class SubmissionFiles {

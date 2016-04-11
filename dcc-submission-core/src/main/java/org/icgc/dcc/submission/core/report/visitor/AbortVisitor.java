@@ -18,12 +18,13 @@
 package org.icgc.dcc.submission.core.report.visitor;
 
 import static com.google.common.collect.Iterables.contains;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileState;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Propagates state changes internally based on outside influence.

@@ -19,11 +19,11 @@ package org.icgc.dcc.submission.dictionary.model;
 
 import java.io.Serializable;
 
-import lombok.ToString;
-
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.URL;
 import org.mongodb.morphia.annotations.Embedded;
+
+import lombok.ToString;
 
 /**
  * Describes a controlled term as part of a {@code CodeList}, which is simply a code (usually integer or integer-looking

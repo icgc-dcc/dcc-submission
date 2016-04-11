@@ -34,13 +34,12 @@ import static org.icgc.dcc.submission.validation.norm.steps.PreMarking.MARKING_F
 
 import java.util.Set;
 
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.common.core.model.Marking;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -50,9 +49,9 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Splitter;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Steps in charge of marking sensitive observations.

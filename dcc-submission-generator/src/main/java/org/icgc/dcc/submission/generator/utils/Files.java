@@ -22,10 +22,10 @@ import static lombok.AccessLevel.PRIVATE;
 
 import java.io.File;
 
+import com.google.common.io.LineProcessor;
+
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
-
-import com.google.common.io.LineProcessor;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class Files {

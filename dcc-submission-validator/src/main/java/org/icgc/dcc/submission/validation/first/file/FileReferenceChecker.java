@@ -22,8 +22,6 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.RELATION_FILE_ERROR;
 import static org.icgc.dcc.submission.core.report.ErrorType.REVERSE_RELATION_FILE_ERROR;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
@@ -32,6 +30,9 @@ import org.icgc.dcc.submission.validation.first.core.FileChecker;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class FileReferenceChecker extends DelegatingFileChecker {

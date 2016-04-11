@@ -22,11 +22,11 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.web.model.ServerErrorCode;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Provider
 @Slf4j

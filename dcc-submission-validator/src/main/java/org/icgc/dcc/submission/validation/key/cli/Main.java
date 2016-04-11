@@ -19,13 +19,13 @@ package org.icgc.dcc.submission.validation.key.cli;
 
 import java.util.logging.LogManager;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.icgc.dcc.submission.validation.key.KeyValidator;
 import org.slf4j.bridge.SLF4JBridgeHandler;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Entry point for testing {@link KeyValidator} from the command line in isolation of the other validators and

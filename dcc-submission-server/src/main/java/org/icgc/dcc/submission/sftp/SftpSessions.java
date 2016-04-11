@@ -18,11 +18,12 @@
 package org.icgc.dcc.submission.sftp;
 
 import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
 
 import org.apache.shiro.subject.Subject;
 import org.apache.sshd.common.Session;
 import org.apache.sshd.common.Session.AttributeKey;
+
+import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class SftpSessions {

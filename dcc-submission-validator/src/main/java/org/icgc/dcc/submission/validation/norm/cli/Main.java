@@ -22,9 +22,6 @@ import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.SGV_P_TYPE;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.common.hadoop.fs.DccFileSystem2;
@@ -34,6 +31,10 @@ import org.icgc.dcc.submission.validation.norm.PseudoNormalizer;
 
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
+
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Command-line utility to initiate normalization on a specified release project's submission stored locally or in HDFS.

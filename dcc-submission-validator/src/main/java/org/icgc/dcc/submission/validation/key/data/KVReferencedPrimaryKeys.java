@@ -18,10 +18,11 @@
 package org.icgc.dcc.submission.validation.key.data;
 
 import static java.lang.String.format;
-import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
-import lombok.Value;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
 
 import org.icgc.dcc.submission.validation.key.core.KVFileType;
+
+import lombok.Value;
 
 @Value
 public class KVReferencedPrimaryKeys {

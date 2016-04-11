@@ -17,12 +17,12 @@
  */
 package org.icgc.dcc.submission.validation.sample.cli;
 
+import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.sample.SampleTypeValidator;
+
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.sample.SampleTypeValidator;
 
 /**
  * Entry point for testing {@link SampleTypeValidator} from the command line in isolation of the other validators and

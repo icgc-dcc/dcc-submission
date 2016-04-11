@@ -17,12 +17,12 @@
  */
 package org.icgc.dcc.submission.validation.first.file;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.validation.first.core.AbstractDelegatingChecker;
 import org.icgc.dcc.submission.validation.first.core.FileChecker;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class DelegatingFileChecker extends AbstractDelegatingChecker implements FileChecker {

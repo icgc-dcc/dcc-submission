@@ -28,9 +28,6 @@ import static org.icgc.dcc.common.hadoop.util.HadoopProperties.setAvailableCodec
 import java.io.InputStream;
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.SneakyThrows;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.cascading.CascadingContext;
@@ -40,6 +37,8 @@ import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
 import cascading.property.AppProps;
 import cascading.tuple.hadoop.TupleSerializationProps;
+import lombok.NonNull;
+import lombok.SneakyThrows;
 
 public class HadoopSubmissionPlatformStrategy extends BaseSubmissionPlatformStrategy {
 

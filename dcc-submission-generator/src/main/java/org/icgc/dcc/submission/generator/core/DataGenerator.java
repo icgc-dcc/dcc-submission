@@ -35,9 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.common.core.model.SpecialValue;
 import org.icgc.dcc.common.core.model.ValueType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
@@ -54,6 +51,9 @@ import org.icgc.dcc.submission.generator.utils.RegexMatches;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The DataGenerator generates all the data that's required for the various files. The DataGenerator also holds an array

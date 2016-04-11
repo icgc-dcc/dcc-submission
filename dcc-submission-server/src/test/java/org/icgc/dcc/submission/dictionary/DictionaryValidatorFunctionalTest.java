@@ -19,11 +19,12 @@ package org.icgc.dcc.submission.dictionary;
 
 import static org.icgc.dcc.submission.TestUtils.codeLists;
 import static org.icgc.dcc.submission.TestUtils.dictionary;
-import lombok.SneakyThrows;
-import lombok.val;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import lombok.SneakyThrows;
+import lombok.val;
 
 public class DictionaryValidatorFunctionalTest {
 

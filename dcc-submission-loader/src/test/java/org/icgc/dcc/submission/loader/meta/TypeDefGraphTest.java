@@ -22,13 +22,13 @@ import static org.icgc.dcc.submission.loader.util.TypeDefs.TYPE_ORDER;
 
 import java.util.List;
 
-import lombok.val;
-
 import org.icgc.dcc.submission.loader.model.TypeDef;
 import org.icgc.dcc.submission.loader.util.TypeDefs;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
+
+import lombok.val;
 
 public class TypeDefGraphTest {
 

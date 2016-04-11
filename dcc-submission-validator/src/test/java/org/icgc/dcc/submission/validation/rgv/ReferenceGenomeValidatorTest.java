@@ -10,9 +10,9 @@ import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 
-import lombok.val;
-
 import org.junit.Test;
+
+import lombok.val;
 
 public class ReferenceGenomeValidatorTest extends BaseReferenceGenomeValidatorTest {
 

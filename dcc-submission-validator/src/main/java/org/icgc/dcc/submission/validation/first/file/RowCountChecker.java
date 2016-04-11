@@ -19,11 +19,12 @@ package org.icgc.dcc.submission.validation.first.file;
 
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.MISSING_ROWS_ERROR;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.first.core.RowChecker;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RowCountChecker extends DelegatingFileRowChecker {

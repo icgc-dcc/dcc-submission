@@ -24,15 +24,15 @@ import java.io.File;
 import java.net.URL;
 import java.util.List;
 
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+
+import com.google.common.collect.ImmutableList;
+
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * The FileSchema initializes the Dictionary and stores all the file schemas.

@@ -19,10 +19,10 @@ package org.icgc.dcc.submission.validation.platform;
 
 import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-
-import org.apache.hadoop.fs.Path;
 
 @RequiredArgsConstructor
 public class LocalSubmissionPlatformStrategyFactory implements SubmissionPlatformStrategyFactory {

@@ -18,10 +18,11 @@
 package org.icgc.dcc.submission.loader.meta;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import lombok.val;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import lombok.val;
 
 public class ReleaseResolverIntegrationTest {
 

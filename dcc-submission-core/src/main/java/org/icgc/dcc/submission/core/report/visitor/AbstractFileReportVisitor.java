@@ -17,12 +17,12 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
-import lombok.NonNull;
-
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
 import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
+
+import lombok.NonNull;
 
 /**
  * Useful visitor base class that does nothing but offers convienient state and helps.

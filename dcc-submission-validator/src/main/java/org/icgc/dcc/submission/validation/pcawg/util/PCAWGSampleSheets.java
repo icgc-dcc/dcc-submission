@@ -19,10 +19,10 @@ package org.icgc.dcc.submission.validation.pcawg.util;
 
 import static com.google.common.io.Resources.readLines;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.icgc.dcc.common.core.json.Jackson.formatPrettyJson;
 import static org.icgc.dcc.common.core.model.Programs.isTCGA;
 import static org.icgc.dcc.common.core.util.Splitters.TAB;
 import static org.icgc.dcc.common.core.util.URLs.getUrl;
-import static org.icgc.dcc.common.json.Jackson.formatPrettyJson;
 
 import java.io.File;
 import java.io.IOException;

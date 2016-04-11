@@ -21,10 +21,6 @@ import java.io.Serializable;
 
 import javax.validation.constraints.NotNull;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-
 import org.icgc.dcc.submission.dictionary.model.RestrictionType.RestrictionTypeConverter;
 import org.icgc.dcc.submission.dictionary.model.validation.CheckRestriction;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
@@ -33,6 +29,10 @@ import org.mongodb.morphia.annotations.Converters;
 import org.mongodb.morphia.annotations.Embedded;
 
 import com.mongodb.BasicDBObject;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Describes a restriction that applies to a {@code Field}.

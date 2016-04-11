@@ -18,11 +18,12 @@
 package org.icgc.dcc.submission.core.report.visitor;
 
 import static com.google.common.base.Optional.fromNullable;
-import lombok.NonNull;
 
 import org.icgc.dcc.submission.core.report.FileReport;
 
 import com.google.common.base.Optional;
+
+import lombok.NonNull;
 
 public class GetFileReportVisitor extends AbstractFileNameReportVisitor {
 

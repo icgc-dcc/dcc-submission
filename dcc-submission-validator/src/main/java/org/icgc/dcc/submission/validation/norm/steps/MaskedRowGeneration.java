@@ -29,9 +29,6 @@ import static org.icgc.dcc.submission.validation.norm.steps.SensitiveRowMarking.
 import static org.icgc.dcc.submission.validation.norm.steps.SensitiveRowMarking.MUTATED_FROM_ALLELE_FIELD;
 import static org.icgc.dcc.submission.validation.norm.steps.SensitiveRowMarking.REFERENCE_GENOME_ALLELE_FIELD;
 import static org.icgc.dcc.submission.validation.norm.steps.SensitiveRowMarking.TUMOUR_GENOTYPE_FIELD;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.common.cascading.TupleEntries;
 import org.icgc.dcc.common.core.model.Marking;
@@ -39,6 +36,8 @@ import org.icgc.dcc.common.core.model.SpecialValue;
 import org.icgc.dcc.submission.validation.norm.NormalizationConfig.OptionalStep;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -48,8 +47,9 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
-
-import com.google.common.annotations.VisibleForTesting;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Steps in charge of creating a "masked" counterpart to sensitive rows (see {@link SensitiveRowMarking}).

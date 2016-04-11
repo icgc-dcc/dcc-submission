@@ -20,16 +20,16 @@ package org.icgc.dcc.submission.loader.meta;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import lombok.NonNull;
-import lombok.val;
-
+import org.icgc.dcc.common.core.json.Jackson;
 import org.icgc.dcc.common.core.meta.Resolver.CodeListsResolver;
-import org.icgc.dcc.common.json.Jackson;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+
+import lombok.NonNull;
+import lombok.val;
 
 public class CodeListsService {
 

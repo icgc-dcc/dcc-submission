@@ -21,17 +21,18 @@ import static java.lang.String.format;
 import static org.icgc.dcc.submission.validation.norm.NormalizationValidator.ANALYSIS_ID;
 import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.MARKED_AS_CONTROLLED;
 import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter.TOTAL_START;
+
+import org.icgc.dcc.common.core.model.Marking;
+import org.icgc.dcc.submission.validation.norm.NormalizationValidator.ConnectedCascade;
+
+import com.google.common.collect.ImmutableMap;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.val;
-
-import org.icgc.dcc.common.core.model.Marking;
-import org.icgc.dcc.submission.validation.norm.NormalizationValidator.ConnectedCascade;
-
-import com.google.common.collect.ImmutableMap;
 
 /**
  * 

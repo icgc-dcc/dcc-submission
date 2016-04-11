@@ -2,7 +2,6 @@ package org.icgc.dcc.submission.repository;
 
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
-import lombok.val;
 
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.QProject;
@@ -18,6 +17,8 @@ import com.google.common.collect.Sets;
 import com.mongodb.MongoClientURI;
 import com.mongodb.MongoException.DuplicateKey;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
+
+import lombok.val;
 
 public class ProjectRepositoryTest extends AbstractRepositoryTest {
 

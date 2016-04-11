@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.loader.util;
 
 import static lombok.AccessLevel.PRIVATE;
+
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 

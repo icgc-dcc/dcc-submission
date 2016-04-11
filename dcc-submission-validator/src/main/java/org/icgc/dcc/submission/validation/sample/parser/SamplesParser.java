@@ -23,9 +23,6 @@ import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFields.SP
 
 import java.util.Map;
 
-import lombok.SneakyThrows;
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.hadoop.parser.FileParser;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
@@ -33,6 +30,9 @@ import org.icgc.dcc.submission.validation.sample.core.Samples;
 import org.icgc.dcc.submission.validation.util.ValidationFileParsers;
 
 import com.google.common.collect.ImmutableMap;
+
+import lombok.SneakyThrows;
+import lombok.val;
 
 /**
  * Parser implementation that creates an in-memory model of the specimen and sample fields required to perform sample

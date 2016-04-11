@@ -25,7 +25,7 @@ import static com.google.common.collect.Sets.difference;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_ANALYZED_SAMPLE_ID;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
 import static org.icgc.dcc.common.core.model.SpecialValue.MISSING_CODES;
-import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getDonorId;
 import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getSampleSampleId;
 import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getSpecimenTypeCategory;

@@ -29,8 +29,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.Collections;
 
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -48,6 +46,8 @@ import org.powermock.api.mockito.PowerMockito;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+
+import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FPVSubmissionProcessorTest {

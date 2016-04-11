@@ -18,9 +18,9 @@
 package org.icgc.dcc.submission.validation.pcawg.external;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import static org.icgc.dcc.common.core.util.Joiners.COMMA;
-import static org.icgc.dcc.common.json.Jackson.DEFAULT;
 
 import java.net.URL;
 import java.util.Set;

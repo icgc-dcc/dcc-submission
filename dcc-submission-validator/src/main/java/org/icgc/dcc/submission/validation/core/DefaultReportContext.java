@@ -17,14 +17,14 @@
  */
 package org.icgc.dcc.submission.validation.core;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.core.report.FieldReport;
 import org.icgc.dcc.submission.core.report.Report;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 /**
  * Wraps and "adapts" a {@link Report}.

@@ -24,18 +24,18 @@ import static org.icgc.dcc.common.core.util.Separators.TAB;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import lombok.Cleanup;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.common.hadoop.parser.FileRecordProcessor;
 import org.icgc.dcc.common.hadoop.parser.TsvPartFileProcessor;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
+
+import lombok.Cleanup;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
 
 /**
  * "Pseudo" normalizer, simply adds a PK to {@link FeatureType#SGV_TYPE} files.

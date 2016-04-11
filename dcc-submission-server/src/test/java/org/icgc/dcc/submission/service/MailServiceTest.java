@@ -51,9 +51,6 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import lombok.SneakyThrows;
-import lombok.val;
-
 import org.icgc.dcc.submission.core.report.Report;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,6 +60,9 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.typesafe.config.Config;
+
+import lombok.SneakyThrows;
+import lombok.val;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Transport.class)

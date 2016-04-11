@@ -23,14 +23,14 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.icgc.dcc.submission.loader.model.TypeDef;
+import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
+import org.jgrapht.graph.DefaultEdge;
+
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.submission.loader.model.TypeDef;
-import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
-import org.jgrapht.graph.DefaultEdge;
 
 @Slf4j
 public class TypeDefGraph {

@@ -19,8 +19,6 @@ package org.icgc.dcc.submission.shiro;
 
 import java.util.Collection;
 
-import lombok.val;
-
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.DefaultSessionStorageEvaluator;
@@ -30,6 +28,8 @@ import org.apache.shiro.realm.Realm;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+
+import lombok.val;
 
 public class SecurityManagerProvider implements Provider<SecurityManager> {
 

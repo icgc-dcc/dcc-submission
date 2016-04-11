@@ -22,13 +22,13 @@ import static lombok.AccessLevel.PRIVATE;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.loader.core.DependencyFactory;
+
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
-
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.loader.core.DependencyFactory;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class HdfsFiles {

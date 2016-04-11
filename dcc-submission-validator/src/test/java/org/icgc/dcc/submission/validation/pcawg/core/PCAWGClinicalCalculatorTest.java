@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.DONOR_TYPE;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.SAMPLE_TYPE;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.SPECIMEN_TYPE;
-import lombok.val;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.model.Record;
@@ -30,6 +29,8 @@ import org.icgc.dcc.submission.validation.pcawg.util.ClinicalIndex;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
+
+import lombok.val;
 
 public class PCAWGClinicalCalculatorTest {
 

@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.generator.service;
 
 import static java.lang.String.format;
+
 import lombok.ToString;
 
 @ToString

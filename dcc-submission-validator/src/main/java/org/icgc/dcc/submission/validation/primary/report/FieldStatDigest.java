@@ -18,11 +18,12 @@
 package org.icgc.dcc.submission.validation.primary.report;
 
 import static lombok.AccessLevel.PRIVATE;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
 
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
+
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 @Value
 @RequiredArgsConstructor(access = PRIVATE)

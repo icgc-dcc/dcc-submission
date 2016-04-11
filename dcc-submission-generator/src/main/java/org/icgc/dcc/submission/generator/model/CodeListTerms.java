@@ -19,9 +19,9 @@ package org.icgc.dcc.submission.generator.model;
 
 import java.util.List;
 
-import lombok.Value;
-
 import org.icgc.dcc.submission.dictionary.model.Term;
+
+import lombok.Value;
 
 @Value
 public class CodeListTerms {

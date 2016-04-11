@@ -23,14 +23,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import lombok.NonNull;
-import lombok.Value;
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.Record;
 
 import com.google.common.collect.ImmutableList;
+
+import lombok.NonNull;
+import lombok.Value;
+import lombok.val;
 
 @Value
 public class ClinicalOptional implements Iterable<List<Record>> {

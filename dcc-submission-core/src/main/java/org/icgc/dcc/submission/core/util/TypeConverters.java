@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.core.util;
 
 import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
@@ -27,6 +26,8 @@ import org.mongodb.morphia.converters.SimpleValueConverter;
 import org.mongodb.morphia.converters.TypeConverter;
 import org.mongodb.morphia.mapping.MappedField;
 import org.mongodb.morphia.mapping.MappingException;
+
+import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class TypeConverters {

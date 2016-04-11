@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.primary.core;
 
 import static lombok.AccessLevel.PRIVATE;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 

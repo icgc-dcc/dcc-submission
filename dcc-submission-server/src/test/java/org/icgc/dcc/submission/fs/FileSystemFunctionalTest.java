@@ -24,9 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Pattern;
 
-import junit.framework.Assert;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.util.ThreadContext;
@@ -46,6 +43,9 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
+
+import junit.framework.Assert;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RunWith(GuiceJUnitRunner.class)

@@ -24,7 +24,6 @@ import static org.icgc.dcc.submission.core.report.ErrorParameterKey.DESCRIPTION;
 import static org.icgc.dcc.submission.core.report.ErrorParameterKey.EXPECTED;
 import static org.icgc.dcc.submission.core.report.ErrorType.SCRIPT_ERROR;
 import static org.icgc.dcc.submission.dictionary.model.RestrictionType.SCRIPT;
-import lombok.val;
 
 import org.icgc.dcc.submission.core.report.FieldErrorReport;
 import org.icgc.dcc.submission.core.report.FileReport;
@@ -37,6 +36,8 @@ import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.mongodb.BasicDBObject;
+
+import lombok.val;
 
 /**
  * Temporary: see DCC-2085.

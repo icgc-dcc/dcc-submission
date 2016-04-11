@@ -17,13 +17,13 @@
  */
 package org.icgc.dcc.submission.validation.rgv.cli;
 
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.rgv.ReferenceGenomeValidator;
 import org.icgc.dcc.submission.validation.rgv.reference.PicardReferenceGenome;
+
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Entry point for testing {@link ReferenceGenomeValidator} from the command line in isolation of the other validators

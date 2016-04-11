@@ -17,9 +17,9 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.core;
 
-import lombok.Data;
-
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
+
+import lombok.Data;
 
 @Data
 public class ClinicalRule {

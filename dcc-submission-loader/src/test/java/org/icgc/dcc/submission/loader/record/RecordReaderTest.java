@@ -23,13 +23,13 @@ import static org.icgc.dcc.common.core.util.Separators.TAB;
 
 import java.util.List;
 
-import lombok.Cleanup;
-import lombok.val;
-
 import org.icgc.dcc.submission.loader.util.Readers;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
+
+import lombok.Cleanup;
+import lombok.val;
 
 public class RecordReaderTest {
 

@@ -22,14 +22,14 @@ import static org.icgc.dcc.submission.loader.core.DependencyFactory.connect;
 import java.io.IOException;
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.val;
-
 import org.icgc.dcc.submission.loader.file.AbstractFileLoader;
 import org.icgc.dcc.submission.loader.record.OrientdbRecordConverter;
 import org.icgc.dcc.submission.loader.record.RecordReader;
 
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
+
+import lombok.NonNull;
+import lombok.val;
 
 public class OrientdbFileLoader extends AbstractFileLoader {
 

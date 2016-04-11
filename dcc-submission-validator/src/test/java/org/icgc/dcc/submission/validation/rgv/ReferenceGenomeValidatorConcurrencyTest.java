@@ -31,9 +31,6 @@ import static org.mockito.Mockito.verify;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import lombok.SneakyThrows;
-import lombok.val;
-
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +39,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
+
+import lombok.SneakyThrows;
+import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ReferenceGenomeValidatorConcurrencyTest extends BaseReferenceGenomeValidatorTest {

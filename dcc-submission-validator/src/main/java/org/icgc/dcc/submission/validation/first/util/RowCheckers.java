@@ -18,8 +18,6 @@
 package org.icgc.dcc.submission.validation.first.util;
 
 import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
-import lombok.val;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.core.RowChecker;
@@ -28,6 +26,9 @@ import org.icgc.dcc.submission.validation.first.file.RowColumnChecker;
 import org.icgc.dcc.submission.validation.first.file.RowCountChecker;
 import org.icgc.dcc.submission.validation.first.file.RowNoOpChecker;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
+
+import lombok.NoArgsConstructor;
+import lombok.val;
 
 /**
  * Made non-final for power mock.

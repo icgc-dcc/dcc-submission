@@ -25,8 +25,6 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 
 import java.util.concurrent.Callable;
 
-import lombok.val;
-
 import org.icgc.dcc.submission.core.model.DccConcurrencyException;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.junit.Test;
@@ -37,6 +35,8 @@ import org.mockito.internal.matchers.Contains;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Optional;
+
+import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AbstractServiceTest {

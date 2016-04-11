@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.rgv.util;
 
 import static lombok.AccessLevel.PRIVATE;
+
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = PRIVATE)

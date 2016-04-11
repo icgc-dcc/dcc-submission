@@ -17,16 +17,16 @@
  */
 package org.icgc.dcc.submission.dictionary.model;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-
 import org.mongodb.morphia.converters.TypeConverter;
 import org.mongodb.morphia.mapping.MappedField;
 import org.mongodb.morphia.mapping.MappingException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 @RequiredArgsConstructor
 public enum RestrictionType {

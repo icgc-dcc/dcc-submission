@@ -23,9 +23,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import lombok.Cleanup;
-import lombok.val;
-
 import org.icgc.dcc.submission.loader.meta.CodeListValuesDecoder;
 import org.icgc.dcc.submission.loader.record.PostgressRecordConverter;
 import org.icgc.dcc.submission.loader.record.RecordReader;
@@ -40,6 +37,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
 import com.google.common.collect.ImmutableList;
+
+import lombok.Cleanup;
+import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PostgressFileLoaderTest extends AbstractPostgressTest {

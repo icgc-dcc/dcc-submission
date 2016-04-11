@@ -38,6 +38,10 @@ import org.icgc.dcc.submission.validation.cascading.CompletenessBy;
 import org.icgc.dcc.submission.validation.cascading.MinMaxBy;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
@@ -50,10 +54,6 @@ import cascading.pipe.assembly.Discard;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 
 public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
 

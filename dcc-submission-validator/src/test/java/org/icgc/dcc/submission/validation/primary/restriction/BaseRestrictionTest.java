@@ -20,10 +20,10 @@ package org.icgc.dcc.submission.validation.primary.restriction;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 
-import cascading.CascadingTestCase;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+
+import cascading.CascadingTestCase;
 
 @RunWith(BlockJUnit4ClassRunner.class)
 public abstract class BaseRestrictionTest extends CascadingTestCase {

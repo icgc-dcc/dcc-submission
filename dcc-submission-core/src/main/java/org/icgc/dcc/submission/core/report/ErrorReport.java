@@ -21,15 +21,15 @@ import static com.google.common.collect.ComparisonChain.start;
 
 import java.util.Set;
 
+import org.mongodb.morphia.annotations.Embedded;
+
+import com.google.common.collect.Sets;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
-
-import org.mongodb.morphia.annotations.Embedded;
-
-import com.google.common.collect.Sets;
 
 /**
  * Reports on a file validation error.

@@ -38,9 +38,6 @@ import java.io.File;
 import java.util.List;
 import java.util.UUID;
 
-import lombok.SneakyThrows;
-import lombok.val;
-
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.cascading.CascadingContext;
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
@@ -64,10 +61,12 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import cascading.tap.Tap;
-
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
+
+import cascading.tap.Tap;
+import lombok.SneakyThrows;
+import lombok.val;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ PrimaryKeyGeneration.class })

@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIELD_NAME;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
-import lombok.val;
 
 import org.icgc.dcc.submission.loader.meta.CodeListValuesDecoder;
 import org.junit.Before;
@@ -31,6 +30,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.ImmutableMap;
+
+import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OrientdbRecordConverterTest {

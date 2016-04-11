@@ -21,14 +21,14 @@ import static org.icgc.dcc.submission.core.model.QProjectSequencingStrategyRepor
 
 import java.util.List;
 
-import lombok.NonNull;
-
 import org.icgc.dcc.submission.core.model.ProjectSequencingStrategyReport;
 import org.icgc.dcc.submission.core.model.QProjectSequencingStrategyReport;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 
 import com.google.inject.Inject;
+
+import lombok.NonNull;
 
 public class ProjectSequencingStrategyReportRepository extends
     AbstractRepository<ProjectSequencingStrategyReport, QProjectSequencingStrategyReport> {

@@ -17,13 +17,13 @@
  */
 package org.icgc.dcc.submission.http.jersey;
 
-import lombok.val;
-
 import org.glassfish.jersey.server.ResourceConfig;
 import org.icgc.dcc.submission.http.HttpHandlerProvider;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
+
+import lombok.val;
 
 public class JerseyModule extends AbstractModule {
 

@@ -1,12 +1,13 @@
 package org.icgc.dcc.submission.core.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import lombok.val;
 
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
+
+import lombok.val;
 
 public class FieldNameComparatorTest {
 

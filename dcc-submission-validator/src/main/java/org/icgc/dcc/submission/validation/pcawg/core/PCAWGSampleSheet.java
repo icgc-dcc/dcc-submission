@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.core;
 
-import static org.icgc.dcc.common.json.Jackson.DEFAULT;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
 import java.net.URL;
 import java.util.List;

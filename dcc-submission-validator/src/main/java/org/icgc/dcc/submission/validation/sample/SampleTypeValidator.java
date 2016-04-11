@@ -21,10 +21,6 @@ import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupte
 
 import java.util.Collection;
 
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
 import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
@@ -35,6 +31,10 @@ import org.icgc.dcc.submission.validation.sample.parser.SamplesParser;
 import org.icgc.dcc.submission.validation.util.ValidationFileParsers;
 
 import com.google.common.collect.ImmutableList;
+
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Validator responsible for ensuring consistent sample types between clinical and experimental meta files.

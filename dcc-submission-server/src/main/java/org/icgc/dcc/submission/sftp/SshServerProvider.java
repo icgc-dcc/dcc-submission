@@ -21,10 +21,6 @@ import static com.google.common.base.Joiner.on;
 import static java.lang.String.valueOf;
 import static org.apache.sshd.common.FactoryManager.DEFAULT_NIO_WORKERS;
 import static org.apache.sshd.common.FactoryManager.NIO_WORKERS;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
@@ -38,6 +34,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.typesafe.config.Config;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Factory class for encapsulating the "complex" logic of creating an {@link SshServer}.

@@ -23,13 +23,13 @@ import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import java.util.Collection;
 import java.util.List;
 
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.val;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
+
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.val;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class Releases {

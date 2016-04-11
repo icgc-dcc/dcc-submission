@@ -18,8 +18,6 @@
 package org.icgc.dcc.submission.core.report.visitor;
 
 import static com.google.common.collect.Iterables.contains;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
@@ -29,6 +27,9 @@ import org.icgc.dcc.submission.core.report.FileState;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.FileTypeState;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Propagates state changes internally based on outside influence.

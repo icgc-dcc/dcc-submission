@@ -35,10 +35,6 @@ import java.util.Set;
 
 import javax.validation.Valid;
 
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.val;
-
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.Dictionaries;
@@ -58,6 +54,10 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.val;
 
 /**
  * Describes a dictionary that contains {@code FileSchema}ta and that may be used by some releases

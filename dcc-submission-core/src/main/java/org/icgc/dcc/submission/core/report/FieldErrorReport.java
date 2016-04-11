@@ -25,13 +25,13 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.mongodb.morphia.annotations.Embedded;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-
-import org.mongodb.morphia.annotations.Embedded;
 
 /**
  * Reports on cell values within a column. Keeps track of the line, value and total count.

@@ -4,14 +4,14 @@ import static org.icgc.dcc.submission.fs.SubmissionFileEventType.FILE_RENAMED;
 
 import java.util.List;
 
-import lombok.NonNull;
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 import org.icgc.dcc.submission.fs.SubmissionFileRenamedEvent;
 
 import com.google.common.collect.ImmutableList;
+
+import lombok.NonNull;
+import lombok.val;
 
 /**
  * A state that allows file system modifications of the associated submission.

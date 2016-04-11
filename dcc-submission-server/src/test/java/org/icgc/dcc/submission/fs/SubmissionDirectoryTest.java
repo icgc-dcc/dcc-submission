@@ -23,8 +23,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
-import junit.framework.Assert;
-
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -32,6 +30,8 @@ import org.apache.hadoop.fs.Path;
 import org.junit.Test;
 
 import com.google.common.io.ByteStreams;
+
+import junit.framework.Assert;
 
 public class SubmissionDirectoryTest extends FileSystemTest {
 

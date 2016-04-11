@@ -24,15 +24,15 @@ import static org.icgc.dcc.submission.loader.util.Options.verifyIncludeExcludeOp
 
 import java.io.IOException;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.loader.cli.ClientOptions;
 import org.icgc.dcc.submission.loader.core.DependencyFactory;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.google.common.base.Stopwatch;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ClientMain {

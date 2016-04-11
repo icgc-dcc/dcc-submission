@@ -30,12 +30,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import lombok.Builder;
-import lombok.Cleanup;
-import lombok.SneakyThrows;
-import lombok.Value;
-import lombok.val;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -51,6 +45,12 @@ import org.junit.rules.TemporaryFolder;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+
+import lombok.Builder;
+import lombok.Cleanup;
+import lombok.SneakyThrows;
+import lombok.Value;
+import lombok.val;
 
 public class BaseReferenceGenomeValidatorTest {
 

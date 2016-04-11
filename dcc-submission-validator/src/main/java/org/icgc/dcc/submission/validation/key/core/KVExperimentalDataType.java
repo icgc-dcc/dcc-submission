@@ -31,12 +31,13 @@ import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.PEXP_TYPE;
 import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.SGV_TYPE;
 import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.STSM_TYPE;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
 
 import com.google.common.base.Predicate;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(access = PRIVATE)
 public enum KVExperimentalDataType {

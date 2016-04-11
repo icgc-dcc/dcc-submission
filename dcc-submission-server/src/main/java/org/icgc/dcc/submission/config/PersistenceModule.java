@@ -4,9 +4,6 @@ import static org.icgc.dcc.common.core.model.Configurations.MONGO_URI_KEY;
 
 import java.net.UnknownHostException;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.logging.MorphiaLoggerFactory;
@@ -19,6 +16,9 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.typesafe.config.Config;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PersistenceModule extends AbstractModule {

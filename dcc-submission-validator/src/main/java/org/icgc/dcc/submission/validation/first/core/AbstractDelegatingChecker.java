@@ -19,11 +19,12 @@ package org.icgc.dcc.submission.validation.first.core;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.repeat;
-import lombok.NonNull;
-import lombok.val;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+
+import lombok.NonNull;
+import lombok.val;
 
 public abstract class AbstractDelegatingChecker extends AbstractChecker {
 

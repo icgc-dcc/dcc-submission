@@ -23,14 +23,14 @@ import static lombok.AccessLevel.PRIVATE;
 
 import java.util.Map;
 
-import lombok.NoArgsConstructor;
-import lombok.val;
-
 import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
 import org.icgc.dcc.submission.validation.norm.steps.MaskedRowGeneration;
 
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
+
+import lombok.NoArgsConstructor;
+import lombok.val;
 
 /**
  * Handles configuration related matters for the normalizer component.

@@ -27,9 +27,6 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.util.List;
 
-import lombok.SneakyThrows;
-import lombok.val;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -41,6 +38,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.google.common.base.Optional;
+
+import lombok.SneakyThrows;
+import lombok.val;
 
 public class ReleaseFileSystemTest {
 

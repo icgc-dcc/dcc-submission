@@ -23,14 +23,14 @@ import static com.google.common.util.concurrent.Service.State.TERMINATED;
 
 import java.util.Set;
 
+import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.UncheckedExecutionException;
+import com.google.inject.Inject;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import com.google.common.util.concurrent.Service;
-import com.google.common.util.concurrent.UncheckedExecutionException;
-import com.google.inject.Inject;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @___(@Inject))

@@ -19,11 +19,12 @@ package org.icgc.dcc.submission.validation.norm.steps;
 
 import static cascading.tuple.Fields.ALL;
 import static org.icgc.dcc.common.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MARKING;
-import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.common.core.model.Marking;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -33,8 +34,7 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
-
-import com.google.common.annotations.VisibleForTesting;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Step in charge of pre-emptively marking all observations as {@link Marking#OPEN} for the {@link SensitiveRowMarking}

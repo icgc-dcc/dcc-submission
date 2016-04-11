@@ -21,8 +21,6 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Set;
 
-import lombok.RequiredArgsConstructor;
-
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
@@ -32,6 +30,8 @@ import org.icgc.dcc.submission.core.report.FileState;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.FileTypeState;
 import org.icgc.dcc.submission.core.report.ReportElement;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * Refreshes stale {@link ReportElement} states based on non-state attributes and transitive relationships.

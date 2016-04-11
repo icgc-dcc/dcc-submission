@@ -19,13 +19,13 @@ package org.icgc.dcc.submission.core.report.visitor;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
-import lombok.NonNull;
-
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
 import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.Report;
+
+import lombok.NonNull;
 
 /**
  * Removes a file from a report and adjusts the internal structure to accommodate the loss.

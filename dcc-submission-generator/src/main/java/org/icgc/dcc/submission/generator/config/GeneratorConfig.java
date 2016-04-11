@@ -22,13 +22,13 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
-
 import org.icgc.dcc.submission.generator.model.ExperimentalFile;
 import org.icgc.dcc.submission.generator.model.OptionalFile;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+
+import lombok.Data;
+import lombok.experimental.Accessors;
 
 @Data
 @Accessors(fluent = true)

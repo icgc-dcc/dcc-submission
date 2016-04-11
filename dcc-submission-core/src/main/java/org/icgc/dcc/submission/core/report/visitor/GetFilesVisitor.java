@@ -21,12 +21,12 @@ import static com.google.common.collect.ImmutableMap.builder;
 
 import java.util.Map;
 
-import lombok.NonNull;
-
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.FileReport;
 
 import com.google.common.collect.ImmutableMap.Builder;
+
+import lombok.NonNull;
 
 /**
  * Value producing visitor that returns a mapping of file names to file types for all files in the report.

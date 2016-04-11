@@ -37,18 +37,12 @@ import static org.icgc.dcc.submission.validation.norm.steps.DonorIdAddition.DONO
 import java.util.List;
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.cascading.Cascades;
 import org.icgc.dcc.common.cascading.CascadingContext;
 import org.icgc.dcc.common.cascading.Flows;
 import org.icgc.dcc.common.cascading.Pipes;
-import org.icgc.dcc.common.core.Component;
+import org.icgc.dcc.common.core.dcc.Component;
 import org.icgc.dcc.common.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
@@ -69,17 +63,22 @@ import org.icgc.dcc.submission.validation.norm.steps.SensitiveRowMarking;
 import org.icgc.dcc.submission.validation.norm.steps.UniqueCounting;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.typesafe.config.Config;
+
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
 import cascading.flow.Flow;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.tap.Tap;
-
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.typesafe.config.Config;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Entry point for the normalization component. The component is described in

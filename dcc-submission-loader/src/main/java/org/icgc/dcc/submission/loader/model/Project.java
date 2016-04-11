@@ -17,9 +17,9 @@
  */
 package org.icgc.dcc.submission.loader.model;
 
-import lombok.Value;
-
 import org.icgc.dcc.submission.release.model.SubmissionState;
+
+import lombok.Value;
 
 @Value
 public class Project {

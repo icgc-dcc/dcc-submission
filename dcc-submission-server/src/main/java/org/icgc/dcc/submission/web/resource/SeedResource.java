@@ -34,8 +34,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
-import lombok.val;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.submission.core.model.Project;
@@ -48,6 +46,8 @@ import org.icgc.dcc.submission.web.util.Responses;
 import org.mongodb.morphia.Datastore;
 
 import com.google.inject.Inject;
+
+import lombok.val;
 
 /**
  * TODO: discard class: DCC-819 (was originally created in the context of DCC-135)

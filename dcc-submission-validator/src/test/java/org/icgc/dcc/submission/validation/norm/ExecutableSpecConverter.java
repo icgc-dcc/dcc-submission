@@ -37,10 +37,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.common.core.model.Marking;
 
 import com.google.common.base.Function;
@@ -53,6 +49,10 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
+
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * TODO: add sanity checks + split on a per case basis? + un-staticify

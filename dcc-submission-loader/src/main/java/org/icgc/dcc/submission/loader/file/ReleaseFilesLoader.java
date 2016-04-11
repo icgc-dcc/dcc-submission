@@ -23,15 +23,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletionService;
 
+import org.icgc.dcc.submission.loader.db.DatabaseService;
+import org.icgc.dcc.submission.loader.model.FileTypePath;
+import org.icgc.dcc.submission.loader.model.Project;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.submission.loader.db.DatabaseService;
-import org.icgc.dcc.submission.loader.model.FileTypePath;
-import org.icgc.dcc.submission.loader.model.Project;
 
 @Slf4j
 @RequiredArgsConstructor

@@ -19,9 +19,6 @@ package org.icgc.dcc.submission.validation.platform;
 
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.common.core.util.Scheme;
 import org.icgc.dcc.submission.core.util.InjectionNames;
@@ -29,6 +26,9 @@ import org.icgc.dcc.submission.core.util.InjectionNames;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SubmissionPlatformStrategyFactoryProvider implements Provider<SubmissionPlatformStrategyFactory> {

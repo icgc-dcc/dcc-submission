@@ -23,9 +23,6 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
@@ -35,6 +32,9 @@ import org.icgc.dcc.submission.core.report.FileState;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.FileTypeState;
 import org.icgc.dcc.submission.core.report.Report;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Resets all internal states and leaf contents of the {@link Report}.

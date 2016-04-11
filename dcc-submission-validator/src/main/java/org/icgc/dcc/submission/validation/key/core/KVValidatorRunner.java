@@ -17,18 +17,12 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
-import static org.icgc.dcc.common.core.util.FormatUtils.formatMemory;
+import static org.icgc.dcc.common.core.util.Formats.formatMemory;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.Collection;
-
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.Value;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -39,9 +33,14 @@ import org.icgc.dcc.common.hadoop.parser.FileLineListParser;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
-import cascading.flow.hadoop.HadoopFlowStep;
-
 import com.google.common.base.Stopwatch;
+
+import cascading.flow.hadoop.HadoopFlowStep;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.Value;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Runner that operates within a Cascading step.

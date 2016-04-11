@@ -26,15 +26,11 @@ import static com.google.common.io.Resources.readLines;
 import static com.google.inject.Guice.createInjector;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.common.core.util.VersionUtils.getScmInfo;
+import static org.icgc.dcc.common.core.dcc.Versions.getScmInfo;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.Map.Entry;
-
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.common.hadoop.util.HadoopProperties;
 import org.icgc.dcc.submission.config.ConfigModule;
@@ -55,6 +51,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * SubmissionMain class for the submission system. Starts the DCC Submission System daemon.

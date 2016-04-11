@@ -21,14 +21,14 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.icgc.dcc.submission.loader.record.RecordReader;
+
+import com.google.common.base.Stopwatch;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.submission.loader.record.RecordReader;
-
-import com.google.common.base.Stopwatch;
 
 @Slf4j
 @RequiredArgsConstructor

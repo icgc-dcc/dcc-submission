@@ -18,14 +18,15 @@
 package org.icgc.dcc.submission.loader.file.orientdb;
 
 import static org.icgc.dcc.submission.loader.util.HdfsFiles.getCompressionAgnosticBufferedReader;
-import lombok.NonNull;
-import lombok.val;
 
 import org.icgc.dcc.submission.loader.file.AbstractFileLoaderFactory;
 import org.icgc.dcc.submission.loader.file.FileLoader;
 import org.icgc.dcc.submission.loader.model.FileTypePath;
 import org.icgc.dcc.submission.loader.record.OrientdbRecordConverter;
 import org.icgc.dcc.submission.loader.record.RecordReader;
+
+import lombok.NonNull;
+import lombok.val;
 
 public class OrientdbFileLoaderFactory extends AbstractFileLoaderFactory {
 

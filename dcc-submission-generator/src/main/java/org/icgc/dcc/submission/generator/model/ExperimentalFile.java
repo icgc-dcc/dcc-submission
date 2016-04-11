@@ -18,14 +18,15 @@
 package org.icgc.dcc.submission.generator.model;
 
 import static lombok.AccessLevel.PRIVATE;
+
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonValue;
 
 @AllArgsConstructor
 @NoArgsConstructor(access = PRIVATE)

@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.cascading;
 
 import static org.icgc.dcc.common.cascading.Fields2.concat;
 import static org.icgc.dcc.common.cascading.Fields2.field;
+
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
 

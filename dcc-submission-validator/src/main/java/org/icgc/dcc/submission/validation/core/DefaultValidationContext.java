@@ -23,13 +23,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-import lombok.val;
-import lombok.experimental.Delegate;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.ClinicalType;
@@ -46,6 +39,13 @@ import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFac
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+import lombok.val;
+import lombok.experimental.Delegate;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The "default" implementation of the {@link ValidationContext}.

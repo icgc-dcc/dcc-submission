@@ -21,14 +21,14 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
-import lombok.val;
-
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
+
+import lombok.val;
 
 /**
  * 

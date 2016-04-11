@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.config;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
-import static org.icgc.dcc.common.core.Component.NORMALIZER;
+import static org.icgc.dcc.common.core.dcc.Component.NORMALIZER;
 import static org.icgc.dcc.common.core.util.URLs.getUrl;
 
 import java.net.URL;

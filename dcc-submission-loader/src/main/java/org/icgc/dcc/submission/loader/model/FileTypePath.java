@@ -17,9 +17,9 @@
  */
 package org.icgc.dcc.submission.loader.model;
 
-import lombok.Value;
-
 import org.apache.hadoop.fs.Path;
+
+import lombok.Value;
 
 @Value
 public class FileTypePath {

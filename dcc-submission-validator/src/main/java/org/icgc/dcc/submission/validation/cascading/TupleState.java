@@ -27,15 +27,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import lombok.Getter;
-import lombok.ToString;
-
 import org.icgc.dcc.submission.core.report.ErrorParameterKey;
 import org.icgc.dcc.submission.core.report.ErrorType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * Each {@code Tuple} should have one field that holds asn instance of this class. It is used to track the state

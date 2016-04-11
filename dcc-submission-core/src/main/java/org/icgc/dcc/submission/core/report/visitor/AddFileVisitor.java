@@ -17,14 +17,14 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
-import lombok.NonNull;
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
 import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.Report;
+
+import lombok.NonNull;
+import lombok.val;
 
 public class AddFileVisitor extends AbstractFileReportVisitor {
 

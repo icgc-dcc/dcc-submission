@@ -30,12 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import lombok.Cleanup;
-import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -48,6 +42,12 @@ import org.icgc.dcc.submission.validation.key.core.KVValidatorRunner;
 
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.Cleanup;
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @NoArgsConstructor
 @Slf4j

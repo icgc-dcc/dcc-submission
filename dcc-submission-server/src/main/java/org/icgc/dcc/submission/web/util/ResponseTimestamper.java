@@ -21,10 +21,10 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
-import lombok.val;
-
 import org.icgc.dcc.submission.core.model.HasTimestamps;
 import org.icgc.dcc.submission.web.UnsatisfiedPreconditionException;
+
+import lombok.val;
 
 /**
  * Utility class for interaction between responses and objects with {@code HasTimestamps}

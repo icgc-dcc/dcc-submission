@@ -21,13 +21,13 @@ import static lombok.AccessLevel.PRIVATE;
 
 import java.util.Map;
 
-import lombok.NoArgsConstructor;
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.hadoop.parser.FileParser;
 import org.icgc.dcc.submission.core.parser.SubmissionFileParsers;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
+
+import lombok.NoArgsConstructor;
+import lombok.val;
 
 /**
  * Utility methods for parsing submission files within the context of {@link Validator}s.

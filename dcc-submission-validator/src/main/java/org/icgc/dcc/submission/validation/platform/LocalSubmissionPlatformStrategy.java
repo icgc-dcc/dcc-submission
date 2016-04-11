@@ -22,14 +22,14 @@ import static org.icgc.dcc.common.hadoop.fs.FileSystems.getDefaultLocalFileSyste
 import java.io.InputStream;
 import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.common.cascading.CascadingContext;
+import org.icgc.dcc.submission.validation.primary.core.FlowType;
+
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.common.cascading.CascadingContext;
-import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
 @Slf4j
 public class LocalSubmissionPlatformStrategy extends BaseSubmissionPlatformStrategy {

@@ -27,11 +27,6 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
@@ -53,6 +48,11 @@ import org.icgc.dcc.submission.service.ReleaseService;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * "Encapsulated Context Object" class that insulates and decouples the SFTP subsystem from DCC file system

@@ -24,7 +24,7 @@ import static org.icgc.dcc.submission.dictionary.model.DictionaryState.OPENED;
 
 import java.util.List;
 
-import org.icgc.dcc.common.json.Jackson;
+import org.icgc.dcc.common.core.json.Jackson;
 import org.icgc.dcc.submission.dictionary.DictionaryServiceException;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;

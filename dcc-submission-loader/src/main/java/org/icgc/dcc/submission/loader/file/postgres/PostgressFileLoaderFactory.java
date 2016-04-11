@@ -21,16 +21,16 @@ import static org.icgc.dcc.submission.loader.util.HdfsFiles.getCompressionAgnost
 
 import javax.sql.DataSource;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-
 import org.icgc.dcc.submission.loader.file.AbstractFileLoaderFactory;
 import org.icgc.dcc.submission.loader.file.FileLoader;
 import org.icgc.dcc.submission.loader.model.FileTypePath;
 import org.icgc.dcc.submission.loader.record.PostgressRecordConverter;
 import org.icgc.dcc.submission.loader.record.RecordReader;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 @RequiredArgsConstructor
 public class PostgressFileLoaderFactory extends AbstractFileLoaderFactory {

@@ -30,6 +30,9 @@ import org.icgc.dcc.submission.core.report.ErrorType;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import org.junit.Test;
 
+import com.google.common.collect.Iterables;
+import com.mysema.util.FileUtils;
+
 import cascading.CascadingTestCase;
 import cascading.tuple.Tuple;
 import cascading.tuple.hadoop.TupleSerialization;
@@ -37,9 +40,6 @@ import cascading.tuple.hadoop.io.HadoopTupleInputStream;
 import cascading.tuple.hadoop.io.HadoopTupleOutputStream;
 import cascading.tuple.io.TupleInputStream;
 import cascading.tuple.io.TupleOutputStream;
-
-import com.google.common.collect.Iterables;
-import com.mysema.util.FileUtils;
 
 /**
  * 

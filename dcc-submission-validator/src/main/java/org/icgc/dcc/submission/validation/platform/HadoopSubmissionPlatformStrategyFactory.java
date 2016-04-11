@@ -19,10 +19,10 @@ package org.icgc.dcc.submission.validation.platform;
 
 import java.util.Map;
 
-import lombok.NonNull;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+
+import lombok.NonNull;
 
 public class HadoopSubmissionPlatformStrategyFactory implements SubmissionPlatformStrategyFactory {
 

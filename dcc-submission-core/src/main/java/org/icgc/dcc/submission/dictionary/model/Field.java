@@ -25,9 +25,6 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import lombok.ToString;
-import lombok.val;
-
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.common.core.model.ValueType;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
@@ -38,6 +35,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+
+import lombok.ToString;
+import lombok.val;
 
 /**
  * Describes a field that has {@code Restriction}s and that is part of a {@code FileSchema}

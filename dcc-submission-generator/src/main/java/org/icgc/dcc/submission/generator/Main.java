@@ -26,7 +26,7 @@ import static java.lang.System.err;
 import static java.lang.System.out;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.common.core.util.VersionUtils.getScmInfo;
+import static org.icgc.dcc.common.core.dcc.Versions.getScmInfo;
 import static org.icgc.dcc.submission.generator.service.GeneratorService.generatorService;
 
 import java.io.File;
@@ -34,10 +34,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.List;
 import java.util.Map.Entry;
-
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.generator.cli.Options;
 import org.icgc.dcc.submission.generator.config.GeneratorConfig;
@@ -47,6 +43,10 @@ import org.icgc.dcc.submission.generator.utils.FileSchemas;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
+
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Command line utility used to generate ICGC data sets.

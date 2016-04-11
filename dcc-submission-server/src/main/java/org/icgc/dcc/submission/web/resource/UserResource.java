@@ -32,9 +32,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.core.model.Feedback;
 import org.icgc.dcc.submission.core.model.User;
 import org.icgc.dcc.submission.release.model.DetailedUser;
@@ -45,6 +42,9 @@ import org.icgc.dcc.submission.web.util.Authorizations;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 
 import com.google.inject.Inject;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Resource (REST end-points) for userService.

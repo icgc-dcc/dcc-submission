@@ -19,21 +19,21 @@ package org.icgc.dcc.submission.validation.core;
 
 import static com.google.common.base.Stopwatch.createUnstarted;
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.common.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.icgc.dcc.submission.validation.ValidationExecutor;
+
+import com.google.common.base.Stopwatch;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.submission.validation.ValidationExecutor;
-
-import com.google.common.base.Stopwatch;
 
 /**
  * A {@code Validation} is a high level container which encapsulates the execution context of sequentially executed

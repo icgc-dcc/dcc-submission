@@ -21,7 +21,7 @@ import static com.google.common.base.Optional.of;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.apache.commons.lang.StringUtils.repeat;
-import static org.icgc.dcc.common.core.util.FormatUtils.formatBytes;
+import static org.icgc.dcc.common.core.util.Formats.formatBytes;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.BIOMARKER;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXPOSURE;

@@ -19,9 +19,9 @@ package org.icgc.dcc.submission.generator.cli;
 
 import java.io.File;
 
-import lombok.ToString;
-
 import com.beust.jcommander.Parameter;
+
+import lombok.ToString;
 
 /**
  * Command line options.

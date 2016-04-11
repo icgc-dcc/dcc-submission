@@ -22,14 +22,14 @@ import static com.google.common.collect.Iterables.transform;
 
 import java.util.List;
 
-import lombok.RequiredArgsConstructor;
-
 import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * WIP (use {@link KVHardcodedDictionary} until finished).

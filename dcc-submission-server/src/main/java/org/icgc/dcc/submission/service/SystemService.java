@@ -17,13 +17,13 @@
  */
 package org.icgc.dcc.submission.service;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.icgc.dcc.submission.core.model.Status;
 import org.icgc.dcc.submission.sftp.SftpServerService;
 
 import com.google.inject.Inject;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class SystemService {

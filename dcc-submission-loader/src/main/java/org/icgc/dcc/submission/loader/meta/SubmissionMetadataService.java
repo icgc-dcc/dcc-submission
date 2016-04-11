@@ -19,19 +19,16 @@ package org.icgc.dcc.submission.loader.meta;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.String.format;
+import static org.icgc.dcc.common.core.json.Jackson.asArrayNode;
+import static org.icgc.dcc.common.core.json.Jackson.asObjectNode;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableMap;
-import static org.icgc.dcc.common.json.Jackson.asArrayNode;
-import static org.icgc.dcc.common.json.Jackson.asObjectNode;
 import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIELD_NAME;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import lombok.NonNull;
-import lombok.val;
 
 import org.icgc.dcc.common.core.meta.Resolver.DictionaryResolver;
 import org.icgc.dcc.common.core.util.stream.Streams;
@@ -44,6 +41,9 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
+import lombok.NonNull;
+import lombok.val;
 
 public class SubmissionMetadataService {
 

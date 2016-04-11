@@ -23,8 +23,6 @@ import static org.icgc.dcc.submission.generator.model.ExperimentalFile.FileType.
 import static org.icgc.dcc.submission.generator.model.ExperimentalFile.FileType.PRIMARY;
 import static org.icgc.dcc.submission.generator.model.ExperimentalFile.FileType.SECONDARY;
 import static org.icgc.dcc.submission.generator.service.GeneratorService.generatorService;
-import lombok.SneakyThrows;
-import lombok.val;
 
 import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.submission.generator.model.ExperimentalFile;
@@ -34,6 +32,9 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import lombok.SneakyThrows;
+import lombok.val;
 
 @Ignore
 public class GeneratorServiceTest {

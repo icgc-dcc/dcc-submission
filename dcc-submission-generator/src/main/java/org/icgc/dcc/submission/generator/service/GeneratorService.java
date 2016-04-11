@@ -34,12 +34,6 @@ import static org.icgc.dcc.submission.generator.utils.Files.getLineCount;
 import java.io.File;
 import java.util.List;
 
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.val;
-import lombok.experimental.Accessors;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.generator.core.DataGenerator;
 import org.icgc.dcc.submission.generator.core.DonorFileGenerator;
@@ -54,6 +48,12 @@ import org.icgc.dcc.submission.generator.model.OptionalFile;
 import org.icgc.dcc.submission.generator.model.Project;
 import org.icgc.dcc.submission.generator.utils.CodeLists;
 import org.icgc.dcc.submission.generator.utils.FileSchemas;
+
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.val;
+import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Accessors

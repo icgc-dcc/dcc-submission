@@ -17,11 +17,11 @@
  */
 package org.icgc.dcc.submission.service;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class IllegalReleaseStateException extends RuntimeException {

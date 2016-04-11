@@ -22,10 +22,10 @@ import static org.icgc.dcc.submission.core.report.FileState.VALID;
 
 import java.util.Set;
 
-import lombok.NonNull;
-
 import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileState;
+
+import lombok.NonNull;
 
 /**
  * Value producing visitor that returns the global valid status based on the internal state of the report.

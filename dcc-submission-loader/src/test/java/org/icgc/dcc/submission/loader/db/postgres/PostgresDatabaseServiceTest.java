@@ -19,8 +19,6 @@ package org.icgc.dcc.submission.loader.db.postgres;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.loader.util.Services.createSubmissionService;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.loader.meta.TypeDefGraph;
 import org.icgc.dcc.submission.loader.model.Project;
@@ -30,6 +28,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PostgresDatabaseServiceTest extends AbstractPostgressTest {

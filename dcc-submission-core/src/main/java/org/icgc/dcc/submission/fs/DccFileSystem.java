@@ -28,10 +28,6 @@ import static org.icgc.dcc.submission.core.util.FsConfig.FS_ROOT;
 
 import java.util.Set;
 
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -41,6 +37,10 @@ import org.icgc.dcc.submission.release.model.Release;
 import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class DccFileSystem {

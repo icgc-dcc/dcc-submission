@@ -20,13 +20,13 @@ package org.icgc.dcc.submission.loader.util;
 import java.util.Collections;
 import java.util.Map;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-
 import org.icgc.dcc.submission.loader.model.TypeDef;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TypeDefs {

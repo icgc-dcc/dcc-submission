@@ -19,10 +19,6 @@ package org.icgc.dcc.submission.validation.primary;
 
 import static com.google.common.collect.Iterables.size;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
@@ -30,6 +26,11 @@ import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.icgc.dcc.submission.validation.primary.planner.Planner;
 
 import com.google.inject.Inject;
+
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * {@code Validator} implementation that performs relation, restriction and data type validations using Cascading as the

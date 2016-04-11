@@ -23,15 +23,15 @@ import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 
 import java.io.FileNotFoundException;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
 import org.apache.sshd.common.file.FileSystemView;
 import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.sftp.SftpContext;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * Virtual file system that bridges the SSHD SftpModule and the DCC file system

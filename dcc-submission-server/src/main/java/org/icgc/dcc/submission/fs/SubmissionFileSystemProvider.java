@@ -20,10 +20,6 @@ package org.icgc.dcc.submission.fs;
 import static org.icgc.dcc.common.hadoop.fs.Configurations.addFsDefault;
 import static org.icgc.dcc.common.hadoop.fs.FileSystems.getFileSystem;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.getConfigurationDescription;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -32,6 +28,11 @@ import org.icgc.dcc.submission.core.util.FsConfig;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.typesafe.config.Config;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @___(@Inject))

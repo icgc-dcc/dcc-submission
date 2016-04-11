@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import lombok.val;
 
 import org.bson.types.ObjectId;
 import org.elasticsearch.common.collect.Lists;
@@ -21,6 +20,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mongodb.morphia.Key;
 
 import com.google.common.collect.Sets;
+
+import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProjectServiceTest {

@@ -18,8 +18,6 @@
 package org.icgc.dcc.submission.release.model;
 
 import static lombok.AccessLevel.PRIVATE;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.submission.core.model.Outcome;
@@ -30,6 +28,9 @@ import org.icgc.dcc.submission.core.state.States;
 import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Canonical set of allowed behavioral states for a submission.

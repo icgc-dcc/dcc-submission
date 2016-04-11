@@ -32,18 +32,18 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.annotation.concurrent.ThreadSafe;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.common.core.util.concurrent.ThreadNamingRunnable;
 import org.icgc.dcc.submission.validation.core.Validation;
 
 import com.google.common.collect.MapMaker;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
+
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Manages the execution and cancellation of a fixed number of {@code Validation} "slots".

@@ -29,10 +29,6 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-import lombok.Cleanup;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.compress.BZip2Codec;
 import org.apache.hadoop.io.compress.CompressionInputStream;
@@ -41,6 +37,10 @@ import org.apache.tika.detect.Detector;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
+
+import lombok.Cleanup;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
 /**
  * Class representing interactions with the file system in the context of FPV (as a temporary measure to isolate such

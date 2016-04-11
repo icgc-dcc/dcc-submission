@@ -23,16 +23,16 @@ import static org.icgc.dcc.common.core.model.Configurations.HADOOP_KEY;
 
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.core.util.InjectionNames;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 import com.typesafe.config.Config;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Makes {@code Config} injectable instead of accessible as a singleton.

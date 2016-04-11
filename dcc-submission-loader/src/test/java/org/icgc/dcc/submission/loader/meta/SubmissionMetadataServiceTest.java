@@ -25,12 +25,12 @@ import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIEL
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import lombok.val;
-
 import org.icgc.dcc.submission.loader.model.TypeDef;
 import org.icgc.dcc.submission.loader.util.Services;
 import org.junit.Before;
 import org.junit.Test;
+
+import lombok.val;
 
 public class SubmissionMetadataServiceTest {
 

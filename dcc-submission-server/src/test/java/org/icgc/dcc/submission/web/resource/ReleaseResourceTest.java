@@ -11,8 +11,6 @@ import java.util.Collection;
 
 import javax.ws.rs.core.Application;
 
-import lombok.val;
-
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
@@ -22,6 +20,8 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
+
+import lombok.val;
 
 public class ReleaseResourceTest extends ResourceTest {
 

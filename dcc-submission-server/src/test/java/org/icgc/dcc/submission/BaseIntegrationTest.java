@@ -24,10 +24,10 @@ import static org.junit.Assert.assertTrue;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientFactory;
 
-import lombok.SneakyThrows;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+
+import lombok.SneakyThrows;
 
 public class BaseIntegrationTest {
 

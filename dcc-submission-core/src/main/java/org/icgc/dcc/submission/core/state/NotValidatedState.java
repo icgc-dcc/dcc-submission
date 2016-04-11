@@ -18,11 +18,12 @@
 package org.icgc.dcc.submission.core.state;
 
 import static lombok.AccessLevel.PACKAGE;
+
+import org.icgc.dcc.submission.release.model.SubmissionState;
+
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
-
-import org.icgc.dcc.submission.release.model.SubmissionState;
 
 /**
  * A state that is neutral with respect to validity, in which all reporting is cleared and each level has a state of

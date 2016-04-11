@@ -24,13 +24,13 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import lombok.Value;
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.SpecialValue;
 
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
+
+import lombok.Value;
+import lombok.val;
 
 /**
  * Represents the values for a given key (a key may be composite).

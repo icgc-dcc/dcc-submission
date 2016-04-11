@@ -27,6 +27,10 @@ import java.util.List;
 import org.icgc.dcc.common.cascading.RemoveHollowTupleFilter;
 import org.icgc.dcc.common.core.model.SpecialValue;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
@@ -34,10 +38,6 @@ import cascading.operation.FunctionCall;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
-
-import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 
 /**
  * Checks structural aspects of an input data file (header, format, ...)

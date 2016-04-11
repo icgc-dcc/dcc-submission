@@ -17,10 +17,10 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
-import lombok.NonNull;
-
 import org.icgc.dcc.submission.core.report.FieldReport;
 import org.icgc.dcc.submission.core.report.FileReport;
+
+import lombok.NonNull;
 
 public class AddFieldVisitor extends AbstractFileNameReportVisitor {
 

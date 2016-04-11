@@ -24,17 +24,17 @@ import static org.icgc.dcc.submission.generator.utils.Dictionaries.isUniqueField
 import java.io.File;
 import java.util.List;
 
-import lombok.Cleanup;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Relation;
 import org.icgc.dcc.submission.generator.model.Key;
 import org.icgc.dcc.submission.generator.model.Project;
 import org.supercsv.io.CsvListWriter;
+
+import lombok.Cleanup;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SpecimenFileGenerator extends BaseFileGenerator {

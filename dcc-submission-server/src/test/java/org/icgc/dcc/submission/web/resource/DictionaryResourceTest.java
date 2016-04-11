@@ -14,8 +14,6 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 
-import lombok.val;
-
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.service.AbstractDccModule;
 import org.icgc.dcc.submission.service.DictionaryService;
@@ -24,6 +22,8 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
+
+import lombok.val;
 
 public class DictionaryResourceTest extends ResourceTest {
 

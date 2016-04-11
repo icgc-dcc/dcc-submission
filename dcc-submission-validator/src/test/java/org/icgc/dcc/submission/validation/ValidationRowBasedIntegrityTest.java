@@ -29,9 +29,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import lombok.SneakyThrows;
-import lombok.val;
-
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
@@ -56,6 +53,9 @@ import org.junit.Test;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
+
+import lombok.SneakyThrows;
+import lombok.val;
 
 public class ValidationRowBasedIntegrityTest extends BaseValidationIntegrityTest {
 

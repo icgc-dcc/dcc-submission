@@ -31,17 +31,17 @@ import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.N
 
 import java.util.List;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import lombok.val;
-
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.norm.NormalizationConfig;
 import org.icgc.dcc.submission.validation.norm.NormalizationValidator.ConnectedCascade;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter;
 
 import com.typesafe.config.Config;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.val;
 
 /**
  * Helper for reporting in the normalization.

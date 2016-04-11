@@ -17,8 +17,6 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 
 import java.io.IOException;
 
-import lombok.val;
-
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.Error;
@@ -29,6 +27,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MetaFileSampleTypeProcessorTest {

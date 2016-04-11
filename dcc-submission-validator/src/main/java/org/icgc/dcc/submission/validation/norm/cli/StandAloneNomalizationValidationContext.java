@@ -19,8 +19,8 @@ package org.icgc.dcc.submission.validation.norm.cli;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.typesafe.config.ConfigFactory.parseMap;
-import static org.icgc.dcc.common.core.Component.CONCATENATOR;
-import static org.icgc.dcc.common.core.Component.NORMALIZER;
+import static org.icgc.dcc.common.core.dcc.Component.CONCATENATOR;
+import static org.icgc.dcc.common.core.dcc.Component.NORMALIZER;
 import static org.icgc.dcc.common.core.model.Configurations.HADOOP_KEY;
 import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.common.core.util.Joiners.DOT;
@@ -30,13 +30,6 @@ import static org.icgc.dcc.common.hadoop.util.HadoopConstants.MR_JOBTRACKER_ADDR
 import static org.icgc.dcc.submission.config.Configs.getHadoopProperties;
 
 import java.util.Collection;
-
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.Value;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -59,6 +52,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
+
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.Value;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class StandAloneNomalizationValidationContext extends AbstractValidationContext {

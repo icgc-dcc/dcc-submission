@@ -18,10 +18,11 @@
 package org.icgc.dcc.submission.core.state;
 
 import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 import org.icgc.dcc.submission.release.model.SubmissionState;
+
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * State utilities.

@@ -23,10 +23,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
+import com.google.common.collect.ImmutableList;
+
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-
-import com.google.common.collect.ImmutableList;
 
 @UtilityClass
 public class Streams {

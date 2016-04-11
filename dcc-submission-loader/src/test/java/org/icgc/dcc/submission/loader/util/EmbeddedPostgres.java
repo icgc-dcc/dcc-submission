@@ -17,13 +17,12 @@
  */
 package org.icgc.dcc.submission.loader.util;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 import ru.yandex.qatools.embed.postgresql.PostgresProcess;
 import ru.yandex.qatools.embed.postgresql.PostgresStarter;
 import ru.yandex.qatools.embed.postgresql.config.PostgresConfig;

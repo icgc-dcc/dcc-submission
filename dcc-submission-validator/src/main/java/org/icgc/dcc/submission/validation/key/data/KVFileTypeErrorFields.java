@@ -23,16 +23,16 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.List;
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.validation.key.core.KVErrorType;
 import org.icgc.dcc.submission.validation.key.core.KVFileType;
 import org.icgc.dcc.submission.validation.key.core.KVKeyType;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Keeps track of the field names affected by a given {@link KVErrorType} for a given {@link KVFileType}.

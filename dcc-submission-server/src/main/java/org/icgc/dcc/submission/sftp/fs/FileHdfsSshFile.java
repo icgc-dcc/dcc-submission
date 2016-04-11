@@ -22,9 +22,6 @@ import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 import java.io.IOException;
 import java.util.List;
 
-import lombok.NonNull;
-import lombok.val;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.fs.SubmissionFile;
@@ -33,6 +30,9 @@ import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 import org.icgc.dcc.submission.fs.SubmissionFileRemovedEvent;
 import org.icgc.dcc.submission.fs.SubmissionFileRenamedEvent;
 import org.icgc.dcc.submission.sftp.SftpContext;
+
+import lombok.NonNull;
+import lombok.val;
 
 public class FileHdfsSshFile extends HdfsSshFile {
 

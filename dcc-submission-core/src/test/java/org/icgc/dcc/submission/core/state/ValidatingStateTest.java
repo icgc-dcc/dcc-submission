@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.core.state;
 
 import static com.google.common.collect.Iterables.find;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.common.json.Jackson.formatPrettyJson;
+import static org.icgc.dcc.common.core.json.Jackson.formatPrettyJson;
 import static org.icgc.dcc.submission.core.report.DataTypeState.INVALID;
 import static org.icgc.dcc.submission.core.report.DataTypeState.VALID;
 import static org.mockito.Mockito.when;

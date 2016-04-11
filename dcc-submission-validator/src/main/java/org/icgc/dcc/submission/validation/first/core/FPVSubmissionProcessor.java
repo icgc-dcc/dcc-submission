@@ -26,18 +26,15 @@ import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupte
 
 import javax.validation.constraints.NotNull;
 
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
 import org.icgc.dcc.submission.validation.first.util.FileCheckers;
 import org.icgc.dcc.submission.validation.first.util.RowCheckers;
 
-import com.google.common.base.Function;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Main logic for the FPV.
@@ -57,12 +54,10 @@ public class FPVSubmissionProcessor {
   private RowChecker rowChecker;
 
   public void process(String stepName, ValidationContext validationContext, FPVFileSystem fs) {
-    FileChecker fileChecker = this.fileChecker == null ?
-        FileCheckers.getDefaultFileChecker(validationContext, fs) :
-        this.fileChecker;
-    RowChecker rowChecker = this.rowChecker == null ?
-        RowCheckers.getDefaultRowChecker(validationContext, fs) :
-        this.rowChecker;
+    FileChecker fileChecker =
+        this.fileChecker == null ? FileCheckers.getDefaultFileChecker(validationContext, fs) : this.fileChecker;
+    RowChecker rowChecker =
+        this.rowChecker == null ? RowCheckers.getDefaultRowChecker(validationContext, fs) : this.rowChecker;
 
     // TODO: Add check that at least DONOR exists (+ create new error)
 
@@ -95,14 +90,7 @@ public class FPVSubmissionProcessor {
     val fileSchemata = context.getDictionary().getFileSchemata(context.getDataTypes());
 
     // Selective validation filtering
-    return copyOf(transform(fileSchemata, new Function<FileSchema, String>() {
-
-      @Override
-      public String apply(FileSchema fileSchema) {
-        return fileSchema.getPattern();
-      }
-
-    }));
+    return copyOf(transform(fileSchemata, fileSchema -> fileSchema.getPattern()));
   }
 
   private static String banner() {

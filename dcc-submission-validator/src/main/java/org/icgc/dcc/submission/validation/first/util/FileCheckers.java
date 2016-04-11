@@ -18,8 +18,6 @@
 package org.icgc.dcc.submission.validation.first.util;
 
 import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
-import lombok.val;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.core.FileChecker;
@@ -29,6 +27,9 @@ import org.icgc.dcc.submission.validation.first.file.FileHeaderChecker;
 import org.icgc.dcc.submission.validation.first.file.FileNoOpChecker;
 import org.icgc.dcc.submission.validation.first.file.FileReferenceChecker;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
+
+import lombok.NoArgsConstructor;
+import lombok.val;
 
 /**
  * Made non-final for power mock.

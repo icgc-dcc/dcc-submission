@@ -23,17 +23,17 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.common.core.util.DccConstants;
+import org.icgc.dcc.common.core.dcc.DccConstants;
 import org.icgc.dcc.common.core.util.Separators;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.primary.core.FlowType;
 
-import cascading.flow.FlowConnector;
-import cascading.tap.Tap;
-
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+
+import cascading.flow.FlowConnector;
+import cascading.tap.Tap;
 
 public interface SubmissionPlatformStrategy {
 

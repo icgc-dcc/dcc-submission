@@ -21,20 +21,20 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Resources.getResource;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.common.core.DccResources.getDictionaryDccResource;
-import static org.icgc.dcc.common.json.Jackson.DEFAULT;
-import static org.icgc.dcc.common.json.Jackson.from;
+import static org.icgc.dcc.common.core.dcc.DccResources.getDictionaryDccResource;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
+import static org.icgc.dcc.common.core.json.Jackson.from;
 
 import java.io.File;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 
-import org.icgc.dcc.common.core.DccResources;
+import org.icgc.dcc.common.core.dcc.DccResources;
+import org.icgc.dcc.common.core.json.Jackson;
 import org.icgc.dcc.common.core.meta.RestfulCodeListsResolver;
 import org.icgc.dcc.common.core.meta.RestfulDictionaryResolver;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
-import org.icgc.dcc.common.json.Jackson;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;

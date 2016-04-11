@@ -23,10 +23,6 @@ import java.util.Set;
 
 import javax.validation.constraints.Pattern;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-
 import org.bson.types.ObjectId;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.core.model.Views.Digest;
@@ -39,6 +35,10 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @Entity(noClassnameStored = true)
 @Data

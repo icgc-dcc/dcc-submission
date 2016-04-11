@@ -1,12 +1,12 @@
 package org.icgc.dcc.submission.core.state;
 
-import lombok.NonNull;
-import lombok.val;
-
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+
+import lombok.NonNull;
+import lombok.val;
 
 /**
  * A state in which the associated submission must be copied and reset upon release.

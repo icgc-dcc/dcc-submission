@@ -23,9 +23,6 @@ import static lombok.AccessLevel.PRIVATE;
 import java.net.URL;
 import java.util.List;
 
-import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
-
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
@@ -33,6 +30,9 @@ import org.icgc.dcc.submission.dictionary.model.RestrictionType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 
 /**
  * Dictionary utilitis to verify common properties of fields.

@@ -23,12 +23,10 @@ import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUB
 
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-
 import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -38,8 +36,9 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
-
-import com.google.common.annotations.VisibleForTesting;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * Adds the corresponding donor ID for sample IDs.

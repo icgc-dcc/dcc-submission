@@ -6,7 +6,6 @@ import static org.icgc.dcc.common.core.model.ClinicalType.CLINICAL_CORE_TYPE;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.SCRIPT_ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
-import lombok.val;
 
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
@@ -18,6 +17,8 @@ import org.icgc.dcc.submission.core.report.Report;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
+
+import lombok.val;
 
 public class RefreshStateVisitorTest {
 

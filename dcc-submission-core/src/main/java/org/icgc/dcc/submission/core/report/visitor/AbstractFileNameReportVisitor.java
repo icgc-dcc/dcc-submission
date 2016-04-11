@@ -17,10 +17,10 @@
  */
 package org.icgc.dcc.submission.core.report.visitor;
 
+import org.icgc.dcc.submission.core.report.FileReport;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-
-import org.icgc.dcc.submission.core.report.FileReport;
 
 /**
  * Useful visitor base class.

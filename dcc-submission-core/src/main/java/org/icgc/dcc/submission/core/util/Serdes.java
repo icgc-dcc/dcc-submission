@@ -21,9 +21,6 @@ import static lombok.AccessLevel.PRIVATE;
 
 import java.io.IOException;
 
-import lombok.NoArgsConstructor;
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
@@ -35,6 +32,9 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+
+import lombok.NoArgsConstructor;
+import lombok.val;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class Serdes {

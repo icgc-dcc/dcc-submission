@@ -19,14 +19,14 @@ package org.icgc.dcc.submission.loader.record;
 
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-
 import org.icgc.dcc.submission.loader.meta.CodeListValuesDecoder;
 import org.icgc.dcc.submission.loader.util.DatabaseFields;
 
 import com.google.common.collect.ImmutableMap;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 @RequiredArgsConstructor
 public class PostgressRecordConverter {

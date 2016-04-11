@@ -22,8 +22,6 @@ import static org.icgc.dcc.submission.dictionary.model.QCodeList.codeList;
 
 import java.util.List;
 
-import lombok.NonNull;
-
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.QCodeList;
 import org.icgc.dcc.submission.dictionary.model.Term;
@@ -31,6 +29,8 @@ import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 
 import com.google.inject.Inject;
+
+import lombok.NonNull;
 
 public class CodeListRepository extends AbstractRepository<CodeList, QCodeList> {
 

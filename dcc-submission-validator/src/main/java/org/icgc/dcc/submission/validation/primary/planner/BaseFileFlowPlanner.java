@@ -22,10 +22,6 @@ import static java.lang.String.format;
 import java.util.List;
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
@@ -34,11 +30,14 @@ import org.icgc.dcc.submission.validation.primary.core.ReportingPlanElement;
 import org.icgc.dcc.submission.validation.primary.report.ReportCollector;
 import org.icgc.dcc.submission.validation.primary.visitor.PlanningVisitor;
 
+import com.google.common.collect.Maps;
+
 import cascading.flow.Flow;
 import cascading.flow.FlowDef;
 import cascading.pipe.Pipe;
-
-import com.google.common.collect.Maps;
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class BaseFileFlowPlanner implements FileFlowPlanner {

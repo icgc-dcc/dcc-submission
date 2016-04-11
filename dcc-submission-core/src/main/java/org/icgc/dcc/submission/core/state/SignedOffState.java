@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.core.state;
 
 import static lombok.AccessLevel.PACKAGE;
+
 import lombok.NoArgsConstructor;
 
 /**

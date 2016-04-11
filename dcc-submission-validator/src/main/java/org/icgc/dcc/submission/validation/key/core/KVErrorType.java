@@ -24,10 +24,11 @@ import static org.icgc.dcc.submission.validation.key.core.KVKeyType.FK1;
 import static org.icgc.dcc.submission.validation.key.core.KVKeyType.FK2;
 import static org.icgc.dcc.submission.validation.key.core.KVKeyType.OPTIONAL_FK;
 import static org.icgc.dcc.submission.validation.key.core.KVKeyType.PK;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.submission.core.report.ErrorType;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Type of key validator errors.

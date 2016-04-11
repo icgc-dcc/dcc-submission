@@ -21,9 +21,6 @@ import static com.google.common.base.Optional.fromNullable;
 
 import java.util.Date;
 
-import lombok.NonNull;
-import lombok.Value;
-
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.util.Serdes.FileTypeDeserializer;
@@ -37,6 +34,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Optional;
+
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * For serializing file data through the REST interface

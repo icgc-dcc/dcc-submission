@@ -31,11 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.common.core.util.Joiners;
 import org.icgc.dcc.submission.loader.db.DatabaseService;
 import org.icgc.dcc.submission.loader.meta.SubmissionMetadataService;
@@ -45,6 +40,11 @@ import org.icgc.dcc.submission.loader.util.DatabaseFields;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.google.common.collect.ImmutableList;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor

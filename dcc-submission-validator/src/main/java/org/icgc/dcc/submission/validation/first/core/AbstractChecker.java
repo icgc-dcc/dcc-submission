@@ -17,14 +17,14 @@
  */
 package org.icgc.dcc.submission.validation.first.core;
 
-import lombok.Getter;
-import lombok.NonNull;
-
 import org.icgc.dcc.submission.core.report.Error;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
+
+import lombok.Getter;
+import lombok.NonNull;
 
 public class AbstractChecker implements Checker {
 

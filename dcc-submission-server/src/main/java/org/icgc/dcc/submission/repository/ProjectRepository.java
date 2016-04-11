@@ -23,9 +23,6 @@ import static org.icgc.dcc.submission.core.model.QProject.project;
 
 import java.util.List;
 
-import lombok.NonNull;
-import lombok.val;
-
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.QProject;
 import org.mongodb.morphia.Datastore;
@@ -33,6 +30,9 @@ import org.mongodb.morphia.Key;
 import org.mongodb.morphia.Morphia;
 
 import com.google.inject.Inject;
+
+import lombok.NonNull;
+import lombok.val;
 
 public class ProjectRepository extends AbstractRepository<Project, QProject> {
 

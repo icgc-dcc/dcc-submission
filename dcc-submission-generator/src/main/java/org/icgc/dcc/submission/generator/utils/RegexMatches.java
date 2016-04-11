@@ -20,14 +20,15 @@ package org.icgc.dcc.submission.generator.utils;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringEscapeUtils.escapeJava;
 import static org.apache.commons.lang.StringUtils.isBlank;
-import lombok.NoArgsConstructor;
-import lombok.val;
 
 import org.icgc.dcc.submission.dictionary.model.RestrictionType;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+
+import lombok.NoArgsConstructor;
+import lombok.val;
 
 /**
  * See https://wiki.oicr.on.ca/display/DCCSOFT/0.6c+to+0.6d.

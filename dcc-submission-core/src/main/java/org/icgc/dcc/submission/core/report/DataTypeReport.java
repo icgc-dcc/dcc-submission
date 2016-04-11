@@ -23,13 +23,6 @@ import static org.icgc.dcc.submission.core.report.DataTypeState.getDefaultState;
 
 import java.util.Set;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.submission.core.util.Serdes.DataTypeDeserializer;
 import org.icgc.dcc.submission.core.util.Serdes.DataTypeSerializer;
@@ -39,6 +32,13 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.val;
 
 /**
  * Represents a validation report for a data type within submission within a release.

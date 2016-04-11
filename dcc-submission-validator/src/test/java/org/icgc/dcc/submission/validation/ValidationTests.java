@@ -25,10 +25,6 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 
-import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
-
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
@@ -36,6 +32,10 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class ValidationTests {

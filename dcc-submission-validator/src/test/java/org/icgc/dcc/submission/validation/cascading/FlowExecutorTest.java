@@ -4,10 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.conf.Configuration;
 import org.icgc.dcc.common.cascading.FlowExecutor;
 import org.icgc.dcc.common.cascading.FlowExecutorJob;
@@ -15,9 +11,12 @@ import org.icgc.dcc.submission.validation.MiniHadoop;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import cascading.flow.FlowException;
-
 import com.google.common.collect.ImmutableMap;
+
+import cascading.flow.FlowException;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class FlowExecutorTest {

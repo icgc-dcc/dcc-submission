@@ -31,13 +31,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Cleanup;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
@@ -50,6 +43,13 @@ import org.icgc.dcc.submission.validation.rgv.core.PrimaryFieldAccessor;
 import org.icgc.dcc.submission.validation.rgv.core.ReferenceGenomeFileType;
 import org.icgc.dcc.submission.validation.rgv.reference.ReferenceGenome;
 import org.icgc.dcc.submission.validation.rgv.report.TupleStateWriter;
+
+import lombok.Cleanup;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Support querying a reference genome data file in the form for chromosome-start-end to validate submission input.

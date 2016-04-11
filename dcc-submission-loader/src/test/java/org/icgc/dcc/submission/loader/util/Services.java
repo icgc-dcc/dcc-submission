@@ -18,9 +18,10 @@
 package org.icgc.dcc.submission.loader.util;
 
 import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.submission.loader.meta.SubmissionMetadataService;
+
+import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class Services {

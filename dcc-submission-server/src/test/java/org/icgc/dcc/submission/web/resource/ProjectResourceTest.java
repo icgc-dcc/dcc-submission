@@ -27,9 +27,6 @@ import java.util.Set;
 
 import javax.ws.rs.core.Response;
 
-import lombok.SneakyThrows;
-import lombok.val;
-
 import org.elasticsearch.common.collect.Lists;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.release.model.Release;
@@ -46,6 +43,9 @@ import com.google.common.collect.Sets;
 import com.google.inject.Module;
 import com.mongodb.CommandResult;
 import com.mongodb.MongoException.DuplicateKey;
+
+import lombok.SneakyThrows;
+import lombok.val;
 
 public class ProjectResourceTest extends ResourceTest {
 

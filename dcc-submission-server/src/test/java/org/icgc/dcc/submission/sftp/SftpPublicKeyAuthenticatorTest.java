@@ -24,9 +24,6 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 
-import lombok.SneakyThrows;
-import lombok.val;
-
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.subject.Subject;
@@ -51,6 +48,9 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.KeyPair;
 import com.typesafe.config.Config;
+
+import lombok.SneakyThrows;
+import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SftpPublicKeyAuthenticatorTest {

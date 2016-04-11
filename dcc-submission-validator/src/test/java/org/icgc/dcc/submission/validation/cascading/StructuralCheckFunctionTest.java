@@ -23,9 +23,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import junit.framework.Assert;
-import lombok.val;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -34,6 +31,8 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 import cascading.tuple.TupleListCollector;
+import junit.framework.Assert;
+import lombok.val;
 
 /**
  * Completely obsolete now... FIXME

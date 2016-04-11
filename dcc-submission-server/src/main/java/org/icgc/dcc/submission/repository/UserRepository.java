@@ -19,7 +19,6 @@
 package org.icgc.dcc.submission.repository;
 
 import static org.icgc.dcc.submission.core.model.QUser.user;
-import lombok.NonNull;
 
 import org.icgc.dcc.submission.core.model.QUser;
 import org.icgc.dcc.submission.core.model.User;
@@ -27,6 +26,8 @@ import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 
 import com.google.inject.Inject;
+
+import lombok.NonNull;
 
 public class UserRepository extends AbstractRepository<User, QUser> {
 

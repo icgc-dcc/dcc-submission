@@ -18,12 +18,13 @@
 package org.icgc.dcc.submission.core.state;
 
 import static lombok.AccessLevel.PACKAGE;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.val;
 
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.val;
 
 /**
  * A state that allows queuing of the associated submission.

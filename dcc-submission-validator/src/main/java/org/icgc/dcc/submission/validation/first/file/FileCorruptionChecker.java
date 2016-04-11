@@ -23,11 +23,11 @@ import static org.icgc.dcc.submission.core.report.ErrorType.UNSUPPORTED_COMPRESS
 
 import java.io.IOException;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.validation.first.core.FileChecker;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem.CodecType;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class FileCorruptionChecker extends DelegatingFileChecker {

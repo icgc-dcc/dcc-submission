@@ -21,12 +21,12 @@ import static lombok.AccessLevel.PRIVATE;
 
 import java.util.Map;
 
-import lombok.NoArgsConstructor;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.common.hadoop.parser.FileParser;
 import org.icgc.dcc.common.hadoop.parser.FileParsers;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
+
+import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = PRIVATE)
 public class SubmissionFileParsers {

@@ -17,10 +17,6 @@
  */
 package org.icgc.dcc.submission.http.jersey;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainerProvider;
 import org.glassfish.jersey.server.ApplicationHandler;
@@ -29,6 +25,10 @@ import org.icgc.dcc.submission.http.HttpHandlerProvider;
 
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * A {@link HttpHandlerProvider} that will mount {@code Jersey} on a particular path. The path is configured through the

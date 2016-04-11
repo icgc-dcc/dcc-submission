@@ -22,10 +22,6 @@ import static com.google.common.base.Optional.fromNullable;
 import java.util.List;
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.report.ErrorReport;
 import org.icgc.dcc.submission.core.report.FieldErrorReport;
@@ -36,6 +32,10 @@ import org.icgc.dcc.submission.validation.primary.report.ByteOffsetToLineNumber;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 /**
  * Needed for updating byte offsets to line numbers

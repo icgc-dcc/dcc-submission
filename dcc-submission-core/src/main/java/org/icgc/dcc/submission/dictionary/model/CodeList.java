@@ -25,8 +25,6 @@ import java.util.Map;
 
 import javax.validation.Valid;
 
-import lombok.ToString;
-
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.common.core.collect.SerializableMaps;
 import org.icgc.dcc.submission.core.model.BaseEntity;
@@ -35,6 +33,8 @@ import org.mongodb.morphia.annotations.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
+
+import lombok.ToString;
 
 /**
  * Describes a list of codes (see {@code Term})

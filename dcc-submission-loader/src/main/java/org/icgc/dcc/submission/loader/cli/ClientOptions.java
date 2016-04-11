@@ -19,12 +19,12 @@ package org.icgc.dcc.submission.loader.cli;
 
 import java.util.List;
 
-import lombok.ToString;
-
 import org.icgc.dcc.submission.loader.model.DatabaseType;
 
 import com.beust.jcommander.Parameter;
 import com.google.common.collect.Lists;
+
+import lombok.ToString;
 
 @ToString
 public class ClientOptions {

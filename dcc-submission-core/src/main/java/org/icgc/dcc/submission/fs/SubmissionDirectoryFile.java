@@ -19,10 +19,10 @@ package org.icgc.dcc.submission.fs;
 
 import java.util.regex.Pattern;
 
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
+
 import lombok.NonNull;
 import lombok.Value;
-
-import org.icgc.dcc.common.core.model.FileTypes.FileType;
 
 /**
  * There's already a "SubmissionFile" class (for the UI)...

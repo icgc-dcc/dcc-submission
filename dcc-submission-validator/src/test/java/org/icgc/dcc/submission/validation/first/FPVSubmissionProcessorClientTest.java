@@ -30,8 +30,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.List;
 
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
@@ -54,6 +52,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+
+import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FPVSubmissionProcessorClientTest {

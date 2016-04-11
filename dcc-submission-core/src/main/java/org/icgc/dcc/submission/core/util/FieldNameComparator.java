@@ -20,11 +20,11 @@ package org.icgc.dcc.submission.core.util;
 import java.util.Comparator;
 import java.util.List;
 
+import com.google.common.primitives.Ints;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-
-import com.google.common.primitives.Ints;
 
 @RequiredArgsConstructor
 public class FieldNameComparator implements Comparator<String> {

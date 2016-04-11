@@ -19,11 +19,11 @@ package org.icgc.dcc.submission.core.report.visitor;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
+import org.icgc.dcc.submission.core.report.ErrorReport;
+
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
-
-import org.icgc.dcc.submission.core.report.ErrorReport;
 
 @NotThreadSafe
 public class ErrorCountVisitor extends NoOpVisitor {

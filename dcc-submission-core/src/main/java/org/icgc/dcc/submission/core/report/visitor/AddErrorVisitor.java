@@ -21,8 +21,6 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Set;
 
-import lombok.NonNull;
-
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
@@ -32,6 +30,8 @@ import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.FileState;
 import org.icgc.dcc.submission.core.report.FileTypeReport;
 import org.icgc.dcc.submission.core.report.FileTypeState;
+
+import lombok.NonNull;
 
 public class AddErrorVisitor extends AbstractFileNameReportVisitor {
 

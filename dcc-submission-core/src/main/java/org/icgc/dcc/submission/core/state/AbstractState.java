@@ -1,8 +1,5 @@
 package org.icgc.dcc.submission.core.state;
 
-import lombok.NonNull;
-import lombok.val;
-
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.submission.core.model.Outcome;
 import org.icgc.dcc.submission.core.report.Report;
@@ -10,6 +7,9 @@ import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
+
+import lombok.NonNull;
+import lombok.val;
 
 /**
  * Root of the implementation hierarchy that defines a taxonomy of states.

@@ -38,9 +38,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.service.ProjectService;
 import org.icgc.dcc.submission.service.ReleaseService;
@@ -49,6 +46,9 @@ import org.icgc.dcc.submission.web.util.Responses;
 
 import com.google.inject.Inject;
 import com.mongodb.MongoException.DuplicateKey;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Path("projects")

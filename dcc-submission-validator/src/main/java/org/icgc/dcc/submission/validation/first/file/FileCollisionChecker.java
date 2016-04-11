@@ -23,11 +23,11 @@ import static org.icgc.dcc.submission.core.report.ErrorType.TOO_MANY_FILES_ERROR
 
 import java.util.List;
 
+import org.icgc.dcc.submission.validation.first.core.FileChecker;
+
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.submission.validation.first.core.FileChecker;
 
 @Slf4j
 public class FileCollisionChecker extends DelegatingFileChecker {

@@ -18,15 +18,16 @@
 package org.icgc.dcc.submission.service;
 
 import static com.google.common.base.Optional.fromNullable;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.model.User;
 import org.icgc.dcc.submission.repository.UserRepository;
 
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Inject))

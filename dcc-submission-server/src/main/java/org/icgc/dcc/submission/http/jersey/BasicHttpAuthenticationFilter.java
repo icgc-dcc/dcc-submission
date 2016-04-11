@@ -35,11 +35,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.shiro.codec.Base64;
 import org.glassfish.grizzly.http.Method;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
@@ -48,6 +43,11 @@ import org.icgc.dcc.submission.shiro.ShiroSecurityContext;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Basic HTTTP authentication filter that binds Shiro's {@link Subject} to the current thread for the life cycle of the

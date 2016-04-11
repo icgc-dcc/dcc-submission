@@ -23,14 +23,14 @@ import static lombok.AccessLevel.PRIVATE;
 import java.net.URL;
 import java.util.List;
 
-import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
-
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 
 /**
  * Mostly ported from ValidationTests in the dcc-submission-server module (TODO: address code duplication).

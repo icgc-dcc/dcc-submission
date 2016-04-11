@@ -26,12 +26,12 @@ import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 import java.io.IOException;
 import java.util.List;
 
-import lombok.NonNull;
-import lombok.SneakyThrows;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.sftp.SftpContext;
+
+import lombok.NonNull;
+import lombok.SneakyThrows;
 
 public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
 

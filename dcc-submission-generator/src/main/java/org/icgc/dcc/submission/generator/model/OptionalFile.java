@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.generator.model;
 
 import static lombok.AccessLevel.PRIVATE;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

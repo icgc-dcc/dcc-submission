@@ -4,7 +4,6 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.common.collect.Lists.newArrayList;
-import lombok.val;
 
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.QRelease;
@@ -20,6 +19,8 @@ import org.mongodb.morphia.Morphia;
 
 import com.mongodb.MongoClientURI;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
+
+import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ReleaseRepositoryTest extends AbstractRepositoryTest {

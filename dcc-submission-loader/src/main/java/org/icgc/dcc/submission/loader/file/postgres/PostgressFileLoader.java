@@ -21,15 +21,15 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.submission.loader.file.AbstractFileLoader;
 import org.icgc.dcc.submission.loader.record.PostgressRecordConverter;
 import org.icgc.dcc.submission.loader.record.RecordReader;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
 import com.google.common.collect.Lists;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PostgressFileLoader extends AbstractFileLoader {

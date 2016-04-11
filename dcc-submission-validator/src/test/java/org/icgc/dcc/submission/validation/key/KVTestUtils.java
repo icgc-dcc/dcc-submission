@@ -22,11 +22,11 @@ import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import java.io.File;
 import java.io.IOException;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * TODO
