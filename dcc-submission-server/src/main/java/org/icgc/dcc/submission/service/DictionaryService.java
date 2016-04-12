@@ -45,9 +45,12 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject) )
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class DictionaryService {
 
+  /**
+   * Dependencies.
+   */
   @NonNull
   private final ReleaseService releaseService;
   @NonNull
@@ -112,7 +115,7 @@ public class DictionaryService {
    * <p>
    * Contains critical blocks for admin concurrency (DCC-?).
    */
-  public void updateDictionary(@NonNull Dictionary dictionary) {
+  public void updateDictionary(@NonNull Dictionary dictionary, boolean reset) {
     // TODO: Add check dictionary is OPENED here (instead of within resource)
     val version = dictionary.getVersion();
     val count = dictionaryRepository.countDictionariesByVersion(version);
@@ -120,13 +123,34 @@ public class DictionaryService {
       throw new DictionaryServiceException("Cannot update a non-existent dictionary: " + dictionary.getVersion());
     }
 
+    log.info("Updating dictionary version {}...", dictionary.getVersion());
     dictionaryRepository.updateDictionary(dictionary);
 
     // Reset submissions if applicable
-    val release = releaseService.getNextRelease();
-    if (version.equals(release.getDictionaryVersion())) {
-      releaseService.resetSubmissions();
+    if (!isReleaseDictionary(version)) {
+      log.info(
+          "Current release not associated with updated dictionary version {}. No need to reset release submissions.",
+          dictionary.getVersion());
+      return;
     }
+
+    if (!reset) {
+      log.warn(
+          "Skipping reset of release submissions has been requested. Previously signed-off or valid submissions may now be invalid!");
+      return;
+    }
+
+    log.info("Resetting release submissions...");
+    releaseService.resetSubmissions();
+  }
+
+  /**
+   * Updates the supplied {@code dictionary} without resetting a release.
+   * 
+   * @param dictionary
+   */
+  public void updateDictionary(@NonNull Dictionary dictionary) {
+    updateDictionary(dictionary, false);
   }
 
   public Dictionary cloneDictionary(@NonNull String oldVersion, @NonNull String newVersion) {
@@ -248,6 +272,13 @@ public class DictionaryService {
     } else {
       log.info("No need to reset submissions due to active dictionary code list term addition...");
     }
+  }
+
+  private boolean isReleaseDictionary(final java.lang.String version) {
+    val release = releaseService.getNextRelease();
+    val versionMatch = version.equals(release.getDictionaryVersion());
+
+    return versionMatch;
   }
 
 }

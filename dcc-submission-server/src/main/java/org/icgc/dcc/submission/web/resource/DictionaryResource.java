@@ -35,11 +35,13 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.validation.Valid;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
@@ -174,6 +176,8 @@ public class DictionaryResource {
 
       @PathParam("version") String version,
 
+      @QueryParam("reset") @DefaultValue("true") boolean reset, // Reset by default
+
       @Valid Dictionary newDictionary,
 
       @Context Request request,
@@ -229,7 +233,7 @@ public class DictionaryResource {
           .build();
     }
 
-    dictionaryService.updateDictionary(newDictionary);
+    dictionaryService.updateDictionary(newDictionary, reset);
 
     if (violations.hasWarnings()) {
       val warnings = new StringBuilder("Created, but request entity had the following warnings:\n");
