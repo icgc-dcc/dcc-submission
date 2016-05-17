@@ -65,11 +65,12 @@ public class ErrorReportingPlanningVisitor extends ReportingPlanningVisitor {
 
   static class ErrorsPlanElement implements ReportingPlanElement {
 
+    /**
+     * Configuration.
+     */
     @Getter
     private final String fileSchemaName;
-
     private final String fileName;
-
     private final FlowType flowType;
 
     public ErrorsPlanElement(@NonNull String fileSchemaName, @NonNull String fileName, @NonNull FlowType flowType) {
@@ -105,6 +106,9 @@ public class ErrorReportingPlanningVisitor extends ReportingPlanningVisitor {
     @RequiredArgsConstructor
     class ErrorReportCollector implements ReportCollector {
 
+      /**
+       * Configuration.
+       */
       private final String fileName;
 
       @Override
@@ -136,7 +140,7 @@ public class ErrorReportingPlanningVisitor extends ReportingPlanningVisitor {
         } catch (FileNotFoundException fnfe) {
           // There were no errors
         } catch (Exception e) {
-          throw new PlanExecutionException(e);
+          throw new PlanExecutionException("Error collecting validation errors for file " + fileName, e);
         }
       }
 

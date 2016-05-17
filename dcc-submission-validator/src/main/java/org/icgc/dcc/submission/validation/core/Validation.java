@@ -140,7 +140,7 @@ public class Validation {
           new Object[] { name, getId(), watch });
       log.error(banner());
 
-      log.error("Exception running validation for '{}': {}", getId(), t);
+      log.error("Exception running validation for: " + getId(), t);
 
       throw t;
     } finally {

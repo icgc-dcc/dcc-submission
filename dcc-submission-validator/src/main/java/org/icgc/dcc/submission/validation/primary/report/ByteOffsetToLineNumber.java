@@ -85,47 +85,58 @@ public class ByteOffsetToLineNumber {
 
     for (Long byteOffset : sortedOffsets) {
       long currentOffset = byteOffset.longValue();
-      if (currentOffset == -1L) {
-        // File level error maybe? Dunno...
-        mapping.put(-1L, -1L);
-      } else {
-        checkState(currentOffset >= 0, "Current offset is negative: %s", currentOffset);
+      try {
+        if (currentOffset == -1L) {
+          // File level error maybe? Dunno...
+          mapping.put(-1L, -1L);
+        } else {
+          checkState(currentOffset >= 0, "Current offset is negative: %s", currentOffset);
 
-        // No two same offsets
-        checkState(currentOffset > previousOffset,
-            "Current offset %s is greater than previous offset %s", currentOffset, previousOffset);
+          // No two same offsets
+          checkState(currentOffset > previousOffset,
+              "Current offset %s is greater than previous offset %s", currentOffset, previousOffset);
 
-        lineOffset += countLinesInInterval(inputStream, previousOffset, currentOffset);
-        mapping.put(byteOffset, lineOffset);
+          lineOffset += countLinesInInterval(inputStream, previousOffset, currentOffset, lineOffset);
+          mapping.put(byteOffset, lineOffset);
 
-        previousOffset = byteOffset;
+          previousOffset = byteOffset;
+        }
+      } catch (Exception e) {
+        throw new IllegalStateException(
+            "Error processing with byteOffset = " + byteOffset + ", lineOffset = " + lineOffset, e);
       }
     }
 
     return mapping;
   }
 
-  private static long countLinesInInterval(DataInputStream is, long previousOffset, long currentOffset) {
+  private static long countLinesInInterval(DataInputStream is, long previousOffset, long currentOffset,
+      long lineOffset) {
     long difference = currentOffset - previousOffset;
     long quotient = (long) Math.floor(difference / (double) BUFFER_SIZE_BYTES);
     int remainder = (int) (difference % BUFFER_SIZE_BYTES);
 
     long lines = 0;
-    for (int i = 0; i < quotient; i++) {
-      lines += countLinesInChunk(is, BUFFER_SIZE_BYTES, false); // can be zero
-    }
-    if (remainder > 0) {
-      lines += countLinesInChunk(is, remainder, true); // at least one
-    }
+    try {
+      for (int i = 0; i < quotient; i++) {
+        lines += countLinesInChunk(is, BUFFER_SIZE_BYTES, false); // can be zero
+      }
+      if (remainder > 0) {
+        lines += countLinesInChunk(is, remainder, true); // at least one
+      }
 
-    return lines;
+      return lines;
+    } catch (Exception e) {
+      throw new IllegalStateException("Error processing with lines == " + lines, e);
+    }
   }
 
   private static long countLinesInChunk(DataInputStream is, int size, boolean lastChunk) {
     val buffer = readBuffer(is, size);
+    byte b = buffer[size - 1];
 
-    checkState(!lastChunk || buffer[size - 1] == '\n', "expected '\\n' instead of %s for last chunk: %s",
-        buffer[size - 1], new String(buffer));
+    checkState(!lastChunk || b == '\n', "expected '\\n' instead of byte %s (char %s) for chunk: %s",
+        b, Character.toString((char) b), new String(buffer));
 
     long lines = 0;
     for (int i = 0; i < size; i++) {
