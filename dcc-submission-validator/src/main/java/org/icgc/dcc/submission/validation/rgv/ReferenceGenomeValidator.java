@@ -127,13 +127,17 @@ public class ReferenceGenomeValidator implements Validator {
       PrimaryFieldAccessor fieldAccessor) {
     val fileParser = newMapFileParser(context.getFileSystem(), context.getFileSchema(fileType));
     for (val file : files) {
-      @Cleanup
-      val writer = createTupleStateWriter(context, file);
+      try {
+        @Cleanup
+        val writer = createTupleStateWriter(context, file);
 
-      // Get to work
-      log.info("Performing reference genome validation on file '{}' for '{}'", file, context.getProjectKey());
-      validateFile(context, file, fileParser, fieldAccessor, writer);
-      log.info("Finished performing reference genome validation for '{}'", context.getProjectKey());
+        // Get to work
+        log.info("Performing reference genome validation on file '{}' for '{}'", file, context.getProjectKey());
+        validateFile(context, file, fileParser, fieldAccessor, writer);
+        log.info("Finished performing reference genome validation for '{}'", context.getProjectKey());
+      } catch (Exception e) {
+        throw new RuntimeException("Error validating genonme: file=" + file + ", fileType=" + fileType, e);
+      }
     }
   }
 

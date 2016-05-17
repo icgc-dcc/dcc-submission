@@ -46,7 +46,7 @@ import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
 import org.icgc.dcc.submission.validation.primary.planner.Planner;
 import org.icgc.dcc.submission.validation.primary.report.ByteOffsetToLineNumber;
 import org.icgc.dcc.submission.validation.rgv.ReferenceGenomeValidator;
-import org.icgc.dcc.submission.validation.rgv.reference.PicardReferenceGenome;
+import org.icgc.dcc.submission.validation.rgv.reference.HtsjdkReferenceGenome;
 import org.icgc.dcc.submission.validation.sample.SampleTypeValidator;
 
 import com.google.common.base.Optional;
@@ -235,7 +235,7 @@ public class ValidationModule extends AbstractDccModule {
   private static Validator referenceGenomeValidator(Config config) {
     val fastaFilePath = get(config, FASTA_FILE_PATH_CONFIG_PARAM);
 
-    return new ReferenceGenomeValidator(new PicardReferenceGenome(fastaFilePath));
+    return new ReferenceGenomeValidator(new HtsjdkReferenceGenome(fastaFilePath));
   }
 
   private static Validator sampleTypeValidator() {

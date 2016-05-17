@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.rgv.cli;
 
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.rgv.ReferenceGenomeValidator;
-import org.icgc.dcc.submission.validation.rgv.reference.PicardReferenceGenome;
+import org.icgc.dcc.submission.validation.rgv.reference.HtsjdkReferenceGenome;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -68,7 +68,7 @@ public class Main {
   }
 
   private static ReferenceGenomeValidator getValidator(String fastaFile) {
-    return new ReferenceGenomeValidator(new PicardReferenceGenome(fastaFile));
+    return new ReferenceGenomeValidator(new HtsjdkReferenceGenome(fastaFile));
   }
 
 }

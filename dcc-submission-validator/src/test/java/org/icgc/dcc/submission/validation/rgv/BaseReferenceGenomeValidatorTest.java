@@ -37,7 +37,7 @@ import org.icgc.dcc.common.core.model.DataType.DataTypes;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.rgv.reference.PicardReferenceGenome;
+import org.icgc.dcc.submission.validation.rgv.reference.HtsjdkReferenceGenome;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -72,7 +72,7 @@ public class BaseReferenceGenomeValidatorTest {
 
   @Before
   public void setup() {
-    validator = new ReferenceGenomeValidator(new PicardReferenceGenome("/tmp/GRCh37.fasta"));
+    validator = new ReferenceGenomeValidator(new HtsjdkReferenceGenome("/tmp/GRCh37.fasta"));
   }
 
   @SneakyThrows

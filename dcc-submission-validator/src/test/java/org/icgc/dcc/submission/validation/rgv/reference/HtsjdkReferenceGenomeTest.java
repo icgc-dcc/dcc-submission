@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-import net.sf.picard.PicardException;
+import htsjdk.samtools.SAMException;
 
-public class PicardReferenceGenomeTest {
+public class HtsjdkReferenceGenomeTest {
 
   /**
    * @see http://genome.ucsc.edu/cgi-bin/hgGateway
@@ -18,7 +18,7 @@ public class PicardReferenceGenomeTest {
   private final String[] basesCorrect = new String[] { "8", "50000", "50005", "CTAAGA" };
   private final String[] basesWrong = new String[] { "8", "50000", "50005", "AGAATC" };
 
-  PicardReferenceGenome genome = new PicardReferenceGenome("/tmp/GRCh37.fasta");
+  HtsjdkReferenceGenome genome = new HtsjdkReferenceGenome("/tmp/GRCh37.fasta");
 
   @Test
   public void testSingleSequenceCorrect() {
@@ -44,7 +44,7 @@ public class PicardReferenceGenomeTest {
     assertThat(ref).isNotEqualTo(basesWrong[3]);
   }
 
-  @Test(expected = PicardException.class)
+  @Test(expected = SAMException.class)
   public void testSequenceOutOfRange() {
     String chromosome = "9";
     String start = "1135797205";

@@ -21,14 +21,14 @@ import static com.google.common.io.Files.getNameWithoutExtension;
 
 import java.io.File;
 
+import htsjdk.samtools.reference.IndexedFastaSequenceFile;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.picard.reference.IndexedFastaSequenceFile;
 
 @Slf4j
-public class PicardReferenceGenome implements ReferenceGenome {
+public class HtsjdkReferenceGenome implements ReferenceGenome {
 
   /**
    * The reference assembly version that corresponds to the configured {@link #sequenceFile}.
@@ -49,7 +49,7 @@ public class PicardReferenceGenome implements ReferenceGenome {
    * {@code .fai} file with the same prefix.
    */
   @SneakyThrows
-  public PicardReferenceGenome(@NonNull String fastaFilePath) {
+  public HtsjdkReferenceGenome(@NonNull String fastaFilePath) {
     val fastaFile = new File(fastaFilePath).getAbsoluteFile();
     this.assemblyVersion = getAssemblyVersion(fastaFile);
     this.sequenceFile = new IndexedFastaSequenceFile(fastaFile);
@@ -75,10 +75,14 @@ public class PicardReferenceGenome implements ReferenceGenome {
   }
 
   private String get(String chromosome, long start, long end) {
-    val sequence = sequenceFile.getSubsequenceAt(chromosome, start, end);
-    val text = new String(sequence.getBases());
-
-    return text;
+    try {
+      val sequence = sequenceFile.getSubsequenceAt(chromosome, start, end);
+      val text = new String(sequence.getBases());
+      return text;
+    } catch (Exception e) {
+      throw new RuntimeException(
+          "Error trying to get subsequence at: chr=" + chromosome + " start=" + start + ", end=" + end, e);
+    }
   }
 
   /**
