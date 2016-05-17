@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-import htsjdk.samtools.SAMException;
-
 public class HtsjdkReferenceGenomeTest {
 
   /**
@@ -44,7 +42,7 @@ public class HtsjdkReferenceGenomeTest {
     assertThat(ref).isNotEqualTo(basesWrong[3]);
   }
 
-  @Test(expected = SAMException.class)
+  @Test(expected = RuntimeException.class)
   public void testSequenceOutOfRange() {
     String chromosome = "9";
     String start = "1135797205";

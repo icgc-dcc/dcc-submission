@@ -68,6 +68,11 @@ public class ByteOffsetToLineNumberTest {
   @SneakyThrows
   public void testConvert() {
     for (val file : new File(TEST_DIR).listFiles()) {
+      if (file.getName().endsWith("bz2")) {
+        // Skip this file as it is for the other test only.
+        continue;
+      }
+
       log.info("Processing '{}'", file.getName());
       val expected = getMapping(file);
       val offsets = expected.keySet();
