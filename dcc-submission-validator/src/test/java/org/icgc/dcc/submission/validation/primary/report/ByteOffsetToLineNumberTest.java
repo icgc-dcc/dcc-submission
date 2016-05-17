@@ -133,6 +133,7 @@ public class ByteOffsetToLineNumberTest {
   /**
    * Transcribed from https://jira.oicr.on.ca/secure/attachment/34954/line-number-error.tar.gz
    */
+  @SuppressWarnings("unused")
   private static Collection<Long> createPart1Offsets() {
     val offsets = Lists.<Long> newArrayList();
 
@@ -427,7 +428,6 @@ public class ByteOffsetToLineNumberTest {
     return offsets;
   }
 
-  @SuppressWarnings("unused")
   private static Collection<Long> createPart0And1Offsets() {
     val offsets = Lists.<Long> newArrayList();
     offsets.add(25505L);
