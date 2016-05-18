@@ -70,7 +70,7 @@ public class PCAWGSampleSheets {
 
     val sheet = Lists.<PCAWGSample> newArrayList();
     parser.parse((values) -> {
-      val sample = mapper.map(values);
+      PCAWGSample sample = mapper.map(values);
       log.info("{}", sample);
       sheet.add(sample);
     });
