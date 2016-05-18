@@ -15,30 +15,51 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.pcawg.core;
+package org.icgc.dcc.submission.validation.core;
+
+import static org.icgc.dcc.submission.validation.util.ValidationFileParsers.newMapFileParser;
+
+import java.util.List;
 
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
+import org.icgc.dcc.submission.core.model.Record;
 
-import lombok.Data;
+import com.google.common.collect.Lists;
 
-@Data
-public class ClinicalRule {
+import lombok.SneakyThrows;
+import lombok.val;
 
-  // Always "mandatory"
-  String rule;
+/**
+ * Parser implementation that creates an in-memory model of clinical data.
+ */
+public class ClinicalParser {
 
-  // Dictionary pointer
-  String fileType;
-  String fieldName;
+  public static Clinical parse(ValidationContext context) {
+    return new Clinical(
+        new ClinicalCore(
+            parseFileType(FileType.DONOR_TYPE, context),
+            parseFileType(FileType.SPECIMEN_TYPE, context),
+            parseFileType(FileType.SAMPLE_TYPE, context)));
+  }
 
-  // Applies to TCGA?
-  boolean tcga;
+  @SneakyThrows
+  private static List<Record> parseFileType(FileType fileType, ValidationContext context) {
+    val fileParser = newMapFileParser(context, fileType);
 
-  // Only applies to specimen records of normal specimen type?
-  boolean applyToNormal = true;
+    val records = Lists.<Record> newArrayList();
+    for (val file : context.getFiles(fileType)) {
+      try {
+        fileParser.parse(file, (lineNumber, fields) -> {
+          Record record = new Record(fields, fileType, file, lineNumber);
 
-  public FileType getFileType() {
-    return FileType.from(fileType);
+          records.add(record);
+        });
+      } catch (Exception e) {
+        throw new IllegalStateException("Failed to parse file " + file, e);
+      }
+    }
+
+    return records;
   }
 
 }

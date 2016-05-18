@@ -15,20 +15,19 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.pcawg.util;
+package org.icgc.dcc.submission.validation.core;
 
-import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getDonorDonorId;
-import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getSampleSampleId;
-import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getSampleSpecimenId;
-import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getSpecimenDonorId;
-import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getSpecimenSpecimenId;
+import static org.icgc.dcc.submission.validation.core.ClinicalFields.getDonorDonorId;
+import static org.icgc.dcc.submission.validation.core.ClinicalFields.getSampleSampleId;
+import static org.icgc.dcc.submission.validation.core.ClinicalFields.getSampleSpecimenId;
+import static org.icgc.dcc.submission.validation.core.ClinicalFields.getSpecimenDonorId;
+import static org.icgc.dcc.submission.validation.core.ClinicalFields.getSpecimenSpecimenId;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.icgc.dcc.submission.core.model.Record;
-import org.icgc.dcc.submission.validation.pcawg.core.Clinical;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

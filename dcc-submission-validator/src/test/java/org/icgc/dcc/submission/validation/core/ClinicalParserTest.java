@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.pcawg.parser;
+package org.icgc.dcc.submission.validation.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.validation.ValidationTests.getTestProjectPath;
@@ -30,7 +30,6 @@ import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.hadoop.fs.FileSystems;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.ValidationTests;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;

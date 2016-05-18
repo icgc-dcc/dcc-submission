@@ -17,18 +17,18 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.core;
 
+import static java.util.stream.Collectors.toList;
 import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.common.io.Resources;
 
 import lombok.NonNull;
@@ -44,40 +44,58 @@ public class PCAWGSampleSheet {
    */
   public static final URL DEFAULT_PCAWG_SAMPLE_SHEET_URL = Resources.getResource("pcawg-sample-sheet.json");
 
+  /**
+   * Configuration.
+   */
   @NonNull
   private final URL url;
 
+  /**
+   * State.
+   */
+  private List<PCAWGSample> samples;
+
   public PCAWGSampleSheet() {
     this(DEFAULT_PCAWG_SAMPLE_SHEET_URL);
+    this.samples = readSamples();
   }
 
   public Set<String> getProjects() {
-    val projects = Sets.<String> newTreeSet();
-    for (val row : readSheet()) {
-      val project = row.get("projectKey");
+    return samples.stream().map(PCAWGSample::getProjectKey).collect(toImmutableSet());
+  }
 
-      projects.add(project);
-    }
+  public List<PCAWGSample> getProjectSamples(@NonNull String projectKey) {
+    return samples.stream().filter(sample -> sample.getProjectKey().equals(projectKey)).collect(toList());
+  }
 
-    return ImmutableSet.copyOf(projects);
+  public Multimap<String, String> getProjectDonorIds() {
+    return getProjectFields(PCAWGSample::getDonorId);
+  }
+
+  public Multimap<String, String> getProjectSpecimenIds() {
+    return getProjectFields(PCAWGSample::getSpecimenId);
   }
 
   public Multimap<String, String> getProjectSampleIds() {
+    return getProjectFields(PCAWGSample::getSampleId);
+  }
+
+  private Multimap<String, String> getProjectFields(Function<PCAWGSample, String> accessor) {
     // Keep unique values only
     val builder = ImmutableSetMultimap.<String, String> builder();
 
-    for (val row : readSheet()) {
-      val projectKey = row.get("projectKey");
-      val sampleId = row.get("sampleId");
-      builder.put(projectKey, sampleId);
+    for (val sample : samples) {
+      val projectKey = sample.getProjectKey();
+      val fieldValue = accessor.apply(sample);
+      builder.put(projectKey, fieldValue);
     }
 
     return builder.build();
   }
 
   @SneakyThrows
-  private List<Map<String, String>> readSheet() {
-    return DEFAULT.readValue(url, new TypeReference<List<Map<String, String>>>() {});
+  private List<PCAWGSample> readSamples() {
+    return DEFAULT.readValue(url, new TypeReference<List<PCAWGSample>>() {});
   }
 
 }

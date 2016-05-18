@@ -18,21 +18,21 @@
 package org.icgc.dcc.submission.validation.pcawg;
 
 import static com.google.common.collect.Sets.difference;
-import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getDonorId;
-import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getSampleSampleId;
+import static com.google.common.collect.Sets.newHashSet;
+import static org.icgc.dcc.submission.validation.core.ClinicalFields.getSampleSampleId;
 
 import java.util.Set;
 
 import org.icgc.dcc.common.core.model.Programs;
+import org.icgc.dcc.submission.validation.core.Clinical;
+import org.icgc.dcc.submission.validation.core.ClinicalIndex;
+import org.icgc.dcc.submission.validation.core.ClinicalParser;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
-import org.icgc.dcc.submission.validation.pcawg.core.ClinicalRuleEngine;
+import org.icgc.dcc.submission.validation.pcawg.core.PCAWGClinicalValidator;
 import org.icgc.dcc.submission.validation.pcawg.core.PCAWGDictionary;
 import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSampleSheet;
-import org.icgc.dcc.submission.validation.pcawg.parser.ClinicalParser;
-import org.icgc.dcc.submission.validation.pcawg.util.ClinicalIndex;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 import lombok.NonNull;
@@ -41,7 +41,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Validator responsible for ensuring PCAWGFields validation rules are enforced.
+ * Validator responsible for ensuring PCAWG clinical validation rules are enforced.
  * <p>
  * This class assumes that prior {@code Validator}s have ensured that clinical data exists and that all files are
  * welformed.
@@ -51,11 +51,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class PCAWGValidator implements Validator {
-
-  // TODO:
-  // 1) Decompose PCAWGValidator into 2 sub validators for Core and Clinical
-  // 2) Move remaining control logic into PCAWGValidator
-  // 3) Consider externalizing all rules by making generic RuleValidator
 
   /**
    * Dependencies.
@@ -85,60 +80,49 @@ public class PCAWGValidator implements Validator {
   }
 
   private void validateClinical(ValidationContext context) {
-    // Parse and index raw data
+    // Parse raw clinical data
     val clinical = ClinicalParser.parse(context);
-    val index = new ClinicalIndex(clinical);
 
+    // Filter clinical entities returning the excluded sample ids
+    val excludedSampleIds = filterClinical(context, clinical);
+
+    // Filter to remove excluded donor sample ids
+    val filteredReferenceSampleIds = filterSampleIds(excludedSampleIds, context.getProjectKey());
+
+    val clinicalValidator = new PCAWGClinicalValidator(clinical, filteredReferenceSampleIds, context);
+    clinicalValidator.execute();
+  }
+
+  private Set<String> filterClinical(ValidationContext context, Clinical clinical) {
     // Filter excluded donors
     val excludedDonorIds = pcawgDictionary.getExcludedDonorIds(context.getProjectKey());
     val excludedSampleIds = Sets.<String> newHashSet(pcawgDictionary.getExcludedSampleIds(context.getProjectKey()));
-
+  
+    val index = new ClinicalIndex(clinical);
     for (val excludedDonorId : excludedDonorIds) {
       log.info("Excluding donor '{}'...", excludedDonorId);
-
+  
       // Identify donor records
       val donor = index.getDonor(excludedDonorId);
       val donorSpecimens = index.getDonorSpecimen(excludedDonorId);
       val donorSamples = index.getDonorSamples(excludedDonorId);
-
+  
       for (val donorSample : donorSamples) {
         excludedSampleIds.add(getSampleSampleId(donorSample));
       }
-
+  
       // Remove core records
       clinical.getCore().getDonors().remove(donor);
       clinical.getCore().getSpecimens().removeAll(donorSpecimens);
       clinical.getCore().getSamples().removeAll(donorSamples);
-
-      // Remove optional records
-      for (val records : clinical.getOptional()) {
-        records.removeIf(record -> excludedDonorId.equals(getDonorId(record)));
-      }
     }
-
-    // Re-index to remove excluded donor information
-    val filteredIndex = new ClinicalIndex(clinical);
-
-    // Filter to remove excluded donor sample ids
-    val referenceSampleIds = getReferenceSampleIds(context);
-    val filteredReferenceSampleIds = difference(referenceSampleIds, excludedSampleIds);
-
-    val rules = pcawgDictionary.getClinicalRules();
-    val ruleEngine = new ClinicalRuleEngine(rules, clinical, filteredIndex, filteredReferenceSampleIds, context);
-
-    ruleEngine.execute();
+  
+    return excludedSampleIds;
   }
 
-  private Set<String> getReferenceSampleIds(ValidationContext context) {
-    val projectKey = context.getProjectKey();
-    val projectSamples = pcawgSampleSheet.getProjectSampleIds();
-
-    // Get 2 sources of samples
-    val externalSampleIds = projectSamples.get(projectKey);
-    val whitelistSampleIds = pcawgDictionary.getWhitelistSampleIds(projectKey);
-
-    // Union
-    return ImmutableSet.<String> builder().addAll(externalSampleIds).addAll(whitelistSampleIds).build();
+  private Set<String> filterSampleIds(Set<String> excludedSampleIds, String projectKey) {
+    val referenceSampleIds = newHashSet(pcawgSampleSheet.getProjectSampleIds().get(projectKey));
+    return difference(referenceSampleIds, excludedSampleIds);
   }
 
   private boolean isValidatable(ValidationContext context) {

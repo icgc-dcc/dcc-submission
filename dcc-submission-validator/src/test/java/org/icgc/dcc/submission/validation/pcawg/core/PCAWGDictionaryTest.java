@@ -11,12 +11,6 @@ public class PCAWGDictionaryTest {
   private PCAWGDictionary dictionary = new PCAWGDictionary();
 
   @Test
-  public void testGetWhitelistSampleIds() {
-    val whitelistSamples = dictionary.getWhitelistSampleIds("TEST1-DCC");
-    log.info("whitelistSamples: {}", whitelistSamples);
-  }
-
-  @Test
   public void testGetExcludedProjectKeys() {
     val excludedProjectKeys = dictionary.getExcludedProjectKeys();
     log.info("excludedProjectKeys: {}", excludedProjectKeys);

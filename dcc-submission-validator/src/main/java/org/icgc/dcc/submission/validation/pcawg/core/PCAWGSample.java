@@ -17,47 +17,15 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.core;
 
-import java.util.Iterator;
-import java.util.List;
+import lombok.Data;
 
-import org.icgc.dcc.common.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.core.model.Record;
+@Data
+public class PCAWGSample {
 
-import com.google.common.collect.Iterators;
-
-import lombok.Value;
-import lombok.val;
-
-@Value
-public class Clinical implements Iterable<List<Record>> {
-
-  /**
-   * Data - Core.
-   */
-  ClinicalCore core;
-
-  /**
-   * Data - "Optional".
-   */
-  ClinicalOptional optional;
-
-  public List<Record> get(FileType fileType) {
-    val coreType = core.get(fileType);
-    if (coreType.isPresent()) {
-      return coreType.get();
-    }
-
-    val optionalType = optional.get(fileType);
-    if (optionalType.isPresent()) {
-      return optionalType.get();
-    }
-
-    throw new IllegalArgumentException("Bad file type: " + fileType);
-  }
-
-  @Override
-  public Iterator<List<Record>> iterator() {
-    return Iterators.concat(core.iterator(), optional.iterator());
-  }
+  String projectKey;
+  String donorId;
+  String specimenId;
+  String specimenType;
+  String sampleId;
 
 }

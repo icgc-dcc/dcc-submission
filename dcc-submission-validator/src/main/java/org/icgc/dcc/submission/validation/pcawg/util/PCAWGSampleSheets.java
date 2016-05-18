@@ -113,6 +113,7 @@ public class PCAWGSampleSheets {
       String donorId = values.get(1);
       String specimenId = values.get(5);
       String sampleId = values.get(7);
+      String specimenType = values.get(9);
 
       if (isTCGA(projectKey)) {
         donorId = getBarcode(donorId);
@@ -120,13 +121,12 @@ public class PCAWGSampleSheets {
         sampleId = getBarcode(sampleId);
       }
 
-      Map<String, String> row = ImmutableMap.<String, String> of(
+      return ImmutableMap.<String, String> of(
           "projectKey", projectKey,
           "donorId", donorId,
           "specimenId", specimenId,
+          "specimenType", specimenType,
           "sampleId", sampleId);
-
-      return row;
     }
 
     private String getBarcode(String uuid) {

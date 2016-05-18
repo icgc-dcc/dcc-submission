@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.validation.pcawg.util;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static org.icgc.dcc.submission.validation.pcawg.util.ClinicalFields.getSampleStudy;
+import static org.icgc.dcc.submission.validation.core.ClinicalFields.getSampleStudy;
 
 import java.util.Map;
 

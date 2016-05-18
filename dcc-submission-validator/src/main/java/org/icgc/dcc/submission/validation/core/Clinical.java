@@ -15,59 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.pcawg.core;
-
-import static com.google.common.base.Preconditions.checkArgument;
+package org.icgc.dcc.submission.validation.core;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.Record;
 
-import com.google.common.collect.ImmutableList;
-
-import lombok.NonNull;
 import lombok.Value;
 import lombok.val;
 
 @Value
-public class ClinicalCore implements Iterable<List<Record>> {
+public class Clinical implements Iterable<List<Record>> {
 
   /**
    * Data - Core.
    */
-  @NonNull
-  List<Record> donors;
-  @NonNull
-  List<Record> specimens;
-  @NonNull
-  List<Record> samples;
+  ClinicalCore core;
 
-  public Optional<List<Record>> get(FileType fileType) {
-    checkArgument(fileType.getDataType().isClinicalType());
-    val clinicalType = fileType.getDataType().asClinicalType();
-    checkArgument(clinicalType.isCoreClinicalType());
-
-    if (fileType == FileType.DONOR_TYPE) {
-      return Optional.of(donors);
-    } else if (fileType == FileType.SPECIMEN_TYPE) {
-      return Optional.of(specimens);
-    } else if (fileType == FileType.SAMPLE_TYPE) {
-      return Optional.of(samples);
-    } else {
-      return Optional.empty();
+  public List<Record> get(FileType fileType) {
+    val coreType = core.get(fileType);
+    if (coreType.isPresent()) {
+      return coreType.get();
     }
+
+    throw new IllegalArgumentException("Bad file type: " + fileType);
   }
 
   @Override
   public Iterator<List<Record>> iterator() {
-    return ImmutableList.of(donors, specimens, samples).iterator();
-  }
-
-  public static Iterable<FileType> getFileTypes() {
-    return ImmutableList.of(FileType.DONOR_TYPE, FileType.SPECIMEN_TYPE, FileType.SAMPLE_TYPE);
+    return core.iterator();
   }
 
 }

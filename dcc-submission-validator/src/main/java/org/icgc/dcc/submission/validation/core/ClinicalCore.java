@@ -15,62 +15,59 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.pcawg.parser;
+package org.icgc.dcc.submission.validation.core;
 
-import static org.icgc.dcc.submission.validation.util.ValidationFileParsers.newMapFileParser;
+import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.Record;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.pcawg.core.Clinical;
-import org.icgc.dcc.submission.validation.pcawg.core.ClinicalCore;
-import org.icgc.dcc.submission.validation.pcawg.core.ClinicalOptional;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 
-import lombok.SneakyThrows;
+import lombok.NonNull;
+import lombok.Value;
 import lombok.val;
 
-/**
- * Parser implementation that creates an in-memory model of clinical data.
- */
-public class ClinicalParser {
+@Value
+public class ClinicalCore implements Iterable<List<Record>> {
 
-  public static Clinical parse(ValidationContext context) {
-    return new Clinical(
-        new ClinicalCore(
-            parseFileType(FileType.DONOR_TYPE, context),
-            parseFileType(FileType.SPECIMEN_TYPE, context),
-            parseFileType(FileType.SAMPLE_TYPE, context)),
+  /**
+   * Data - Core.
+   */
+  @NonNull
+  List<Record> donors;
+  @NonNull
+  List<Record> specimens;
+  @NonNull
+  List<Record> samples;
 
-        new ClinicalOptional(
-            parseFileType(FileType.BIOMARKER_TYPE, context),
-            parseFileType(FileType.FAMILY_TYPE, context),
-            parseFileType(FileType.EXPOSURE_TYPE, context),
-            parseFileType(FileType.SURGERY_TYPE, context),
-            parseFileType(FileType.THERAPY_TYPE, context)));
+  public Optional<List<Record>> get(FileType fileType) {
+    checkArgument(fileType.getDataType().isClinicalType());
+    val clinicalType = fileType.getDataType().asClinicalType();
+    checkArgument(clinicalType.isCoreClinicalType());
+
+    if (fileType == FileType.DONOR_TYPE) {
+      return Optional.of(donors);
+    } else if (fileType == FileType.SPECIMEN_TYPE) {
+      return Optional.of(specimens);
+    } else if (fileType == FileType.SAMPLE_TYPE) {
+      return Optional.of(samples);
+    } else {
+      return Optional.empty();
+    }
   }
 
-  @SneakyThrows
-  private static List<Record> parseFileType(FileType fileType, ValidationContext context) {
-    val fileParser = newMapFileParser(context, fileType);
+  @Override
+  public Iterator<List<Record>> iterator() {
+    return ImmutableList.of(donors, specimens, samples).iterator();
+  }
 
-    val records = Lists.<Record> newArrayList();
-    for (val file : context.getFiles(fileType)) {
-      try {
-        fileParser.parse(file, (lineNumber, fields) -> {
-          Record record = new Record(fields, fileType, file, lineNumber);
-
-          records.add(record);
-        });
-      } catch (Exception e) {
-        throw new IllegalStateException("Failed to parse file " + file, e);
-      }
-    }
-
-    return records;
+  public static Iterable<FileType> getFileTypes() {
+    return ImmutableList.of(FileType.DONOR_TYPE, FileType.SPECIMEN_TYPE, FileType.SAMPLE_TYPE);
   }
 
 }

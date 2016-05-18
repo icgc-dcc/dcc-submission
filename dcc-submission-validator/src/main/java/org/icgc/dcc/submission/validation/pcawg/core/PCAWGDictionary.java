@@ -20,13 +20,12 @@ package org.icgc.dcc.submission.validation.pcawg.core;
 import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
 import java.net.URL;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;
 
@@ -43,6 +42,9 @@ public class PCAWGDictionary {
    */
   public static final URL DEFAULT_PCAWG_DICTIONARY_URL = Resources.getResource("pcawg-dictionary.json");
 
+  /**
+   * Configuration
+   */
   @NonNull
   private final URL url;
 
@@ -60,59 +62,36 @@ public class PCAWGDictionary {
   }
 
   public Set<String> getExcludedDonorIds(@NonNull String projectKey) {
-    val excludedDonorIds = readField("excludedDonorIds");
-    if (excludedDonorIds.isMissingNode()) {
-      return ImmutableSet.of();
-    }
+    return readFieldMap(projectKey, "excludedDonorIds");
+  }
 
-    Map<String, Set<String>> map =
-        DEFAULT.convertValue(excludedDonorIds, new TypeReference<Map<String, Set<String>>>() {});
-    val donorIds = map.get(projectKey);
-    if (donorIds == null) {
-      return ImmutableSet.of();
-    }
-
-    return donorIds;
+  public Set<String> getExcludedSpecimenIds(@NonNull String projectKey) {
+    return readFieldMap(projectKey, "excludedSpecimenIds");
   }
 
   public Set<String> getExcludedSampleIds(@NonNull String projectKey) {
-    val excludedSampleIds = readField("excludedSampleIds");
-    if (excludedSampleIds.isMissingNode()) {
-      return ImmutableSet.of();
-    }
-
-    Map<String, Set<String>> map =
-        DEFAULT.convertValue(excludedSampleIds, new TypeReference<Map<String, Set<String>>>() {});
-    val donorIds = map.get(projectKey);
-    if (donorIds == null) {
-      return ImmutableSet.of();
-    }
-
-    return donorIds;
+    return readFieldMap(projectKey, "excludedSampleIds");
   }
 
-  public Set<String> getWhitelistSampleIds(@NonNull String projectKey) {
-    val samples = readField("samples");
-    if (samples.isMissingNode()) {
+  private Set<String> readFieldMap(String projectKey, final java.lang.String fieldName) {
+    Map<String, Set<String>> map = readFieldProjectMap(fieldName);
+
+    val values = map.get(projectKey);
+    if (values == null) {
       return ImmutableSet.of();
     }
 
-    Map<String, Set<String>> map = DEFAULT.convertValue(samples, new TypeReference<Map<String, Set<String>>>() {});
-    val sampleIds = map.get(projectKey);
-    if (sampleIds == null) {
-      return ImmutableSet.of();
-    }
-
-    return sampleIds;
+    return values;
   }
 
-  public List<ClinicalRule> getClinicalRules() {
-    val rules = readField("rules");
-    if (rules.isMissingNode()) {
-      ImmutableList.of();
+  private Map<String, Set<String>> readFieldProjectMap(String fieldName) {
+    val values = readField(fieldName);
+    if (values.isMissingNode()) {
+      return ImmutableMap.of();
     }
 
-    return DEFAULT.convertValue(rules, new TypeReference<List<ClinicalRule>>() {});
+    val type = new TypeReference<Map<String, Set<String>>>() {};
+    return DEFAULT.convertValue(values, type);
   }
 
   private JsonNode readField(String fieldName) {
