@@ -32,11 +32,9 @@ import com.google.common.collect.Multimap;
 import com.google.common.io.Resources;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 
-@RequiredArgsConstructor
 public class PCAWGSampleSheet {
 
   /**
@@ -45,19 +43,16 @@ public class PCAWGSampleSheet {
   public static final URL DEFAULT_PCAWG_SAMPLE_SHEET_URL = Resources.getResource("pcawg-sample-sheet.json");
 
   /**
-   * Configuration.
-   */
-  @NonNull
-  private final URL url;
-
-  /**
    * State.
    */
-  private List<PCAWGSample> samples;
+  private final List<PCAWGSample> samples;
 
   public PCAWGSampleSheet() {
     this(DEFAULT_PCAWG_SAMPLE_SHEET_URL);
-    this.samples = readSamples();
+  }
+
+  public PCAWGSampleSheet(@NonNull URL url) {
+    this.samples = readSamples(url);
   }
 
   public Set<String> getProjects() {
@@ -94,7 +89,7 @@ public class PCAWGSampleSheet {
   }
 
   @SneakyThrows
-  private List<PCAWGSample> readSamples() {
+  private static List<PCAWGSample> readSamples(URL url) {
     return DEFAULT.readValue(url, new TypeReference<List<PCAWGSample>>() {});
   }
 

@@ -18,8 +18,10 @@
 package org.icgc.dcc.submission.validation.pcawg.core;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 @Data
+@Accessors(chain = true)
 public class PCAWGSample {
 
   String projectKey;

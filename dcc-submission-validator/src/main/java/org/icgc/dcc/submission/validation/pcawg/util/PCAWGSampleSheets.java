@@ -28,12 +28,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 import org.icgc.dcc.common.core.tcga.TCGAClient;
+import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSample;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 
@@ -69,11 +68,11 @@ public class PCAWGSampleSheets {
     val mapper = new PCAWGSampleSheetMapper();
     val writer = new PCAWGSampleSheetWriter(SAMPLE_SHEET_FILE);
 
-    val sheet = Lists.<Map<String, String>> newArrayList();
+    val sheet = Lists.<PCAWGSample> newArrayList();
     parser.parse((values) -> {
-      Map<String, String> row = mapper.map(values);
-      log.info("{}", row);
-      sheet.add(row);
+      val sample = mapper.map(values);
+      log.info("{}", sample);
+      sheet.add(sample);
     });
 
     writer.write(sheet);
@@ -108,12 +107,15 @@ public class PCAWGSampleSheets {
      */
     private final TCGAClient tcga = new TCGAClient();
 
-    public Map<String, String> map(List<String> values) {
-      String projectKey = values.get(3);
+    public PCAWGSample map(List<String> values) {
+      val sample = new PCAWGSample();
+
+      val projectKey = values.get(3);
+      val specimenType = values.get(9);
+
       String donorId = values.get(1);
       String specimenId = values.get(5);
       String sampleId = values.get(7);
-      String specimenType = values.get(9);
 
       if (isTCGA(projectKey)) {
         donorId = getBarcode(donorId);
@@ -121,12 +123,12 @@ public class PCAWGSampleSheets {
         sampleId = getBarcode(sampleId);
       }
 
-      return ImmutableMap.<String, String> of(
-          "projectKey", projectKey,
-          "donorId", donorId,
-          "specimenId", specimenId,
-          "specimenType", specimenType,
-          "sampleId", sampleId);
+      return sample
+          .setProjectKey(projectKey)
+          .setDonorId(donorId)
+          .setSpecimenId(specimenId)
+          .setSpecimenType(specimenType)
+          .setSampleId(sampleId);
     }
 
     private String getBarcode(String uuid) {
@@ -149,7 +151,7 @@ public class PCAWGSampleSheets {
     @NonNull
     private final File file;
 
-    public void write(List<Map<String, String>> sheet) throws IOException {
+    public void write(List<PCAWGSample> sheet) throws IOException {
       Files.write(formatPrettyJson(sheet), file, UTF_8);
     }
 
