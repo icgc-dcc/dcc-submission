@@ -18,24 +18,21 @@
 package org.icgc.dcc.submission.validation;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.io.Resources.getResource;
 import static lombok.AccessLevel.PRIVATE;
 
-import java.net.URL;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.util.Dictionaries;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.val;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class ValidationTests {
@@ -62,23 +59,16 @@ public final class ValidationTests {
 
   @SneakyThrows
   public static List<CodeList> getTestCodeLists() {
-    Iterator<CodeList> codeLists = TEST_MAPPER.reader(CodeList.class).readValues(getTestResource("CodeList.json"));
-    return newArrayList(codeLists);
+    return Dictionaries.readResourcesCodeLists();
   }
 
   @SneakyThrows
   public static Dictionary getTestDictionary() {
-    return TEST_MAPPER.reader(Dictionary.class).readValue(getTestResource("Dictionary.json"));
+    return Dictionaries.readResourcesDictionary("0.11c");
   }
 
   public static List<String> getTestFieldNames(FileType type) {
     return newArrayList(getTestDictionary().getFileSchema(type).getFieldNames());
-  }
-
-  private static URL getTestResource(String resourceName) {
-    val dccResource = "org/icgc/dcc/resources/" + resourceName;
-
-    return getResource(dccResource);
   }
 
 }

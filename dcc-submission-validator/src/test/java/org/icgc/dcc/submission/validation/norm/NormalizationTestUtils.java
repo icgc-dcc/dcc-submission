@@ -17,14 +17,13 @@
  */
 package org.icgc.dcc.submission.validation.norm;
 
-import static com.google.common.io.Resources.getResource;
 import static lombok.AccessLevel.PRIVATE;
 
-import java.net.URL;
 import java.util.List;
 
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.util.Dictionaries;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,11 +46,7 @@ final class NormalizationTestUtils {
 
   @SneakyThrows
   public static Dictionary dictionary() {
-    return MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
-  }
-
-  private static URL getDccResource(String resourceName) {
-    return getResource("org/icgc/dcc/resources/" + resourceName);
+    return Dictionaries.readResourcesDictionary("0.11c");
   }
 
   public static List<String> getFieldNames(FileType type) {

@@ -19,18 +19,21 @@ package org.icgc.dcc.submission.dictionary.util;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Resources.getResource;
-import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.common.core.dcc.DccResources.getDictionaryDccResource;
 import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 import static org.icgc.dcc.common.core.json.Jackson.from;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NavigableSet;
 
-import org.icgc.dcc.common.core.dcc.DccResources;
 import org.icgc.dcc.common.core.json.Jackson;
 import org.icgc.dcc.common.core.meta.RestfulCodeListsResolver;
 import org.icgc.dcc.common.core.meta.RestfulDictionaryResolver;
@@ -42,7 +45,10 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.base.Optional;
+import com.google.common.collect.Sets;
+import com.google.common.io.Resources;
 
+import lombok.Cleanup;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -52,26 +58,37 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor(access = PRIVATE)
 public class Dictionaries {
 
+  /**
+   * Constants.
+   */
   private static final ObjectReader FILE_SCHEMA_READER = Jackson.DEFAULT.reader(FileSchema.class);
   private static final ObjectReader DICTIONARY_SCHEMA_READER = Jackson.DEFAULT.reader(Dictionary.class);
   private static final ObjectReader CODELIST_SCHEMA_READER = Jackson.DEFAULT.reader(CodeList.class);
-  private static final String FILE_SCHEMATA_PARENT_PATH = "dictionary";
 
   @SneakyThrows
-  public static FileSchema readFileSchema(FileType fileType) {
-    val fileSchemaPath = format("%s/%s.json", FILE_SCHEMATA_PARENT_PATH, fileType.getId());
-    log.info("Augmenting dictionary with: '{}'", fileSchemaPath);
-    return FILE_SCHEMA_READER.readValue(getResource(fileSchemaPath));
+  public static FileSchema readResourcesFileSchema(FileType fileType) {
+    val url = getResourceUrl("/filetypes/" + fileType.getId() + ".json");
+    log.info("Augmenting dictionary with: '{}'", url);
+    return FILE_SCHEMA_READER.readValue(url);
   }
 
   @SneakyThrows
-  public static Dictionary readDccResourcesDictionary() {
-    return readDictionary(getDictionaryDccResource());
+  public static Dictionary readResourcesDictionary() {
+    val url = getResourceUrl("/dictionaries/");
+    val versions = readResourceListing(url);
+    val latest = versions.last().replaceAll("/", "");
+
+    return readResourcesDictionary(latest);
   }
 
   @SneakyThrows
-  public static List<CodeList> readDccResourcesCodeLists() {
-    return readCodeList(DccResources.getCodeListsDccResource());
+  public static Dictionary readResourcesDictionary(String version) {
+    return readDictionary(getResourceUrl("/dictionaries/" + version + "/dictionary.json"));
+  }
+
+  @SneakyThrows
+  public static List<CodeList> readResourcesCodeLists() {
+    return readCodeList(getResourceUrl("/codelists/codelists.json"));
   }
 
   @SneakyThrows
@@ -111,6 +128,31 @@ public class Dictionaries {
         new RestfulCodeListsResolver(submissionWebAppUri)
             .get(),
         new TypeReference<List<CodeList>>() {});
+  }
+
+  private static URL getResourceUrl(String path) {
+    return Resources.getResource("org/icgc/dcc/submission/resources" + path);
+  }
+
+  @SneakyThrows
+  private static NavigableSet<String> readResourceListing(URL url) {
+    val uri = url.toURI();
+    Path path;
+    if (uri.getScheme().equals("jar")) {
+      val fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap());
+      path = fileSystem.getPath(uri.toString().split("!")[1]);
+    } else {
+      path = Paths.get(uri);
+    }
+
+    @Cleanup
+    val listing = Files.list(path);
+    val resources = Sets.<String> newTreeSet();
+    for (Iterator<Path> it = listing.iterator(); it.hasNext();) {
+      resources.add(it.next().getFileName().toString());
+    }
+
+    return resources;
   }
 
 }

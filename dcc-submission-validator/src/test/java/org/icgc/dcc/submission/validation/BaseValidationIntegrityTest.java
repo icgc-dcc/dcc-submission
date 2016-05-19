@@ -22,7 +22,6 @@ import static com.google.common.io.Files.readLines;
 import static java.util.Collections.sort;
 
 import java.io.File;
-import java.net.URL;
 import java.util.List;
 
 import org.icgc.dcc.submission.dictionary.model.CodeList;
@@ -30,6 +29,7 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Term;
+import org.icgc.dcc.submission.dictionary.util.Dictionaries;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionContext;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
@@ -123,7 +123,7 @@ public abstract class BaseValidationIntegrityTest {
 
   @SneakyThrows
   protected static Dictionary getDictionary() {
-    return MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
+    return Dictionaries.readResourcesDictionary("0.11c");
   }
 
   @SneakyThrows
@@ -134,10 +134,6 @@ public abstract class BaseValidationIntegrityTest {
   @SneakyThrows
   protected static String getResource(String resourcePath) {
     return Resources.toString(BaseValidationIntegrityTest.class.getResource(resourcePath), UTF_8);
-  }
-
-  protected static URL getDccResource(String resourceName) {
-    return Resources.getResource("org/icgc/dcc/resources/" + resourceName);
   }
 
   @SneakyThrows

@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.core;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.Sets.difference;
 import static java.util.stream.Collectors.groupingBy;
@@ -127,14 +128,18 @@ public class PCAWGSampleValidator {
       val pcawgSpecimen = values.get(0);
 
       // Normalize to code and value representations
-      val expected = pcawgSpecimen.getSpecimenType();
-      val expectedCode = specimenTypes.containsKey(expected) ? expected : specimenTypes.inverse().get(expected);
+      val expectedRaw = pcawgSpecimen.getSpecimenType();
+      val expectedCode = specimenTypes.containsKey(expectedRaw) ? expectedRaw : specimenTypes.inverse().get(expectedRaw);
       val expectedValue = specimenTypes.get(expectedCode);
 
       // Normalize to code and value representations
-      val actual = getSpecimenType(specimen);
-      val actualCode = specimenTypes.containsKey(actual) ? actual : specimenTypes.inverse().get(actual);
+      val actualRaw = getSpecimenType(specimen);
+      val actualCode = specimenTypes.containsKey(actualRaw) ? actualRaw : specimenTypes.inverse().get(actualRaw);
       val actualValue = specimenTypes.get(actualCode);
+
+      checkState(expectedCode != null && actualCode != null,
+          "Missing specimen type codes to compare. Expected: raw='%s' value='%s' code=%s, Actual: raw='%s' value='%s', code=%s",
+          expectedRaw, expectedValue, expectedCode, actualRaw, actualValue, actualCode);
 
       // Arbitrarily match by code
       val match = expectedCode.equals(actualCode);

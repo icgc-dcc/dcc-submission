@@ -1,10 +1,7 @@
 {
-  "rules": [],
-  "samples": {
-    "TEST1-DCC": ["sample1", "sample2"]
-  },
   "excludedProjectKeys": ["TEST2-DCC", "TEST6-DCC"],
   "excludedDonorIds": {},
+  "excludedSpecimenIds": {},
   "excludedSampleIds": {
     "PBCA-DE": ["MBRep_B34", "MBRep_T34"],
     "PACA-CA": ["PCSI_0231_Pa_P_526", "PCSI_0231_Ly_R"],

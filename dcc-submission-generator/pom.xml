@@ -53,12 +53,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       </exclusions>
     </dependency>
 
-    <!-- Resources -->
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>dcc-resources</artifactId>
-    </dependency>
-
     <!-- Command line -->
     <dependency>
       <groupId>com.beust</groupId>

@@ -3363,62 +3363,6 @@
     ]
   },
   {
-    "created": 1347981138658,
-    "lastUpdate": 1347981138658,
-    "name": "donor.0.disease_status_last_followup.v1",
-    "label": null,
-    "terms": [
-      {
-        "code": "1",
-        "value": "complete remission",
-        "uri": null
-      },
-      {
-        "code": "2",
-        "value": "partial remission",
-        "uri": null
-      },
-      {
-        "code": "3",
-        "value": "progression",
-        "uri": null
-      },
-      {
-        "code": "4",
-        "value": "relapse",
-        "uri": null
-      },
-      {
-        "code": "5",
-        "value": "stable",
-        "uri": null
-      }
-    ]
-  },
-  {
-    "created": 1347981138659,
-    "lastUpdate": 1347981138659,
-    "name": "donor.0.donor_relapse_type.v1",
-    "label": null,
-    "terms": [
-      {
-        "code": "1",
-        "value": "local recurrence",
-        "uri": null
-      },
-      {
-        "code": "2",
-        "value": "distant recurrence/metastasis",
-        "uri": null
-      },
-      {
-        "code": "3",
-        "value": "progression (liquid tumours)",
-        "uri": null
-      }
-    ]
-  },
-  {
     "created": 1347981138660,
     "lastUpdate": 1347981138660,
     "name": "donor.0.donor_sex.v1",
@@ -3450,44 +3394,6 @@
       {
         "code": "2",
         "value": "deceased",
-        "uri": null
-      }
-    ]
-  },
-  {
-    "created": 1347981138666,
-    "lastUpdate": 1347981138666,
-    "name": "family.0.relationship_type.v1",
-    "label": null,
-    "terms": [
-      {
-        "code": "1",
-        "value": "sibling",
-        "uri": null
-      },
-      {
-        "code": "2",
-        "value": "parent",
-        "uri": null
-      },
-      {
-        "code": "3",
-        "value": "grandparent",
-        "uri": null
-      },
-      {
-        "code": "4",
-        "value": "uncle/aunt",
-        "uri": null
-      },
-      {
-        "code": "5",
-        "value": "cousin",
-        "uri": null
-      },
-      {
-        "code": "6",
-        "value": "other",
         "uri": null
       }
     ]
@@ -4282,424 +4188,6 @@
     ]
   },
   {
-    "created": 1347981138662,
-    "lastUpdate": 1347981138662,
-    "name": "GLOBAL.0.platform.v1",
-    "label": "Analysis and Validation Platforms",
-    "terms": [
-      {
-        "code": "1",
-        "value": "PCR",
-        "uri": null
-      },
-      {
-        "code": "2",
-        "value": "qPCR",
-        "uri": null
-      },
-      {
-        "code": "3",
-        "value": "capillary sequencing",
-        "uri": null
-      },
-      {
-        "code": "4",
-        "value": "SOLiD sequencing",
-        "uri": null
-      },
-      {
-        "code": "5",
-        "value": "Illumina GA sequencing",
-        "uri": null
-      },
-      {
-        "code": "6",
-        "value": "454 sequencing",
-        "uri": null
-      },
-      {
-        "code": "7",
-        "value": "Helicos sequencing",
-        "uri": null
-      },
-      {
-        "code": "8",
-        "value": "Affymetrix Genome-Wide Human SNP Array 6.0",
-        "uri": null
-      },
-      {
-        "code": "9",
-        "value": "Affymetrix Genome-Wide Human SNP Array 5.0",
-        "uri": null
-      },
-      {
-        "code": "10",
-        "value": "Affymetrix Mapping 100K Array Set",
-        "uri": null
-      },
-      {
-        "code": "11",
-        "value": "Affymetrix Mapping 500K Array Set",
-        "uri": null
-      },
-      {
-        "code": "12",
-        "value": "Affymetrix Mapping 10K 2.0 Array Set",
-        "uri": null
-      },
-      {
-        "code": "13",
-        "value": "Affymetrix EMET Plus Premier Pack",
-        "uri": null
-      },
-      {
-        "code": "14",
-        "value": "Agilent Whole Human Genome Oligo Microarray Kit",
-        "uri": null
-      },
-      {
-        "code": "15",
-        "value": "Agilent Human Genome 244A",
-        "uri": null
-      },
-      {
-        "code": "16",
-        "value": "Agilent Human Genome 105A",
-        "uri": null
-      },
-      {
-        "code": "17",
-        "value": "Agilent Human CNV Association 2x105K",
-        "uri": null
-      },
-      {
-        "code": "18",
-        "value": "Agilent Human Genome 44K",
-        "uri": null
-      },
-      {
-        "code": "19",
-        "value": "Agilent Human CGH 1x1M",
-        "uri": null
-      },
-      {
-        "code": "20",
-        "value": "Agilent Human CGH 2x400K",
-        "uri": null
-      },
-      {
-        "code": "21",
-        "value": "Agilent Human CGH 4x180K",
-        "uri": null
-      },
-      {
-        "code": "22",
-        "value": "Agilent Human CGH 8x60K",
-        "uri": null
-      },
-      {
-        "code": "23",
-        "value": "Agilent Human CNV 2x400K",
-        "uri": null
-      },
-      {
-        "code": "24",
-        "value": "Agilent Human miRNA Microarray Kit (v2)",
-        "uri": null
-      },
-      {
-        "code": "25",
-        "value": "Agilent Human CpG Island Microarray Kit",
-        "uri": null
-      },
-      {
-        "code": "26",
-        "value": "Agilent Human Promoter ChIP-on-chip Microarray Set",
-        "uri": null
-      },
-      {
-        "code": "27",
-        "value": "Agilent Human SpliceArray",
-        "uri": null
-      },
-      {
-        "code": "28",
-        "value": "Illumina human1m-duo",
-        "uri": null
-      },
-      {
-        "code": "29",
-        "value": "Illumina human660w-quad",
-        "uri": null
-      },
-      {
-        "code": "30",
-        "value": "Illumina humancytosnp-12",
-        "uri": null
-      },
-      {
-        "code": "31",
-        "value": "Illumina human510s-duo",
-        "uri": null
-      },
-      {
-        "code": "32",
-        "value": "Illumina humanmethylation27",
-        "uri": null
-      },
-      {
-        "code": "33",
-        "value": "Illumina goldengate methylation",
-        "uri": null
-      },
-      {
-        "code": "34",
-        "value": "Illumina HumanHT-12 v4.0 beadchip",
-        "uri": null
-      },
-      {
-        "code": "35",
-        "value": "Illumina HumanWG-6 v3.0 beadchip",
-        "uri": null
-      },
-      {
-        "code": "36",
-        "value": "Illumina HumanRef-8 v3.0 beadchip",
-        "uri": null
-      },
-      {
-        "code": "37",
-        "value": "Illumina microRNA Expression Profiling Panel",
-        "uri": null
-      },
-      {
-        "code": "38",
-        "value": "Illumina humanht-16",
-        "uri": null
-      },
-      {
-        "code": "39",
-        "value": "Illumina humanht-17",
-        "uri": null
-      },
-      {
-        "code": "40",
-        "value": "Nimblegen Human CGH 3x720 Whole-Genome v3.0 Array",
-        "uri": null
-      },
-      {
-        "code": "41",
-        "value": "Nimblegen Human CGH 2.1M Whole-Genome v2.0D Array",
-        "uri": null
-      },
-      {
-        "code": "42",
-        "value": "Nimblegen Gene Expression 385K",
-        "uri": null
-      },
-      {
-        "code": "43",
-        "value": "Nimblegen Gene Expression 4x72K",
-        "uri": null
-      },
-      {
-        "code": "44",
-        "value": "Nimblegen Gene Expression 12x135K",
-        "uri": null
-      },
-      {
-        "code": "45",
-        "value": "Nimblegen Human Methylation 2.1M Whole-Genome sets",
-        "uri": null
-      },
-      {
-        "code": "46",
-        "value": "Nimblegen Human Methylation 385K Whole-Genome sets",
-        "uri": null
-      },
-      {
-        "code": "47",
-        "value": "Nimblegen CGS",
-        "uri": null
-      },
-      {
-        "code": "48",
-        "value": "Illumina Human1M OmniQuad chip",
-        "uri": null
-      },
-      {
-        "code": "49",
-        "value": "PCR and capillary sequencing",
-        "uri": null
-      },
-      {
-        "code": "50",
-        "value": "Custom-designed gene expression array",
-        "uri": null
-      },
-      {
-        "code": "51",
-        "value": "Affymetrix HT Human Genome U133A Array Plate Set",
-        "uri": null
-      },
-      {
-        "code": "52",
-        "value": "Agilent 244K Custom Gene Expression G4502A-07-1",
-        "uri": null
-      },
-      {
-        "code": "53",
-        "value": "Agilent 244K Custom Gene Expression G4502A-07-2",
-        "uri": null
-      },
-      {
-        "code": "54",
-        "value": "Agilent 244K Custom Gene Expression G4502A-07-3",
-        "uri": null
-      },
-      {
-        "code": "55",
-        "value": "Agilent Human Genome CGH Custom Microaary 2x415K",
-        "uri": null
-      },
-      {
-        "code": "56",
-        "value": "Affymetrix Human U133 Plus PM",
-        "uri": null
-      },
-      {
-        "code": "57",
-        "value": "Affymetrix Human U133 Plus 2.0",
-        "uri": null
-      },
-      {
-        "code": "58",
-        "value": "Affymetrix Human Exon 1.0 ST",
-        "uri": null
-      },
-      {
-        "code": "59",
-        "value": "Almac Human CRC",
-        "uri": null
-      },
-      {
-        "code": "60",
-        "value": "Illumina HiSeq",
-        "uri": null
-      },
-      {
-        "code": "61",
-        "value": "Affymetrix Human MIP 330K",
-        "uri": null
-      },
-      {
-        "code": "62",
-        "value": "Affymetrix Human Gene 1.0 ST",
-        "uri": null
-      },
-      {
-        "code": "63",
-        "value": "Illumina Human Omni1-Quad beadchip",
-        "uri": null
-      },
-      {
-        "code": "64",
-        "value": "Sequenom MassARRAY",
-        "uri": null
-      },
-      {
-        "code": "65",
-        "value": "Custom-designed cDNA array",
-        "uri": null
-      },
-      {
-        "code": "66",
-        "value": "Illumina HumanHap550",
-        "uri": null
-      },
-      {
-        "code": "67",
-        "value": "Ion Torrent PGM",
-        "uri": null
-      },
-      {
-        "code": "68",
-        "value": "Illumina GoldenGate Methylation Cancer Panel I",
-        "uri": null
-      },
-      {
-        "code": "69",
-        "value": "Illumina Infinium HumanMethylation450",
-        "uri": null
-      },
-      {
-        "code": "70",
-        "value": "Agilent 8 x 15K Human miRNA-specific microarray",
-        "uri": null
-      },
-      {
-        "code": "71",
-        "value": "M.D. Anderson Reverse Phase Protein Array Core",
-        "uri": null
-      },
-      {
-        "code": "72",
-        "value": "Microsatellite Instability Analysis",
-        "uri": null
-      },
-      {
-        "code": "73",
-        "value": "Agilent 244K Custom Gene Expression G4502A-07",
-        "uri": null
-      },
-      {
-        "code": "74",
-        "value": "Illumina HumanCNV370-Duo v1.0 BeadChip",
-        "uri": null
-      },
-      {
-        "code": "75",
-        "value": "Illumina HumanOmniExpress BeadChip",
-        "uri": null
-      },
-      {
-        "code": "76",
-        "value": "PacBio RS sequencing",
-        "uri": null
-      },
-      {
-        "code": "77",
-        "value": "Affymetrix OncoScan FFPE Express 2.0",
-        "uri": null
-      },
-      {
-        "code": "78",
-        "value": "Illumina MiSeq Personal Sequencer",
-        "uri": null
-      },
-      {
-        "code": "79",
-        "value": "Affymetrix Human Genome U219 Array Plate",
-        "uri": null
-      },
-      {
-        "code": "80",
-        "value": "HumanOmni2.5-8 BeadChip Kit",
-        "uri": null
-      },
-      {
-        "code": "81",
-        "value": "Complete Genomics",
-        "uri": null
-      },
-      {
-        "code": "82",
-        "value": "nanoString",
-        "uri": null
-      }
-    ]
-  },
-  {
     "created": 1365524321309,
     "lastUpdate": 1365524321309,
     "name": "GLOBAL.0.sequencing_strategy.v1",
@@ -5256,59 +4744,6 @@
       {
         "code": "4",
         "value": "multiple base substitution (>=2bp and <=200bp)",
-        "uri": null
-      }
-    ]
-  },
-  {
-    "created": 1347981138663,
-    "lastUpdate": 1347981138663,
-    "name": "stsm_p.0.evidence.v1",
-    "label": null,
-    "terms": [
-      {
-        "code": "1",
-        "value": "Copy number change",
-        "uri": null
-      },
-      {
-        "code": "2",
-        "value": "FISH",
-        "uri": null
-      },
-      {
-        "code": "3",
-        "value": "Flow-sorted chromosome evidence",
-        "uri": null
-      },
-      {
-        "code": "4",
-        "value": "Paired sequence either side of breakpoint",
-        "uri": null
-      },
-      {
-        "code": "5",
-        "value": "Partner breakpoint found",
-        "uri": null
-      },
-      {
-        "code": "6",
-        "value": "PCR product across breakpoint",
-        "uri": null
-      },
-      {
-        "code": "7",
-        "value": "Protein evidence",
-        "uri": null
-      },
-      {
-        "code": "8",
-        "value": "Seen in multiple samples",
-        "uri": null
-      },
-      {
-        "code": "9",
-        "value": "Sequence across breakpoint",
         "uri": null
       }
     ]
@@ -6101,144 +5536,6 @@
     ]
   },
   {
-    "created": 1403273590699,
-    "lastUpdate": 1403273590699,
-    "name": "specimen.0.specimen_type.v3",
-    "label": null,
-    "terms": [
-      {
-        "code": "101",
-        "value": "Normal - solid tissue",
-        "uri": null
-      },
-      {
-        "code": "102",
-        "value": "Normal - blood derived",
-        "uri": null
-      },
-      {
-        "code": "103",
-        "value": "Normal - bone marrow",
-        "uri": null
-      },
-      {
-        "code": "104",
-        "value": "Normal - tissue adjacent to primary",
-        "uri": null
-      },
-      {
-        "code": "105",
-        "value": "Normal - buccal cell",
-        "uri": null
-      },
-      {
-        "code": "106",
-        "value": "Normal - EBV immortalized",
-        "uri": null
-      },
-      {
-        "code": "107",
-        "value": "Normal - lymph node",
-        "uri": null
-      },
-      {
-        "code": "108",
-        "value": "Normal - other",
-        "uri": null
-      },
-      {
-        "code": "109",
-        "value": "Primary tumour - solid tissue",
-        "uri": null
-      },
-      {
-        "code": "110",
-        "value": "Primary tumour - blood derived (peripheral blood)",
-        "uri": null
-      },
-      {
-        "code": "111",
-        "value": "Primary tumour - blood derived (bone marrow)",
-        "uri": null
-      },
-      {
-        "code": "112",
-        "value": "Primary tumour - additional new primary",
-        "uri": null
-      },
-      {
-        "code": "113",
-        "value": "Primary tumour - other",
-        "uri": null
-      },
-      {
-        "code": "114",
-        "value": "Recurrent tumour - solid tissue",
-        "uri": null
-      },
-      {
-        "code": "115",
-        "value": "Recurrent tumour - blood derived (peripheral blood)",
-        "uri": null
-      },
-      {
-        "code": "116",
-        "value": "Recurrent tumour - blood derived (bone marrow)",
-        "uri": null
-      },
-      {
-        "code": "117",
-        "value": "Recurrent tumour - other",
-        "uri": null
-      },
-      {
-        "code": "118",
-        "value": "Metastatic tumour - NOS",
-        "uri": null
-      },
-      {
-        "code": "119",
-        "value": "Metastatic tumour - lymph node",
-        "uri": null
-      },
-      {
-        "code": "120",
-        "value": "Metastatic tumour - metastatsis local to lymph node",
-        "uri": null
-      },
-      {
-        "code": "121",
-        "value": "Metastatic tumour - metastatsis to distant location",
-        "uri": null
-      },
-      {
-        "code": "122",
-        "value": "Metastatic tumour - additional metastatic",
-        "uri": null
-      },
-      {
-        "code": "123",
-        "value": "Xenograft - derived from primary tumour",
-        "uri": null
-      },
-      {
-        "code": "124",
-        "value": "Xenograft - derived from tumour cell line",
-        "uri": null
-      },
-      {
-        "code": "125",
-        "value": "Cell line - derived from tumour",
-        "uri": null
-      },
-      {
-        "code": "126",
-        "value": "Primary tumour - lymph node",
-        "uri": null
-      }
-    ]
-  },
-  {
     "created": 1347981138665,
     "lastUpdate": 1347981138665,
     "name": "GLOBAL.0.raw_data_repository.v2",
@@ -6635,6 +5932,47 @@
     ]
   },
   {
+    "created": 1347981138659,
+    "lastUpdate": 1347981138659,
+    "name": "donor.0.donor_relapse_type.v1",
+    "label": null,
+    "terms": [
+      {
+        "code": "1",
+        "value": "local recurrence",
+        "uri": null
+      },
+      {
+        "code": "2",
+        "value": "distant recurrence/metastasis",
+        "uri": null
+      },
+      {
+        "code": "3",
+        "value": "progression (liquid tumours)",
+        "uri": null
+      },
+      {
+        "code": "4",
+        "value": "local recurrence and distant metastasis",
+        "uri": null
+      }
+    ]
+  },
+  {
+    "created": 1431620673534,
+    "lastUpdate": 1431620673534,
+    "name": "sample.0.study.v3",
+    "label": "A list indicating which study a sample is involved in",
+    "terms": [
+      {
+        "code": "1",
+        "value": "PCAWG",
+        "uri": null
+      }
+    ]
+  },
+  {
     "created": 1347981138657,
     "lastUpdate": 1347981138657,
     "name": "therapy.0.therapy_response.v1",
@@ -6663,6 +6001,764 @@
       {
         "code": "5",
         "value": "unknown",
+        "uri": null
+      },
+      {
+        "code": "6",
+        "value": "No evidence of disease",
+        "uri": null
+      }
+    ]
+  },
+  {
+    "created": 1347981138658,
+    "lastUpdate": 1347981138658,
+    "name": "donor.0.disease_status_last_followup.v1",
+    "label": null,
+    "terms": [
+      {
+        "code": "1",
+        "value": "complete remission",
+        "uri": null
+      },
+      {
+        "code": "2",
+        "value": "partial remission",
+        "uri": null
+      },
+      {
+        "code": "3",
+        "value": "progression",
+        "uri": null
+      },
+      {
+        "code": "4",
+        "value": "relapse",
+        "uri": null
+      },
+      {
+        "code": "5",
+        "value": "stable",
+        "uri": null
+      },
+      {
+        "code": "6",
+        "value": "no evidence of disease",
+        "uri": null
+      }
+    ]
+  },
+  {
+    "created": 1431719463138,
+    "lastUpdate": 1431719463138,
+    "name": "therapy.0.therapy_response.v2",
+    "label": null,
+    "terms": [
+      {
+        "code": "1",
+        "value": "complete response",
+        "uri": null
+      },
+      {
+        "code": "2",
+        "value": "partial response",
+        "uri": null
+      },
+      {
+        "code": "3",
+        "value": "disease progression",
+        "uri": null
+      },
+      {
+        "code": "4",
+        "value": "stable disease",
+        "uri": null
+      },
+      {
+        "code": "5",
+        "value": "unknown",
+        "uri": null
+      }
+    ]
+  },
+  {
+    "created": 1347981138666,
+    "lastUpdate": 1347981138666,
+    "name": "family.0.relationship_type.v1",
+    "label": null,
+    "terms": [
+      {
+        "code": "1",
+        "value": "sibling",
+        "uri": null
+      },
+      {
+        "code": "2",
+        "value": "parent",
+        "uri": null
+      },
+      {
+        "code": "3",
+        "value": "grandparent",
+        "uri": null
+      },
+      {
+        "code": "4",
+        "value": "uncle/aunt",
+        "uri": null
+      },
+      {
+        "code": "5",
+        "value": "cousin",
+        "uri": null
+      },
+      {
+        "code": "6",
+        "value": "other",
+        "uri": null
+      },
+      {
+        "code": "7",
+        "value": "unknown",
+        "uri": null
+      }
+    ]
+  },
+  {
+    "created": 1347981138663,
+    "lastUpdate": 1347981138663,
+    "name": "stsm_p.0.evidence.v1",
+    "label": null,
+    "terms": [
+      {
+        "code": "1",
+        "value": "Copy number change",
+        "uri": null
+      },
+      {
+        "code": "2",
+        "value": "FISH",
+        "uri": null
+      },
+      {
+        "code": "3",
+        "value": "Flow-sorted chromosome evidence",
+        "uri": null
+      },
+      {
+        "code": "4",
+        "value": "Paired sequence either side of breakpoint",
+        "uri": null
+      },
+      {
+        "code": "5",
+        "value": "Partner breakpoint found",
+        "uri": null
+      },
+      {
+        "code": "6",
+        "value": "PCR product across breakpoint",
+        "uri": null
+      },
+      {
+        "code": "7",
+        "value": "Protein evidence",
+        "uri": null
+      },
+      {
+        "code": "8",
+        "value": "Seen in multiple samples",
+        "uri": null
+      },
+      {
+        "code": "9",
+        "value": "Sequence across breakpoint",
+        "uri": null
+      },
+      {
+        "code": "10",
+        "value": "Partner breakpoint found, and paired sequence either side of breakpoint",
+        "uri": null
+      }
+    ]
+  },
+  {
+    "created": 1347981138662,
+    "lastUpdate": 1347981138662,
+    "name": "GLOBAL.0.platform.v1",
+    "label": "Analysis and Validation Platforms",
+    "terms": [
+      {
+        "code": "1",
+        "value": "PCR",
+        "uri": null
+      },
+      {
+        "code": "2",
+        "value": "qPCR",
+        "uri": null
+      },
+      {
+        "code": "3",
+        "value": "capillary sequencing",
+        "uri": null
+      },
+      {
+        "code": "4",
+        "value": "SOLiD sequencing",
+        "uri": null
+      },
+      {
+        "code": "5",
+        "value": "Illumina GA sequencing",
+        "uri": null
+      },
+      {
+        "code": "6",
+        "value": "454 sequencing",
+        "uri": null
+      },
+      {
+        "code": "7",
+        "value": "Helicos sequencing",
+        "uri": null
+      },
+      {
+        "code": "8",
+        "value": "Affymetrix Genome-Wide Human SNP Array 6.0",
+        "uri": null
+      },
+      {
+        "code": "9",
+        "value": "Affymetrix Genome-Wide Human SNP Array 5.0",
+        "uri": null
+      },
+      {
+        "code": "10",
+        "value": "Affymetrix Mapping 100K Array Set",
+        "uri": null
+      },
+      {
+        "code": "11",
+        "value": "Affymetrix Mapping 500K Array Set",
+        "uri": null
+      },
+      {
+        "code": "12",
+        "value": "Affymetrix Mapping 10K 2.0 Array Set",
+        "uri": null
+      },
+      {
+        "code": "13",
+        "value": "Affymetrix EMET Plus Premier Pack",
+        "uri": null
+      },
+      {
+        "code": "14",
+        "value": "Agilent Whole Human Genome Oligo Microarray Kit",
+        "uri": null
+      },
+      {
+        "code": "15",
+        "value": "Agilent Human Genome 244A",
+        "uri": null
+      },
+      {
+        "code": "16",
+        "value": "Agilent Human Genome 105A",
+        "uri": null
+      },
+      {
+        "code": "17",
+        "value": "Agilent Human CNV Association 2x105K",
+        "uri": null
+      },
+      {
+        "code": "18",
+        "value": "Agilent Human Genome 44K",
+        "uri": null
+      },
+      {
+        "code": "19",
+        "value": "Agilent Human CGH 1x1M",
+        "uri": null
+      },
+      {
+        "code": "20",
+        "value": "Agilent Human CGH 2x400K",
+        "uri": null
+      },
+      {
+        "code": "21",
+        "value": "Agilent Human CGH 4x180K",
+        "uri": null
+      },
+      {
+        "code": "22",
+        "value": "Agilent Human CGH 8x60K",
+        "uri": null
+      },
+      {
+        "code": "23",
+        "value": "Agilent Human CNV 2x400K",
+        "uri": null
+      },
+      {
+        "code": "24",
+        "value": "Agilent Human miRNA Microarray Kit (v2)",
+        "uri": null
+      },
+      {
+        "code": "25",
+        "value": "Agilent Human CpG Island Microarray Kit",
+        "uri": null
+      },
+      {
+        "code": "26",
+        "value": "Agilent Human Promoter ChIP-on-chip Microarray Set",
+        "uri": null
+      },
+      {
+        "code": "27",
+        "value": "Agilent Human SpliceArray",
+        "uri": null
+      },
+      {
+        "code": "28",
+        "value": "Illumina human1m-duo",
+        "uri": null
+      },
+      {
+        "code": "29",
+        "value": "Illumina human660w-quad",
+        "uri": null
+      },
+      {
+        "code": "30",
+        "value": "Illumina humancytosnp-12",
+        "uri": null
+      },
+      {
+        "code": "31",
+        "value": "Illumina human510s-duo",
+        "uri": null
+      },
+      {
+        "code": "32",
+        "value": "Illumina humanmethylation27",
+        "uri": null
+      },
+      {
+        "code": "33",
+        "value": "Illumina goldengate methylation",
+        "uri": null
+      },
+      {
+        "code": "34",
+        "value": "Illumina HumanHT-12 v4.0 beadchip",
+        "uri": null
+      },
+      {
+        "code": "35",
+        "value": "Illumina HumanWG-6 v3.0 beadchip",
+        "uri": null
+      },
+      {
+        "code": "36",
+        "value": "Illumina HumanRef-8 v3.0 beadchip",
+        "uri": null
+      },
+      {
+        "code": "37",
+        "value": "Illumina microRNA Expression Profiling Panel",
+        "uri": null
+      },
+      {
+        "code": "38",
+        "value": "Illumina humanht-16",
+        "uri": null
+      },
+      {
+        "code": "39",
+        "value": "Illumina humanht-17",
+        "uri": null
+      },
+      {
+        "code": "40",
+        "value": "Nimblegen Human CGH 3x720 Whole-Genome v3.0 Array",
+        "uri": null
+      },
+      {
+        "code": "41",
+        "value": "Nimblegen Human CGH 2.1M Whole-Genome v2.0D Array",
+        "uri": null
+      },
+      {
+        "code": "42",
+        "value": "Nimblegen Gene Expression 385K",
+        "uri": null
+      },
+      {
+        "code": "43",
+        "value": "Nimblegen Gene Expression 4x72K",
+        "uri": null
+      },
+      {
+        "code": "44",
+        "value": "Nimblegen Gene Expression 12x135K",
+        "uri": null
+      },
+      {
+        "code": "45",
+        "value": "Nimblegen Human Methylation 2.1M Whole-Genome sets",
+        "uri": null
+      },
+      {
+        "code": "46",
+        "value": "Nimblegen Human Methylation 385K Whole-Genome sets",
+        "uri": null
+      },
+      {
+        "code": "47",
+        "value": "Nimblegen CGS",
+        "uri": null
+      },
+      {
+        "code": "48",
+        "value": "Illumina Human1M OmniQuad chip",
+        "uri": null
+      },
+      {
+        "code": "49",
+        "value": "PCR and capillary sequencing",
+        "uri": null
+      },
+      {
+        "code": "50",
+        "value": "Custom-designed gene expression array",
+        "uri": null
+      },
+      {
+        "code": "51",
+        "value": "Affymetrix HT Human Genome U133A Array Plate Set",
+        "uri": null
+      },
+      {
+        "code": "52",
+        "value": "Agilent 244K Custom Gene Expression G4502A-07-1",
+        "uri": null
+      },
+      {
+        "code": "53",
+        "value": "Agilent 244K Custom Gene Expression G4502A-07-2",
+        "uri": null
+      },
+      {
+        "code": "54",
+        "value": "Agilent 244K Custom Gene Expression G4502A-07-3",
+        "uri": null
+      },
+      {
+        "code": "55",
+        "value": "Agilent Human Genome CGH Custom Microaary 2x415K",
+        "uri": null
+      },
+      {
+        "code": "56",
+        "value": "Affymetrix Human U133 Plus PM",
+        "uri": null
+      },
+      {
+        "code": "57",
+        "value": "Affymetrix Human U133 Plus 2.0",
+        "uri": null
+      },
+      {
+        "code": "58",
+        "value": "Affymetrix Human Exon 1.0 ST",
+        "uri": null
+      },
+      {
+        "code": "59",
+        "value": "Almac Human CRC",
+        "uri": null
+      },
+      {
+        "code": "60",
+        "value": "Illumina HiSeq",
+        "uri": null
+      },
+      {
+        "code": "61",
+        "value": "Affymetrix Human MIP 330K",
+        "uri": null
+      },
+      {
+        "code": "62",
+        "value": "Affymetrix Human Gene 1.0 ST",
+        "uri": null
+      },
+      {
+        "code": "63",
+        "value": "Illumina Human Omni1-Quad beadchip",
+        "uri": null
+      },
+      {
+        "code": "64",
+        "value": "Sequenom MassARRAY",
+        "uri": null
+      },
+      {
+        "code": "65",
+        "value": "Custom-designed cDNA array",
+        "uri": null
+      },
+      {
+        "code": "66",
+        "value": "Illumina HumanHap550",
+        "uri": null
+      },
+      {
+        "code": "67",
+        "value": "Ion Torrent PGM",
+        "uri": null
+      },
+      {
+        "code": "68",
+        "value": "Illumina GoldenGate Methylation Cancer Panel I",
+        "uri": null
+      },
+      {
+        "code": "69",
+        "value": "Illumina Infinium HumanMethylation450",
+        "uri": null
+      },
+      {
+        "code": "70",
+        "value": "Agilent 8 x 15K Human miRNA-specific microarray",
+        "uri": null
+      },
+      {
+        "code": "71",
+        "value": "M.D. Anderson Reverse Phase Protein Array Core",
+        "uri": null
+      },
+      {
+        "code": "72",
+        "value": "Microsatellite Instability Analysis",
+        "uri": null
+      },
+      {
+        "code": "73",
+        "value": "Agilent 244K Custom Gene Expression G4502A-07",
+        "uri": null
+      },
+      {
+        "code": "74",
+        "value": "Illumina HumanCNV370-Duo v1.0 BeadChip",
+        "uri": null
+      },
+      {
+        "code": "75",
+        "value": "Illumina HumanOmniExpress BeadChip",
+        "uri": null
+      },
+      {
+        "code": "76",
+        "value": "PacBio RS sequencing",
+        "uri": null
+      },
+      {
+        "code": "77",
+        "value": "Affymetrix OncoScan FFPE Express 2.0",
+        "uri": null
+      },
+      {
+        "code": "78",
+        "value": "Illumina MiSeq Personal Sequencer",
+        "uri": null
+      },
+      {
+        "code": "79",
+        "value": "Affymetrix Human Genome U219 Array Plate",
+        "uri": null
+      },
+      {
+        "code": "80",
+        "value": "HumanOmni2.5-8 BeadChip Kit",
+        "uri": null
+      },
+      {
+        "code": "81",
+        "value": "Complete Genomics",
+        "uri": null
+      },
+      {
+        "code": "82",
+        "value": "nanoString",
+        "uri": null
+      },
+      {
+        "code": "83",
+        "value": "Ion Torrent Proton",
+        "uri": null
+      },
+      {
+        "code": "84",
+        "value": "Illumina HiSeq X Ten",
+        "uri": null
+      },
+      {
+        "code": "85",
+        "value": "Affymetrix OncoScan FFPE Express 3.0",
+        "uri": null
+      }
+    ]
+  },
+  {
+    "created": 1403273590699,
+    "lastUpdate": 1403273590699,
+    "name": "specimen.0.specimen_type.v3",
+    "label": null,
+    "terms": [
+      {
+        "code": "101",
+        "value": "Normal - solid tissue",
+        "uri": null
+      },
+      {
+        "code": "102",
+        "value": "Normal - blood derived",
+        "uri": null
+      },
+      {
+        "code": "103",
+        "value": "Normal - bone marrow",
+        "uri": null
+      },
+      {
+        "code": "104",
+        "value": "Normal - tissue adjacent to primary",
+        "uri": null
+      },
+      {
+        "code": "105",
+        "value": "Normal - buccal cell",
+        "uri": null
+      },
+      {
+        "code": "106",
+        "value": "Normal - EBV immortalized",
+        "uri": null
+      },
+      {
+        "code": "107",
+        "value": "Normal - lymph node",
+        "uri": null
+      },
+      {
+        "code": "108",
+        "value": "Normal - other",
+        "uri": null
+      },
+      {
+        "code": "109",
+        "value": "Primary tumour - solid tissue",
+        "uri": null
+      },
+      {
+        "code": "110",
+        "value": "Primary tumour - blood derived (peripheral blood)",
+        "uri": null
+      },
+      {
+        "code": "111",
+        "value": "Primary tumour - blood derived (bone marrow)",
+        "uri": null
+      },
+      {
+        "code": "112",
+        "value": "Primary tumour - additional new primary",
+        "uri": null
+      },
+      {
+        "code": "113",
+        "value": "Primary tumour - other",
+        "uri": null
+      },
+      {
+        "code": "114",
+        "value": "Recurrent tumour - solid tissue",
+        "uri": null
+      },
+      {
+        "code": "115",
+        "value": "Recurrent tumour - blood derived (peripheral blood)",
+        "uri": null
+      },
+      {
+        "code": "116",
+        "value": "Recurrent tumour - blood derived (bone marrow)",
+        "uri": null
+      },
+      {
+        "code": "117",
+        "value": "Recurrent tumour - other",
+        "uri": null
+      },
+      {
+        "code": "118",
+        "value": "Metastatic tumour - NOS",
+        "uri": null
+      },
+      {
+        "code": "119",
+        "value": "Metastatic tumour - lymph node",
+        "uri": null
+      },
+      {
+        "code": "120",
+        "value": "Metastatic tumour - metastasis local to lymph node",
+        "uri": null
+      },
+      {
+        "code": "121",
+        "value": "Metastatic tumour - metastasis to distant location",
+        "uri": null
+      },
+      {
+        "code": "122",
+        "value": "Metastatic tumour - additional metastatic",
+        "uri": null
+      },
+      {
+        "code": "123",
+        "value": "Xenograft - derived from primary tumour",
+        "uri": null
+      },
+      {
+        "code": "124",
+        "value": "Xenograft - derived from tumour cell line",
+        "uri": null
+      },
+      {
+        "code": "125",
+        "value": "Cell line - derived from tumour",
+        "uri": null
+      },
+      {
+        "code": "126",
+        "value": "Primary tumour - lymph node",
+        "uri": null
+      },
+      {
+        "code": "127",
+        "value": "Metastatic tumour - other",
+        "uri": null
+      },
+      {
+        "code": "128",
+        "value": "Cell line - derived from xenograft tumour",
         "uri": null
       }
     ]

@@ -61,7 +61,8 @@ public final class Dictionaries {
    * Dictionary constants.
    */
   private static final ObjectReader READER = new ObjectMapper().reader(Dictionary.class);
-  private static final String DEFAULT_DICTIONARY_PATH = "org/icgc/dcc/resources/Dictionary.json";
+  private static final String DEFAULT_DICTIONARY_PATH =
+      "org/icgc/dcc/submission/resources/dictionaries/0.11c/dictionary.json";
   public static final URL DEFAULT_DICTIONARY_URL = getResource(DEFAULT_DICTIONARY_PATH);
 
   public static boolean isUniqueField(List<String> uniqueFields, String fieldName) {
@@ -82,11 +83,13 @@ public final class Dictionaries {
   }
 
   public static String getSchemaType(String schemaName) {
-    return (schemaName.indexOf(SCHEMA_TYPE_SEPARATOR) != -1 ? schemaName.substring(schemaName.length() - 1) : schemaName);
+    return (schemaName.indexOf(SCHEMA_TYPE_SEPARATOR) != -1 ? schemaName
+        .substring(schemaName.length() - 1) : schemaName);
   }
 
   public static String getSchemaName(String schemaName) {
-    return (schemaName.indexOf(SCHEMA_TYPE_SEPARATOR) != -1 ? schemaName.substring(0, schemaName.length() - 2) : schemaName);
+    return (schemaName.indexOf(SCHEMA_TYPE_SEPARATOR) != -1 ? schemaName.substring(0,
+        schemaName.length() - 2) : schemaName);
   }
 
   public static String getDictionaryVerision() {

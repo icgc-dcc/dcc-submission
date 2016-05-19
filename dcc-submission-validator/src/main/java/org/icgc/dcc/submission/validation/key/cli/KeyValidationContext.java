@@ -19,23 +19,21 @@ package org.icgc.dcc.submission.validation.key.cli;
 
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
-import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_S_TYPE;
 import static org.icgc.dcc.submission.config.Configs.getHadoopProperties;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readResourcesFileSchema;
 
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.common.core.meta.ArtifactoryCodeListsResolver;
-import org.icgc.dcc.common.core.meta.ArtifactoryDictionaryResolver;
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
 import org.icgc.dcc.submission.core.util.FsConfig;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.util.Dictionaries;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
@@ -45,8 +43,6 @@ import org.icgc.dcc.submission.validation.core.AbstractValidationContext;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactoryProvider;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 
@@ -100,21 +96,18 @@ public class KeyValidationContext extends AbstractValidationContext {
 
   @SneakyThrows
   protected Dictionary createDictionary() {
-    // Deserialize
-    val objectNode = new ArtifactoryDictionaryResolver().apply(Optional.of(DICTIONARY_VERSION));
-    val dictionary = DEFAULT.convertValue(objectNode, Dictionary.class);
+    // val dictionary = Dictionaries.readResourcesDictionary("0.11c");
+    val dictionary = Dictionaries.readResourcesDictionary();
 
     // Add file schemata
-    dictionary.addFile(readFileSchema(SSM_S_TYPE));
+    dictionary.addFile(readResourcesFileSchema(SSM_S_TYPE));
 
     return dictionary;
   }
 
   @SneakyThrows
   protected List<CodeList> createCodeLists() {
-    // Deserialize
-    val arrayNode = new ArtifactoryCodeListsResolver().get();
-    return DEFAULT.convertValue(arrayNode, new TypeReference<List<CodeList>>() {});
+    return Dictionaries.readResourcesCodeLists();
   }
 
   @SneakyThrows

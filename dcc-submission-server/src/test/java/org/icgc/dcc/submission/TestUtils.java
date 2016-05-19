@@ -24,7 +24,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.abbreviate;
 import static org.glassfish.grizzly.http.util.Header.Authorization;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readResourcesDictionary;
 
 import java.io.File;
 import java.net.URL;
@@ -132,11 +132,11 @@ public final class TestUtils {
 
   @SneakyThrows
   public static Dictionary dictionary() {
-    return readDccResourcesDictionary();
+    return readResourcesDictionary("0.11c");
   }
 
   public static List<CodeList> codeLists() {
-    return Dictionaries.readDccResourcesCodeLists();
+    return Dictionaries.readResourcesCodeLists();
   }
 
   public static List<String> getFieldNames(FileType type) {

@@ -49,8 +49,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public abstract class AbstractValidationContext implements ValidationContext {
 
-  protected static final String DICTIONARY_VERSION = "0.11c";
-
   @Override
   public SubmissionPlatformStrategy getPlatformStrategy() {
     throw new UnsupportedOperationException();

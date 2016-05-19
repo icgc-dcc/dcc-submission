@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.key;
 
 import static org.icgc.dcc.common.hadoop.fs.FileSystems.getDefaultLocalFileSystem;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.lsRecursive;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readResourcesDictionary;
 import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.FS_DIR;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.copyDirectory;
@@ -102,7 +102,7 @@ public class KeyValidatorIntegrationTest {
 
       @Override
       protected Dictionary createDictionary() {
-        return readDccResourcesDictionary();
+        return readResourcesDictionary("0.11c");
       }
 
     };

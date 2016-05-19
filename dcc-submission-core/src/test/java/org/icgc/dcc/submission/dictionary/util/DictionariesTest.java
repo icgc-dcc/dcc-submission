@@ -15,58 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.generator.utils;
+package org.icgc.dcc.submission.dictionary.util;
 
-import static com.google.common.io.Resources.getResource;
+import org.junit.Test;
 
-import java.io.File;
-import java.net.URL;
-import java.util.Iterator;
-import java.util.List;
+public class DictionariesTest {
 
-import org.icgc.dcc.submission.dictionary.model.CodeList;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.collect.ImmutableList;
-
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-
-/**
- * Initializes and stores {@link CodeList}s.
- */
-@Slf4j
-public class CodeLists {
-
-  /**
-   * Constants.
-   */
-  private static final ObjectReader READER = new ObjectMapper().reader(CodeList.class);
-  private static final String DEFAULT_CODELISTS_PATH = "org/icgc/dcc/submission/resources/codelists/codelists.json";
-  private static final URL DEFAULT_CODELISTS_URL = getResource(DEFAULT_CODELISTS_PATH);
-
-  private final List<CodeList> codeLists;
-
-  @SneakyThrows
-  public CodeLists(File codeListFile) {
-    log.info("Initializing codelist from file: {}", codeListFile.getAbsolutePath());
-    this.codeLists = resolveCodeLists(codeListFile.toURI().toURL());
-  }
-
-  public CodeLists() {
-    log.info("Initializing codelist from URL: {}", DEFAULT_CODELISTS_URL);
-    this.codeLists = resolveCodeLists(DEFAULT_CODELISTS_URL);
-  }
-
-  @SneakyThrows
-  private List<CodeList> resolveCodeLists(URL url) {
-    Iterator<CodeList> values = READER.readValues(url);
-    return ImmutableList.copyOf(values);
-  }
-
-  public List<CodeList> getCodeLists() {
-    return codeLists;
+  @Test
+  public void testReadResourceListingDictionary() throws Exception {
+    Dictionaries.readResourcesDictionary("0.11c");
   }
 
 }

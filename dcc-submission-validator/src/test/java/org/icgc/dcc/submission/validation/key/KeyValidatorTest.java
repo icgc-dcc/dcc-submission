@@ -25,7 +25,7 @@ import static org.icgc.dcc.common.core.util.Joiners.NEWLINE;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.lsRecursive;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.readSmallTextFile;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readDccResourcesDictionary;
+import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readResourcesDictionary;
 import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
 import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.FS_DIR;
@@ -121,7 +121,7 @@ public class KeyValidatorTest {
     val release = mock(Release.class);
     when(release.getName()).thenReturn(RELEASE_NAME);
 
-    val dictionary = readDccResourcesDictionary();
+    val dictionary = readResourcesDictionary("0.11c");
 
     val releaseFileSystem = mock(ReleaseFileSystem.class);
 
