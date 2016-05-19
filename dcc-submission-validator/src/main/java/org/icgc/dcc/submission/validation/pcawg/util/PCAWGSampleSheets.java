@@ -110,17 +110,26 @@ public class PCAWGSampleSheets {
     public PCAWGSample map(List<String> values) {
       val sample = new PCAWGSample();
 
-      val projectKey = values.get(3);
-      val specimenType = values.get(9);
+      val projectKey = values.get(3).trim();
 
-      String donorId = values.get(1);
-      String specimenId = values.get(5);
-      String sampleId = values.get(7);
+      String donorId = values.get(1).trim();
+      String specimenId = values.get(5).trim();
+      String sampleId = values.get(7).trim();
 
+      // ICGC DCC uses barcodes
       if (isTCGA(projectKey)) {
         donorId = getBarcode(donorId);
         specimenId = getBarcode(specimenId);
         sampleId = getBarcode(sampleId);
+      }
+
+      // To align with our CV terms
+      String specimenType = values.get(9).trim();
+      if (specimenType.equals("peripheral blood|Primary tumour - blood derived (peripheral blood)")) {
+        specimenType = "Primary tumour - blood derived (peripheral blood)";
+      }
+      if (specimenType.equals("Primary tumour")) {
+        specimenType = "Primary tumour - solid tissue";
       }
 
       return sample
