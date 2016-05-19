@@ -17,19 +17,18 @@
  */
 package org.icgc.dcc.submission.validation.pcawg;
 
-import static java.util.stream.Collectors.toList;
-
 import java.util.List;
 
 import org.icgc.dcc.common.core.model.Programs;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.validation.core.ClinicalCore;
-import org.icgc.dcc.submission.validation.core.ClinicalIndex;
 import org.icgc.dcc.submission.validation.core.ClinicalParser;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
+import org.icgc.dcc.submission.validation.pcawg.core.PCAWGClinicalFilter;
 import org.icgc.dcc.submission.validation.pcawg.core.PCAWGDictionary;
 import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSample;
+import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSampleFilter;
 import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSampleSheet;
 import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSampleValidator;
 
@@ -66,7 +65,7 @@ public class PCAWGValidator implements Validator {
   }
 
   @Override
-  public void validate(ValidationContext context) throws InterruptedException {
+  public void validate(@NonNull ValidationContext context) throws InterruptedException {
     log.info("Starting...");
 
     // Selective validation filtering
@@ -102,82 +101,18 @@ public class PCAWGValidator implements Validator {
 
   private ClinicalCore filterClinicalCore(String projectKey, ValidationContext context) {
     val clinical = ClinicalParser.parse(context);
-    val clinicalCore = clinical.getCore();
-    val index = new ClinicalIndex(clinical);
 
-    //
-    // Filter excluded donors
-    //
+    val filter = new PCAWGClinicalFilter(projectKey, pcawgDictionary);
+    filter.filter(clinical);
 
-    {
-      val excludedDonorIds = pcawgDictionary.getExcludedDonorIds(projectKey);
-      for (val excludedDonorId : excludedDonorIds) {
-        log.info("Excluding donor '{}'...", excludedDonorId);
-
-        // Identify donor records
-        val donor = index.getDonor(excludedDonorId);
-        val donorSpecimens = index.getDonorSpecimen(excludedDonorId);
-        val donorSamples = index.getDonorSamples(excludedDonorId);
-
-        // Remove core records
-        clinicalCore.getDonors().remove(donor);
-        clinicalCore.getSpecimens().removeAll(donorSpecimens);
-        clinicalCore.getSamples().removeAll(donorSamples);
-      }
-    }
-
-    //
-    // Filter excluded specimens
-    //
-
-    {
-      val excludedSpecimenIds = pcawgDictionary.getExcludedSpecimenIds(projectKey);
-      for (val excludedSpecimenId : excludedSpecimenIds) {
-        log.info("Excluding specimen '{}'...", excludedSpecimenId);
-
-        // Identify specimen records
-        val specimen = index.getSpecimen(excludedSpecimenId);
-        val specimenSamples = index.getSpecimenSamples(excludedSpecimenId);
-
-        // Remove core records
-        clinicalCore.getSpecimens().remove(specimen);
-        clinicalCore.getSamples().removeAll(specimenSamples);
-      }
-    }
-
-    //
-    // Filter excluded samples
-    //
-
-    {
-      val excludedSampleIds = pcawgDictionary.getExcludedSampleIds(projectKey);
-      for (val excludedSampleId : excludedSampleIds) {
-        log.info("Excluding sample '{}'...", excludedSampleId);
-
-        // Identify sample record
-        val sample = index.getSample(excludedSampleId);
-
-        // Remove core records
-        clinicalCore.getSamples().remove(sample);
-      }
-    }
-
-    return clinicalCore;
+    return clinical.getCore();
   }
 
   private List<PCAWGSample> filterPCAWGSamples(String projectKey) {
-    // Resolve entities to exclude from validation
-    val excludedDonorIds = pcawgDictionary.getExcludedDonorIds(projectKey);
-    val excludedSpecimenIds = pcawgDictionary.getExcludedSpecimenIds(projectKey);
-    val excludedSampleIds = pcawgDictionary.getExcludedSampleIds(projectKey);
-
-    // Apply PCAWG dictionary excludes to sample sheet
     val pcawgSamples = pcawgSampleSheet.getProjectSamples(projectKey);
-    return pcawgSamples.stream()
-        .filter(sample -> !excludedDonorIds.contains(sample.getDonorId()))
-        .filter(sample -> !excludedSpecimenIds.contains(sample.getSpecimenId()))
-        .filter(sample -> !excludedSampleIds.contains(sample.getSampleId()))
-        .collect(toList());
+    val filter = new PCAWGSampleFilter(projectKey, pcawgDictionary);
+
+    return filter.filter(pcawgSamples);
   }
 
   private boolean isValidatable(ValidationContext context) {

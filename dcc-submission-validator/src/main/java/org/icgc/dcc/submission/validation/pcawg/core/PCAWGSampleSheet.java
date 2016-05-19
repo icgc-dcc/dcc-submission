@@ -75,7 +75,7 @@ public class PCAWGSampleSheet {
     return getProjectFields(PCAWGSample::getSampleId);
   }
 
-  private Multimap<String, String> getProjectFields(Function<PCAWGSample, String> accessor) {
+  private Multimap<String, String> getProjectFields(@NonNull Function<PCAWGSample, String> accessor) {
     // Keep unique values only
     val builder = ImmutableSetMultimap.<String, String> builder();
 
