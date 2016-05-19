@@ -40,20 +40,28 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     @modelBind 'change', @update
 
   errors:
-    PCAWG_SAMPLE_STUDY_MISSING:
-      name: "PanCancer sample study missing"
+    PCAWG_DONOR_MISSING:
+      name: "PanCancer donor missing"
       description: (source) ->
         """
-        Sample data submitted to PCAWG, however it is not marked as in PCAWG study in this DCC submission.
-         See <a href="http://docs.org/submission/pcawg/pancancer-clinical-data-requirements" target="_blank">
+        The following donors have data submitted to PCAWG, but have not been included in this DCC submission.
+         See <a href="http://docs.icgc.org/submission/pcawg/pancancer-clinical-data-requirements" target="_blank">
         submission documentation</a> for details.
         """
-    PCAWG_SAMPLE_STUDY_INVALID:
-      name: "PanCancer sample study invalid"
+    PCAWG_SPECIMEN_MISSING:
+      name: "PanCancer specimen missing"
       description: (source) ->
         """
-        Sample is marked as in PCAWG study in this submission, however it does not actually exist in PCAWG.
-         See <a href="http://docs.org/submission/pcawg/pancancer-clinical-data-requirements" target="_blank">
+        The following specimen have data submitted to PCAWG, but have not been included in this DCC submission.
+         See <a href="http://docs.icgc.org/submission/pcawg/pancancer-clinical-data-requirements" target="_blank">
+        submission documentation</a> for details.
+        """
+    PCAWG_SPECIMEN_TYPE_INVALID:
+      name: "PanCancer specimen type invalid"
+      description: (source) ->
+        """
+        Specimen type has an inconsistent value with respect to PCAWG.
+         See <a href="http://docs.icgc.org/submission/pcawg/pancancer-clinical-data-requirements" target="_blank">
         submission documentation</a> for details.
         """
     PCAWG_SAMPLE_MISSING:
@@ -64,20 +72,19 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
          See <a href="http://docs.icgc.org/submission/pcawg/pancancer-clinical-data-requirements" target="_blank">
         submission documentation</a> for details.
         """
-    PCAWG_CLINICAL_FIELD_REQUIRED:
-      name: "PanCancer clinical field required"
+    PCAWG_SAMPLE_STUDY_MISSING:
+      name: "PanCancer sample study missing"
       description: (source) ->
         """
-        Clinical field is required for PanCancer.
+        Sample data submitted to PCAWG, however it is not marked as in PCAWG study in this DCC submission.
          See <a href="http://docs.icgc.org/submission/pcawg/pancancer-clinical-data-requirements" target="_blank">
         submission documentation</a> for details.
         """
-    PCAWG_CLINICAL_ROW_REQUIRED:
-      name: "PanCancer clinical row required"
+    PCAWG_SAMPLE_STUDY_INVALID:
+      name: "PanCancer sample study invalid"
       description: (source) ->
         """
-        Clinical row is required for PanCancer in file
-        <code>#{source.parameters?.VALUE.toLowerCase().replace(/_type$/, "")}</code>.
+        Sample is marked as in PCAWG study in this submission, however it does not actually exist in PCAWG.
          See <a href="http://docs.icgc.org/submission/pcawg/pancancer-clinical-data-requirements" target="_blank">
         submission documentation</a> for details.
         """

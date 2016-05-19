@@ -48,8 +48,8 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-@NoArgsConstructor(access = PRIVATE)
 @Slf4j
+@NoArgsConstructor(access = PRIVATE)
 public class Dictionaries {
 
   private static final ObjectReader FILE_SCHEMA_READER = Jackson.DEFAULT.reader(FileSchema.class);

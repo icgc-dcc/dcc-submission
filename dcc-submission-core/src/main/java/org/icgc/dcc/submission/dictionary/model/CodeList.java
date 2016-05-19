@@ -33,8 +33,11 @@ import org.mongodb.morphia.annotations.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 import lombok.ToString;
+import lombok.val;
 
 /**
  * Describes a list of codes (see {@code Term})
@@ -96,6 +99,17 @@ public class CodeList extends BaseEntity implements HasName {
 
   public boolean containsTerm(Term term) {
     return terms.contains(term);
+  }
+
+  @JsonIgnore
+  public BiMap<String, String> getTermsMapping() {
+    // Allow for lookup by code or value
+    val codeTerms = HashBiMap.<String, String> create();
+    for (val term : terms) {
+      codeTerms.put(term.getCode(), term.getValue());
+    }
+
+    return codeTerms;
   }
 
   @JsonIgnore

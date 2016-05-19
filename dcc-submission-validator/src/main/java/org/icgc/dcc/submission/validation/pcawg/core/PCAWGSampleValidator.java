@@ -42,8 +42,6 @@ import org.icgc.dcc.submission.validation.core.ClinicalCore;
 import org.icgc.dcc.submission.validation.core.ClinicalFields;
 import org.icgc.dcc.submission.validation.core.ReportContext;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableSet;
 
 import lombok.NonNull;
@@ -113,7 +111,7 @@ public class PCAWGSampleValidator {
   }
 
   private void validateSpecimenType(List<Record> specimens) {
-    val specimenTypes = getSpecimenTypes();
+    val specimenTypes = this.specimenTypes.getTermsMapping();
     val pcawgSpecimens = pcawgSamples.stream().collect(groupingBy(PCAWGSample::getSpecimenId));
 
     for (val specimen : specimens) {
@@ -195,16 +193,6 @@ public class PCAWGSampleValidator {
 
   private <T> ImmutableSet<String> getIds(List<T> values, Function<T, String> getId) {
     return values.stream().map(getId).collect(toImmutableSet());
-  }
-
-  private BiMap<String, String> getSpecimenTypes() {
-    // Allow for lookup by code or value
-    val specimenTypeMapping = HashBiMap.<String, String> create();
-    for (val term : specimenTypes.getTerms()) {
-      specimenTypeMapping.put(term.getCode(), term.getValue());
-    }
-
-    return specimenTypeMapping;
   }
 
   private void reportError(Error.Builder builder) {

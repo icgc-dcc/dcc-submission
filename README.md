@@ -27,6 +27,10 @@ The following module is the user interface to the system:
 
 - [Submission UI](dcc-submission-ui/README.md)
 
+The following are static files for use in any project:
+
+- [Submission Resources](dcc-submission-resources/README.md)
+
 The following are utility modules related to submissions:
 
 - [Submission Generator](dcc-submission-generator/README.md)

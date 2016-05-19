@@ -55,6 +55,12 @@ public class PCAWGSampleSheet {
     this.samples = readSamples(url);
   }
 
+  public boolean hasProject(@NonNull String projectKey) {
+    val projectNames = getProjects();
+
+    return projectNames.contains(projectKey);
+  }
+
   public Set<String> getProjects() {
     return samples.stream().map(PCAWGSample::getProjectKey).collect(toImmutableSet());
   }

@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.icgc.dcc.common.core.model.Programs;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
+import org.icgc.dcc.submission.dictionary.util.CodeLists;
 import org.icgc.dcc.submission.validation.core.ClinicalCore;
 import org.icgc.dcc.submission.validation.core.ClinicalParser;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
@@ -91,14 +92,6 @@ public class PCAWGValidator implements Validator {
     new PCAWGSampleValidator(getSpecimenTypes(context), clinicalCore, pcawgSamples, context).execute();
   }
 
-  private CodeList getSpecimenTypes(ValidationContext context) {
-    // TODO: This should be more dynamic in the code list name...
-    return context.getCodeLists().stream()
-        .filter(codeList -> codeList.getName().equals("specimen.0.specimen_type.v3"))
-        .findFirst()
-        .get();
-  }
-
   private ClinicalCore filterClinicalCore(String projectKey, ValidationContext context) {
     val clinical = ClinicalParser.parse(context);
 
@@ -125,7 +118,7 @@ public class PCAWGValidator implements Validator {
     // For DCC testing of PCAWG projects
     val testPCAWG = projectKey.startsWith("TESTP-");
 
-    val pcawg = testPCAWG || isPCAWG(projectKey);
+    val pcawg = testPCAWG || pcawgSampleSheet.hasProject(projectKey);
     val tcga = isTCGA(projectKey);
 
     return pcawg && !tcga;
@@ -135,17 +128,15 @@ public class PCAWGValidator implements Validator {
     return pcawgDictionary.getExcludedProjectKeys().contains(projectKey);
   }
 
-  private boolean isPCAWG(String projectKey) {
-    val projectNames = pcawgSampleSheet.getProjects();
-
-    return projectNames.contains(projectKey);
-  }
-
   private static boolean isTCGA(String projectKey) {
     // For DCC testing of PCAWG TCGA projects
     val testTCGA = projectKey.startsWith("TEST") && projectKey.contains("TCGA");
 
     return testTCGA || Programs.isTCGA(projectKey);
+  }
+
+  private static CodeList getSpecimenTypes(ValidationContext context) {
+    return CodeLists.getSpecimenTypes(context.getCodeLists());
   }
 
 }
