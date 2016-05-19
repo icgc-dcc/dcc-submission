@@ -30,15 +30,18 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.Set;
 
 import org.icgc.dcc.submission.core.model.Outcome;
 import org.icgc.dcc.submission.core.report.Report;
+import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.submission.repository.CodeListRepository;
 import org.icgc.dcc.submission.validation.ValidationExecutor;
 import org.icgc.dcc.submission.validation.ValidationListener;
 import org.icgc.dcc.submission.validation.core.Validation;
@@ -51,7 +54,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
@@ -80,6 +82,8 @@ public class ValidationServiceTest {
    */
   @Mock
   ReleaseService releaseService;
+  @Mock
+  CodeListRepository codeListRepository;
   @Mock
   ValidationExecutor executor;
   @Mock
@@ -118,6 +122,7 @@ public class ValidationServiceTest {
     when(releaseService.getNextRelease()).thenReturn(release);
     when(releaseService.countOpenReleases()).thenReturn(1L);
     when(releaseService.getNextDictionary()).thenReturn(dictionary);
+    when(codeListRepository.findCodeLists()).thenReturn(Collections.<CodeList> emptyList());
   }
 
   @Test
@@ -208,44 +213,29 @@ public class ValidationServiceTest {
   }
 
   private static Answer<Object> onCompletion(final Validation validation) {
-    return new Answer<Object>() {
+    return invocation -> {
+      ValidationListener listener = (ValidationListener) invocation.getArguments()[1];
+      listener.onEnded(validation);
 
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        val listener = (ValidationListener) invocation.getArguments()[1];
-        listener.onEnded(validation);
-
-        return null;
-      }
-
+      return null;
     };
   }
 
   private static Answer<Object> onCancelled(final Validation validation) {
-    return new Answer<Object>() {
+    return invocation -> {
+      ValidationListener listener = (ValidationListener) invocation.getArguments()[1];
+      listener.onCancelled(validation);
 
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        val listener = (ValidationListener) invocation.getArguments()[1];
-        listener.onCancelled(validation);
-
-        return null;
-      }
-
+      return null;
     };
   }
 
   private static Answer<Object> onFailure(final Validation validation, final Throwable throwable) {
-    return new Answer<Object>() {
+    return invocation -> {
+      ValidationListener listener = (ValidationListener) invocation.getArguments()[1];
+      listener.onFailure(validation, throwable);
 
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        val listener = (ValidationListener) invocation.getArguments()[1];
-        listener.onFailure(validation, throwable);
-
-        return null;
-      }
-
+      return null;
     };
   }
 

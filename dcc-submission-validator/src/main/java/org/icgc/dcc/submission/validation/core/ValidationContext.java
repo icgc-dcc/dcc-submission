@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
+import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -66,6 +67,11 @@ public interface ValidationContext extends ReportContext {
    * Gets the current release dictionary.
    */
   Dictionary getDictionary();
+
+  /**
+   * Gets the current code lists.
+   */
+  List<CodeList> getCodeLists();
 
   /**
    * Gets the submission directory of the associated project under validation.

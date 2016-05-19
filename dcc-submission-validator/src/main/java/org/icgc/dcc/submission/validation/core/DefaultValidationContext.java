@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.ClinicalType;
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
+import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -76,6 +77,8 @@ public class DefaultValidationContext implements ValidationContext {
   @NonNull
   private final Dictionary dictionary;
   @NonNull
+  private final List<CodeList> codeLists;
+  @NonNull
   private final DccFileSystem dccFileSystem;
   @NonNull
   private final SubmissionPlatformStrategyFactory platformStrategyFactory;
@@ -119,6 +122,11 @@ public class DefaultValidationContext implements ValidationContext {
   @Override
   public Dictionary getDictionary() {
     return dictionary;
+  }
+
+  @Override
+  public List<CodeList> getCodeLists() {
+    return codeLists;
   }
 
   @Override

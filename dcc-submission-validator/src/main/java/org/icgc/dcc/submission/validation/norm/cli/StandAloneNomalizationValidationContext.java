@@ -21,6 +21,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.icgc.dcc.common.core.dcc.Component.CONCATENATOR;
 import static org.icgc.dcc.common.core.dcc.Component.NORMALIZER;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 import static org.icgc.dcc.common.core.model.Configurations.HADOOP_KEY;
 import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.common.core.util.Joiners.DOT;
@@ -30,14 +31,17 @@ import static org.icgc.dcc.common.hadoop.util.HadoopConstants.MR_JOBTRACKER_ADDR
 import static org.icgc.dcc.submission.config.Configs.getHadoopProperties;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.common.core.meta.ArtifactoryCodeListsResolver;
 import org.icgc.dcc.common.core.meta.ArtifactoryDictionaryResolver;
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.hadoop.fs.FileSystems;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.core.util.FsConfig;
+import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
@@ -48,7 +52,7 @@ import org.icgc.dcc.submission.validation.core.AbstractValidationContext;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactoryProvider;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
@@ -75,8 +79,7 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
           DOT.join(HADOOP_KEY, "\"" + MR_JOBTRACKER_ADDRESS_KEY + "\""), jobTracker,
           DOT.join(HADOOP_KEY, "\"" + FS_DEFAULT_FS + "\""), fsUrl,
           FsConfig.FS_URL, fsUrl,
-          FsConfig.FS_ROOT, fsRoot
-          ));
+          FsConfig.FS_ROOT, fsRoot));
     }
 
   }
@@ -150,10 +153,15 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
   public Dictionary getDictionary() {
     // Deserialize
     val objectNode = new ArtifactoryDictionaryResolver().apply(Optional.of(DICTIONARY_VERSION));
-    val reader = new ObjectMapper().reader(Dictionary.class);
-    Dictionary dictionary = reader.readValue(objectNode);
+    return DEFAULT.convertValue(objectNode, Dictionary.class);
+  }
 
-    return dictionary;
+  @Override
+  @SneakyThrows
+  public List<CodeList> getCodeLists() {
+    // Deserialize
+    val arrayNode = new ArtifactoryCodeListsResolver().get();
+    return DEFAULT.convertValue(arrayNode, new TypeReference<List<CodeList>>() {});
   }
 
   @Override

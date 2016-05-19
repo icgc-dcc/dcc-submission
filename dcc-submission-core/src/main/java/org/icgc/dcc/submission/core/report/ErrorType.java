@@ -404,9 +404,9 @@ public enum ErrorType {
   },
 
   /**
-   * Sample study should be consistent between ICGC DCC and pancancer.info
+   * Missing ICGC DCC donor that exists in pancancer.info
    */
-  PCAWG_SAMPLE_STUDY_INVALID(CELL_LEVEL, "Inconsistent sample study between ICGC DCC and pancancer.info") {
+  PCAWG_DONOR_MISSING(FILE_LEVEL, "Missing ICGC DCC donor that exists in pancancer.info") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -416,9 +416,21 @@ public enum ErrorType {
   },
 
   /**
-   * Sample study should be consistent between ICGC DCC and pancancer.info
+   * Missing ICGC DCC specimen that exists in pancancer.info
    */
-  PCAWG_SAMPLE_STUDY_MISSING(CELL_LEVEL, "Inconsistent sample study between ICGC DCC and pancancer.info") {
+  PCAWG_SPECIMEN_MISSING(FILE_LEVEL, "Missing ICGC DCC specimen that exists in pancancer.info") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      return ImmutableMap.of();
+    }
+
+  },
+
+  /**
+   * Specimen type should be consistent between ICGC DCC and pancancer.info
+   */
+  PCAWG_SPECIMEN_TYPE_INVALID(CELL_LEVEL, "Inconsistent specimen type between ICGC DCC and pancancer.info") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -440,27 +452,25 @@ public enum ErrorType {
   },
 
   /**
-   * Additional clinical field constraint for PCAWG.
+   * Sample study should be consistent between ICGC DCC and pancancer.info
    */
-  PCAWG_CLINICAL_FIELD_REQUIRED(CELL_LEVEL, "Clinical field is required for PanCancer") {
+  PCAWG_SAMPLE_STUDY_INVALID(CELL_LEVEL, "Inconsistent sample study between ICGC DCC and pancancer.info") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkParams(params, String.class);
       return ImmutableMap.of();
     }
 
   },
 
   /**
-   * Additional clinical row constraint for PCAWG.
+   * Sample study should be consistent between ICGC DCC and pancancer.info
    */
-  PCAWG_CLINICAL_ROW_REQUIRED(ROW_LEVEL, "Clinical row is required for PanCancer") {
+  PCAWG_SAMPLE_STUDY_MISSING(CELL_LEVEL, "Inconsistent sample study between ICGC DCC and pancancer.info") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      checkParams(params, String.class, String.class, String.class);
-      return ImmutableMap.of(VALUE, params[0]);
+      return ImmutableMap.of();
     }
 
   };

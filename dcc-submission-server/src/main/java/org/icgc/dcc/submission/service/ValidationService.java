@@ -40,6 +40,7 @@ import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.repository.CodeListRepository;
 import org.icgc.dcc.submission.validation.ValidationExecutor;
 import org.icgc.dcc.submission.validation.ValidationListener;
 import org.icgc.dcc.submission.validation.ValidationRejectedException;
@@ -68,7 +69,7 @@ import lombok.extern.slf4j.Slf4j;
  * responsible for mediating validation cancellation requests coming from the web layer.
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject) )
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ValidationService extends AbstractScheduledService {
 
   /**
@@ -81,6 +82,8 @@ public class ValidationService extends AbstractScheduledService {
    */
   @NonNull
   private final ReleaseService releaseService;
+  @NonNull
+  private final CodeListRepository codeListRepository;
   @NonNull
   private final ValidationExecutor executor;
   @NonNull
@@ -288,6 +291,7 @@ public class ValidationService extends AbstractScheduledService {
    */
   private ValidationContext createValidationContext(Release release, QueuedProject project) {
     val dictionary = releaseService.getNextDictionary();
+    val codeLists = codeListRepository.findCodeLists();
 
     val context = new DefaultValidationContext(
         createReportContext(),
@@ -296,6 +300,7 @@ public class ValidationService extends AbstractScheduledService {
         project.getDataTypes(),
         release,
         dictionary,
+        codeLists,
         dccFileSystem,
         platformStrategyFactory);
 

@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.key.cli;
 
 import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_S_TYPE;
 import static org.icgc.dcc.submission.config.Configs.getHadoopProperties;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readFileSchema;
@@ -28,10 +29,12 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.common.core.meta.ArtifactoryCodeListsResolver;
 import org.icgc.dcc.common.core.meta.ArtifactoryDictionaryResolver;
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
 import org.icgc.dcc.submission.core.util.FsConfig;
+import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
@@ -42,7 +45,7 @@ import org.icgc.dcc.submission.validation.core.AbstractValidationContext;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactoryProvider;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
@@ -81,6 +84,8 @@ public class KeyValidationContext extends AbstractValidationContext {
   @Getter(lazy = true)
   private final Dictionary dictionary = createDictionary();
   @Getter(lazy = true)
+  private final List<CodeList> codeLists = createCodeLists();
+  @Getter(lazy = true)
   private final Release release = new Release(releaseName);
   @Getter(lazy = true)
   private final SubmissionDirectory submissionDirectory = createSubmissionDirectory();
@@ -97,13 +102,19 @@ public class KeyValidationContext extends AbstractValidationContext {
   protected Dictionary createDictionary() {
     // Deserialize
     val objectNode = new ArtifactoryDictionaryResolver().apply(Optional.of(DICTIONARY_VERSION));
-    val reader = new ObjectMapper().reader(Dictionary.class);
-    Dictionary dictionary = reader.readValue(objectNode);
+    val dictionary = DEFAULT.convertValue(objectNode, Dictionary.class);
 
     // Add file schemata
     dictionary.addFile(readFileSchema(SSM_S_TYPE));
 
     return dictionary;
+  }
+
+  @SneakyThrows
+  protected List<CodeList> createCodeLists() {
+    // Deserialize
+    val arrayNode = new ArtifactoryCodeListsResolver().get();
+    return DEFAULT.convertValue(arrayNode, new TypeReference<List<CodeList>>() {});
   }
 
   @SneakyThrows
@@ -121,8 +132,7 @@ public class KeyValidationContext extends AbstractValidationContext {
         "hadoop.\"fs.defaultFS\"", fsUrl,
 
         "fs.root", fsRoot,
-        "fs.url", fsUrl
-        ));
+        "fs.url", fsUrl));
   }
 
   private SubmissionPlatformStrategy createPlatformStrategy() {
