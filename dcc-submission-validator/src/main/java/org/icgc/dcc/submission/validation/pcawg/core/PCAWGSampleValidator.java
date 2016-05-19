@@ -28,7 +28,7 @@ import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.submission.validation.core.ClinicalFields.getSampleSampleId;
 import static org.icgc.dcc.submission.validation.core.ClinicalFields.getSpecimenSpecimenId;
 import static org.icgc.dcc.submission.validation.core.ClinicalFields.getSpecimenType;
-import static org.icgc.dcc.submission.validation.pcawg.util.PCAWGFields.isPCAWGSample;
+import static org.icgc.dcc.submission.validation.pcawg.util.PCAWGFields.isMarkedPCAWGSample;
 import static org.icgc.dcc.submission.validation.sample.util.SampleTypeFields.SPECIMEN_TYPE_FIELD_NAME;
 
 import java.util.List;
@@ -129,7 +129,8 @@ public class PCAWGSampleValidator {
 
       // Normalize to code and value representations
       val expectedRaw = pcawgSpecimen.getSpecimenType();
-      val expectedCode = specimenTypes.containsKey(expectedRaw) ? expectedRaw : specimenTypes.inverse().get(expectedRaw);
+      val expectedCode =
+          specimenTypes.containsKey(expectedRaw) ? expectedRaw : specimenTypes.inverse().get(expectedRaw);
       val expectedValue = specimenTypes.get(expectedCode);
 
       // Normalize to code and value representations
@@ -163,12 +164,12 @@ public class PCAWGSampleValidator {
 
     for (val sample : samples) {
       val sampleId = getSampleSampleId(sample);
-      val pcawgRequired = pcawgSampleIds.contains(sampleId);
+      val actuallyPcawg = pcawgSampleIds.contains(sampleId);
       val error = error(sample).fieldNames(SUBMISSION_ANALYZED_SAMPLE_ID).value(sampleId);
 
-      if (isPCAWGSample(sample) && !pcawgRequired) {
+      if (isMarkedPCAWGSample(sample) && !actuallyPcawg) {
         reportError(error.type(ErrorType.PCAWG_SAMPLE_MISSING));
-      } else if (pcawgRequired) {
+      } else if (!isMarkedPCAWGSample(sample) && actuallyPcawg) {
         reportError(error.type(ErrorType.PCAWG_SAMPLE_STUDY_MISSING));
       }
     }

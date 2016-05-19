@@ -39,13 +39,13 @@ public class PCAWGFields {
   private static final String PCAWG_STUDY_CODE = "1";
   private static final String PCAWG_STUDY_VALUE = "PCAWG";
 
-  public static boolean isPCAWGSample(@NonNull Map<String, String> sample) {
+  public static boolean isMarkedPCAWGSample(@NonNull Map<String, String> sample) {
     val study = getSampleStudy(sample);
 
-    return isPCAWGStudy(study);
+    return isMarkedPCAWGStudy(study);
   }
 
-  private static boolean isPCAWGStudy(@NonNull String study) {
+  private static boolean isMarkedPCAWGStudy(@NonNull String study) {
     if (isNullOrEmpty(study)) {
       return false;
     } else if (study.equals(PCAWG_STUDY_VALUE)) {
