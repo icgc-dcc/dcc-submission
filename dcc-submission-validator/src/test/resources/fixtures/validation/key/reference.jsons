@@ -1,4 +1,5 @@
 {"fileName":"donor.01.txt","fieldNames":["donor_id"],"number":0,"lineNumber":6,"value":["dr-ssm-03"],"type":"UNIQUE_VALUE_ERROR","params":null
+"fileName":"specimen.txt","fieldNames":["specimen_id"],"number":0,"lineNumber":2,"value":["sp-ssm-01.01"],"type":"UNIQUE_VALUE_ERROR","params":null
 "fileName":"sample.02.txt","fieldNames":["analyzed_sample_id"],"number":0,"lineNumber":10,"value":["sa-ssm-04.01.C02"],"type":"UNIQUE_VALUE_ERROR","params":null
 "fileName":"sample.02.txt","fieldNames":["specimen_id"],"number":0,"lineNumber":10,"value":["sp-ssm-04.01b"],"type":"RELATION_VALUE_ERROR","params":["SPECIMEN",["specimen_id"]]
 "fileName":"sample.02.txt","fieldNames":["analyzed_sample_id"],"number":0,"lineNumber":11,"value":["sa-ssm-04.01.C02"],"type":"UNIQUE_VALUE_ERROR","params":null

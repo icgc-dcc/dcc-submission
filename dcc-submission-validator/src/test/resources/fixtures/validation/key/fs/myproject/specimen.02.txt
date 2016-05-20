@@ -1,0 +1,2 @@
+donor_id	specimen_id	other_specimen
+dr-ssm-01	sp-ssm-01.01	dummy
