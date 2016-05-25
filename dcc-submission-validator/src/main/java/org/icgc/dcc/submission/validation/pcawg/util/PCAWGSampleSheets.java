@@ -53,10 +53,13 @@ public class PCAWGSampleSheets {
   /**
    * Constants.
    */
-  public static final URL PREVIOUS_SAMPLE_SHEEL_URL =
+  public static final URL PREV_PREV_SAMPLE_SHEEL_URL =
       getUrl("http://pancancer.info/data_releases/sample_sheet/pcawg_sample_sheet.2016-01-13.tsv");
-  public static final URL SAMPLE_SHEEL_URL =
+  public static final URL PREV_SAMPLE_SHEEL_URL =
       getUrl("http://pancancer.info/data_releases/sample_sheet/pcawg_sample_sheet.2016-03-11.tsv");
+  public static final URL SAMPLE_SHEET_URL =
+      getUrl("http://pancancer.info/gnos_metadata/latest/reports/pcawg_sample_sheet.tsv");
+
   private static final File SAMPLE_SHEET_FILE = new File("src/main/resources/pcawg-sample-sheet.json");
 
   /**
@@ -64,7 +67,7 @@ public class PCAWGSampleSheets {
    */
   @SneakyThrows
   public static void main(String[] args) {
-    val parser = new PCAWGSampleSheetParser(SAMPLE_SHEEL_URL);
+    val parser = new PCAWGSampleSheetParser(SAMPLE_SHEET_URL);
     val mapper = new PCAWGSampleSheetMapper();
     val writer = new PCAWGSampleSheetWriter(SAMPLE_SHEET_FILE);
 
@@ -123,7 +126,7 @@ public class PCAWGSampleSheets {
         sampleId = getBarcode(sampleId);
       }
 
-      // To align with our CV terms
+      // Temporary until additional QC is done upstream. Need to align with our CV terms
       String specimenType = values.get(9).trim();
       if (specimenType.equals("peripheral blood|Primary tumour - blood derived (peripheral blood)")) {
         specimenType = "Primary tumour - blood derived (peripheral blood)";
