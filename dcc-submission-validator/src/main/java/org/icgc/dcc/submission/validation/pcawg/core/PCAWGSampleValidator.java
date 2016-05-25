@@ -168,7 +168,7 @@ public class PCAWGSampleValidator {
       val error = error(sample).fieldNames(SUBMISSION_ANALYZED_SAMPLE_ID).value(sampleId);
 
       if (isMarkedPCAWGSample(sample) && !actuallyPcawg) {
-        reportError(error.type(ErrorType.PCAWG_SAMPLE_MISSING));
+        reportError(error.type(ErrorType.PCAWG_SAMPLE_STUDY_INVALID));
       } else if (!isMarkedPCAWGSample(sample) && actuallyPcawg) {
         reportError(error.type(ErrorType.PCAWG_SAMPLE_STUDY_MISSING));
       }
