@@ -31,7 +31,7 @@ mvn -am -pl dcc-submission/dcc-submission-server
 Before starting development it is necessary to download and extract a reference genome FASTA file and index:
 
 ```shell
-wget http://seqwaremaven.oicr.on.ca/artifactory/simple/dcc-dependencies/org/icgc/dcc/dcc-reference-genome/GRCh37/dcc-reference-genome-GRCh37.tar.gz
+wget https://artifacts.oicr.on.ca/artifactory/simple/dcc-dependencies/org/icgc/dcc/dcc-reference-genome/GRCh37/dcc-reference-genome-GRCh37.tar.gz
 tar zxf dcc-reference-genome-GRCh37.tar.gz -C /tmp
 ```
 
