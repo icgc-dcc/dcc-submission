@@ -9,7 +9,7 @@ external_submission_url: https://submissions.dcc.icgc.org
 external_docs_url: http://docs.icgc.org
 
 # Artifactory URLS
-artifactory_url: http://seqwaremaven.oicr.on.ca/artifactory
+artifactory_url: https://artifacts.oicr.on.ca/artifactory
 artifactory_release_url: "{{ artifactory_url }}/dcc-release" 
 artifactory_deps_url: "{{ artifactory_url }}/simple/dcc-dependencies" 
 
