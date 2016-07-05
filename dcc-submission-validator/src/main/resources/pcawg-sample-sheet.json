@@ -462,6 +462,18 @@
   "sampleId" : "PD7193a"
 }, {
   "projectKey" : "BOCA-UK",
+  "donorId" : "CGP_donor_1397081",
+  "specimenId" : "CGP_specimen_1449461",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "PD7194b"
+}, {
+  "projectKey" : "BOCA-UK",
+  "donorId" : "CGP_donor_1397081",
+  "specimenId" : "CGP_specimen_1449462",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "PD7194a"
+}, {
+  "projectKey" : "BOCA-UK",
   "donorId" : "CGP_donor_1397082",
   "specimenId" : "CGP_specimen_1449464",
   "specimenType" : "Normal - blood derived",
@@ -880,6 +892,18 @@
   "specimenId" : "CGP_specimen_1668017",
   "specimenType" : "Primary tumour - solid tissue",
   "sampleId" : "PD11424a"
+}, {
+  "projectKey" : "BOCA-UK",
+  "donorId" : "CGP_donor_1635843",
+  "specimenId" : "CGP_specimen_1704428",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "PD12423b"
+}, {
+  "projectKey" : "BOCA-UK",
+  "donorId" : "CGP_donor_1635843",
+  "specimenId" : "CGP_specimen_1704427",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "PD12423a"
 }, {
   "projectKey" : "BOCA-UK",
   "donorId" : "CGP_donor_1635862",
@@ -2560,6 +2584,18 @@
   "specimenId" : "CGP_specimen_1343251",
   "specimenType" : "Primary tumour - solid tissue",
   "sampleId" : "PD4845a"
+}, {
+  "projectKey" : "BRCA-UK",
+  "donorId" : "CGP_donor_1337230",
+  "specimenId" : "CGP_specimen_1387535",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "PD4975b"
+}, {
+  "projectKey" : "BRCA-UK",
+  "donorId" : "CGP_donor_1337230",
+  "specimenId" : "CGP_specimen_1387534",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "PD4975a"
 }, {
   "projectKey" : "BRCA-UK",
   "donorId" : "CGP_donor_1337235",
@@ -5646,6 +5682,24 @@
   "sampleId" : "290-1950-02TR"
 }, {
   "projectKey" : "CLLE-ES",
+  "donorId" : "294",
+  "specimenId" : "294-01-10ND",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "294-01-10ND"
+}, {
+  "projectKey" : "CLLE-ES",
+  "donorId" : "294",
+  "specimenId" : "294-01-3TD",
+  "specimenType" : "Primary tumour - blood derived (peripheral blood)",
+  "sampleId" : "294-01-3TD"
+}, {
+  "projectKey" : "CLLE-ES",
+  "donorId" : "294",
+  "specimenId" : "294-01-6TR",
+  "specimenType" : "Primary tumour - blood derived (peripheral blood)",
+  "sampleId" : "294-01-6TR"
+}, {
+  "projectKey" : "CLLE-ES",
   "donorId" : "296",
   "specimenId" : "296-04-10ND",
   "specimenType" : "Normal - blood derived",
@@ -6240,6 +6294,24 @@
   "sampleId" : "006-0018-01TD"
 }, {
   "projectKey" : "CLLE-ES",
+  "donorId" : "618",
+  "specimenId" : "618-1503-01ND",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "618-1503-01ND"
+}, {
+  "projectKey" : "CLLE-ES",
+  "donorId" : "618",
+  "specimenId" : "618-1503-04TD",
+  "specimenType" : "Primary tumour - blood derived (peripheral blood)",
+  "sampleId" : "618-1503-04TD"
+}, {
+  "projectKey" : "CLLE-ES",
+  "donorId" : "618",
+  "specimenId" : "618-1503-05TR",
+  "specimenType" : "Primary tumour - blood derived (peripheral blood)",
+  "sampleId" : "618-1503-05TR"
+}, {
+  "projectKey" : "CLLE-ES",
   "donorId" : "628",
   "specimenId" : "628-02-01ND",
   "specimenType" : "Normal - blood derived",
@@ -6516,6 +6588,24 @@
   "sampleId" : "803-01-7TD"
 }, {
   "projectKey" : "CLLE-ES",
+  "donorId" : "804",
+  "specimenId" : "804-02-1ND",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "804-02-1ND"
+}, {
+  "projectKey" : "CLLE-ES",
+  "donorId" : "804",
+  "specimenId" : "804-02-4TD",
+  "specimenType" : "Primary tumour - blood derived (peripheral blood)",
+  "sampleId" : "804-02-4TD"
+}, {
+  "projectKey" : "CLLE-ES",
+  "donorId" : "804",
+  "specimenId" : "804-01-2TR",
+  "specimenType" : "Primary tumour - blood derived (peripheral blood)",
+  "sampleId" : "804-01-2TR"
+}, {
+  "projectKey" : "CLLE-ES",
   "donorId" : "82",
   "specimenId" : "082-01-1ND",
   "specimenType" : "Normal - blood derived",
@@ -6726,12 +6816,6 @@
   "sampleId" : "PD5117e"
 }, {
   "projectKey" : "CMDI-UK",
-  "donorId" : "CGP_donor_1338055",
-  "specimenId" : "CGP_specimen_1561472",
-  "specimenType" : "Primary tumour - blood derived (peripheral blood)",
-  "sampleId" : "PD5117d"
-}, {
-  "projectKey" : "CMDI-UK",
   "donorId" : "CGP_donor_1338056",
   "specimenId" : "CGP_specimen_1632258",
   "specimenType" : "Normal - blood derived",
@@ -6838,12 +6922,6 @@
   "specimenId" : "CGP_specimen_1561467",
   "specimenType" : "Primary tumour - blood derived (peripheral blood)",
   "sampleId" : "PD4947d"
-}, {
-  "projectKey" : "CMDI-UK",
-  "donorId" : "CGP_donor_1338695",
-  "specimenId" : "CGP_specimen_1561468",
-  "specimenType" : "Primary tumour - blood derived (peripheral blood)",
-  "sampleId" : "PD4947e"
 }, {
   "projectKey" : "CMDI-UK",
   "donorId" : "CGP_donor_1338695",
@@ -7038,6 +7116,18 @@
   "sampleId" : "PD8943d"
 }, {
   "projectKey" : "CMDI-UK",
+  "donorId" : "CGP_donor_1500976",
+  "specimenId" : "CGP_specimen_1560876",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "PD9476b"
+}, {
+  "projectKey" : "CMDI-UK",
+  "donorId" : "CGP_donor_1500976",
+  "specimenId" : "CGP_specimen_1560875",
+  "specimenType" : "Primary tumour - blood derived (peripheral blood)",
+  "sampleId" : "PD9476c"
+}, {
+  "projectKey" : "CMDI-UK",
   "donorId" : "CGP_donor_1500978",
   "specimenId" : "CGP_specimen_1560882",
   "specimenType" : "Normal - blood derived",
@@ -7159,12 +7249,6 @@
 }, {
   "projectKey" : "CMDI-UK",
   "donorId" : "CGP_donor_1600819",
-  "specimenId" : "CGP_specimen_1665983",
-  "specimenType" : "Primary tumour - blood derived (peripheral blood)",
-  "sampleId" : "PD11410a2"
-}, {
-  "projectKey" : "CMDI-UK",
-  "donorId" : "CGP_donor_1600819",
   "specimenId" : "CGP_specimen_1665984",
   "specimenType" : "Primary tumour - blood derived (peripheral blood)",
   "sampleId" : "PD11410c"
@@ -7258,6 +7342,24 @@
   "specimenId" : "TCGA-CA-6717-01A",
   "specimenType" : "Primary tumour - solid tissue",
   "sampleId" : "TCGA-CA-6717-01A-11R-1839-07"
+}, {
+  "projectKey" : "COAD-US",
+  "donorId" : "TCGA-AA-A03F",
+  "specimenId" : "TCGA-AA-A03F-11A",
+  "specimenType" : "Normal - solid tissue",
+  "sampleId" : "TCGA-AA-A03F-11A-12D-A17O-10"
+}, {
+  "projectKey" : "COAD-US",
+  "donorId" : "TCGA-AA-A03F",
+  "specimenId" : "TCGA-AA-A03F-01A",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "TCGA-AA-A03F-01A-11D-A17O-10"
+}, {
+  "projectKey" : "COAD-US",
+  "donorId" : "TCGA-AA-A03F",
+  "specimenId" : "TCGA-AA-A03F-01A",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "TCGA-AA-A03F-01A-11R-A16W-07"
 }, {
   "projectKey" : "COAD-US",
   "donorId" : "TCGA-AA-A01X",
@@ -8406,6 +8508,18 @@
   "sampleId" : "EOPC-031_tumor"
 }, {
   "projectKey" : "EOPC-DE",
+  "donorId" : "EOPC-032",
+  "specimenId" : "EOPC-032_normal",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "EOPC-032_normal"
+}, {
+  "projectKey" : "EOPC-DE",
+  "donorId" : "EOPC-032",
+  "specimenId" : "EOPC-032_tumor",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "EOPC-032_tumor"
+}, {
+  "projectKey" : "EOPC-DE",
   "donorId" : "EOPC-033",
   "specimenId" : "EOPC-033_normal",
   "specimenType" : "Normal - blood derived",
@@ -9460,6 +9574,18 @@
   "specimenId" : "TB10-0038C",
   "specimenType" : "Primary tumour - solid tissue",
   "sampleId" : "SS6003117"
+}, {
+  "projectKey" : "ESAD-UK",
+  "donorId" : "OCCAMS-PS-003",
+  "specimenId" : "TB10-0869C",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "SS6003121"
+}, {
+  "projectKey" : "ESAD-UK",
+  "donorId" : "OCCAMS-PS-003",
+  "specimenId" : "TB10-0869N",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "SS6003120"
 }, {
   "projectKey" : "ESAD-UK",
   "donorId" : "OCCAMS-PS-008",
@@ -13320,6 +13446,24 @@
   "sampleId" : "TCGA-CJ-6033-11A-01R-1858-07"
 }, {
   "projectKey" : "KIRC-US",
+  "donorId" : "TCGA-A3-3324",
+  "specimenId" : "TCGA-A3-3324-11A",
+  "specimenType" : "Normal - solid tissue",
+  "sampleId" : "TCGA-A3-3324-11A-01D-2229-08"
+}, {
+  "projectKey" : "KIRC-US",
+  "donorId" : "TCGA-A3-3324",
+  "specimenId" : "TCGA-A3-3324-01A",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "TCGA-A3-3324-01A-01D-2229-08"
+}, {
+  "projectKey" : "KIRC-US",
+  "donorId" : "TCGA-A3-3324",
+  "specimenId" : "TCGA-A3-3324-01A",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "TCGA-A3-3324-01A-02R-1325-07"
+}, {
+  "projectKey" : "KIRC-US",
   "donorId" : "TCGA-CZ-5453",
   "specimenId" : "TCGA-CZ-5453-11A",
   "specimenType" : "Normal - solid tissue",
@@ -14452,6 +14596,18 @@
   "specimenId" : "SNU_WGS_06_S1_sp",
   "specimenType" : "Primary tumour - blood derived (bone marrow)",
   "sampleId" : "SNU_WGS_06_S1"
+}, {
+  "projectKey" : "LAML-KR",
+  "donorId" : "SNU_WGS_08",
+  "specimenId" : "SNU_WGS_08_G0_sp",
+  "specimenType" : "Normal - other",
+  "sampleId" : "SNU_WGS_08_G0"
+}, {
+  "projectKey" : "LAML-KR",
+  "donorId" : "SNU_WGS_08",
+  "specimenId" : "SNU_WGS_08_S1_sp",
+  "specimenType" : "Primary tumour - blood derived (bone marrow)",
+  "sampleId" : "SNU_WGS_08_S1"
 }, {
   "projectKey" : "LAML-KR",
   "donorId" : "SNU_WGS_09",
@@ -16564,6 +16720,18 @@
   "specimenId" : "HX18T",
   "specimenType" : "Primary tumour - solid tissue",
   "sampleId" : "HX18T"
+}, {
+  "projectKey" : "LINC-JP",
+  "donorId" : "HX19",
+  "specimenId" : "HX19L",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "HX19L"
+}, {
+  "projectKey" : "LINC-JP",
+  "donorId" : "HX19",
+  "specimenId" : "HX19T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "HX19T"
 }, {
   "projectKey" : "LINC-JP",
   "donorId" : "HX20",
@@ -19230,6 +19398,18 @@
   "sampleId" : "RK164_C01"
 }, {
   "projectKey" : "LIRI-JP",
+  "donorId" : "RK165",
+  "specimenId" : "RK165_B01",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "RK165_B01"
+}, {
+  "projectKey" : "LIRI-JP",
+  "donorId" : "RK165",
+  "specimenId" : "RK165_C01",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "RK165_C01"
+}, {
+  "projectKey" : "LIRI-JP",
   "donorId" : "RK166",
   "specimenId" : "RK166_B01",
   "specimenType" : "Normal - blood derived",
@@ -19756,6 +19936,18 @@
   "specimenId" : "RK211_C01",
   "specimenType" : "Primary tumour - solid tissue",
   "sampleId" : "RK211_C01"
+}, {
+  "projectKey" : "LIRI-JP",
+  "donorId" : "RK212",
+  "specimenId" : "RK212_B01",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "RK212_B01"
+}, {
+  "projectKey" : "LIRI-JP",
+  "donorId" : "RK212",
+  "specimenId" : "RK212_C01",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "RK212_C01"
 }, {
   "projectKey" : "LIRI-JP",
   "donorId" : "RK213",
@@ -21520,6 +21712,30 @@
   "specimenId" : "TCGA-64-1678-01A",
   "specimenType" : "Primary tumour - solid tissue",
   "sampleId" : "TCGA-64-1678-01A-01R-0946-07"
+}, {
+  "projectKey" : "LUAD-US",
+  "donorId" : "TCGA-44-2665",
+  "specimenId" : "TCGA-44-2665-10A",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "TCGA-44-2665-10A-01D-0969-08"
+}, {
+  "projectKey" : "LUAD-US",
+  "donorId" : "TCGA-44-2665",
+  "specimenId" : "TCGA-44-2665-01A",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "TCGA-44-2665-01A-01D-0969-08"
+}, {
+  "projectKey" : "LUAD-US",
+  "donorId" : "TCGA-44-2665",
+  "specimenId" : "TCGA-44-2665-01A",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "TCGA-44-2665-01A-01R-A278-07"
+}, {
+  "projectKey" : "LUAD-US",
+  "donorId" : "TCGA-44-2665",
+  "specimenId" : "TCGA-44-2665-01A",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "TCGA-44-2665-01A-01R-0946-07"
 }, {
   "projectKey" : "LUAD-US",
   "donorId" : "TCGA-78-7146",
@@ -25536,6 +25752,24 @@
   "sampleId" : "AOCS-075-2-4"
 }, {
   "projectKey" : "OV-AU",
+  "donorId" : "AOCS-076",
+  "specimenId" : "AOCS-076-9",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "AOCS-076-5-8"
+}, {
+  "projectKey" : "OV-AU",
+  "donorId" : "AOCS-076",
+  "specimenId" : "AOCS-076-1",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "AOCS-076-1-3"
+}, {
+  "projectKey" : "OV-AU",
+  "donorId" : "AOCS-076",
+  "specimenId" : "AOCS-076-1",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "AOCS-076-2-7"
+}, {
+  "projectKey" : "OV-AU",
   "donorId" : "AOCS-077",
   "specimenId" : "AOCS-077-9",
   "specimenType" : "Normal - EBV immortalized",
@@ -26593,12 +26827,6 @@
 }, {
   "projectKey" : "OV-AU",
   "donorId" : "AOCS-167",
-  "specimenId" : "AOCS-167-13",
-  "specimenType" : "Recurrent tumour - other",
-  "sampleId" : "AOCS-167-4-6"
-}, {
-  "projectKey" : "OV-AU",
-  "donorId" : "AOCS-167",
   "specimenId" : "AOCS-167-4",
   "specimenType" : "Metastatic tumour - metastasis to distant location",
   "sampleId" : "AOCS-167-29-7-MD"
@@ -26608,6 +26836,12 @@
   "specimenId" : "AOCS-167-4",
   "specimenType" : "Metastatic tumour - metastasis to distant location",
   "sampleId" : "AOCS-167-29-7-WT"
+}, {
+  "projectKey" : "OV-AU",
+  "donorId" : "AOCS-167",
+  "specimenId" : "AOCS-167-13",
+  "specimenType" : "Recurrent tumour - other",
+  "sampleId" : "AOCS-167-4-6"
 }, {
   "projectKey" : "OV-AU",
   "donorId" : "AOCS-167",
@@ -26812,6 +27046,18 @@
   "specimenId" : "TCGA-25-1634-01A",
   "specimenType" : "Primary tumour - solid tissue",
   "sampleId" : "TCGA-25-1634-01A-01R-1566-13"
+}, {
+  "projectKey" : "OV-US",
+  "donorId" : "TCGA-13-0751",
+  "specimenId" : "TCGA-13-0751-10A",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "TCGA-13-0751-10A-01D-0446-08"
+}, {
+  "projectKey" : "OV-US",
+  "donorId" : "TCGA-13-0751",
+  "specimenId" : "TCGA-13-0751-01A",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "TCGA-13-0751-01A-01D-0446-08"
 }, {
   "projectKey" : "OV-US",
   "donorId" : "TCGA-24-0982",
@@ -28830,6 +29076,24 @@
   "sampleId" : "8066866"
 }, {
   "projectKey" : "PACA-AU",
+  "donorId" : "ICGC_0415",
+  "specimenId" : "8067233",
+  "specimenType" : "Normal - solid tissue",
+  "sampleId" : "8067233"
+}, {
+  "projectKey" : "PACA-AU",
+  "donorId" : "ICGC_0415",
+  "specimenId" : "8067232",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "8067232"
+}, {
+  "projectKey" : "PACA-AU",
+  "donorId" : "ICGC_0415",
+  "specimenId" : "8067234",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "8067234"
+}, {
+  "projectKey" : "PACA-AU",
   "donorId" : "ICGC_0417",
   "specimenId" : "8067238",
   "specimenType" : "Normal - solid tissue",
@@ -28912,6 +29176,24 @@
   "specimenId" : "8069317",
   "specimenType" : "Primary tumour - solid tissue",
   "sampleId" : "8069317"
+}, {
+  "projectKey" : "PACA-AU",
+  "donorId" : "ICGC_0503",
+  "specimenId" : "8069320",
+  "specimenType" : "Normal - solid tissue",
+  "sampleId" : "8069320"
+}, {
+  "projectKey" : "PACA-AU",
+  "donorId" : "ICGC_0503",
+  "specimenId" : "8069319",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "8069319"
+}, {
+  "projectKey" : "PACA-AU",
+  "donorId" : "ICGC_0503",
+  "specimenId" : "8068966",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "8068966"
 }, {
   "projectKey" : "PACA-AU",
   "donorId" : "ICGC_0507",
@@ -29710,6 +29992,18 @@
   "specimenId" : "PCSI_0230_Pa_P_526",
   "specimenType" : "Primary tumour - solid tissue",
   "sampleId" : "PCSI_0230_Pa_P_526"
+}, {
+  "projectKey" : "PACA-CA",
+  "donorId" : "PCSI_0231",
+  "specimenId" : "PCSI_0231_Ly_R",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "PCSI_0231_Ly_R"
+}, {
+  "projectKey" : "PACA-CA",
+  "donorId" : "PCSI_0231",
+  "specimenId" : "PCSI_0231_Pa_P_526",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "PCSI_0231_Pa_P_526"
 }, {
   "projectKey" : "PACA-CA",
   "donorId" : "PCSI_0233",
@@ -30816,6 +31110,18 @@
   "sampleId" : "PCSI_0572_Pa_P_526"
 }, {
   "projectKey" : "PAEN-AU",
+  "donorId" : "ICGC_0287",
+  "specimenId" : "8036079",
+  "specimenType" : "Normal - solid tissue",
+  "sampleId" : "8036079"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "ICGC_0287",
+  "specimenId" : "8036078",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "8036078"
+}, {
+  "projectKey" : "PAEN-AU",
   "donorId" : "ICGC_0425",
   "specimenId" : "8051438",
   "specimenType" : "Normal - blood derived",
@@ -31200,6 +31506,42 @@
   "sampleId" : "8070181"
 }, {
   "projectKey" : "PAEN-AU",
+  "donorId" : "ITNET-0809",
+  "specimenId" : "809N",
+  "specimenType" : "Normal - solid tissue",
+  "sampleId" : "809N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "ITNET-0809",
+  "specimenId" : "809T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "809T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "ITNET-0911",
+  "specimenId" : "911N",
+  "specimenType" : "Normal - solid tissue",
+  "sampleId" : "911N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "ITNET-0911",
+  "specimenId" : "911T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "911T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "ITNET-1044",
+  "specimenId" : "1044N",
+  "specimenType" : "Normal - solid tissue",
+  "sampleId" : "1044N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "ITNET-1044",
+  "specimenId" : "1044T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "1044T"
+}, {
+  "projectKey" : "PAEN-AU",
   "donorId" : "ITNET-1081",
   "specimenId" : "1081N",
   "specimenType" : "Normal - tissue adjacent to primary",
@@ -31402,6 +31744,198 @@
   "specimenId" : "1320T",
   "specimenType" : "Primary tumour - solid tissue",
   "sampleId" : "1320T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0009",
+  "specimenId" : "NE9-N",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "NE9-N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0009",
+  "specimenId" : "NE9-T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "NE9-T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0010",
+  "specimenId" : "NE10-N",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "NE10-N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0010",
+  "specimenId" : "NE10-T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "NE10-T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0012",
+  "specimenId" : "NE12-N",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "NE12-N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0012",
+  "specimenId" : "NE12-T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "NE12-T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0017",
+  "specimenId" : "NE17-N",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "NE17-N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0017",
+  "specimenId" : "NE17-T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "NE17-T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0018",
+  "specimenId" : "NE18-N",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "NE18-N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0018",
+  "specimenId" : "NE18-T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "NE18-T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0020",
+  "specimenId" : "NE20-N",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "NE20-N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0020",
+  "specimenId" : "NE20-T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "NE20-T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0021",
+  "specimenId" : "NE21-N",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "NE21-N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0021",
+  "specimenId" : "NE21-T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "NE21-T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0023",
+  "specimenId" : "NE23-N",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "NE23-N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0023",
+  "specimenId" : "NE23-T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "NE23-T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0025",
+  "specimenId" : "NE25-N",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "NE25-N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0025",
+  "specimenId" : "NE25-T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "NE25-T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0026",
+  "specimenId" : "NE26-N",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "NE26-N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0026",
+  "specimenId" : "NE26-T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "NE26-T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0027",
+  "specimenId" : "NE27-N",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "NE27-N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0027",
+  "specimenId" : "NE27-T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "NE27-T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0028",
+  "specimenId" : "NE28-N",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "NE28-N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0028",
+  "specimenId" : "NE28-T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "NE28-T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0029",
+  "specimenId" : "NE29-N",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "NE29-N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0029",
+  "specimenId" : "NE29-T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "NE29-T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0032",
+  "specimenId" : "NE32-N",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "NE32-N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0032",
+  "specimenId" : "NE32-T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "NE32-T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0033",
+  "specimenId" : "NE33-N",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "NE33-N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0033",
+  "specimenId" : "NE33-T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "NE33-T"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0038",
+  "specimenId" : "NE38-N",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "NE38-N"
+}, {
+  "projectKey" : "PAEN-AU",
+  "donorId" : "NE-0038",
+  "specimenId" : "NE38-T",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "NE38-T"
 }, {
   "projectKey" : "PAEN-IT",
   "donorId" : "ITNET-0020",
@@ -32122,6 +32656,18 @@
   "specimenId" : "ICGC_MB139",
   "specimenType" : "Primary tumour - solid tissue",
   "sampleId" : "ICGC_MB139"
+}, {
+  "projectKey" : "PBCA-DE",
+  "donorId" : "ICGC_MB14",
+  "specimenId" : "ICGC_BL14",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "ICGC_BL14"
+}, {
+  "projectKey" : "PBCA-DE",
+  "donorId" : "ICGC_MB14",
+  "specimenId" : "ICGC_MB14",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "ICGC_MB14"
 }, {
   "projectKey" : "PBCA-DE",
   "donorId" : "ICGC_MB143",
@@ -34704,6 +35250,18 @@
   "sampleId" : "MBRep_T27"
 }, {
   "projectKey" : "PBCA-DE",
+  "donorId" : "MBRep_T34",
+  "specimenId" : "MBRep_B34",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "MBRep_B34"
+}, {
+  "projectKey" : "PBCA-DE",
+  "donorId" : "MBRep_T34",
+  "specimenId" : "MBRep_T34",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "MBRep_T34"
+}, {
+  "projectKey" : "PBCA-DE",
   "donorId" : "MBRep_T36",
   "specimenId" : "MBRep_B36",
   "specimenType" : "Normal - blood derived",
@@ -34774,6 +35332,18 @@
   "specimenId" : "MBRep_T67",
   "specimenType" : "Primary tumour - solid tissue",
   "sampleId" : "MBRep_T67"
+}, {
+  "projectKey" : "PBCA-DE",
+  "donorId" : "MBRep_T69",
+  "specimenId" : "MBRep_B69",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "MBRep_B69"
+}, {
+  "projectKey" : "PBCA-DE",
+  "donorId" : "MBRep_T69",
+  "specimenId" : "MBRep_T69",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "MBRep_T69"
 }, {
   "projectKey" : "PBCA-DE",
   "donorId" : "MBRep_T70",
@@ -35076,6 +35646,18 @@
   "sampleId" : "CPCG0114-F1"
 }, {
   "projectKey" : "PRAD-CA",
+  "donorId" : "CPCG0117",
+  "specimenId" : "CPCG0117-B1",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "CPCG0117-B1"
+}, {
+  "projectKey" : "PRAD-CA",
+  "donorId" : "CPCG0117",
+  "specimenId" : "CPCG0117-F1",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "CPCG0117-F1"
+}, {
+  "projectKey" : "PRAD-CA",
   "donorId" : "CPCG0121",
   "specimenId" : "CPCG0121-B1",
   "specimenType" : "Normal - blood derived",
@@ -35290,6 +35872,18 @@
   "specimenId" : "CPCG0201-F1",
   "specimenType" : "Primary tumour - solid tissue",
   "sampleId" : "CPCG0201-F1"
+}, {
+  "projectKey" : "PRAD-CA",
+  "donorId" : "CPCG0203",
+  "specimenId" : "CPCG0203-B1",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "CPCG0203-B1"
+}, {
+  "projectKey" : "PRAD-CA",
+  "donorId" : "CPCG0203",
+  "specimenId" : "CPCG0203-F1",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "CPCG0203-F1"
 }, {
   "projectKey" : "PRAD-CA",
   "donorId" : "CPCG0205",
@@ -36970,12 +37564,6 @@
   "specimenId" : "A34A-0022_CRUK_PC_0022_M1",
   "specimenType" : "Metastatic tumour - metastasis to distant location",
   "sampleId" : "A34A-0022_CRUK_PC_0022_M1_DNA"
-}, {
-  "projectKey" : "PRAD-UK",
-  "donorId" : "A34-0022_CRUK_PC_0022",
-  "specimenId" : "A34E-0022_CRUK_PC_0022_M4",
-  "specimenType" : "Metastatic tumour - metastasis to distant location",
-  "sampleId" : "A34E-0022_CRUK_PC_0022_M4_DNA"
 }, {
   "projectKey" : "PRAD-UK",
   "donorId" : "A34-0022_CRUK_PC_0022",
@@ -40894,6 +41482,24 @@
   "specimenId" : "TCGA-CG-4474-01A",
   "specimenType" : "Primary tumour - solid tissue",
   "sampleId" : "TCGA-CG-4474-01A-02R-1157-13"
+}, {
+  "projectKey" : "STAD-US",
+  "donorId" : "TCGA-D7-6518",
+  "specimenId" : "TCGA-D7-6518-10A",
+  "specimenType" : "Normal - blood derived",
+  "sampleId" : "TCGA-D7-6518-10A-01D-1800-08"
+}, {
+  "projectKey" : "STAD-US",
+  "donorId" : "TCGA-D7-6518",
+  "specimenId" : "TCGA-D7-6518-01A",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "TCGA-D7-6518-01A-11D-1800-08"
+}, {
+  "projectKey" : "STAD-US",
+  "donorId" : "TCGA-D7-6518",
+  "specimenId" : "TCGA-D7-6518-01A",
+  "specimenType" : "Primary tumour - solid tissue",
+  "sampleId" : "TCGA-D7-6518-01A-11R-1802-13"
 }, {
   "projectKey" : "STAD-US",
   "donorId" : "TCGA-HU-8245",

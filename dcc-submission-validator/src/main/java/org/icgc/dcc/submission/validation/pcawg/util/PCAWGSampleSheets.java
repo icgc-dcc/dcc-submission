@@ -53,12 +53,8 @@ public class PCAWGSampleSheets {
   /**
    * Constants.
    */
-  public static final URL PREV_PREV_SAMPLE_SHEEL_URL =
-      getUrl("http://pancancer.info/data_releases/sample_sheet/pcawg_sample_sheet.2016-01-13.tsv");
-  public static final URL PREV_SAMPLE_SHEEL_URL =
-      getUrl("http://pancancer.info/data_releases/sample_sheet/pcawg_sample_sheet.2016-03-11.tsv");
   public static final URL SAMPLE_SHEET_URL =
-      getUrl("http://pancancer.info/gnos_metadata/latest/reports/pcawg_sample_sheet.tsv");
+      getUrl("http://pancancer.info/data_releases/latest/pcawg_sample_sheet.tsv");
 
   private static final File SAMPLE_SHEET_FILE = new File("src/main/resources/pcawg-sample-sheet.json");
 

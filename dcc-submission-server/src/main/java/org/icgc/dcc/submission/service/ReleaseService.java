@@ -545,7 +545,7 @@ public class ReleaseService extends AbstractService {
         val releaseName = release.getName();
         log.info("Dequeuing {} to validating for {}", projectKey, releaseName);
 
-        // In-memory - queue transistion
+        // In-memory - queue transition
         val dequeuedProject = release.dequeueProject();
         val dequeuedProjectKey = dequeuedProject.getKey();
         if (dequeuedProjectKey.equals(projectKey) == false) {
