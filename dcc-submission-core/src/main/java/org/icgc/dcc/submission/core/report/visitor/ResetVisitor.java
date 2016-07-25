@@ -23,7 +23,6 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
-import org.icgc.dcc.common.core.model.ClinicalType;
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.report.DataTypeReport;
@@ -84,7 +83,7 @@ public class ResetVisitor extends NoOpVisitor {
   //
 
   private boolean isResettable(DataType dataType) {
-    return isEmpty(dataTypes) || contains(dataTypes, dataType) || contains(dataTypes, ClinicalType.CLINICAL_CORE_TYPE);
+    return isEmpty(dataTypes) /* All */ || contains(dataTypes, dataType) /* Subset */;
   }
 
   private boolean isResettable(FileType fileType) {

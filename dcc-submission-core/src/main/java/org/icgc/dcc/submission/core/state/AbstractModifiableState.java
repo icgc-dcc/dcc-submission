@@ -4,6 +4,7 @@ import static org.icgc.dcc.submission.fs.SubmissionFileEventType.FILE_RENAMED;
 
 import java.util.List;
 
+import org.icgc.dcc.common.core.model.ClinicalType;
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 import org.icgc.dcc.submission.fs.SubmissionFileRenamedEvent;
@@ -36,7 +37,16 @@ public abstract class AbstractModifiableState extends AbstractClosePreservingSta
     // Reset modified data type's reports
     val dataTypes = resolveModifiedDataTypes(event);
     if (!dataTypes.isEmpty()) {
-      report.resetDataTypes(dataTypes);
+      // DCC-4964:
+      // If there was a core clinical file modified, we must reset all files. This is because, for example, a sample may
+      // have been removed leading to invalid experimental files.
+      val resetAll = dataTypes.contains(ClinicalType.CLINICAL_CORE_TYPE);
+
+      if (resetAll) {
+        report.resetDataTypes();
+      } else {
+        report.resetDataTypes(dataTypes);
+      }
     }
 
     // Transition based on report
@@ -55,7 +65,8 @@ public abstract class AbstractModifiableState extends AbstractClosePreservingSta
 
     // Two files involved. Add if managed by dictionary
     if (event.getType() == FILE_RENAMED) {
-      val newFile = ((SubmissionFileRenamedEvent) event).getNewFile();
+      val renameEvent = (SubmissionFileRenamedEvent) event;
+      val newFile = renameEvent.getNewFile();
 
       val newFileDataType = newFile.getDataType();
       if (newFileDataType.isPresent()) {
