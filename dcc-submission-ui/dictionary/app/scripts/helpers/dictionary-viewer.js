@@ -170,11 +170,29 @@ var dictionaryApp = dictionaryApp || {};
 
           var metadataTableBody = metadataTable.append('tbody');
 
-          metadataTableBody.append('tr').html('<th>File Type:</th><td>' + table.label + '</td>');
-          metadataTableBody.append('tr').html('<th>File Key:</th><td>' + table.name + '</td>');
-          metadataTableBody.append('tr')
-            .html('<th>File Name Pattern:</th><td class="regex">' + table.pattern + '</td>');
+          var filePatternDiff = !_self.dictUtil.getFilePatternDiff(dictFrom, table);
+          var fileLabelDiff = !_self.dictUtil.getFileLabelDiff(dictFrom, table);
+          
 
+          if(fileLabelDiff){
+            metadataTableBody.append('tr')
+                           .html('<td class="data-diff"></td><th>File Type:</th><td>' + table.label + '</td>');
+          }else{
+            metadataTableBody.append('tr')
+                           .html('<td></td><th>File Type:</th><td>' + table.label + '</td>');
+          }
+
+          metadataTableBody.append('tr')
+                             .html('<td></td><th>File Key:</th><td>' + table.name + '</td>');
+
+          if(filePatternDiff){
+            metadataTableBody.append('tr')
+                             .html('<td class="data-diff"></td><th>File Name Pattern:</th><td class="regex">' + table.pattern + '</td>');
+          }else{
+            metadataTableBody.append('tr')
+                             .html('<td></td><th>File Name Pattern:</th><td class="regex">' + table.pattern + '</td>');
+          }
+          
 
           // Create the minimap things
           var realH = Math.max(_self.barHeight, 5 + table.fields.length);

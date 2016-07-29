@@ -102,7 +102,25 @@ var dictionaryApp = dictionaryApp || {};
      return _.find(file.fields, function(f) { return f.name === fieldname; });
    };
 
+   DictionaryUtil.prototype.getFilePatternDiff = function(dict, tableTo) {
+     var tableFrom = this.getFileTypeFromDict(dict, tableTo.name);
 
+      if (!tableFrom) {
+        return null;
+      }
+
+      return _.isEqual(tableFrom.pattern, tableTo.pattern);
+   };
+
+   DictionaryUtil.prototype.getFileLabelDiff = function(dict, tableTo) {
+      var tableFrom = this.getFileTypeFromDict(dict, tableTo.name);
+
+      if (!tableFrom) {
+        return null;
+      }
+      
+      return _.isEqual(tableFrom.label, tableTo.label);
+   };
 
    ////////////////////////////////////////////////////////////////////////////////
    // How the files should be sorted
@@ -204,6 +222,7 @@ var dictionaryApp = dictionaryApp || {};
       report.fieldsAdded   = [];
       report.fieldsRemoved = [];
       report.fieldsChanged = [];
+      report.fileDataChanged = [];
 
       return _self.getDictionary(versionFrom).then(function (dictFrom) {
         return _self.getDictionary(versionTo).then(function (dictTo) {
@@ -223,6 +242,25 @@ var dictionaryApp = dictionaryApp || {};
                   });
                 });
               } else {
+                // Check file metadata change
+
+                if(!_.isEqual(fileFrom, fileTo)){
+
+                  if(!_self.getFileLabelDiff(dictFrom, fileTo)){
+                    report.fileDataChanged.push({
+                      fileType: fileTo.name,
+                      fileChange: fileTo.label
+                    });
+                  }
+
+                  if(!_self.getFilePatternDiff(dictFrom, fileTo)){
+                    report.fileDataChanged.push({
+                      fileType: fileTo.name,
+                      fileChange: 'File Name Pattern'
+                    });
+                  }
+                }
+                
                 // Check removed and changed
                 fileFrom.fields.forEach(function (fieldFrom) {
                   var fieldTo = _self.getFieldFromDict(dictTo, fileFrom.name, fieldFrom.name);
