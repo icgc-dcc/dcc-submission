@@ -176,21 +176,21 @@ var dictionaryApp = dictionaryApp || {};
 
           if(fileLabelDiff){
             metadataTableBody.append('tr')
-                           .html('<td class="data-diff"></td><th>File Type:</th><td>' + table.label + '</td>');
+              .html('<td class="data-diff"></td><th>File Type:</th><td>' + table.label + '</td>');
           }else{
             metadataTableBody.append('tr')
-                           .html('<td></td><th>File Type:</th><td>' + table.label + '</td>');
+              .html('<td></td><th>File Type:</th><td>' + table.label + '</td>');
           }
 
           metadataTableBody.append('tr')
-                             .html('<td></td><th>File Key:</th><td>' + table.name + '</td>');
+            .html('<td></td><th>File Key:</th><td>' + table.name + '</td>');
 
           if(filePatternDiff){
             metadataTableBody.append('tr')
-                             .html('<td class="data-diff"></td><th>File Name Pattern:</th><td class="regex">' + table.pattern + '</td>');
+              .html('<td class="data-diff"></td><th>File Name Pattern:</th><td class="regex">' + table.pattern + '</td>');
           }else{
             metadataTableBody.append('tr')
-                             .html('<td></td><th>File Name Pattern:</th><td class="regex">' + table.pattern + '</td>');
+              .html('<td></td><th>File Name Pattern:</th><td class="regex">' + table.pattern + '</td>');
           }
           
 
