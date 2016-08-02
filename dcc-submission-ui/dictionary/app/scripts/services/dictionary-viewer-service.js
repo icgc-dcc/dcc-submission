@@ -35,7 +35,6 @@ angular.module('DictionaryViewerApp')
       var deferred = $q.defer(),
           webserviceURL = (baseURL || '') + '/ws';
 
-
       $http.get(webserviceURL + '/dictionaries/versions')
         .then(function (dictionaryList) {
 
@@ -145,9 +144,6 @@ angular.module('DictionaryViewerApp')
 
       return _dictionaryUtils.createDiffListing(_versionRange.from, _versionRange.to).then(function (report) {
         changeReport = report;
-        changeReport.changed = changeReport.fieldsChanged;
-        changeReport.added = changeReport.fieldsAdded;
-        changeReport.removed = changeReport.fieldsRemoved;
 
         return changeReport;
       });

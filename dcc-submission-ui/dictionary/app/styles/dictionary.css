@@ -69,6 +69,10 @@
   padding-left: 0rem;
 }
 
+.file-data-container{
+  padding: 5px 0px;
+}
+
 .data-type-list {
   padding-left:1em;
   padding-right:1em;
@@ -252,6 +256,14 @@ a {
   margin: 1.5rem 0rem 3rem 0rem;
   border: solid 1px #e7e7e7;
   width: 80%;
+}
+
+.table.table-file-metadata tr td:first-child{
+  width:5px;
+}
+
+.table.table-file-metadata tr td:first-child.data-diff{
+  background-color: rgb(158, 123, 5);
 }
 
 .table.table-file-metadata th {

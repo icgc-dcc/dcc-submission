@@ -27,8 +27,9 @@ angular.module('DictionaryViewerApp')
         var _controller = this,
             _firstRun = true,
             _previousVersion = {from: null, to: null};
-
         // Renderer and dictionary logic
+        _controller.state;
+        _controller.lastUpdate;
         _controller.tableViewer = null;
         _controller.dictUtil = null;
         _controller.getCurrentView = DictionaryService.getCurrentViewType;
@@ -287,6 +288,8 @@ angular.module('DictionaryViewerApp')
           _controller.generateChangeList();
           
           _controller.dictUtil.getDictionary(versionTo).then(function (dictTo) {
+            _controller.state = dictTo.state;
+            _controller.lastUpdate = dictTo.lastUpdate;
             _controller.codeLists.forEach(function (codeList) {
               codeList.coverage = _controller.dictUtil.getCodeListCoverage(codeList.name, dictTo).sort();
             });
