@@ -28,8 +28,8 @@ angular.module('DictionaryViewerApp')
             _firstRun = true,
             _previousVersion = {from: null, to: null};
         // Renderer and dictionary logic
-        _controller.state;
-        _controller.lastUpdate;
+        _controller.state = null;
+        _controller.lastUpdate = null;
         _controller.tableViewer = null;
         _controller.dictUtil = null;
         _controller.getCurrentView = DictionaryService.getCurrentViewType;
