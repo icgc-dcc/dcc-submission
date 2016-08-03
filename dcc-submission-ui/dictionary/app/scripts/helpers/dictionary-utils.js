@@ -225,20 +225,30 @@ var dictionaryApp = dictionaryApp || {};
       report.fileDataChanged = [];
 
       return _self.getDictionary(versionFrom).then(function (dictFrom) {
-        return _self.getDictionary(versionTo).then(function (dictTo) {
+        return _self.getDictionary(versionTo).then(function (dictTo) {      
+
+          //Sorting dictionary files
+          dictFrom.files = _.sortBy(dictFrom.files, function (d) {
+            return _self.sortingOrder().indexOf(d.name);
+          });   
+
+          dictTo.files = _.sortBy(dictTo.files, function (d) {
+            return _self.sortingOrder().indexOf(d.name);
+          });    
           
           // Scan for changed and remove file types
-          if (dictFrom) {
+          if (dictFrom.files) {
             dictFrom.files.forEach(function (fileFrom) {
-              var fileTo = _self.getFileTypeFromDict(dictTo, fileFrom.name);
-
+               var fileTo = _self.getFileTypeFromDict(dictTo, fileFrom.name);
+               
               // If no file, then it as been removed.
               // Otherwise we need to check each field for changes.
               if (!fileTo) {
                 fileFrom.fields.forEach(function (fieldFrom) {
                   report.fieldsRemoved.push({
                     fileType: fileFrom.name,
-                    fieldName: fieldFrom.name
+                    fieldName: fieldFrom.name,
+                    fieldDiff: jsondiffpatch.formatters.html.format(jsondiffpatch.diff(fileFrom, {}))
                   });
                 });
               } else {
@@ -249,14 +259,16 @@ var dictionaryApp = dictionaryApp || {};
                   if(!_self.getFileLabelDiff(dictFrom, fileTo)){
                     report.fileDataChanged.push({
                       fileType: fileTo.name,
-                      fileChange: fileTo.label
+                      fileChange: fileTo.label,
+                      fileDiff: jsondiffpatch.formatters.html.format(jsondiffpatch.diff(fileFrom, fileTo).label)
                     });
                   }
 
                   if(!_self.getFilePatternDiff(dictFrom, fileTo)){
                     report.fileDataChanged.push({
                       fileType: fileTo.name,
-                      fileChange: 'File Name Pattern'
+                      fileChange: 'File Name Pattern',
+                      fileDiff: jsondiffpatch.formatters.html.format(jsondiffpatch.diff(fileFrom, fileTo).pattern)
                     });
                   }
                 }
@@ -268,13 +280,17 @@ var dictionaryApp = dictionaryApp || {};
                   if (!fieldTo) {
                     report.fieldsRemoved.push({
                       fileType: fileFrom.name,
-                      fieldName: fieldFrom.name
+                      fieldName: fieldFrom.name,
+                      fieldDiff: jsondiffpatch.formatters.html.format(jsondiffpatch.diff(fieldFrom, fieldTo))
                     });
                   } else if (_self.isDifferent2(fieldTo, fieldFrom).length > 0) {
+                    var difference = _.omit(jsondiffpatch.diff(fieldFrom, fieldTo), 'expanded');
+
                     report.fieldsChanged.push({
                       fileType: fileFrom.name,
                       fieldName: fieldFrom.name,
-                      changes: _self.isDifferent2(fieldTo, fieldFrom)
+                      changes: _self.isDifferent2(fieldTo, fieldFrom),
+                      fieldDiff: jsondiffpatch.formatters.html.format(difference)
                     });
                   }
                 });
@@ -282,11 +298,11 @@ var dictionaryApp = dictionaryApp || {};
                 // Check new
                 fileTo.fields.forEach(function (fieldTo) {
                   var fieldFrom = _self.getFieldFromDict(dictFrom, fileTo.name, fieldTo.name);
-
                   if (!fieldFrom) {
                     report.fieldsAdded.push({
                       fileType: fileTo.name,
-                      fieldName: fieldTo.name
+                      fieldName: fieldTo.name,
+                      fieldDiff: jsondiffpatch.formatters.html.format(jsondiffpatch.diff(fieldFrom, fieldTo))
                     });
                   }
                 });
@@ -295,7 +311,7 @@ var dictionaryApp = dictionaryApp || {};
           }
           
           // Now reverse logic to check for completely new file types
-          if (dictTo) {
+          if (dictTo.files) {
             dictTo.files.forEach(function (fileTo) {
               var fileFrom = _self.getFileTypeFromDict(dictFrom, fileTo.name);
               // fileTo is new
@@ -303,13 +319,14 @@ var dictionaryApp = dictionaryApp || {};
                 fileTo.fields.forEach(function (fieldTo) {
                   report.fieldsAdded.push({
                     fileType: fileTo.name,
-                    fieldName: fieldTo.name
+                    fieldName: fieldTo.name,
+                    fieldDiff: jsondiffpatch.formatters.html.format(jsondiffpatch.diff({}, fieldTo))
                   });
                 });
               }
             });
           }
-
+          
           return report;
           
         });

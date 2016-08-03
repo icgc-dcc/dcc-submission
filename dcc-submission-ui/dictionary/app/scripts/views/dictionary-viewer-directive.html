@@ -143,15 +143,24 @@
             <div data-ng-class="{'active': dictionaryViewerCtrl.getCurrentView() === 'report'}"
                  class="tab-pane"
                  role="tabpanel"
-                 id="report">
+                 id="report">                 
+
                 <div class="report-wrapper">
                     <div class="file-metadata-report">
                         <div id="file-metadata-modifications" data-ng-if="dictionaryViewerCtrl.changeReport.fileDataChanged.length">
                             <h3 class="change-modification-header"><i class="fa fa-exchange"></i> File Data Modifications</h3>
                             <div class="change-report-container change-modifications">
-                                <ul>
-                                    <li data-ng-repeat="change in dictionaryViewerCtrl.changeReport.fileDataChanged | filter: dictionaryViewerCtrl.filterChangesReport">
-                                        <i class="fa fa-exchange"></i> <span data-ng-bind-template="{{change.fileType}} - {{change.fileChange}}"></span>
+                                <ul class="change-report-list">
+                                    <li 
+                                      data-toggle="collapse" 
+                                      data-target="#fileMetaData{{$index}}" 
+                                      aria-expanded="false" 
+                                      data-ng-repeat="change in dictionaryViewerCtrl.changeReport.fileDataChanged | filter: dictionaryViewerCtrl.filterChangesReport" >
+                                      <i class="fa fa-exchange"></i> 
+                                      <span data-ng-bind-template="{{change.fileType}} - {{change.fileChange}}"></span>
+                                      <div class="collapse content" id="fileMetaData{{$index}}" data-ng-if="change.fileDiff" >
+                                        <div class="well" data-ng-bind-html="change.fileDiff | sanitize"></div>
+                                      </div>
                                     </li>
                                 </ul>
                             </div>
@@ -161,9 +170,16 @@
                         <div id="field-additions" data-ng-if="dictionaryViewerCtrl.changeReport.fieldsAdded.length">
                             <h3 class="change-addition-header"><i class="fa fa-plus"></i> Field Name Additions</h3>
                             <div class="change-report-container change-additions">
-                                <ul>
-                                    <li data-ng-repeat="addition in dictionaryViewerCtrl.changeReport.fieldsAdded | filter: dictionaryViewerCtrl.filterChangesReport">
+                                <ul class="change-report-list">
+                                    <li
+                                      data-toggle="collapse" 
+                                      data-target="#fieldAdded{{$index}}" 
+                                      aria-expanded="false" 
+                                      data-ng-repeat="addition in dictionaryViewerCtrl.changeReport.fieldsAdded | filter: dictionaryViewerCtrl.filterChangesReport">
                                         <i class="fa fa-plus"></i> <span data-ng-bind-template="{{addition.fileType}} - {{addition.fieldName}}"></span>
+                                        <div class="collapse content" id="fieldAdded{{$index}}" data-ng-if="addition.fieldDiff" >
+                                          <div class="well" data-ng-bind-html="addition.fieldDiff | sanitize"></div>
+                                        </div>
                                     </li>
                                 </ul>
                             </div>
@@ -171,9 +187,16 @@
                         <div id="field-modifications" data-ng-if="dictionaryViewerCtrl.changeReport.fieldsChanged.length">
                             <h3 class="change-modification-header"><i class="fa fa-exchange"></i> Field Name Modifications</h3>
                             <div class="change-report-container change-modifications">
-                                <ul>
-                                    <li data-ng-repeat="change in dictionaryViewerCtrl.changeReport.fieldsChanged | filter: dictionaryViewerCtrl.filterChangesReport">
+                                <ul class="change-report-list">
+                                    <li 
+                                      data-toggle="collapse" 
+                                      data-target="#fieldChanged{{$index}}" 
+                                      aria-expanded="false" 
+                                      data-ng-repeat="change in dictionaryViewerCtrl.changeReport.fieldsChanged | filter: dictionaryViewerCtrl.filterChangesReport">
                                         <i class="fa fa-exchange"></i> <span data-ng-bind-template="{{change.fileType}} - {{change.fieldName}}"></span>
+                                        <div class="collapse content" id="fieldChanged{{$index}}" data-ng-if="change.fieldDiff">
+                                          <div class="well" data-ng-bind-html="change.fieldDiff | sanitize"></div>
+                                        </div>
                                     </li>
                                 </ul>
                             </div>
@@ -182,9 +205,16 @@
                             <h3 class="change-removal-header"><i class="fa fa-minus"></i> Field Name Deletions</h3>
                             <div class="change-report-container change-removals">
 
-                                <ul>
-                                    <li data-ng-repeat="removal in dictionaryViewerCtrl.changeReport.fieldsRemoved | filter: dictionaryViewerCtrl.filterChangesReport">
+                                <ul class="change-report-list">
+                                    <li
+                                      data-toggle="collapse" 
+                                      data-target="#fieldRemoved{{$index}}" 
+                                      aria-expanded="false"  
+                                      data-ng-repeat="removal in dictionaryViewerCtrl.changeReport.fieldsRemoved | filter: dictionaryViewerCtrl.filterChangesReport">
                                         <i class="fa fa-minus"></i> <span data-ng-bind-template="{{removal.fileType}} - {{removal.fieldName}}"></span>
+                                        <div class="collapse content" id="fieldRemoved{{$index}}" data-ng-if="removal.fieldDiff">
+                                          <div class="well" data-ng-bind-html="removal.fieldDiff | sanitize"></div>
+                                        </div>
                                     </li>
                                 </ul>
                             </div>
@@ -195,6 +225,7 @@
                     </div>
                 </div>
             </div>
+            <p id="jsondiffpatch"></p>
             <div data-ng-class="{'active': dictionaryViewerCtrl.getCurrentView() === 'codelist'}"
                  class="tab-pane"
                  role="tabpanel"

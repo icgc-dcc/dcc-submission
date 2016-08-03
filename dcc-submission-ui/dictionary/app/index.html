@@ -10,6 +10,7 @@
         <link rel="stylesheet" href="styles/docco.css">
         <link rel="stylesheet" href="bower_components/regex-colorizer/themes/nobg.css">
         <link rel="stylesheet" href="bower_components/jsoneditor/dist/jsoneditor.css">
+        <link rel="stylesheet" href="bower_components/jsondiffpatch/public/formatters-styles/html.css">
         <link rel="stylesheet" href="styles/dictionary.css">
         <!-- endbuild -->
     </head>
@@ -41,9 +42,19 @@
         <script src="bower_components/regex-colorizer/regex-colorizer.js"></script>
         <script src="bower_components/d3-tip/index.js"></script>
         <script src="bower_components/jsoneditor/dist/jsoneditor.js"></script>
+        <script src="bower_components/jsondiffpatch/public/build/jsondiffpatch-full.min.js"></script>
 
+        <script>
+            var jsondiffpatch = jsondiffpatch.create({
+              textDiff: {
+                minLength: 10
+                }
+            });
+        </script>
+
+        <script src="bower_components/jsondiffpatch/public/build/jsondiffpatch-formatters.min.js"></script>
         <script src="scripts/vendor/beautify.js"></script>
-
+        
         <script src="scripts/helpers/dictionary-utils.js"></script>
         <script src="scripts/helpers/dictionary-viewer.js"></script>
         <script src="scripts/controllers/dictionary.js"></script>

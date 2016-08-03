@@ -347,14 +347,27 @@ div.jsoneditor-menu {
   margin-right: 5px;
   opacity: 1;
 }
-.change-report-container ul {
+.change-report-container ul.change-report-list {
   margin: 0px 0px;
   padding: 0px 0px;
   list-style: none;
 }
 
-.change-report-container ul li {
+.change-report-container ul.change-report-list > li {
+  cursor: pointer;
   line-height: 25px;
+  padding: 3px;
+  margin: 3px 0px;
+}
+
+.change-report-container ul.change-report-list > li:nth-child(even) {
+  background-color: #e7f6ec;
+  border: 1px solid #c3e8d1;
+}
+
+.change-report-container ul.change-report-list > li:nth-child(odd) {
+  background-color: #e7f0f7;
+  border: 1px solid #c3d9ec;
 }
 
 .change-additions {
@@ -400,4 +413,9 @@ h3.change-addition-header {
 .change-removals [class^='fa'] {
   background-color: #bd1a1c;
 
+}
+
+.jsondiffpatch-delta {
+  width: 100%;
+  overflow: scroll;
 }
