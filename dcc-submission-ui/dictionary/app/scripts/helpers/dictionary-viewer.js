@@ -187,7 +187,8 @@ var dictionaryApp = dictionaryApp || {};
 
           if(filePatternDiff){
             metadataTableBody.append('tr')
-              .html('<td class="data-diff"></td><th>File Name Pattern:</th><td class="regex">' + table.pattern + '</td>');
+              .html('<td class="data-diff"></td><th>File Name Pattern:</th><td class="regex">' + 
+              table.pattern + '</td>');
           }else{
             metadataTableBody.append('tr')
               .html('<td></td><th>File Name Pattern:</th><td class="regex">' + table.pattern + '</td>');
