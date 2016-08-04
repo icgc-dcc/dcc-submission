@@ -1,4 +1,4 @@
-/* globals $ */
+/* globals $,jsondiffpatch */
 'use strict';
 
 var dictionaryApp = dictionaryApp || {};
