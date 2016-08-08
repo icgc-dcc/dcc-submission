@@ -361,12 +361,12 @@ div.jsoneditor-menu {
 }
 
 .change-report-container > ul > li:nth-child(even) {
-  background-color: #e7f6ec;
+  background-color: #f7f7f7;
   border: 1px solid #ccc;
 }
 
 .change-report-container > ul > li:nth-child(odd) {
-  background-color: #e7f0f7;
+  background-color: #ffffff;
   border: 1px solid #ccc;
 }
 

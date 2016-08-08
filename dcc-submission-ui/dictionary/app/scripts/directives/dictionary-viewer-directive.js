@@ -122,6 +122,7 @@ angular.module('DictionaryViewerApp')
           _controller.tableViewer.toggleDataTypeFunc = handleGraphToggle;
 
           _controller.filterChangesReport = function(changeObj) {
+
             var query = _controller.q || '',
                 shouldIncludeObj = true;
 
@@ -142,7 +143,7 @@ angular.module('DictionaryViewerApp')
             // Now for the check default to not including in the filter
             shouldIncludeObj = false;
 
-            ['fileType','fieldName'].map(function (key) {
+            ['type','name'].map(function (key) {
 
               if ( typeof changeObj[key] === 'string' &&
                    normalizeStr(changeObj[key]).indexOf(normalizedQuery) >= 0 ) {
@@ -338,8 +339,6 @@ angular.module('DictionaryViewerApp')
 
           }
 
-
-
           $rootScope.$broadcast(DictionaryViewerConstants.EVENTS.RENDER_COMPLETE, null);
 
           // Skip the rest if our view mode isn't table
@@ -445,4 +444,94 @@ angular.module('DictionaryViewerApp')
       }
     };
 
+  })
+  .directive('reportDataChanges', function($http, $templateCache, $compile, JSONDiffService){    
+    return {      
+      restrict: 'E',
+      replace: true,
+      scope: {
+        changes: '=',
+        type: '@'
+      },
+      link: function($scope, $element, $attrs) {
+        var templateURL = 'scripts/views/data-changes.html',
+            baseURL = '';
+
+        if (angular.isDefined($attrs.templateUrl)) {
+          baseURL = $attrs.templateUrl;
+        }
+        else if (angular.isDefined($attrs.baseDictionaryUrl)) {
+          baseURL = $attrs.baseDictionaryUrl;
+        }
+
+        if (baseURL) {
+          baseURL += '/';
+        }
+
+        $http.get(baseURL + templateURL, {cache: $templateCache}).success(function(tplContent){
+          $element.replaceWith($compile(tplContent)($scope));
+        });
+
+        // $scope.$watch('data', function (newData) {
+        //   console.log(newData);
+        // })
+      }
+    };
+  })
+  .directive('reportDataAddition', function($http, $templateCache, $compile, JSONDiffService){    
+    return {      
+      restrict: 'E',
+      scope: {
+        changes: '=',
+        type: '@'
+      },
+      controllerAs: 'dataAdditionCtrl',
+      link: function($scope, $element, $attrs) {
+        var templateURL = 'scripts/views/data-addition.html',
+            baseURL = '';
+
+        if (angular.isDefined($attrs.templateUrl)) {
+          baseURL = $attrs.templateUrl;
+        }
+        else if (angular.isDefined($attrs.baseDictionaryUrl)) {
+          baseURL = $attrs.baseDictionaryUrl;
+        }
+
+        if (baseURL) {
+          baseURL += '/';
+        }
+
+        $http.get(baseURL + templateURL, {cache: $templateCache}).success(function(tplContent){
+          $element.replaceWith($compile(tplContent)($scope));
+        });
+      }
+    };
+  })
+  .directive('reportDataRemoval', function($http, $templateCache, $compile, JSONDiffService){    
+    return {      
+      restrict: 'E',
+      scope: {
+        changes: '=',
+        type: '@'
+      },
+      link: function($scope, $element, $attrs) {
+        var templateURL = 'scripts/views/data-removal.html',
+            baseURL = '';
+
+        if (angular.isDefined($attrs.templateUrl)) {
+          baseURL = $attrs.templateUrl;
+        }
+        else if (angular.isDefined($attrs.baseDictionaryUrl)) {
+          baseURL = $attrs.baseDictionaryUrl;
+        }
+
+        if (baseURL) {
+          baseURL += '/';
+        }
+
+        $http.get(baseURL + templateURL, {cache: $templateCache}).success(function(tplContent){
+          $element.replaceWith($compile(tplContent)($scope));
+        });
+      }
+    };
   });

@@ -151,17 +151,10 @@
                             <h3 class="change-modification-header"><i class="fa fa-exchange"></i> File Data Modifications</h3>
                             <div class="change-report-container change-modifications">
                                 <ul class="change-report-list">
-                                    <li 
-                                      data-toggle="collapse" 
-                                      data-target="#fileMetaData{{$index}}" 
-                                      aria-expanded="false" 
-                                      data-ng-repeat="change in dictionaryViewerCtrl.changeReport.fileDataChanged | filter: dictionaryViewerCtrl.filterChangesReport" >
-                                      <i class="fa fa-exchange"></i> 
-                                      <span data-ng-bind-template="{{change.fileType}} - {{change.fileChange}}"></span>
-                                      <div class="collapse content" id="fileMetaData{{$index}}" data-ng-if="change.fileDiff" >
-                                        <div class="well" data-ng-bind-html="change.fileDiff | sanitize"></div>
-                                      </div>
-                                    </li>
+                                    <report-data-changes
+                                        changes="dictionaryViewerCtrl.changeReport.fileDataChanged" 
+                                        type="fileChanged">
+                                    </report-data-changes>
                                 </ul>
                             </div>
                         </div>
@@ -171,16 +164,7 @@
                             <h3 class="change-addition-header"><i class="fa fa-plus"></i> Field Name Additions</h3>
                             <div class="change-report-container change-additions">
                                 <ul class="change-report-list">
-                                    <li
-                                      data-toggle="collapse" 
-                                      data-target="#fieldAdded{{$index}}" 
-                                      aria-expanded="false" 
-                                      data-ng-repeat="addition in dictionaryViewerCtrl.changeReport.fieldsAdded | filter: dictionaryViewerCtrl.filterChangesReport">
-                                        <i class="fa fa-plus"></i> <span data-ng-bind-template="{{addition.fileType}} - {{addition.fieldName}}"></span>
-                                        <div class="collapse content" id="fieldAdded{{$index}}" data-ng-if="addition.fieldDiff" >
-                                          <div class="well" data-ng-bind-html="addition.fieldDiff | sanitize"></div>
-                                        </div>
-                                    </li>
+                                    <report-data-addition changes="dictionaryViewerCtrl.changeReport.fieldsAdded" type="fieldAdded"></report-data-addition>
                                 </ul>
                             </div>
                         </div>
@@ -188,16 +172,7 @@
                             <h3 class="change-modification-header"><i class="fa fa-exchange"></i> Field Name Modifications</h3>
                             <div class="change-report-container change-modifications">
                                 <ul class="change-report-list">
-                                    <li 
-                                      data-toggle="collapse" 
-                                      data-target="#fieldChanged{{$index}}" 
-                                      aria-expanded="false" 
-                                      data-ng-repeat="change in dictionaryViewerCtrl.changeReport.fieldsChanged | filter: dictionaryViewerCtrl.filterChangesReport">
-                                        <i class="fa fa-exchange"></i> <span data-ng-bind-template="{{change.fileType}} - {{change.fieldName}}"></span>
-                                        <div class="collapse content" id="fieldChanged{{$index}}" data-ng-if="change.fieldDiff">
-                                          <div class="well" data-ng-bind-html="change.fieldDiff | sanitize"></div>
-                                        </div>
-                                    </li>
+                                    <report-data-changes changes="dictionaryViewerCtrl.changeReport.fieldsChanged" type="fieldChange"></report-data-changes>
                                 </ul>
                             </div>
                         </div>
@@ -206,7 +181,8 @@
                             <div class="change-report-container change-removals">
 
                                 <ul class="change-report-list">
-                                    <li
+                                    <report-data-removal changes="dictionaryViewerCtrl.changeReport.fieldsRemoved" type="fieldsRemoved"></report-data-removal>
+                                    <!--<li
                                       data-toggle="collapse" 
                                       data-target="#fieldRemoved{{$index}}" 
                                       aria-expanded="false"  
@@ -215,7 +191,7 @@
                                         <div class="collapse content" id="fieldRemoved{{$index}}" data-ng-if="removal.fieldDiff">
                                           <div class="well" data-ng-bind-html="removal.fieldDiff | sanitize"></div>
                                         </div>
-                                    </li>
+                                    </li>-->
                                 </ul>
                             </div>
                         </div>
