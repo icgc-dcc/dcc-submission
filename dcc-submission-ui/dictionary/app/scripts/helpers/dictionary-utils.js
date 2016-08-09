@@ -347,7 +347,7 @@ var dictionaryApp = dictionaryApp || {};
                     type: fileTo.name,
                     name: fieldTo.name,
                     from: {},
-                    To: fieldTo
+                    to: fieldTo
                   });
                 });
               }
