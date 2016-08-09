@@ -1,5 +1,5 @@
 <i class="fa fa-plus"></i>
 <span data-ng-bind-template="{{addition.type}} - {{addition.name}}"></span>
-<div class="collapse content" id="{{type}}{{index}}" data-ng-if="addition.diff" >
-<div class="well" data-ng-bind-html="addition.diff | sanitize"></div>
+<div class="collapse content" id="{{type}}{{addition.id}}" data-ng-if="addition.diff" >
+  <div class="well" data-ng-bind-html="addition.diff | sanitize"></div>
 </div>

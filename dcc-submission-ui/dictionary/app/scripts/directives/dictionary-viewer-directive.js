@@ -445,91 +445,33 @@ angular.module('DictionaryViewerApp')
     };
 
   })
-  .directive('reportDataChanges', function($http, $templateCache, $compile){    
+  .directive('reportDataChanges', function(){    
     return {      
       restrict: 'E',
-      replace: true,
       scope: {
-        changes: '=',
-        type: '@',
-        index: '@'
+        change: '=',
+        type: '@'
       },
-      link: function($scope, $element, $attrs) {
-        var templateURL = 'scripts/views/data-changes.html',
-            baseURL = '';
-
-        if (angular.isDefined($attrs.templateUrl)) {
-          baseURL = $attrs.templateUrl;
-        }
-        else if (angular.isDefined($attrs.baseDictionaryUrl)) {
-          baseURL = $attrs.baseDictionaryUrl;
-        }
-
-        if (baseURL) {
-          baseURL += '/';
-        }
-
-        $http.get(baseURL + templateURL, {cache: $templateCache}).success(function(tplContent){
-          $element.replaceWith($compile(tplContent)($scope));
-        });
-      }
+      templateUrl: 'scripts/views/data-changes.html'
     };
   })
-  .directive('reportDataAddition', function($http, $templateCache, $compile){    
+  .directive('reportDataAddition', function(){    
     return {      
       restrict: 'E',
       scope: {
         addition: '=',
-        type: '@',
-        index: '@'
+        type: '@'
       },
-      link: function($scope, $element, $attrs) {
-        var templateURL = 'scripts/views/data-addition.html',
-            baseURL = '';
-
-        if (angular.isDefined($attrs.templateUrl)) {
-          baseURL = $attrs.templateUrl;
-        }
-        else if (angular.isDefined($attrs.baseDictionaryUrl)) {
-          baseURL = $attrs.baseDictionaryUrl;
-        }
-
-        if (baseURL) {
-          baseURL += '/';
-        }
-
-        $http.get(baseURL + templateURL, {cache: $templateCache}).success(function(tplContent){
-          $element.replaceWith($compile(tplContent)($scope));
-        });
-      }
+      templateUrl: 'scripts/views/data-addition.html'
     };
   })
-  .directive('reportDataRemoval', function($http, $templateCache, $compile){   
+  .directive('reportDataRemoval', function(){   
     return {      
       restrict: 'E',
       scope: {
         removal: '=',
-        type: '@',
-        index: '@'
+        type: '@'
       },
-      link: function($scope, $element, $attrs) {
-        var templateURL = 'scripts/views/data-removal.html',
-            baseURL = '';
-
-        if (angular.isDefined($attrs.templateUrl)) {
-          baseURL = $attrs.templateUrl;
-        }
-        else if (angular.isDefined($attrs.baseDictionaryUrl)) {
-          baseURL = $attrs.baseDictionaryUrl;
-        }
-
-        if (baseURL) {
-          baseURL += '/';
-        }
-
-        $http.get(baseURL + templateURL, {cache: $templateCache}).success(function(tplContent){
-          $element.replaceWith($compile(tplContent)($scope));
-        });
-      }
+      templateUrl: 'scripts/views/data-removal.html'
     };
   });

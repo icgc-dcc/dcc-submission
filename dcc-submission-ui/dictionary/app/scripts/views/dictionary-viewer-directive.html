@@ -152,15 +152,14 @@
                             <div class="change-report-container change-modifications">
                                 <ul class="change-report-list">
                                     <li data-toggle="collapse" 
-                                      data-target="#fileChanged{{$index}}" 
+                                      data-target="#fileChanged{{changes.id}}" 
                                       aria-expanded="false" 
                                       data-ng-repeat="changes in dictionaryViewerCtrl.changeReport.fileDataChanged 
                                         | filter: dictionaryViewerCtrl.filterChangesReport 
                                         | findDiffs track by changes.id" >                                      
                                       <report-data-changes
-                                        changes="changes" 
-                                        type="fileChanged"
-                                        index="{{$index}}">
+                                        change="changes" 
+                                        type="fileChanged">
                                       </report-data-changes>
                                     </li>
                                 </ul>
@@ -173,15 +172,14 @@
                             <div class="change-report-container change-additions">
                                 <ul class="change-report-list">
                                   <li data-toggle="collapse" 
-                                    data-target="#fieldAdded{{$index}}" 
+                                    data-target="#fieldAdded{{additions.id}}" 
                                     aria-expanded="false" 
                                     data-ng-repeat="additions in dictionaryViewerCtrl.changeReport.fieldsAdded
                                       | filter: dictionaryViewerCtrl.filterChangesReport
                                       | findDiffs track by additions.id">
                                     <report-data-addition 
                                       addition="additions" 
-                                      type="fieldAdded"
-                                      index="{{$index}}">
+                                      type="fieldAdded">
                                     </report-data-addition>
                                 </ul>
                             </div>
@@ -191,15 +189,14 @@
                             <div class="change-report-container change-modifications">
                                 <ul class="change-report-list">
                                   <li data-toggle="collapse" 
-                                    data-target="#fieldChange{{$index}}" 
+                                    data-target="#fieldChange{{changes.id}}" 
                                     aria-expanded="false" 
-                                    data-ng-repeat="change in dictionaryViewerCtrl.changeReport.fieldsChanged 
+                                    data-ng-repeat="changes in dictionaryViewerCtrl.changeReport.fieldsChanged 
                                       | filter: dictionaryViewerCtrl.filterChangesReport 
-                                      | findDiffs track by change.id" >
+                                      | findDiffs track by changes.id" >
                                     <report-data-changes 
-                                      changes="change" 
-                                      type="fieldChange"
-                                      index="{{$index}}">
+                                      change="changes" 
+                                      type="fieldChange">
                                     </report-data-changes>
                                 </ul>
                             </div>
@@ -210,15 +207,14 @@
                                 <ul class="change-report-list">
                                     <li
                                       data-toggle="collapse" 
-                                      data-target="#fieldRemoved{{$index}}" 
+                                      data-target="#fieldRemoved{{removals.id}}" 
                                       aria-expanded="false"  
                                       data-ng-repeat="removals in dictionaryViewerCtrl.changeReport.fieldsRemoved 
                                         | filter: dictionaryViewerCtrl.filterChangesReport
                                         | findDiffs track by removals.id">
                                         <report-data-removal 
                                           removal="removals" 
-                                          type="fieldRemoved"
-                                          index="{{$index}}">
+                                          type="fieldRemoved">
                                         </report-data-removal>
                                     </li>
                                 </ul>
