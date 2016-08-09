@@ -445,7 +445,7 @@ angular.module('DictionaryViewerApp')
     };
 
   })
-  .directive('reportDataChanges', function($http, $templateCache, $compile, JSONDiffService){    
+  .directive('reportDataChanges', function($http, $templateCache, $compile){    
     return {      
       restrict: 'E',
       replace: true,
@@ -478,7 +478,7 @@ angular.module('DictionaryViewerApp')
       }
     };
   })
-  .directive('reportDataAddition', function($http, $templateCache, $compile, JSONDiffService){    
+  .directive('reportDataAddition', function($http, $templateCache, $compile){    
     return {      
       restrict: 'E',
       scope: {
@@ -507,7 +507,7 @@ angular.module('DictionaryViewerApp')
       }
     };
   })
-  .directive('reportDataRemoval', function($http, $templateCache, $compile, JSONDiffService){    
+  .directive('reportDataRemoval', function($http, $templateCache, $compile){    
     return {      
       restrict: 'E',
       scope: {

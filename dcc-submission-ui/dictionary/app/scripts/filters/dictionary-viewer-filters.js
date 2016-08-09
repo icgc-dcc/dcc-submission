@@ -21,5 +21,5 @@ angular.module('DictionaryViewerApp')
       });
     }, function resolver (data) {
       return _.pluck(data, 'id');
-    })
+    });
   });
