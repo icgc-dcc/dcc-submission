@@ -151,10 +151,18 @@
                             <h3 class="change-modification-header"><i class="fa fa-exchange"></i> File Data Modifications</h3>
                             <div class="change-report-container change-modifications">
                                 <ul class="change-report-list">
-                                    <report-data-changes
-                                        changes="dictionaryViewerCtrl.changeReport.fileDataChanged" 
-                                        type="fileChanged">
-                                    </report-data-changes>
+                                    <li data-toggle="collapse" 
+                                      data-target="#fileChanged{{$index}}" 
+                                      aria-expanded="false" 
+                                      data-ng-repeat="changes in dictionaryViewerCtrl.changeReport.fileDataChanged 
+                                        | filter: dictionaryViewerCtrl.filterChangesReport 
+                                        | findDiffs track by changes.id" >                                      
+                                      <report-data-changes
+                                        changes="changes" 
+                                        type="fileChanged"
+                                        index="{{$index}}">
+                                      </report-data-changes>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -164,7 +172,17 @@
                             <h3 class="change-addition-header"><i class="fa fa-plus"></i> Field Name Additions</h3>
                             <div class="change-report-container change-additions">
                                 <ul class="change-report-list">
-                                    <report-data-addition changes="dictionaryViewerCtrl.changeReport.fieldsAdded" type="fieldAdded"></report-data-addition>
+                                  <li data-toggle="collapse" 
+                                    data-target="#fieldAdded{{$index}}" 
+                                    aria-expanded="false" 
+                                    data-ng-repeat="additions in dictionaryViewerCtrl.changeReport.fieldsAdded
+                                      | filter: dictionaryViewerCtrl.filterChangesReport
+                                      | findDiffs track by additions.id">
+                                    <report-data-addition 
+                                      addition="additions" 
+                                      type="fieldAdded"
+                                      index="{{$index}}">
+                                    </report-data-addition>
                                 </ul>
                             </div>
                         </div>
@@ -172,26 +190,37 @@
                             <h3 class="change-modification-header"><i class="fa fa-exchange"></i> Field Name Modifications</h3>
                             <div class="change-report-container change-modifications">
                                 <ul class="change-report-list">
-                                    <report-data-changes changes="dictionaryViewerCtrl.changeReport.fieldsChanged" type="fieldChange"></report-data-changes>
+                                  <li data-toggle="collapse" 
+                                    data-target="#fieldChange{{$index}}" 
+                                    aria-expanded="false" 
+                                    data-ng-repeat="change in dictionaryViewerCtrl.changeReport.fieldsChanged 
+                                      | filter: dictionaryViewerCtrl.filterChangesReport 
+                                      | findDiffs track by change.id" >
+                                    <report-data-changes 
+                                      changes="change" 
+                                      type="fieldChange"
+                                      index="{{$index}}">
+                                    </report-data-changes>
                                 </ul>
                             </div>
                         </div>
                         <div id="field-deletions" data-ng-if="dictionaryViewerCtrl.changeReport.fieldsRemoved.length">
                             <h3 class="change-removal-header"><i class="fa fa-minus"></i> Field Name Deletions</h3>
                             <div class="change-report-container change-removals">
-
                                 <ul class="change-report-list">
-                                    <report-data-removal changes="dictionaryViewerCtrl.changeReport.fieldsRemoved" type="fieldsRemoved"></report-data-removal>
-                                    <!--<li
+                                    <li
                                       data-toggle="collapse" 
                                       data-target="#fieldRemoved{{$index}}" 
                                       aria-expanded="false"  
-                                      data-ng-repeat="removal in dictionaryViewerCtrl.changeReport.fieldsRemoved | filter: dictionaryViewerCtrl.filterChangesReport">
-                                        <i class="fa fa-minus"></i> <span data-ng-bind-template="{{removal.fileType}} - {{removal.fieldName}}"></span>
-                                        <div class="collapse content" id="fieldRemoved{{$index}}" data-ng-if="removal.fieldDiff">
-                                          <div class="well" data-ng-bind-html="removal.fieldDiff | sanitize"></div>
-                                        </div>
-                                    </li>-->
+                                      data-ng-repeat="removals in dictionaryViewerCtrl.changeReport.fieldsRemoved 
+                                        | filter: dictionaryViewerCtrl.filterChangesReport
+                                        | findDiffs track by removals.id">
+                                        <report-data-removal 
+                                          removal="removals" 
+                                          type="fieldRemoved"
+                                          index="{{$index}}">
+                                        </report-data-removal>
+                                    </li>
                                 </ul>
                             </div>
                         </div>

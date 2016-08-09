@@ -1,11 +1,5 @@
-<li 
-  data-toggle="collapse" 
-  data-target="#{{type}}{{$index}}" 
-  aria-expanded="false" 
-  data-ng-repeat="removal in changes | findDiffs track by removal.id">
-  <i class="fa fa-minus"></i>
-  <span data-ng-bind-template="{{removal.type}} - {{removal.name}}"></span>
-  <div class="collapse content" id="{{type}}{{$index}}" data-ng-if="removal.diff" >
-    <div class="well" data-ng-bind-html="removal.diff | sanitize"></div>
-  </div>
-</li>
+<i class="fa fa-minus"></i>
+<span data-ng-bind-template="{{removal.type}} - {{removal.name}}"></span>
+<div class="collapse content" id="{{type}}{{index}}" data-ng-if="removal.diff" >
+  <div class="well" data-ng-bind-html="removal.diff | sanitize"></div>
+</div>

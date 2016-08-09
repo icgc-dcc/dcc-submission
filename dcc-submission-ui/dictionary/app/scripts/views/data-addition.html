@@ -1,11 +1,5 @@
-<li 
-  data-toggle="collapse" 
-  data-target="#{{type}}{{$index}}" 
-  aria-expanded="false" 
-  data-ng-repeat="addition in changes | findDiffs track by addition.id">
-  <i class="fa fa-plus"></i>
-  <span data-ng-bind-template="{{addition.type}} - {{addition.name}}"></span>
-  <div class="collapse content" id="{{type}}{{$index}}" data-ng-if="addition.diff" >
-    <div class="well" data-ng-bind-html="addition.diff | sanitize"></div>
-  </div>
-</li>
+<i class="fa fa-plus"></i>
+<span data-ng-bind-template="{{addition.type}} - {{addition.name}}"></span>
+<div class="collapse content" id="{{type}}{{index}}" data-ng-if="addition.diff" >
+<div class="well" data-ng-bind-html="addition.diff | sanitize"></div>
+</div>

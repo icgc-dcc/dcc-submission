@@ -451,7 +451,8 @@ angular.module('DictionaryViewerApp')
       replace: true,
       scope: {
         changes: '=',
-        type: '@'
+        type: '@',
+        index: '@'
       },
       link: function($scope, $element, $attrs) {
         var templateURL = 'scripts/views/data-changes.html',
@@ -471,10 +472,6 @@ angular.module('DictionaryViewerApp')
         $http.get(baseURL + templateURL, {cache: $templateCache}).success(function(tplContent){
           $element.replaceWith($compile(tplContent)($scope));
         });
-
-        // $scope.$watch('data', function (newData) {
-        //   console.log(newData);
-        // })
       }
     };
   })
@@ -482,10 +479,10 @@ angular.module('DictionaryViewerApp')
     return {      
       restrict: 'E',
       scope: {
-        changes: '=',
-        type: '@'
+        addition: '=',
+        type: '@',
+        index: '@'
       },
-      controllerAs: 'dataAdditionCtrl',
       link: function($scope, $element, $attrs) {
         var templateURL = 'scripts/views/data-addition.html',
             baseURL = '';
@@ -507,12 +504,13 @@ angular.module('DictionaryViewerApp')
       }
     };
   })
-  .directive('reportDataRemoval', function($http, $templateCache, $compile){    
+  .directive('reportDataRemoval', function($http, $templateCache, $compile){   
     return {      
       restrict: 'E',
       scope: {
-        changes: '=',
-        type: '@'
+        removal: '=',
+        type: '@',
+        index: '@'
       },
       link: function($scope, $element, $attrs) {
         var templateURL = 'scripts/views/data-removal.html',

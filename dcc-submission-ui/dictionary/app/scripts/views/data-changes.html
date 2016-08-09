@@ -1,11 +1,5 @@
-<li 
-  data-toggle="collapse" 
-  data-target="#{{type}}{{$index}}" 
-  aria-expanded="false" 
-  data-ng-repeat="change in changes | findDiffs track by change.id" >
-  <i class="fa fa-exchange"></i> 
-  <span data-ng-bind-template="{{change.type}} - {{change.name}}"></span>
-  <div class="collapse content" id="{{type}}{{$index}}" data-ng-if="change.diff" >
-    <div class="well" data-ng-bind-html="change.diff | sanitize"></div>
-  </div>
-</li>
+<i class="fa fa-exchange"></i> 
+<span data-ng-bind-template="{{changes.type}} - {{changes.name}}"></span>
+<div class="collapse content" id="{{type}}{{index}}" data-ng-if="changes.diff" >
+<div class="well" data-ng-bind-html="changes.diff | sanitize"></div>
+</div>
