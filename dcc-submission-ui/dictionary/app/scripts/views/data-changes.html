@@ -1,0 +1,5 @@
+<i class="fa fa-exchange"></i> 
+<span data-ng-bind-template="{{change.type}} - {{change.name}}"></span>
+<div class="collapse content" id="{{type}}{{change.id}}" data-ng-if="change.diff" >
+  <div class="well" data-ng-bind-html="change.diff | sanitize"></div>
+</div>

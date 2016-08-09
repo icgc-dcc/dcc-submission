@@ -1,0 +1,5 @@
+<i class="fa fa-minus"></i>
+<span data-ng-bind-template="{{removal.type}} - {{removal.name}}"></span>
+<div class="collapse content" id="{{type}}{{removal.id}}" data-ng-if="removal.diff" >
+  <div class="well" data-ng-bind-html="removal.diff | sanitize"></div>
+</div>

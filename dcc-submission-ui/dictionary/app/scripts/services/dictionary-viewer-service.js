@@ -150,4 +150,25 @@ angular.module('DictionaryViewerApp')
       
     }
 
+  })
+  .service('JSONDiffService', function($window){
+    var _service = this,
+      _formatService = $window.jsondiffpatch,
+      _diffService = _formatService.create({ textDiff: { minLength: 10 }});
+
+
+    _service.getDifferences = function(from, to){
+      var differences = _diffService.diff(from, to);
+
+      if(_.has(differences, 'expanded')){
+        differences = _.omit(differences, 'expanded');
+      }
+
+      return differences;
+    };
+
+    _service.formatDifferences = function(from, to){
+      return _formatService.formatters.html.format(_service.getDifferences(from, to));
+    };
+
   });

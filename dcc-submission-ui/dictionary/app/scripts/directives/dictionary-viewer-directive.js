@@ -122,6 +122,7 @@ angular.module('DictionaryViewerApp')
           _controller.tableViewer.toggleDataTypeFunc = handleGraphToggle;
 
           _controller.filterChangesReport = function(changeObj) {
+
             var query = _controller.q || '',
                 shouldIncludeObj = true;
 
@@ -142,7 +143,7 @@ angular.module('DictionaryViewerApp')
             // Now for the check default to not including in the filter
             shouldIncludeObj = false;
 
-            ['fileType','fieldName'].map(function (key) {
+            ['type','name'].map(function (key) {
 
               if ( typeof changeObj[key] === 'string' &&
                    normalizeStr(changeObj[key]).indexOf(normalizedQuery) >= 0 ) {
@@ -338,8 +339,6 @@ angular.module('DictionaryViewerApp')
 
           }
 
-
-
           $rootScope.$broadcast(DictionaryViewerConstants.EVENTS.RENDER_COMPLETE, null);
 
           // Skip the rest if our view mode isn't table
@@ -445,4 +444,34 @@ angular.module('DictionaryViewerApp')
       }
     };
 
+  })
+  .directive('reportDataChanges', function(){    
+    return {      
+      restrict: 'E',
+      scope: {
+        change: '=',
+        type: '@'
+      },
+      templateUrl: 'scripts/views/data-changes.html'
+    };
+  })
+  .directive('reportDataAddition', function(){    
+    return {      
+      restrict: 'E',
+      scope: {
+        addition: '=',
+        type: '@'
+      },
+      templateUrl: 'scripts/views/data-addition.html'
+    };
+  })
+  .directive('reportDataRemoval', function(){   
+    return {      
+      restrict: 'E',
+      scope: {
+        removal: '=',
+        type: '@'
+      },
+      templateUrl: 'scripts/views/data-removal.html'
+    };
   });
