@@ -102,7 +102,8 @@ var dictionaryApp = dictionaryApp || {};
      return _.find(file.fields, function(f) { return f.name === fieldname; });
    };
 
-   DictionaryUtil.prototype.getFilePatternDiff = function(tableFrom, tableTo) {
+   DictionaryUtil.prototype.getFilePatternDiff = function(dict, tableTo) {
+     var tableFrom = this.getFileTypeFromDict(dict, tableTo.name);
 
       if (!tableFrom) {
         return null;
@@ -111,7 +112,8 @@ var dictionaryApp = dictionaryApp || {};
       return _.isEqual(tableFrom.pattern, tableTo.pattern);
    };
 
-   DictionaryUtil.prototype.getFileLabelDiff = function(tableFrom, tableTo) {
+   DictionaryUtil.prototype.getFileLabelDiff = function(dict, tableTo) {
+     var tableFrom = this.getFileTypeFromDict(dict, tableTo.name);
      
       if (!tableFrom) {
         return null;
@@ -277,7 +279,7 @@ var dictionaryApp = dictionaryApp || {};
                 // Check file metadata change
                 if(!_.isEqual(fileFrom, fileTo)){
 
-                  if(!_self.getFileLabelDiff(fileFrom, fileTo)){
+                  if(!_self.getFileLabelDiff(dictFrom, fileTo)){
                     addDiff('fileDataChanged', {
                       type: fileTo.name,
                       name: fileTo.label,
@@ -286,7 +288,7 @@ var dictionaryApp = dictionaryApp || {};
                     });
                   }
 
-                  if(!_self.getFilePatternDiff(fileFrom, fileTo)){
+                  if(!_self.getFilePatternDiff(dictFrom, fileTo)){
                     addDiff('fileDataChanged', {
                       type: fileTo.name,
                       name: 'File Name Pattern',

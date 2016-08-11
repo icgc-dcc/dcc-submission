@@ -445,33 +445,87 @@ angular.module('DictionaryViewerApp')
     };
 
   })
-  .directive('reportDataChanges', function(){    
+  .directive('reportDataChanges', function($http, $templateCache, $compile){    
     return {      
       restrict: 'E',
       scope: {
         change: '=',
         type: '@'
       },
-      templateUrl: 'scripts/views/data-changes.html'
+      link: function(scope, element, attrs) {
+        var relTemplateURL = 'scripts/views/data-changes.html',
+            baseURL = '';
+
+        if (angular.isDefined(attrs.templateUrl)) {
+          baseURL = attrs.templateUrl;
+        }
+        else if (angular.isDefined(attrs.baseDictionaryUrl)) {
+          baseURL = attrs.baseDictionaryUrl;
+        }
+
+        if (baseURL) {
+          baseURL += '/';
+        }
+
+        $http.get(baseURL + relTemplateURL, {cache: $templateCache}).success(function(tplContent){
+          element.replaceWith($compile(tplContent)(scope));
+        });
+      }
     };
   })
-  .directive('reportDataAddition', function(){    
+  .directive('reportDataAddition', function($http, $templateCache, $compile){    
     return {      
       restrict: 'E',
       scope: {
         addition: '=',
         type: '@'
       },
-      templateUrl: 'scripts/views/data-addition.html'
+      link: function(scope, element, attrs) {
+        var relTemplateURL = 'scripts/views/data-addition.html',
+            baseURL = '';
+
+        if (angular.isDefined(attrs.templateUrl)) {
+          baseURL = attrs.templateUrl;
+        }
+        else if (angular.isDefined(attrs.baseDictionaryUrl)) {
+          baseURL = attrs.baseDictionaryUrl;
+        }
+
+        if (baseURL) {
+          baseURL += '/';
+        }
+
+        $http.get(baseURL + relTemplateURL, {cache: $templateCache}).success(function(tplContent){
+          element.replaceWith($compile(tplContent)(scope));
+        });
+      }
     };
   })
-  .directive('reportDataRemoval', function(){   
+  .directive('reportDataRemoval', function($http, $templateCache, $compile){   
     return {      
       restrict: 'E',
       scope: {
         removal: '=',
         type: '@'
       },
-      templateUrl: 'scripts/views/data-removal.html'
+      link: function(scope, element, attrs) {
+        var relTemplateURL = 'scripts/views/data-removal.html',
+            baseURL = '';
+
+        if (angular.isDefined(attrs.templateUrl)) {
+          baseURL = attrs.templateUrl;
+        }
+        else if (angular.isDefined(attrs.baseDictionaryUrl)) {
+          baseURL = attrs.baseDictionaryUrl;
+        }
+
+        if (baseURL) {
+          baseURL += '/';
+        }
+
+        $http.get(baseURL + relTemplateURL, {cache: $templateCache}).success(function(tplContent){
+          element.replaceWith($compile(tplContent)(scope));
+        });
+      }
     };
   });
