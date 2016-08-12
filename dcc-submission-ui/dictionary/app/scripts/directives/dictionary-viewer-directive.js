@@ -426,7 +426,7 @@ angular.module('DictionaryViewerApp')
     };
 
   })
-  .directive('reportDataChanges', function($http, $templateCache, $compile){    
+  .directive('reportDataChanges', function(){    
     return {      
       restrict: 'E',
       scope: {
@@ -436,7 +436,7 @@ angular.module('DictionaryViewerApp')
       templateUrl: 'scripts/views/data-changes.html'
     };
   })
-  .directive('reportDataAddition', function($http, $templateCache, $compile){    
+  .directive('reportDataAddition', function(){    
     return {      
       restrict: 'E',
       scope: {
@@ -446,7 +446,7 @@ angular.module('DictionaryViewerApp')
       templateUrl: 'scripts/views/data-addition.html',
     };
   })
-  .directive('reportDataRemoval', function($http, $templateCache, $compile){   
+  .directive('reportDataRemoval', function(){   
     return {      
       restrict: 'E',
       scope: {

@@ -363,7 +363,8 @@ module.exports = function (grunt) {
         options:    {
           htmlmin:  { collapseWhitespace: true, collapseBooleanAttributes: true },
           bootstrap: function (module, script) {
-            return 'angular.module(\'DictionaryViewerApp\').run([\'$templateCache\', function($templateCache) {' + script + '} ]);';
+            return 'angular.module(\'DictionaryViewerApp\').run([\'$templateCache\', function($templateCache) {' +
+              script + '} ]);';
           }
         }
       }
