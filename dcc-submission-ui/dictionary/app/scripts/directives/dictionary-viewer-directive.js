@@ -433,7 +433,7 @@ angular.module('DictionaryViewerApp')
         change: '=',
         type: '@'
       },
-      templateURL: 'scripts/views/data-changes.html'
+      templateUrl: 'scripts/views/data-changes.html'
     };
   })
   .directive('reportDataAddition', function($http, $templateCache, $compile){    
