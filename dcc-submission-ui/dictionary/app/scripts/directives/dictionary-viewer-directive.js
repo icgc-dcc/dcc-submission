@@ -13,7 +13,7 @@ angular.module('DictionaryViewerApp')
                                           $templateCache, $compile, DictionaryAppConstants) {
     return {
       restrict: 'EA',
-      //templateUrl: 'scripts/views/dictionary-viewer-directive.html',
+      templateUrl: 'scripts/views/dictionary-viewer-directive.html',
       scope: {
         baseDictionaryUrl: '@',
         showHeaderNav: '@',
@@ -422,26 +422,7 @@ angular.module('DictionaryViewerApp')
 
         }
       },
-      controllerAs: 'dictionaryViewerCtrl',
-      link: function(scope, element, attrs) {
-        var relTemplateURL = 'scripts/views/dictionary-viewer-directive.html',
-            baseURL = '';
-
-        if (angular.isDefined(attrs.templateUrl)) {
-          baseURL = attrs.templateUrl;
-        }
-        else if (angular.isDefined(attrs.baseDictionaryUrl)) {
-          baseURL = attrs.baseDictionaryUrl;
-        }
-
-        if (baseURL) {
-          baseURL += '/';
-        }
-
-        $http.get(baseURL + relTemplateURL, {cache: $templateCache}).success(function(tplContent){
-          element.replaceWith($compile(tplContent)(scope));
-        });
-      }
+      controllerAs: 'dictionaryViewerCtrl'
     };
 
   })
@@ -452,25 +433,7 @@ angular.module('DictionaryViewerApp')
         change: '=',
         type: '@'
       },
-      link: function(scope, element, attrs) {
-        var relTemplateURL = 'scripts/views/data-changes.html',
-            baseURL = '';
-
-        if (angular.isDefined(attrs.templateUrl)) {
-          baseURL = attrs.templateUrl;
-        }
-        else if (angular.isDefined(attrs.baseDictionaryUrl)) {
-          baseURL = attrs.baseDictionaryUrl;
-        }
-
-        if (baseURL) {
-          baseURL += '/';
-        }
-
-        $http.get(baseURL + relTemplateURL, {cache: $templateCache}).success(function(tplContent){
-          element.replaceWith($compile(tplContent)(scope));
-        });
-      }
+      templateURL: 'scripts/views/data-changes.html'
     };
   })
   .directive('reportDataAddition', function($http, $templateCache, $compile){    
@@ -480,25 +443,7 @@ angular.module('DictionaryViewerApp')
         addition: '=',
         type: '@'
       },
-      link: function(scope, element, attrs) {
-        var relTemplateURL = 'scripts/views/data-addition.html',
-            baseURL = '';
-
-        if (angular.isDefined(attrs.templateUrl)) {
-          baseURL = attrs.templateUrl;
-        }
-        else if (angular.isDefined(attrs.baseDictionaryUrl)) {
-          baseURL = attrs.baseDictionaryUrl;
-        }
-
-        if (baseURL) {
-          baseURL += '/';
-        }
-
-        $http.get(baseURL + relTemplateURL, {cache: $templateCache}).success(function(tplContent){
-          element.replaceWith($compile(tplContent)(scope));
-        });
-      }
+      templateUrl: 'scripts/views/data-addition.html',
     };
   })
   .directive('reportDataRemoval', function($http, $templateCache, $compile){   
@@ -508,24 +453,6 @@ angular.module('DictionaryViewerApp')
         removal: '=',
         type: '@'
       },
-      link: function(scope, element, attrs) {
-        var relTemplateURL = 'scripts/views/data-removal.html',
-            baseURL = '';
-
-        if (angular.isDefined(attrs.templateUrl)) {
-          baseURL = attrs.templateUrl;
-        }
-        else if (angular.isDefined(attrs.baseDictionaryUrl)) {
-          baseURL = attrs.baseDictionaryUrl;
-        }
-
-        if (baseURL) {
-          baseURL += '/';
-        }
-
-        $http.get(baseURL + relTemplateURL, {cache: $templateCache}).success(function(tplContent){
-          element.replaceWith($compile(tplContent)(scope));
-        });
-      }
+      templateUrl: 'scripts/views/data-removal.html'
     };
   });

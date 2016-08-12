@@ -22,7 +22,9 @@ module.exports = function (grunt) {
   // configurable paths
   var yeomanConfig = {
     app: 'app',
-    dist: '../public/dictionary'
+    dist: '../public/dictionary',
+    moduleDist: 'dist',
+    tmp: '.tmp',
   };
 
 
@@ -158,9 +160,16 @@ module.exports = function (grunt) {
     },
     // not used since Uglify task does concat,
     // but still available if needed
-    /*concat: {
-     dist: {}
-     },*/
+    concat: {
+      dist: {
+        src: [
+          'npm-module-scripts/imports.js',
+          '<%= yeoman.app %>/scripts/**/*.js',
+          '<%= yeoman.tmp %>/templates.js'
+        ],
+        dest: '<%= yeoman.moduleDist %>/dictionary.js',
+      }
+    },
     // Renames files for browser caching purposes
     filerev: {
       dist: {
@@ -178,7 +187,7 @@ module.exports = function (grunt) {
         flow: {
           html: {
             steps: {
-              js: ['concat'],
+              // js: ['concat'],
               css: ['concat', 'cssmin']
             },
             post: {}
@@ -344,7 +353,19 @@ module.exports = function (grunt) {
           dest: '<%= yeoman.dist %>/scripts',
           ext: '.js'
         }]
-
+      },
+    },
+    ngtemplates:    {
+      app:          {
+        cwd:        'app',
+        src:        'scripts/views/*.html',
+        dest:       '<%= yeoman.tmp %>/templates.js',
+        options:    {
+          htmlmin:  { collapseWhitespace: true, collapseBooleanAttributes: true },
+          bootstrap: function (module, script) {
+            return 'angular.module(\'DictionaryViewerApp\').run([\'$templateCache\', function($templateCache) {' + script + '} ]);';
+          }
+        }
       }
     }
   });
@@ -382,7 +403,7 @@ module.exports = function (grunt) {
     //'karma',
     'useminPrepare',
     'concurrent:dist',
-    'concat',
+    // 'concat',
     'copy:dist',
     'ngAnnotate',
     'cssmin',

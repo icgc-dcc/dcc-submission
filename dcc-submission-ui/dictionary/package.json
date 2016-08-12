@@ -1,16 +1,45 @@
 {
-  "name": "dcc-submission-dictionary-viewer",
-  "description": "ICGC Submission Dictionary Viewer",
-  "version": "1.0.0",
+  "name": "@icgc/dictionary-viewer",
+  "description": "ICGC Dictionary Viewer",
+  "version": "1.0.3",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git://github.com:icgc-dcc/dcc-submission.git"
   },
+  "main": "dist/dictionary.js",
+  "scripts": {
+    "build:module": "grunt ngtemplates && grunt concat",
+    "prepublish": "npm run build:module"
+  },
+  "files": [
+    "dist",
+    "app/fonts",
+    "app/images",
+    "app/styles"
+  ],
+  "dependencies": {
+    "angular": "~1.4.*",
+    "angular-animate": "~1.4.*",
+    "angular-loading-bar": "0.9.0",
+    "angular-mocks": "~1.4.*",
+    "angular-sanitize": "~1.4.*",
+    "bootstrap": "3.3.*",
+    "d3": "3.5.6",
+    "d3-tip": "0.6.*",
+    "highlight.js": "9.0.*",
+    "jquery": "1.9.*",
+    "json": "9.0.4",
+    "jsondiffpatch": "0.1.43",
+    "jsoneditor": "5.1.*",
+    "regex-colorizer": "0.3.*",
+    "underscore": "1.8.*"
+  },
   "devDependencies": {
     "connect-livereload": "0.5.0",
     "connect-modrewrite": "0.5.6",
     "grunt": "~0.4.*",
+    "grunt-angular-templates": "1.1.0",
     "grunt-bower-install-simple": "~1.1.*",
     "grunt-concurrent": "0.3.0",
     "grunt-contrib-clean": "~0.4.1",
@@ -24,12 +53,13 @@
     "grunt-contrib-jshint": "~0.11.*",
     "grunt-contrib-uglify": "~0.11.*",
     "grunt-contrib-watch": "0.6.1",
+    "grunt-filerev": "~2.3.*",
     "grunt-karma": "0.10.1",
     "grunt-ng-annotate": "~0.9.*",
     "grunt-open": "0.2.0",
-    "grunt-filerev": "~2.3.*",
     "grunt-usemin": "3.0.0",
     "http-proxy": "0.10.0",
+    "imports-loader": "0.6.5",
     "jshint-stylish": "^2.1.0",
     "karma": "~0.12.31",
     "karma-chrome-launcher": "~0.1.7",
