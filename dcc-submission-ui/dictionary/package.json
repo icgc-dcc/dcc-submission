@@ -29,6 +29,7 @@
     "d3-tip": "0.6.*",
     "highlight.js": "9.0.*",
     "jquery": "1.9.*",
+    "js-beautify": "1.6.3",
     "json": "9.0.4",
     "jsondiffpatch": "0.1.43",
     "jsoneditor": "5.1.*",
