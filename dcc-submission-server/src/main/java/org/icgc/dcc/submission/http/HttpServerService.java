@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.http;
 
 import static com.google.common.base.Throwables.propagate;
-import static com.google.common.collect.ImmutableSet.copyOf;
 import static com.google.common.net.HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS;
 import static com.google.common.net.HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS;
 import static com.google.common.net.HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS;
@@ -46,9 +45,9 @@ import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.server.StaticHttpHandler;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 
 import com.google.common.util.concurrent.AbstractService;
-import com.typesafe.config.Config;
 
 import lombok.Cleanup;
 import lombok.NonNull;
@@ -60,7 +59,7 @@ import lombok.extern.slf4j.Slf4j;
  * A {@code Service} for managing the {@code HttpServer} life cycle.
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject) )
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class HttpServerService extends AbstractService {
 
   /**
@@ -75,7 +74,7 @@ public class HttpServerService extends AbstractService {
    * Server state.
    */
   @NonNull
-  private final Config config;
+  private final SubmissionProperties properties;
   @NonNull
   private final HttpServer server;
   @NonNull
@@ -84,10 +83,10 @@ public class HttpServerService extends AbstractService {
   @Override
   protected void doStart() {
     try {
-      val host = config.getString("http.listen");
-      val port = config.getInt("http.port");
-      val useSsl = config.getBoolean("http.ssl");
-      val resources = copyOf(config.getStringList("http.resources"));
+      val host = properties.getHttp().getListen();
+      val port = properties.getHttp().getPort();
+      val useSsl = properties.getHttp().getSsl();
+      val resources = properties.getHttp().getResources();
       log.info("HTTP config: host = {}, port = {}, use SSL = {}, resources = {}",
           new Object[] { host, port, useSsl, resources });
 

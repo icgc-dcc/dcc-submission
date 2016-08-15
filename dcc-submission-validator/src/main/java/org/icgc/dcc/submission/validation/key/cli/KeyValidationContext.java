@@ -17,10 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.key.cli;
 
-import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_S_TYPE;
-import static org.icgc.dcc.submission.config.Configs.getHadoopProperties;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readResourcesFileSchema;
 
 import java.util.List;
@@ -30,7 +28,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
-import org.icgc.dcc.submission.core.util.FsConfig;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.util.Dictionaries;
@@ -42,9 +40,6 @@ import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.core.AbstractValidationContext;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactoryProvider;
-
-import com.google.common.collect.ImmutableMap;
-import com.typesafe.config.Config;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -74,7 +69,7 @@ public class KeyValidationContext extends AbstractValidationContext {
   private final String jobTracker;
 
   @Getter(lazy = true)
-  private final Config config = createConfig();
+  private final SubmissionProperties properties = createProperties();
   @Getter(lazy = true)
   private final List<DataType> dataTypes = DataTypes.values();
   @Getter(lazy = true)
@@ -88,7 +83,7 @@ public class KeyValidationContext extends AbstractValidationContext {
   @Getter(lazy = true)
   private final FileSystem fileSystem = createFileSystem();
   @Getter(lazy = true)
-  private final DccFileSystem dccFileSystem = new DccFileSystem(getConfig(), getFileSystem());
+  private final DccFileSystem dccFileSystem = new DccFileSystem(getProperties(), getFileSystem());
   @Getter(lazy = true)
   private final ReleaseFileSystem releaseFileSystem = new ReleaseFileSystem(getDccFileSystem(), getRelease());
   @Getter(lazy = true)
@@ -112,24 +107,26 @@ public class KeyValidationContext extends AbstractValidationContext {
 
   @SneakyThrows
   private FileSystem createFileSystem() {
-    val fsUrl = getConfig().getString(FsConfig.FS_URL);
+    val fsUrl = getProperties().getFsUrl();
     val configuration = new Configuration();
     configuration.set(FS_DEFAULT_NAME_KEY, fsUrl);
 
     return FileSystem.get(configuration);
   }
 
-  private Config createConfig() {
-    return parseMap(ImmutableMap.<String, Object> of(
-        "hadoop.\"mapred.job.tracker\"", jobTracker,
-        "hadoop.\"fs.defaultFS\"", fsUrl,
+  private SubmissionProperties createProperties() {
+    val properties = new SubmissionProperties();
+    properties.setFsRoot(fsRoot);
+    properties.setFsUrl(fsUrl);
+    properties.getHadoop().getProperties().put("mapred.job.tracker", jobTracker);
+    properties.getHadoop().getProperties().put("fs.defaultFS", fsUrl);
 
-        "fs.root", fsRoot,
-        "fs.url", fsUrl));
+    return properties;
   }
 
   private SubmissionPlatformStrategy createPlatformStrategy() {
-    val provider = new SubmissionPlatformStrategyFactoryProvider(getHadoopProperties(getConfig()), getFileSystem());
+    val provider =
+        new SubmissionPlatformStrategyFactoryProvider(getProperties().getHadoop().getProperties(), getFileSystem());
     val factory = provider.get();
 
     // Reuse primary validation component

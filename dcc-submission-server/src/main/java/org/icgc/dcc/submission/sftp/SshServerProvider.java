@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.sftp;
 
-import static com.google.common.base.Joiner.on;
 import static java.lang.String.valueOf;
 import static org.apache.sshd.common.FactoryManager.DEFAULT_NIO_WORKERS;
 import static org.apache.sshd.common.FactoryManager.NIO_WORKERS;
@@ -27,13 +26,13 @@ import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.server.Command;
 import org.apache.sshd.server.keyprovider.PEMGeneratorHostKeyProvider;
 import org.apache.sshd.server.sftp.SftpSubsystem;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.sftp.fs.HdfsFileSystemFactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.typesafe.config.Config;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -48,15 +47,10 @@ import lombok.extern.slf4j.Slf4j;
 public class SshServerProvider implements Provider<SshServer> {
 
   /**
-   * Configuration file path.
-   */
-  private static final String SFTP_CONFIG_SECTION = "sftp";
-
-  /**
    * Provider dependencies.
    */
   @NonNull
-  private final Config config;
+  private final SubmissionProperties properties;
   @NonNull
   private final SftpContext context;
   @NonNull
@@ -68,14 +62,14 @@ public class SshServerProvider implements Provider<SshServer> {
     SshServer sshd = SshServer.setUpDefaultServer();
 
     // Set customized configuration
-    sshd.setPort(config.getInt(getConfigPath("port")));
-    setProperties(sshd, config);
+    sshd.setPort(properties.getSftp().getPort());
+    setProperties(sshd, properties);
 
     // Set customized extension points
-    sshd.setKeyPairProvider(new PEMGeneratorHostKeyProvider(config.getString(getConfigPath("path")), "RSA", 2048));
+    sshd.setKeyPairProvider(new PEMGeneratorHostKeyProvider(properties.getSftp().getPath(), "RSA", 2048));
     sshd.setPasswordAuthenticator(authenticator);
-    if (config.hasPath(getConfigPath("key"))) {
-      sshd.setPublickeyAuthenticator(new SftpPublicKeyAuthenticator(config.getString(getConfigPath("key"))));
+    if (properties.getSftp().getKey() != null) {
+      sshd.setPublickeyAuthenticator(new SftpPublicKeyAuthenticator(properties.getSftp().getKey()));
     }
     sshd.setFileSystemFactory(new HdfsFileSystemFactory(context));
     sshd.setSubsystemFactories(ImmutableList.<NamedFactory<Command>> of(new SftpSubsystem.Factory()));
@@ -83,20 +77,14 @@ public class SshServerProvider implements Provider<SshServer> {
     return sshd;
   }
 
-  private static void setProperties(SshServer sshd, Config config) {
-    val nioWorkersPath = getConfigPath(NIO_WORKERS);
-
-    if (config.hasPath(nioWorkersPath)) {
-      val nioWorkers = config.getInt(nioWorkersPath);
+  private static void setProperties(SshServer sshd, SubmissionProperties properties) {
+    val nioWorkers = properties.getSftp().getNioWorkers();
+    if (nioWorkers != null) {
       log.info("Setting '{}' to '{}'", NIO_WORKERS, nioWorkers);
       sshd.setProperties(new ImmutableMap.Builder<String, String>().put(NIO_WORKERS, valueOf(nioWorkers)).build());
     } else {
       log.info("Using default value for '{}': '{}'", NIO_WORKERS, DEFAULT_NIO_WORKERS);
     }
-  }
-
-  private static String getConfigPath(String param) {
-    return on(".").join(SFTP_CONFIG_SECTION, param);
   }
 
 }

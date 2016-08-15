@@ -40,13 +40,13 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.core.model.Feedback;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.core.state.State;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
-import com.typesafe.config.Config;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -61,36 +61,10 @@ public class MailService {
   /**
    * Server property names.
    */
-  public static final String MAIL_ENABLED = "mail.enabled";
   public static final String MAIL_SMTP_HOST = "mail.smtp.host";
   public static final String MAIL_SMTP_PORT = "mail.smtp.port";
   public static final String MAIL_SMTP_TIMEOUT = "mail.smtp.timeout";
   public static final String MAIL_SMTP_CONNECTION_TIMEOUT = "mail.smtp.connectiontimeout";
-
-  /**
-   * Subject property name.
-   */
-  public static final String MAIL_VALIDATION_SUBJECT = "mail.subject";
-
-  /**
-   * From property names.
-   */
-  public static final String MAIL_FROM = "mail.from.email";
-
-  /**
-   * Recipient property names.
-   */
-  public static final String MAIL_SUPPORT_RECIPIENT = "mail.support.email";
-  public static final String MAIL_NOTIFICATION_RECIPIENT = "mail.notification.email";
-
-  /**
-   * Body property names.
-   */
-  public static final String MAIL_ERROR_BODY = "mail.error_body";
-  public static final String MAIL_NOT_VALIDATED_BODY = "mail.not_validated_body";
-  public static final String MAIL_INVALID_BODY = "mail.invalid_body";
-  public static final String MAIL_VALID_BODY = "mail.valid_body";
-  public static final String MAIL_SIGNOFF_BODY = "mail.signoff_body";
 
   /**
    * Prefix used in the subject of a notification email.
@@ -110,7 +84,7 @@ public class MailService {
    * Application config.
    */
   @NonNull
-  private final Config config;
+  private final SubmissionProperties properties;
 
   public void sendSupportFeedback(@NonNull Feedback feedback) {
     sendNotification(format("Feedback from %s - '%s'", feedback.getEmail(), feedback.getSubject()),
@@ -118,7 +92,7 @@ public class MailService {
 
     send(
         feedback.getEmail(),
-        to(MAIL_SUPPORT_RECIPIENT),
+        properties.getMail().getSupportEmail(),
         feedback.getSubject(),
         feedback.getMessage());
   }
@@ -127,8 +101,8 @@ public class MailService {
     sendNotification(format("Support issue - '%s'", subject));
 
     send(
-        from(MAIL_FROM),
-        to(MAIL_SUPPORT_RECIPIENT),
+        properties.getMail().getFromEmail(),
+        properties.getMail().getSupportEmail(),
         subject,
         message);
   }
@@ -148,10 +122,11 @@ public class MailService {
         user, path, newPath));
   }
 
-  public void sendSignoff(@NonNull String user, @NonNull Iterable<String> projectKeys, @NonNull String nextReleaseName) {
+  public void sendSignoff(@NonNull String user, @NonNull Iterable<String> projectKeys,
+      @NonNull String nextReleaseName) {
     sendNotification(
         format("Signed off Projects: %s", projectKeys),
-        template(MAIL_SIGNOFF_BODY, user, projectKeys, nextReleaseName));
+        template(properties.getMail().getSignoffBody(), user, projectKeys, nextReleaseName));
   }
 
   public void sendValidationStarted(@NonNull String releaseName, @NonNull String projectKey,
@@ -178,9 +153,9 @@ public class MailService {
 
     try {
       val message = message();
-      message.setFrom(address(get(MAIL_FROM)));
+      message.setFrom(address(properties.getMail().getFromEmail()));
       message.addRecipients(TO, addresses(emails));
-      message.setSubject(template(MAIL_VALIDATION_SUBJECT, projectKey, state, report));
+      message.setSubject(template(properties.getMail().getSubject(), projectKey, state, report));
       message.setText(getResult(releaseName, projectKey, state));
 
       send(message);
@@ -189,21 +164,26 @@ public class MailService {
     }
   }
 
+  public Boolean isEnabled() {
+    return properties.getMail().getEnabled();
+  }
+
   private String getResult(String releaseName, String projectKey, State state) {
+    val mail = properties.getMail();
     // @formatter:off
     return
-      state == ERROR         ? template(MAIL_ERROR_BODY,           projectKey, state)                         : 
-      state == INVALID       ? template(MAIL_INVALID_BODY,         projectKey, state, releaseName, projectKey) :
-      state == NOT_VALIDATED ? template(MAIL_NOT_VALIDATED_BODY,   projectKey, state, releaseName, projectKey) :
-      state == VALID         ? template(MAIL_VALID_BODY,           projectKey, state, releaseName, projectKey) :
+      state == ERROR         ? template(mail.getErrorBody(),        projectKey, state)                         : 
+      state == INVALID       ? template(mail.getInvalidBody(),      projectKey, state, releaseName, projectKey) :
+      state == NOT_VALIDATED ? template(mail.getNotValidatedBody(), projectKey, state, releaseName, projectKey) :
+      state == VALID         ? template(mail.getValidBody(),        projectKey, state, releaseName, projectKey) :
                                format("Unexpected validation state '%s' prevented loading email text.", state);
     // @formatter:on
   }
 
   private void sendNotification(String subject, String message) {
     send(
-        from(MAIL_FROM),
-        to(MAIL_NOTIFICATION_RECIPIENT),
+        properties.getMail().getFromEmail(),
+        properties.getMail().getNotificationEmail(),
         NOTIFICATION_SUBJECT_PREFEX + subject,
         message);
   }
@@ -247,7 +227,8 @@ public class MailService {
           Transport.send(message);
           log.info("Sent email '{}' to {}", message.getSubject(), Arrays.toString(message.getAllRecipients()));
         } catch (Throwable t) {
-          log.error("Error sending email '{}' to {}", message.getSubject(), Arrays.toString(message.getAllRecipients()));
+          log.error("Error sending email '{}' to {}", message.getSubject(),
+              Arrays.toString(message.getAllRecipients()));
           log.error("Exception:", t);
         }
       }
@@ -257,10 +238,10 @@ public class MailService {
 
   private Message message() {
     val props = new Properties();
-    props.put(MAIL_SMTP_HOST, get(MAIL_SMTP_HOST));
-    props.put(MAIL_SMTP_PORT, get(MAIL_SMTP_PORT, "25"));
-    props.put(MAIL_SMTP_TIMEOUT, get(MAIL_SMTP_TIMEOUT, "5000"));
-    props.put(MAIL_SMTP_TIMEOUT, get(MAIL_SMTP_CONNECTION_TIMEOUT, "5000"));
+    props.put(MAIL_SMTP_HOST, properties.getMail().getSmtpHost());
+    props.put(MAIL_SMTP_PORT, properties.getMail().getSmtpPort());
+    props.put(MAIL_SMTP_TIMEOUT, properties.getMail().getSmtpTimeout());
+    props.put(MAIL_SMTP_CONNECTION_TIMEOUT, properties.getMail().getSmtpConnectionTimeout());
 
     return new MimeMessage(Session.getDefaultInstance(props, null));
   }
@@ -269,28 +250,8 @@ public class MailService {
     return format("[%s] %s", getHostName(), text);
   }
 
-  private String template(String templateName, Object... arguments) {
-    return format(get(templateName), arguments);
-  }
-
-  private String from(String name) {
-    return get(name);
-  }
-
-  private String to(String name) {
-    return get(name);
-  }
-
-  private String get(String name) {
-    return config.getString(name);
-  }
-
-  private String get(String name, String defaultValue) {
-    return config.hasPath(name) ? config.getString(name) : defaultValue;
-  }
-
-  private boolean isEnabled() {
-    return config.hasPath(MAIL_ENABLED) ? config.getBoolean(MAIL_ENABLED) : true;
+  private String template(String body, Object... arguments) {
+    return format(body, arguments);
   }
 
   private static Address[] addresses(List<String> emails) {

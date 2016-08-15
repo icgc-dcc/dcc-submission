@@ -45,7 +45,7 @@ public class DccFileSystemTest extends FileSystemTest {
     when(this.mockFileSystem.mkdirs(any(Path.class))).thenReturn(true);
     when(this.mockFileSystem.listStatus(any(Path.class))).thenReturn(new FileStatus[] {});
 
-    this.dccFileSystem = new DccFileSystem(this.mockConfig, this.mockFileSystem);
+    this.dccFileSystem = new DccFileSystem(properties, this.mockFileSystem);
   }
 
   @Test

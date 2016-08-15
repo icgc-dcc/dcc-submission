@@ -49,10 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RunWith(GuiceJUnitRunner.class)
-@GuiceModules({
-    ConfigModule.class, CoreModule.class,
-    FileSystemModule.class,
-    PersistenceModule.class, RepositoryModule.class, ShiroModule.class })
+@GuiceModules({ ConfigModule.class, CoreModule.class, FileSystemModule.class, PersistenceModule.class, RepositoryModule.class, ShiroModule.class })
 public class FileSystemFunctionalTest extends FileSystemTest {
 
   protected DccFileSystem dccFileSystem;
@@ -71,7 +68,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
   public void setUp() throws IOException {
     super.setUp();
 
-    this.dccFileSystem = new DccFileSystem(this.mockConfig, this.fileSystem);
+    this.dccFileSystem = new DccFileSystem(this.properties, this.fileSystem);
   }
 
   @Test
@@ -83,7 +80,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
         HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, new Path(this.dccFileSystem.getRootStringPath())));
     Assert.assertNotNull(filenameList0);
     Assert.assertEquals(//
-        "[]",//
+        "[]", //
         filenameList0.toString());
     log.info("ls0 = " + filenameList0);
 
@@ -93,7 +90,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
         HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, new Path(this.dccFileSystem.getRootStringPath())));
     Assert.assertNotNull(filenameList1);
     Assert.assertEquals(//
-        "[ICGC4]",//
+        "[ICGC4]", //
         filenameList1.toString());
     log.info("ls1 = " + filenameList1);
 
@@ -148,7 +145,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     Iterable<String> fileList2 = mySubmissionDirectory.listFile(Pattern.compile(".*__p__.*"));
     Assert.assertNotNull(fileList2);
     Assert.assertEquals(//
-        "[cnsm__bla__bla__p__bla__bla.tsv]",//
+        "[cnsm__bla__bla__p__bla__bla.tsv]", //
         fileList2.toString());
     log.info("ls2 = " + fileList2);
 
@@ -157,7 +154,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     Iterable<String> fileList3 = mySubmissionDirectory.listFile();
     Assert.assertNotNull(fileList3);
     Assert.assertEquals(//
-        "[cnsm__bla__bla__s__bla__bla.tsv]",//
+        "[cnsm__bla__bla__s__bla__bla.tsv]", //
         fileList3.toString());
     log.info("ls3 = " + fileList3);
   }

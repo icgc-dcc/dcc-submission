@@ -45,6 +45,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.sshd.SshServer;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.Status;
 import org.icgc.dcc.submission.core.model.UserSession;
@@ -73,7 +74,6 @@ import com.google.common.base.Optional;
 import com.google.common.eventbus.EventBus;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
-import com.typesafe.config.Config;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -98,8 +98,8 @@ public class SftpServerServiceTest {
   @Rule
   public Sftp sftp = new Sftp(USERNAME, PASSWORD, false);
 
-  @Mock
-  Config config;
+  SubmissionProperties properties = new SubmissionProperties();
+
   @Mock
   Subject subject;
   @Mock
@@ -135,12 +135,10 @@ public class SftpServerServiceTest {
     // Create root of file system
     root = tmp.newFolder(RELEASE_NAME);
 
-    // Mock configuration
-    when(config.getInt("sftp.port")).thenReturn(sftp.getPort());
-    when(config.getString("sftp.path")).thenReturn(tmp.newFile().getAbsolutePath());
-    when(config.getString("sftp.key")).thenReturn("key");
-    when(config.hasPath("sftp.nio-workers")).thenReturn(true);
-    when(config.getInt("sftp.nio-workers")).thenReturn(NIO_WORKERS);
+    properties.getSftp().setPort(sftp.getPort());
+    properties.getSftp().setPath(tmp.newFile().getAbsolutePath());
+    properties.getSftp().setKey("key");
+    properties.getSftp().setNioWorkers(NIO_WORKERS);
 
     // Mock authentication
     when(subject.getPrincipal()).thenReturn("test-user");
@@ -443,7 +441,7 @@ public class SftpServerServiceTest {
   private SftpServerService createService() {
     SftpContext context = new SftpContext(fs, releaseService, projectService, authenticator, mailService);
     SftpAuthenticator sftpAuthenticator = new SftpAuthenticator(authenticator, context);
-    SshServer sshd = new SshServerProvider(config, context, sftpAuthenticator).get();
+    SshServer sshd = new SshServerProvider(properties, context, sftpAuthenticator).get();
     EventBus eventBus = new EventBus();
     eventBus.register(authenticator);
 

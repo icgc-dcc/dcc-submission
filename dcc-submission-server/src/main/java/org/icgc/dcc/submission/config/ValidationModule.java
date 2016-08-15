@@ -17,16 +17,15 @@
  */
 package org.icgc.dcc.submission.config;
 
+import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
-import static org.icgc.dcc.common.core.dcc.Component.NORMALIZER;
-import static org.icgc.dcc.common.core.util.URLs.getUrl;
 
-import java.net.URL;
 import java.util.Set;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.common.hadoop.fs.DccFileSystem2;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.service.AbstractDccModule;
 import org.icgc.dcc.submission.service.DictionaryService;
@@ -53,7 +52,6 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.typesafe.config.Config;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -78,21 +76,6 @@ public class ValidationModule extends AbstractDccModule {
   private static final String SAMPLE_TYPE_VALIDATOR_CONFIG_VALUE = "sample";
   private static final String NORMALIZATION_VALIDATOR_CONFIG_VALUE = "nv";
 
-  /**
-   * Config property names.
-   */
-  private static final String MAX_VALIDATING_CONFIG_PARAM = "validator.max_simultaneous";
-  private static final String FASTA_FILE_PATH_CONFIG_PARAM = "reference.fasta";
-  private static final String NORMALIZER_CONFIG_PARAM = NORMALIZER.getId();
-  private static final String PCAWG_CONFIG_PARAM = "pcawg";
-  private static final String PCAWG_DICTIONARY_URL_CONFIG_PARAM = "dictionary_url";
-  private static final String PCAWG_SAMPLE_SHEET_URL_CONFIG_PARAM = "sample_sheet_url";
-
-  /**
-   * Default value for maximum number of concurrent validations.
-   */
-  private static final int DEFAULT_MAX_VALIDATING = 1;
-
   @Override
   protected void configure() {
     requestStaticInjection(ByteOffsetToLineNumber.class);
@@ -109,9 +92,8 @@ public class ValidationModule extends AbstractDccModule {
 
   @Provides
   @Singleton
-  public ValidationExecutor validationExecutor(Config config) {
-    val path = MAX_VALIDATING_CONFIG_PARAM;
-    val maxValidating = config.hasPath(path) ? config.getInt(path) : DEFAULT_MAX_VALIDATING;
+  public ValidationExecutor validationExecutor(SubmissionProperties properties) {
+    val maxValidating = properties.getValidator().getMaxSimultaneous();
 
     return new ValidationExecutor(maxValidating);
   }
@@ -137,24 +119,24 @@ public class ValidationModule extends AbstractDccModule {
    */
   @Provides
   @Singleton
-  public DccFileSystem2 dccFileSystem2(Config config, FileSystem fileSystem) {
-    val rootDir = get(config, "fs.root");
-    val hdfs = get(config, "fs.url").startsWith("hdfs");
+  public DccFileSystem2 dccFileSystem2(SubmissionProperties properties, FileSystem fileSystem) {
+    val rootDir = properties.getFsRoot();
+    val hdfs = properties.getFsUrl().startsWith("hdfs");
 
     return new DccFileSystem2(fileSystem, rootDir, hdfs);
   }
 
   @Provides
   @Singleton
-  public Set<Validator> validators(Config config, DccFileSystem2 dccFileSystem2, Planner planner) {
+  public Set<Validator> validators(SubmissionProperties properties, DccFileSystem2 dccFileSystem2, Planner planner) {
     // Bind common components
 
     // Set binder will preserve bind order as iteration order for injectees
     val validators = Sets.<Validator> newLinkedHashSet();
 
     // Bind validators and their execution ordering
-    if (config.hasPath("validators")) {
-      val values = config.getList("validators").unwrapped();
+    val values = properties.getValidators();
+    if (!values.isEmpty()) {
       log.info("Binding validators in the following order: {}", values);
 
       // Externally configured validators and validator ordering
@@ -166,13 +148,13 @@ public class ValidationModule extends AbstractDccModule {
         } else if (value.equals(KEY_VALIDATOR_CONFIG_VALUE)) {
           validators.add(keyValidator());
         } else if (value.equals(PCAWG_VALIDATOR_CONFIG_VALUE)) {
-          validators.add(pcawgValidator(config));
+          validators.add(pcawgValidator(properties));
         } else if (value.equals(REFERENCE_GENOME_VALIDATOR_CONFIG_VALUE)) {
-          validators.add(referenceGenomeValidator(config));
+          validators.add(referenceGenomeValidator(properties));
         } else if (value.equals(SAMPLE_TYPE_VALIDATOR_CONFIG_VALUE)) {
           validators.add(sampleTypeValidator());
         } else if (value.equals(NORMALIZATION_VALIDATOR_CONFIG_VALUE)) {
-          validators.add(normalizationValidator(config, dccFileSystem2));
+          validators.add(normalizationValidator(properties, dccFileSystem2));
         } else {
           checkState(false, "Invalid validator specification '%s'", value);
         }
@@ -182,10 +164,10 @@ public class ValidationModule extends AbstractDccModule {
       validators.add(firstPassValidator());
       validators.add(primaryValidator(planner));
       validators.add(keyValidator());
-      validators.add(pcawgValidator(config));
-      validators.add(referenceGenomeValidator(config));
+      validators.add(pcawgValidator(properties));
+      validators.add(referenceGenomeValidator(properties));
       validators.add(sampleTypeValidator());
-      validators.add(normalizationValidator(config, dccFileSystem2));
+      validators.add(normalizationValidator(properties, dccFileSystem2));
     }
 
     return validators;
@@ -204,36 +186,20 @@ public class ValidationModule extends AbstractDccModule {
   }
 
   @SneakyThrows
-  private static Validator pcawgValidator(Config config) {
-    val path = PCAWG_CONFIG_PARAM;
-
-    URL dictionaryUrl =
-        config.hasPath(path) ? getPCAWGDictionaryURL(config.getConfig(path),
-            PCAWGDictionary.DEFAULT_PCAWG_DICTIONARY_URL) : PCAWGDictionary.DEFAULT_PCAWG_DICTIONARY_URL;
-    URL sampleSheetUrl =
-        config.hasPath(path) ? getPCAWGSampleSheetURL(config.getConfig(path),
-            PCAWGSampleSheet.DEFAULT_PCAWG_SAMPLE_SHEET_URL) : PCAWGSampleSheet.DEFAULT_PCAWG_SAMPLE_SHEET_URL;
-
+  private static Validator pcawgValidator(SubmissionProperties properties) {
+    val dictionaryUrl =
+        firstNonNull(properties.getPcawg().getDictionaryUrl(), PCAWGDictionary.DEFAULT_PCAWG_DICTIONARY_URL);
     log.info("Using PCAWG dictionary url: {}", dictionaryUrl);
-    log.info("Using PCAWG sample sheet url: {}", dictionaryUrl);
+
+    val sampleSheetUrl =
+        firstNonNull(properties.getPcawg().getSampleSheetUrl(), PCAWGSampleSheet.DEFAULT_PCAWG_SAMPLE_SHEET_URL);
+    log.info("Using PCAWG sample sheet url: {}", sampleSheetUrl);
 
     return new PCAWGValidator(new PCAWGDictionary(dictionaryUrl), new PCAWGSampleSheet(sampleSheetUrl));
   }
 
-  private static URL getPCAWGDictionaryURL(Config pcawgConfig, URL defaultValue) {
-    val path = PCAWG_DICTIONARY_URL_CONFIG_PARAM;
-
-    return pcawgConfig.hasPath(path) ? getUrl(pcawgConfig.getString(path)) : defaultValue;
-  }
-
-  private static URL getPCAWGSampleSheetURL(Config pcawgConfig, URL defaultValue) {
-    val path = PCAWG_SAMPLE_SHEET_URL_CONFIG_PARAM;
-
-    return pcawgConfig.hasPath(path) ? getUrl(pcawgConfig.getString(path)) : defaultValue;
-  }
-
-  private static Validator referenceGenomeValidator(Config config) {
-    val fastaFilePath = get(config, FASTA_FILE_PATH_CONFIG_PARAM);
+  private static Validator referenceGenomeValidator(SubmissionProperties properties) {
+    val fastaFilePath = properties.getReference().getFasta();
 
     return new ReferenceGenomeValidator(new HtsjdkReferenceGenome(fastaFilePath));
   }
@@ -242,16 +208,8 @@ public class ValidationModule extends AbstractDccModule {
     return new SampleTypeValidator();
   }
 
-  private static Validator normalizationValidator(Config config, DccFileSystem2 dccFileSystem2) {
-    val normConfig = config.getConfig(NORMALIZER_CONFIG_PARAM);
-
-    return NormalizationValidator.getDefaultInstance(dccFileSystem2, normConfig);
-  }
-
-  private static String get(Config config, String name) {
-    checkState(config.hasPath(name), "'%s' should be present in the config", name);
-
-    return config.getString(name);
+  private static Validator normalizationValidator(SubmissionProperties properties, DccFileSystem2 dccFileSystem2) {
+    return NormalizationValidator.getDefaultInstance(dccFileSystem2, properties.getNormalizer());
   }
 
 }

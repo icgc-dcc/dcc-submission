@@ -5,7 +5,7 @@ import static com.google.inject.util.Modules.EMPTY_MODULE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.glassfish.grizzly.http.util.Header.Authorization;
 import static org.glassfish.jersey.internal.util.Base64.encodeAsString;
-import static org.icgc.dcc.submission.TestUtils.TEST_CONFIG;
+import static org.icgc.dcc.submission.TestUtils.TEST_PROPERTIES;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -62,7 +62,7 @@ public abstract class ResourceTest extends JerseyTest {
   protected Application configure() {
     List<Module> modules = newArrayList(
         // Infrastructure modules
-        (Module) new ConfigModule(TEST_CONFIG),
+        (Module) new ConfigModule(TEST_PROPERTIES),
         (Module) new CoreModule(),
         (Module) new JerseyModule(),
         (Module) new WebModule(),

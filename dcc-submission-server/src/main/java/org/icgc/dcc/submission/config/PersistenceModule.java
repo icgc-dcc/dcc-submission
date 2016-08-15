@@ -1,9 +1,8 @@
 package org.icgc.dcc.submission.config;
 
-import static org.icgc.dcc.common.core.model.Configurations.MONGO_URI_KEY;
-
 import java.net.UnknownHostException;
 
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.logging.MorphiaLoggerFactory;
@@ -15,7 +14,6 @@ import com.google.inject.Singleton;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
-import com.typesafe.config.Config;
 
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -34,16 +32,17 @@ public class PersistenceModule extends AbstractModule {
 
   @Provides
   @Singleton
-  public Mongo mongo(Config config) throws UnknownHostException {
-    val uri = config.getString(MONGO_URI_KEY);
+  public Mongo mongo(SubmissionProperties properties) throws UnknownHostException {
+    val uri = new MongoClientURI(properties.getMongo().getUri());
     log.info("mongo URI: {}", uri);
-    return new MongoClient(new MongoClientURI(uri));
+
+    return new MongoClient(uri);
   }
 
   @Provides
   @Singleton
-  public Datastore datastore(Config config, Mongo mongo, Morphia morphia) {
-    val uri = new MongoClientURI(config.getString(MONGO_URI_KEY));
+  public Datastore datastore(SubmissionProperties properties, Mongo mongo, Morphia morphia) {
+    val uri = new MongoClientURI(properties.getMongo().getUri());
     log.info("mongo URI: {}", uri);
 
     val datastore = morphia.createDatastore(mongo, uri.getDatabase());

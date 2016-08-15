@@ -31,12 +31,11 @@ import static org.icgc.dcc.submission.validation.norm.core.NormalizationReport.N
 
 import java.util.List;
 
+import org.icgc.dcc.submission.core.config.SubmissionProperties.NormalizerProperties;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.norm.NormalizationConfig;
 import org.icgc.dcc.submission.validation.norm.NormalizationValidator.ConnectedCascade;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter;
-
-import com.typesafe.config.Config;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -95,11 +94,11 @@ public class NormalizationReporter {
    * Creates a checker to assess whether the process was erroneous or not.
    */
   public static NormalizationChecker createNormalizationOutcomeChecker(
-      Config config, ConnectedCascade connectedCascade, String fileName) {
+      NormalizerProperties properties, ConnectedCascade connectedCascade, String fileName) {
 
     long markedAsControlled = connectedCascade.getCounterValue(MARKED_AS_CONTROLLED);
     long totalStart = connectedCascade.getCounterValue(TOTAL_START);
-    float threshold = NormalizationConfig.getConfidentialErrorThreshold(config);
+    float threshold = NormalizationConfig.getConfidentialErrorThreshold(properties);
 
     return NormalizationChecker.builder()
         .fileName(fileName)

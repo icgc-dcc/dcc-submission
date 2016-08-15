@@ -21,6 +21,7 @@ import java.util.Collection;
 
 import org.apache.shiro.authc.credential.PasswordMatcher;
 import org.apache.shiro.realm.Realm;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.service.ProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,14 +29,13 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.typesafe.config.Config;
 
 public class RealmProvider implements Provider<Collection<Realm>> {
 
   private static final Logger log = LoggerFactory.getLogger(RealmProvider.class);
 
   @Inject
-  private Config config;
+  private SubmissionProperties properties;
 
   @Inject
   private ProjectService projectService;
@@ -45,7 +45,7 @@ public class RealmProvider implements Provider<Collection<Realm>> {
    */
   @Override
   public Collection<Realm> get() {
-    String shiroIniFilePath = this.config.getString(ShiroConfig.SHIRO_INI_FILE);
+    String shiroIniFilePath = properties.getShiro().getRealm();
     log.info("shiroIniFilePath = " + shiroIniFilePath);
     DccWrappingRealm dccWrappingRealm = buildDccWrappingRealm(shiroIniFilePath);
 

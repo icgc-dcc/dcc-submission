@@ -39,6 +39,7 @@ import javax.ws.rs.core.Response;
 import org.glassfish.jersey.internal.util.Base64;
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
@@ -52,10 +53,9 @@ import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.io.Resources;
 import com.mongodb.BasicDBObject;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -101,8 +101,13 @@ public final class TestUtils {
   /**
    * Test configuration constants.
    */
-  public static final File TEST_CONFIG_FILE = new File("src/test/conf/application.conf");
-  public static final Config TEST_CONFIG = ConfigFactory.parseFile(TEST_CONFIG_FILE).resolve();
+  public static final File TEST_CONFIG_FILE = new File("src/test/conf/application.yml");
+  public static final SubmissionProperties TEST_PROPERTIES = readConfig(TEST_CONFIG_FILE);
+
+  @SneakyThrows
+  private static SubmissionProperties readConfig(File configFile) {
+    return new ObjectMapper(new YAMLFactory()).readValue(configFile, SubmissionProperties.class);
+  }
 
   @SneakyThrows
   public static String resourceToString(String resourcePath) {

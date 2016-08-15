@@ -40,8 +40,8 @@ import static org.icgc.dcc.submission.TestUtils.RELEASES_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.SEED_CODELIST_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.SEED_DICTIONARIES_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.SIGNOFF_ENDPOINT;
-import static org.icgc.dcc.submission.TestUtils.TEST_CONFIG;
 import static org.icgc.dcc.submission.TestUtils.TEST_CONFIG_FILE;
+import static org.icgc.dcc.submission.TestUtils.TEST_PROPERTIES;
 import static org.icgc.dcc.submission.TestUtils.UPDATE_RELEASE_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.VALIDATION_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.addScript;
@@ -90,7 +90,6 @@ import org.icgc.dcc.common.core.dcc.AppUtils;
 import org.icgc.dcc.common.core.model.FileTypes;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.config.PersistenceModule;
-import org.icgc.dcc.submission.core.util.FsConfig;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
@@ -294,7 +293,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
    * Submission file system.
    */
   private static final String PROJECT1_VALIDATION_DIR = INITITAL_RELEASE_NAME + "/" + PROJECT1_KEY + "/.validation";
-  private static final String submission = TEST_CONFIG.getString(FsConfig.FS_ROOT);
+  private static final String submission = TEST_PROPERTIES.getFsRoot();
 
   /**
    * Test utilities.
@@ -336,7 +335,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     datastore.getDB().dropDatabase();
 
     status("init", "Starting SMTP server...");
-    smtpServer = SimpleSmtpServer.start(TEST_CONFIG.getInt("mail.smtp.port"));
+    smtpServer = SimpleSmtpServer.start(Integer.valueOf(TEST_PROPERTIES.getMail().getSmtpPort()));
 
     status("init", "Starting submission server...");
     SubmissionMain.main("external", TEST_CONFIG_FILE.getAbsolutePath());

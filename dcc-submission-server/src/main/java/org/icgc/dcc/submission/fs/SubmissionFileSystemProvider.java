@@ -23,11 +23,10 @@ import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.getConfigurationDescript
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.submission.core.util.FsConfig;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.typesafe.config.Config;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -39,13 +38,13 @@ import lombok.extern.slf4j.Slf4j;
 public class SubmissionFileSystemProvider implements Provider<FileSystem> {
 
   @NonNull
-  private final Config config;
+  private final SubmissionProperties properties;
   @NonNull
   private final Configuration configuration;
 
   @Override
   public FileSystem get() {
-    val fs = getFileSystem(addFsDefault(configuration, config.getString(FsConfig.FS_URL)));
+    val fs = getFileSystem(addFsDefault(configuration, properties.getFsUrl()));
     log.info("Hadoop configuration: '{}'", getConfigurationDescription(fs.getConf()));
 
     return fs;

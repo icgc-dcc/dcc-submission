@@ -24,7 +24,6 @@ import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.lsAll;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.mkdirs;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.rmr;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.toFilenameList;
-import static org.icgc.dcc.submission.core.util.FsConfig.FS_ROOT;
 
 import java.util.Set;
 
@@ -32,11 +31,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.release.model.Release;
 
 import com.google.common.base.Joiner;
 import com.google.inject.Inject;
-import com.typesafe.config.Config;
 
 import lombok.NonNull;
 import lombok.val;
@@ -51,21 +50,14 @@ public class DccFileSystem {
    * This is the only hadoop element in this class (everything else is handled in HadoopUtils)
    */
   private final FileSystem fileSystem;
-  private final Config config;
   private final String rootStringPath;
 
   @Inject
-  public DccFileSystem(Config config, FileSystem fileSystem) {
-    super();
-
-    checkArgument(config != null);
-    checkArgument(fileSystem != null);
-
-    this.config = config;
+  public DccFileSystem(@NonNull SubmissionProperties properties, @NonNull FileSystem fileSystem) {
     this.fileSystem = fileSystem;
 
     // grab root directory
-    this.rootStringPath = this.config.getString(FS_ROOT);
+    this.rootStringPath = properties.getFsRoot();
     checkState(this.rootStringPath != null);
 
     log.info("fileSystem = " + this.fileSystem.getClass().getSimpleName());

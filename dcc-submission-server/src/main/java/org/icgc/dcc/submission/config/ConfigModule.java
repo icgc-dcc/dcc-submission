@@ -17,17 +17,15 @@
  */
 package org.icgc.dcc.submission.config;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.inject.name.Names.named;
-import static org.icgc.dcc.common.core.model.Configurations.HADOOP_KEY;
 
 import java.util.Map;
 
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.core.util.InjectionNames;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
-import com.typesafe.config.Config;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -47,15 +45,14 @@ public class ConfigModule extends AbstractModule {
   private static final TypeLiteral<Map<String, String>> STRING_MAP = new TypeLiteral<Map<String, String>>() {};
 
   @NonNull
-  private final Config config;
+  private final SubmissionProperties properties;
 
   @Override
   protected void configure() {
-    bind(Config.class).toInstance(config);
+    bind(SubmissionProperties.class).toInstance(properties);
 
     // Bind hadoop properties for use in reporter
-    checkState(config.hasPath(HADOOP_KEY));
-    val hadoopProperties = Configs.asStringMap(config.getObject(HADOOP_KEY));
+    val hadoopProperties = properties.getHadoop().getProperties();
     log.info("Hadoop properties: '{}'", hadoopProperties);
     bind(STRING_MAP)
         .annotatedWith(

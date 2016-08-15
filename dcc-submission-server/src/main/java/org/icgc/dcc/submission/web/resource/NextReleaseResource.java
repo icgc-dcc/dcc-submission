@@ -51,6 +51,7 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.glassfish.grizzly.http.util.Header;
 import org.icgc.dcc.submission.core.InvalidStateException;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.QueuedProject;
@@ -68,7 +69,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HttpHeaders;
 import com.google.inject.Inject;
-import com.typesafe.config.Config;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -81,7 +81,7 @@ public class NextReleaseResource {
   private static final Joiner JOINER = Joiner.on("/");
 
   @Inject
-  private Config config;
+  private SubmissionProperties properties;
   @Inject
   private ReleaseService releaseService;
   @Inject
@@ -96,7 +96,7 @@ public class NextReleaseResource {
       return unauthorizedResponse();
     }
 
-    String prefix = config.getString("http.ws.path");
+    String prefix = properties.getHttp().getPath();
     String redirectionPath = JOINER.join(
         prefix,
         "releases",

@@ -24,16 +24,15 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.User;
-import org.icgc.dcc.submission.core.util.FsConfig;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.junit.Before;
 
 import com.google.common.base.Optional;
-import com.typesafe.config.Config;
 
 public class FileSystemTest {
 
@@ -63,7 +62,7 @@ public class FileSystemTest {
 
   protected Submission mockSubmission;
 
-  protected Config mockConfig;
+  protected SubmissionProperties properties = new SubmissionProperties();
 
   static {
     setProperties();
@@ -80,14 +79,12 @@ public class FileSystemTest {
 
   @Before
   public void setUp() throws IOException {
-
-    this.mockConfig = mock(Config.class);
     this.mockRelease = mock(Release.class);
     this.mockUser = mock(User.class);
     this.mockProject = mock(Project.class);
     this.mockSubmission = mock(Submission.class);
 
-    when(this.mockConfig.getString(FsConfig.FS_ROOT)).thenReturn(ROOT_DIR);
+    properties.setFsRoot(ROOT_DIR);
 
     when(this.mockRelease.getName()).thenReturn(RELEASE_NAME);
 

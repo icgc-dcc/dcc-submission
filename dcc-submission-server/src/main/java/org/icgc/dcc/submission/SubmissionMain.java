@@ -38,6 +38,7 @@ import org.icgc.dcc.submission.config.CoreModule;
 import org.icgc.dcc.submission.config.PersistenceModule;
 import org.icgc.dcc.submission.config.ValidationModule;
 import org.icgc.dcc.submission.core.DccRuntime;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.fs.FileSystemModule;
 import org.icgc.dcc.submission.http.HttpModule;
 import org.icgc.dcc.submission.http.jersey.JerseyModule;
@@ -47,10 +48,10 @@ import org.icgc.dcc.submission.sftp.SftpModule;
 import org.icgc.dcc.submission.shiro.ShiroModule;
 import org.icgc.dcc.submission.web.WebModule;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -88,10 +89,10 @@ public class SubmissionMain {
   }
 
   private SubmissionMain(String[] args) {
-    val config = loadConfig(args);
-    logBanner(args, config);
+    val properties = loadProperties(args);
+    logBanner(args, properties);
 
-    inject(config);
+    inject(properties);
     registerShutdownHook();
   }
 
@@ -137,7 +138,7 @@ public class SubmissionMain {
   }
 
   @SneakyThrows
-  private static Config loadConfig(String[] args) {
+  private static SubmissionProperties loadProperties(String[] args) {
     checkArgument(args.length >= 2, "The argument 'external' requires a filename as an additional parameter");
 
     val configFile = new File(args[1]);
@@ -145,18 +146,13 @@ public class SubmissionMain {
 
     // Overlay overrides to base to get affective configuration
     log.info("Using config file {}", configFile.getAbsoluteFile());
-    val overrides = ConfigFactory.systemProperties();
-    val base = ConfigFactory.parseFile(configFile);
-    val effective = overrides.withFallback(base);
-
-    log.info("Overrides: {}", overrides);
-    return effective.resolve();
+    return readConfig(configFile);
   }
 
-  private void inject(Config config) {
+  private void inject(SubmissionProperties properties) {
     val injector = createInjector(
         // Config module
-        new ConfigModule(config),
+        new ConfigModule(properties),
 
         // Infrastructure modules
         new CoreModule(),
@@ -177,7 +173,7 @@ public class SubmissionMain {
   }
 
   @SneakyThrows
-  private void logBanner(String[] args, Config config) {
+  private void logBanner(String[] args, SubmissionProperties properties) {
     log.info("{}", repeat("-", 100));
     for (String line : readLines(getResource("banner.txt"), UTF_8)) {
       log.info(line);
@@ -194,7 +190,7 @@ public class SubmissionMain {
     }
 
     log.info("Command: {}", formatArguments(args));
-    log.info("Config:  {}", config);
+    log.info("Properties:  {}", properties);
   }
 
   private String getVersion() {
@@ -219,6 +215,11 @@ public class SubmissionMain {
     val inputArguments = runtime.getInputArguments();
 
     return "java " + join(inputArguments, ' ') + " -jar " + getJarName() + " " + join(args, ' ');
+  }
+
+  @SneakyThrows
+  private static SubmissionProperties readConfig(File configFile) {
+    return new ObjectMapper(new YAMLFactory()).readValue(configFile, SubmissionProperties.class);
   }
 
   /**

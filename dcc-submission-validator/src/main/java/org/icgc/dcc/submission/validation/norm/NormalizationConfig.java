@@ -18,16 +18,15 @@
 package org.icgc.dcc.submission.validation.norm;
 
 import static com.google.common.base.Preconditions.checkState;
-import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.util.Map;
 
+import org.icgc.dcc.submission.core.config.SubmissionProperties.NormalizerProperties;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationStep;
 import org.icgc.dcc.submission.validation.norm.steps.MaskedRowGeneration;
 
 import com.google.common.collect.ImmutableMap;
-import com.typesafe.config.Config;
 
 import lombok.NoArgsConstructor;
 import lombok.val;
@@ -66,7 +65,6 @@ public final class NormalizationConfig {
   /**
    * Default values.
    */
-  private static final float CONFIDENTIAL_ERROR_THRESHOLD_DEFAULT_VALUE = 0.1f;
   private static final Map<Class<? extends OptionalStep>, Boolean> STEP_ENABLING_DEFAULT_VALUES =
       new ImmutableMap.Builder<Class<? extends OptionalStep>, Boolean>()
           .put(MaskedRowGeneration.class, ON)
@@ -75,34 +73,25 @@ public final class NormalizationConfig {
   /**
    * Checks whether a step is enabled or not. Non-optional step are always considered enabled.
    */
-  public static boolean isEnabled(NormalizationStep step, Config config) {
+  public static boolean isEnabled(NormalizationStep step, NormalizerProperties properties) {
     if (!(step instanceof OptionalStep)) {
       return ON;
     } else {
       val clazz = step.getClass();
       checkState(STEP_ENABLING_DEFAULT_VALUES.containsKey(clazz), "Could not find a default value for step '%s'",
           step.getClass());
-      return getBooleanValue(config, getStepEnablingConfigKey(step), STEP_ENABLING_DEFAULT_VALUES.get(clazz));
+
+      val steps = properties.getSteps();
+      val enabled = steps.get(step.shortName() + ".enabled");
+      return enabled != null ? Boolean.valueOf(enabled) : STEP_ENABLING_DEFAULT_VALUES.get(clazz);
     }
   }
 
   /**
    * See {@link #CONFIDENTIAL_ERROR_THRESHOLD_CONFIG_KEY}.
    */
-  public static float getConfidentialErrorThreshold(Config config) {
-    return getFloatValue(config, ERROR_THRESHOLD, CONFIDENTIAL_ERROR_THRESHOLD_DEFAULT_VALUE);
-  }
-
-  private static String getStepEnablingConfigKey(NormalizationStep step) {
-    return format("%s.%s", step.shortName(), ENABLED);
-  }
-
-  private static float getFloatValue(Config config, String key, float defaultValue) {
-    return config.hasPath(key) ? config.getNumber(key).floatValue() : defaultValue;
-  }
-
-  private static boolean getBooleanValue(Config config, String key, boolean defaultValue) {
-    return config.hasPath(key) ? config.getBoolean(key) : defaultValue;
+  public static float getConfidentialErrorThreshold(NormalizerProperties properties) {
+    return properties.getErrorThreshold();
   }
 
 }

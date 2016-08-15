@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.sftp;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static com.jcraft.jsch.KeyPair.RSA;
-import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +27,7 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.submission.service.MailService;
@@ -47,7 +47,6 @@ import com.google.common.io.Files;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.KeyPair;
-import com.typesafe.config.Config;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -65,8 +64,8 @@ public class SftpPublicKeyAuthenticatorTest {
   @Rule
   public TemporaryFolder tmp = new TemporaryFolder();
 
-  @Mock
-  Config config;
+  SubmissionProperties properties = new SubmissionProperties();
+
   @Mock
   UsernamePasswordAuthenticator authenticator;
   @Mock
@@ -84,9 +83,8 @@ public class SftpPublicKeyAuthenticatorTest {
 
   @Before
   public void setUp() throws IOException, JSchException {
-    // Mock configuration
-    when(config.getInt("sftp.port")).thenReturn(5322);
-    when(config.getString("sftp.path")).thenReturn(tmp.newFile().getAbsolutePath());
+    properties.getSftp().setPort(5322);
+    properties.getSftp().setPath(tmp.newFile().getAbsolutePath());
   }
 
   @After
@@ -113,8 +111,7 @@ public class SftpPublicKeyAuthenticatorTest {
     jsch.addIdentity(privateKey.getAbsolutePath());
 
     // Enable public key in application
-    when(config.hasPath("sftp.key")).thenReturn(true);
-    when(config.getString("sftp.key")).thenReturn(getPublicKeyValue(publicKey));
+    properties.getSftp().setKey(getPublicKeyValue(publicKey));
 
     // Create class under test
     SftpServerService service = createService();
@@ -145,7 +142,7 @@ public class SftpPublicKeyAuthenticatorTest {
 
   private SftpServerService createService() {
     val context = new SftpContext(fs, releaseService, projectService, authenticator, mailService);
-    val sshd = new SshServerProvider(config, context, sftpAuthenticator).get();
+    val sshd = new SshServerProvider(properties, context, sftpAuthenticator).get();
     val eventBus = new EventBus();
     eventBus.register(authenticator);
 

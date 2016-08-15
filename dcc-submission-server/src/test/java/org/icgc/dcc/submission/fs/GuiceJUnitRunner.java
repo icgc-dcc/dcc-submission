@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.fs;
 
-import static org.icgc.dcc.submission.TestUtils.TEST_CONFIG;
+import static org.icgc.dcc.submission.TestUtils.TEST_PROPERTIES;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -69,7 +69,7 @@ public class GuiceJUnitRunner extends BlockJUnit4ClassRunner {
       try {
         Class<?> moduleClass = moduleClasses[i];
         if (moduleClass == ConfigModule.class) {
-          modules[i] = new ConfigModule(TEST_CONFIG);
+          modules[i] = new ConfigModule(TEST_PROPERTIES);
         } else {
           modules[i] = (Module) moduleClass.newInstance();
         }

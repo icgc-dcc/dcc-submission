@@ -44,6 +44,7 @@ import org.icgc.dcc.common.cascading.Flows;
 import org.icgc.dcc.common.cascading.Pipes;
 import org.icgc.dcc.common.core.dcc.Component;
 import org.icgc.dcc.common.hadoop.fs.DccFileSystem2;
+import org.icgc.dcc.submission.core.config.SubmissionProperties.NormalizerProperties;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationContext;
@@ -66,7 +67,6 @@ import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.typesafe.config.Config;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
@@ -106,7 +106,7 @@ public class NormalizationValidator implements Validator {
    * <p>
    * TODO: bury under {@link NormalizationConfig}.
    */
-  private final Config config;
+  private final NormalizerProperties properties;
 
   /**
    * Steps of the normalization. Order typically matters.
@@ -121,10 +121,11 @@ public class NormalizationValidator implements Validator {
   /**
    * Returns the default instance for the normalization.
    */
-  public static NormalizationValidator getDefaultInstance(DccFileSystem2 dccFileSystem2, Config config) {
+  public static NormalizationValidator getDefaultInstance(DccFileSystem2 dccFileSystem2,
+      NormalizerProperties properties) {
     return new NormalizationValidator(
         dccFileSystem2,
-        config,
+        properties,
         // Order matters for some steps
         new ImmutableList.Builder<NormalizationStep>()
 
@@ -180,9 +181,7 @@ public class NormalizationValidator implements Validator {
   }
 
   private CascadingContext getCascadingContext() {
-    return dccFileSystem2.isHadoopMode() ?
-        CascadingContext.getDistributed() :
-        CascadingContext.getLocal();
+    return dccFileSystem2.isHadoopMode() ? CascadingContext.getDistributed() : CascadingContext.getLocal();
   }
 
   public Tap<?, ?, ?> getNormalizationDataOutputTap(String path) {
@@ -221,7 +220,7 @@ public class NormalizationValidator implements Validator {
 
     // Report results (error or stats)s
     val checker = NormalizationReporter.createNormalizationOutcomeChecker(
-        config, connectedCascade, SSM_P_TYPE.getHarmonizedOutputFileName());
+        properties, connectedCascade, SSM_P_TYPE.getHarmonizedOutputFileName());
 
     // Report errors or statistics
     if (checker.isLikelyErroneous()) {
@@ -260,7 +259,7 @@ public class NormalizationValidator implements Validator {
     val startPipes = getStartPipes(fileNames);
     Pipe pipe = new Merge(startPipes.values().toArray(new Pipe[] {}));
     for (NormalizationStep step : steps) {
-      if (NormalizationConfig.isEnabled(step, config)) {
+      if (NormalizationConfig.isEnabled(step, properties)) {
         log.info("Adding step '{}'", step.shortName());
         pipe = step.extend(pipe, normalizationContext);
       } else {
@@ -311,9 +310,9 @@ public class NormalizationValidator implements Validator {
     // Connect cascade
     val cascade = new CascadeConnector()
         .connect(
-        cascadeDef()
-            .setName(Cascades.getName(COMPONENT))
-            .addFlow(flow));
+            cascadeDef()
+                .setName(Cascades.getName(COMPONENT))
+                .addFlow(flow));
     cascade.writeDOT(format("/tmp/%s-%s.dot", projectKey, cascade.getName()));
 
     return new ConnectedCascade(

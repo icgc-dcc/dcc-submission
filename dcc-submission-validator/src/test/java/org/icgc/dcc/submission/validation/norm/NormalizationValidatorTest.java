@@ -42,6 +42,7 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.cascading.CascadingContext;
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
 import org.icgc.dcc.common.hadoop.fs.DccFileSystem2;
+import org.icgc.dcc.submission.core.config.SubmissionProperties.NormalizerProperties;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
@@ -63,14 +64,12 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.google.common.collect.ImmutableMap;
-import com.typesafe.config.Config;
 
 import cascading.tap.Tap;
 import lombok.SneakyThrows;
 import lombok.val;
 
-@PowerMockIgnore({ "javax.management.*", "javax.xml.parsers.*", "com.sun.org.apache.xerces.internal.jaxp.*",
-    "ch.qos.logback.*", "org.slf4j.*" })
+@PowerMockIgnore({ "javax.management.*", "javax.xml.parsers.*", "com.sun.org.apache.xerces.internal.jaxp.*", "ch.qos.logback.*", "org.slf4j.*" })
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ PrimaryKeyGeneration.class })
 public class NormalizationValidatorTest {
@@ -123,17 +122,12 @@ public class NormalizationValidatorTest {
   @Mock
   private FileSchema mockFileSchema;
 
-  @Mock
-  private Config mockConfig;
+  private NormalizerProperties properties = new NormalizerProperties();
 
   @Before
   public void setUp() {
-    when(mockConfig.hasPath(anyString()))
-        .thenReturn(true);
-    when(mockConfig.getBoolean("mask.enabled"))
-        .thenReturn(true);
-    when(mockConfig.getNumber("error_threshold"))
-        .thenReturn(0.5f); // instead of 10% normally
+    properties.setErrorThreshold(0.5f); // instead of 10% normally
+    properties.getSteps().put("mask.enabled", "true");
 
     when(mockRelease.getName())
         .thenReturn(RELEASE_NAME);
@@ -174,9 +168,8 @@ public class NormalizationValidatorTest {
   public void test_normalization_basic() {
 
     mockUUID(true);
-    when(mockConfig.getBoolean("duplicates.enabled"))
-        .thenReturn(true);
 
+    properties.getSteps().put("duplicates.enabled", "true");
     test(BASIC_INPUT_FILE, BASIC_REFERENCE_FILE);
 
     // Check internal report
@@ -204,8 +197,7 @@ public class NormalizationValidatorTest {
         EXECUTABLE_SPEC_FILE,
         SPEC_DERIVED_INPUT_FILE, SPEC_DERIVED_REFERENCE_FILE);
     mockUUID(false);
-    when(mockConfig.getBoolean("duplicates.enabled"))
-        .thenReturn(false);
+    properties.getSteps().put("duplicates.enabled", "false");
 
     test(SPEC_DERIVED_INPUT_FILE, SPEC_DERIVED_REFERENCE_FILE);
 
@@ -220,7 +212,7 @@ public class NormalizationValidatorTest {
         .thenReturn(newArrayList(new Path(inputFile)));
 
     new File(OUTPUT_FILE).delete();
-    normalizationValidator = spy(NormalizationValidator.getDefaultInstance(mockDccFileSystem2, mockConfig));
+    normalizationValidator = spy(NormalizationValidator.getDefaultInstance(mockDccFileSystem2, properties));
     mockOutputTap(OUTPUT_FILE);
 
     normalizationValidator.validate(mockValidationContext);

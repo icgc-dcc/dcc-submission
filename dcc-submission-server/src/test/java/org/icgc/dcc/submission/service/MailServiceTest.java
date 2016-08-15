@@ -25,21 +25,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
-import static org.icgc.dcc.submission.service.MailService.MAIL_ENABLED;
-import static org.icgc.dcc.submission.service.MailService.MAIL_ERROR_BODY;
-import static org.icgc.dcc.submission.service.MailService.MAIL_FROM;
-import static org.icgc.dcc.submission.service.MailService.MAIL_INVALID_BODY;
-import static org.icgc.dcc.submission.service.MailService.MAIL_NOTIFICATION_RECIPIENT;
-import static org.icgc.dcc.submission.service.MailService.MAIL_NOT_VALIDATED_BODY;
-import static org.icgc.dcc.submission.service.MailService.MAIL_SIGNOFF_BODY;
-import static org.icgc.dcc.submission.service.MailService.MAIL_SMTP_HOST;
-import static org.icgc.dcc.submission.service.MailService.MAIL_SUPPORT_RECIPIENT;
-import static org.icgc.dcc.submission.service.MailService.MAIL_VALIDATION_SUBJECT;
-import static org.icgc.dcc.submission.service.MailService.MAIL_VALID_BODY;
 import static org.icgc.dcc.submission.service.MailService.NOTIFICATION_SUBJECT_PREFEX;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
@@ -51,6 +38,8 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
+import org.icgc.dcc.submission.core.config.SubmissionProperties.MailProperties;
 import org.icgc.dcc.submission.core.report.Report;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,8 +48,6 @@ import org.mockito.ArgumentCaptor;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.typesafe.config.Config;
-
 import lombok.SneakyThrows;
 import lombok.val;
 
@@ -68,7 +55,8 @@ import lombok.val;
 @PrepareForTest(Transport.class)
 public class MailServiceTest {
 
-  Config config;
+  SubmissionProperties properties = new SubmissionProperties();
+  MailProperties mail = properties.getMail();
 
   /**
    * Class under test.
@@ -79,8 +67,20 @@ public class MailServiceTest {
   public void setUp() {
     mockStatic(Transport.class);
 
-    this.config = mockConfig();
-    this.mailService = new MailService(config);
+    mail.setEnabled(true);
+    mail.setErrorBody("ERROR");
+    mail.setFromEmail("from@email.com");
+    mail.setInvalidBody("INVALID");
+    mail.setNotificationEmail("notification@email.com");
+    mail.setNotValidatedBody("NOT_VALIDATED");
+    mail.setSignoffBody("SIGNED_OFF");
+    mail.setSubject("SUBJECT");
+    mail.setSupportEmail("support@email.com");
+    mail.setValidBody("VALID");
+
+    mail.setSmtpHost("localhost");
+
+    this.mailService = new MailService(properties);
   }
 
   @Test
@@ -102,11 +102,11 @@ public class MailServiceTest {
     val notifyMessage = isNotification(m1) ? m1 : m2;
     val supportMessage = isNotification(m1) ? m2 : m1;
 
-    assertThat(notifyMessage.getFrom()).contains(address(get(MAIL_FROM)));
-    assertThat(notifyMessage.getAllRecipients()).contains(address(get(MAIL_NOTIFICATION_RECIPIENT)));
+    assertThat(notifyMessage.getFrom()).contains(address(mail.getFromEmail()));
+    assertThat(notifyMessage.getAllRecipients()).contains(address(mail.getNotificationEmail()));
 
-    assertThat(supportMessage.getFrom()).contains(address(get(MAIL_FROM)));
-    assertThat(supportMessage.getAllRecipients()).contains(address(get(MAIL_SUPPORT_RECIPIENT)));
+    assertThat(supportMessage.getFrom()).contains(address(mail.getFromEmail()));
+    assertThat(supportMessage.getAllRecipients()).contains(address(mail.getSupportEmail()));
     assertThat(supportMessage.getSubject()).endsWith(subject);
     assertThat(supportMessage.getContent()).isEqualTo(text);
   }
@@ -134,13 +134,13 @@ public class MailServiceTest {
     val notifyMessage = isNotification(m1) ? m1 : m2;
     val supportMessage = isNotification(m1) ? m2 : m1;
 
-    assertThat(notifyMessage.getFrom()).contains(address(get(MAIL_FROM)));
-    assertThat(notifyMessage.getAllRecipients()).contains(address(get(MAIL_NOTIFICATION_RECIPIENT)));
+    assertThat(notifyMessage.getFrom()).contains(address(mail.getFromEmail()));
+    assertThat(notifyMessage.getAllRecipients()).contains(address(mail.getNotificationEmail()));
 
-    assertThat(supportMessage.getFrom()).contains(address(get(MAIL_FROM)));
+    assertThat(supportMessage.getFrom()).contains(address(mail.getFromEmail()));
     assertThat(supportMessage.getAllRecipients()).containsAll(addresses);
-    assertThat(supportMessage.getSubject()).endsWith(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
-    assertThat(supportMessage.getContent()).isEqualTo(template(MAIL_ERROR_BODY, projectKey, state));
+    assertThat(supportMessage.getSubject()).endsWith(template(mail.getSubject(), projectKey, state));
+    assertThat(supportMessage.getContent()).isEqualTo(template(mail.getErrorBody(), projectKey, state));
   }
 
   @Test
@@ -166,14 +166,14 @@ public class MailServiceTest {
     val notifyMessage = isNotification(m1) ? m1 : m2;
     val supportMessage = isNotification(m1) ? m2 : m1;
 
-    assertThat(notifyMessage.getFrom()).contains(address(get(MAIL_FROM)));
-    assertThat(notifyMessage.getAllRecipients()).contains(address(get(MAIL_NOTIFICATION_RECIPIENT)));
+    assertThat(notifyMessage.getFrom()).contains(address(mail.getFromEmail()));
+    assertThat(notifyMessage.getAllRecipients()).contains(address(mail.getNotificationEmail()));
 
-    assertThat(supportMessage.getFrom()).contains(address(get(MAIL_FROM)));
+    assertThat(supportMessage.getFrom()).contains(address(mail.getFromEmail()));
     assertThat(supportMessage.getAllRecipients()).containsAll(addresses);
-    assertThat(supportMessage.getSubject()).endsWith(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
+    assertThat(supportMessage.getSubject()).endsWith(template(mail.getSubject(), projectKey, state));
     assertThat(supportMessage.getContent()).isEqualTo(
-        template(MAIL_NOT_VALIDATED_BODY, projectKey, state, releaseName, projectKey));
+        template(mail.getNotValidatedBody(), projectKey, state, releaseName, projectKey));
   }
 
   private static boolean isNotification(MimeMessage message) throws MessagingException {
@@ -189,42 +189,13 @@ public class MailServiceTest {
     return captor.getAllValues();
   }
 
-  private static Config mockConfig() {
-    Config config = mock(Config.class);
-
-    when(config.hasPath(MAIL_ENABLED)).thenReturn(true);
-    when(config.getBoolean(MAIL_ENABLED)).thenReturn(true);
-    for (val name : new String[] { MAIL_SMTP_HOST, MAIL_FROM, MAIL_SUPPORT_RECIPIENT, MAIL_NOTIFICATION_RECIPIENT }) {
-      when(config.hasPath(name)).thenReturn(true);
-      when(config.getString(name)).thenReturn(name);
-    }
-    for (val name : new String[] { MAIL_VALIDATION_SUBJECT, MAIL_ERROR_BODY }) {
-      when(config.hasPath(name)).thenReturn(true);
-      when(config.getString(name)).thenReturn("%s:%s");
-    }
-    for (val name : new String[] { MAIL_SIGNOFF_BODY }) {
-      when(config.hasPath(name)).thenReturn(true);
-      when(config.getString(name)).thenReturn("%s:%s:%s");
-    }
-    for (val name : new String[] { MAIL_NOT_VALIDATED_BODY, MAIL_INVALID_BODY, MAIL_VALID_BODY }) {
-      when(config.hasPath(name)).thenReturn(true);
-      when(config.getString(name)).thenReturn("%s:%s:%s:%s");
-    }
-
-    return config;
-  }
-
   @SneakyThrows
   private static Address address(String email) {
     return new InternetAddress(email, email);
   }
 
-  private String get(String key) {
-    return config.getString(key);
-  }
-
-  private String template(String templateName, Object... arguments) {
-    return format(get(templateName), arguments);
+  private String template(String body, Object... arguments) {
+    return format(body, arguments);
   }
 
 }

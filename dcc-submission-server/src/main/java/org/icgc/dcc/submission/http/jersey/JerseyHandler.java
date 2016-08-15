@@ -21,10 +21,10 @@ import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainerProvider;
 import org.glassfish.jersey.server.ApplicationHandler;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.http.HttpHandlerProvider;
 
 import com.google.inject.Inject;
-import com.typesafe.config.Config;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -38,13 +38,13 @@ import lombok.val;
 public class JerseyHandler implements HttpHandlerProvider {
 
   @NonNull
-  private final Config config;
+  private final SubmissionProperties properties;
   @NonNull
   private final ResourceConfig resourceConfig;
 
   @Override
   public String path() {
-    return config.getString("http.ws.path");
+    return properties.getHttp().getPath();
   }
 
   @Override

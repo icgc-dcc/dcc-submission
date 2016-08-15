@@ -18,16 +18,10 @@
 package org.icgc.dcc.submission.validation.norm.cli;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.typesafe.config.ConfigFactory.parseMap;
 import static org.icgc.dcc.common.core.dcc.Component.CONCATENATOR;
 import static org.icgc.dcc.common.core.dcc.Component.NORMALIZER;
-import static org.icgc.dcc.common.core.model.Configurations.HADOOP_KEY;
 import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.SSM_TYPE;
-import static org.icgc.dcc.common.core.util.Joiners.DOT;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
-import static org.icgc.dcc.common.hadoop.util.HadoopConstants.FS_DEFAULT_FS;
-import static org.icgc.dcc.common.hadoop.util.HadoopConstants.MR_JOBTRACKER_ADDRESS_KEY;
-import static org.icgc.dcc.submission.config.Configs.getHadoopProperties;
 
 import java.util.Collection;
 import java.util.List;
@@ -36,8 +30,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.hadoop.fs.FileSystems;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.core.report.Report;
-import org.icgc.dcc.submission.core.util.FsConfig;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.util.Dictionaries;
@@ -49,9 +43,6 @@ import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.core.AbstractValidationContext;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactoryProvider;
-
-import com.google.common.collect.ImmutableMap;
-import com.typesafe.config.Config;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -70,12 +61,14 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
     String fsRoot;
     String jobTracker;
 
-    private final Config getAppConfig() {
-      return parseMap(ImmutableMap.<String, Object> of(
-          DOT.join(HADOOP_KEY, "\"" + MR_JOBTRACKER_ADDRESS_KEY + "\""), jobTracker,
-          DOT.join(HADOOP_KEY, "\"" + FS_DEFAULT_FS + "\""), fsUrl,
-          FsConfig.FS_URL, fsUrl,
-          FsConfig.FS_ROOT, fsRoot));
+    private final SubmissionProperties getProperties() {
+      val properties = new SubmissionProperties();
+      properties.setFsRoot(fsRoot);
+      properties.setFsUrl(fsUrl);
+      properties.getHadoop().getProperties().put("mapred.job.tracker", jobTracker);
+      properties.getHadoop().getProperties().put("fs.defaultFS", fsUrl);
+
+      return properties;
     }
 
   }
@@ -118,7 +111,7 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
     this.submission = new Submission(projectKey, projectKey, getFakeInputReleaseName());
 
     this.fileSystem = FileSystems.getFileSystem(fsUrl);
-    this.dccFileSystem = new DccFileSystem(param.getAppConfig(), fileSystem);
+    this.dccFileSystem = new DccFileSystem(param.getProperties(), fileSystem);
     this.releaseFileSystem = new ReleaseFileSystem(dccFileSystem, release);
     this.submissionDirectory = new SubmissionDirectory(
         dccFileSystem, releaseFileSystem, release, projectKey, submission);
@@ -131,11 +124,11 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
 
   @Override
   public SubmissionPlatformStrategy getPlatformStrategy() {
-    val appConfig = param.getAppConfig();
-    log.info("AppConfig: {}", appConfig);
+    val properties = param.getProperties();
+    log.info("Properties: {}", properties);
 
     val provider =
-        new SubmissionPlatformStrategyFactoryProvider(getHadoopProperties(appConfig), getFileSystem());
+        new SubmissionPlatformStrategyFactoryProvider(properties.getHadoop().getProperties(), getFileSystem());
     val factory = provider.get();
 
     // Reuse primary validation component
