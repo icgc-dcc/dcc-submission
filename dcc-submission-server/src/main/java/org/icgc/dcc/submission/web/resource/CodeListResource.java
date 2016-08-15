@@ -47,9 +47,9 @@ import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.service.DictionaryService;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
-import com.google.inject.Inject;
 
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +58,7 @@ import lombok.extern.slf4j.Slf4j;
 @Path("codeLists")
 public class CodeListResource {
 
-  @Inject
+  @Autowired
   private DictionaryService dictionaryService;
 
   /**
@@ -81,8 +81,7 @@ public class CodeListResource {
 
       @Context SecurityContext securityContext
 
-      )
-  {
+  ) {
     log.info("Adding codelists: {}", codeLists);
     if (isSuperUser(securityContext) == false) {
       return unauthorizedResponse();
@@ -118,8 +117,7 @@ public class CodeListResource {
 
       @PathParam("name") String name
 
-      )
-  {
+  ) {
     // No authorization check necessary
     log.debug("Getting codelist: {}", name);
     checkArgument(name != null);
@@ -149,8 +147,7 @@ public class CodeListResource {
 
       @Context SecurityContext securityContext
 
-      )
-  {
+  ) {
     log.info("Updating codelist: {} with {}", name, newCodeList);
     if (isSuperUser(securityContext) == false) {
       return unauthorizedResponse();
@@ -185,8 +182,7 @@ public class CodeListResource {
 
       @Context SecurityContext securityContext
 
-      )
-  {
+  ) {
     log.info("Adding term {} to codelist {}", terms, name);
     if (isSuperUser(securityContext) == false) {
       return unauthorizedResponse();

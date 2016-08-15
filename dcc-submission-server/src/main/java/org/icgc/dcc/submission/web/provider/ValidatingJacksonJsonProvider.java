@@ -46,12 +46,13 @@ import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
-import com.google.inject.Inject;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -74,9 +75,9 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
   private final JacksonJsonProvider delegate;
   private final Validator validator;
 
-  @Inject
-  public ValidatingJacksonJsonProvider(JacksonJsonProvider delegate, Validator validator) {
-    this.delegate = delegate;
+  @Autowired
+  public ValidatingJacksonJsonProvider(Validator validator) {
+    this.delegate = new JacksonJsonProvider();
     this.validator = validator;
 
     // Do not serialize properties without a view when views are specified
@@ -85,7 +86,8 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
 
   @Override
   public Object readFrom(Class<Object> type, Type genericType, Annotation[] annotations, MediaType mediaType,
-      MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
+      MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
+      throws IOException, WebApplicationException {
     Object value = parseEntity(type, genericType, annotations, mediaType, httpHeaders, entityStream);
 
     if (isValidatable(annotations)) {

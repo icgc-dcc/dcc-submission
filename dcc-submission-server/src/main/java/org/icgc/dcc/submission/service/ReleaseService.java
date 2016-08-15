@@ -68,12 +68,12 @@ import org.icgc.dcc.submission.repository.DictionaryRepository;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
 import org.icgc.dcc.submission.web.InvalidNameException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import com.google.inject.Inject;
 
 import lombok.NonNull;
 import lombok.Synchronized;
@@ -91,7 +91,7 @@ public class ReleaseService extends AbstractService {
   private final DictionaryRepository dictionaryRepository;
   private final ProjectRepository projectRepository;
 
-  @Inject
+  @Autowired
   public ReleaseService(
       @NonNull final MailService mailService,
       @NonNull final DccFileSystem dccFileSystem,

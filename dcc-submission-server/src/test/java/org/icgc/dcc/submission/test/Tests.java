@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission;
+package org.icgc.dcc.submission.test;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkState;
@@ -67,7 +67,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @NoArgsConstructor(access = PRIVATE)
-public final class TestUtils {
+public final class Tests {
 
   /**
    * Jackson constants.
@@ -111,7 +111,7 @@ public final class TestUtils {
 
   @SneakyThrows
   public static String resourceToString(String resourcePath) {
-    return Resources.toString(TestUtils.class.getResource(resourcePath), UTF_8);
+    return Resources.toString(Tests.class.getResource(resourcePath), UTF_8);
   }
 
   @SneakyThrows

@@ -44,8 +44,7 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.web.util.Responses;
 import org.mongodb.morphia.Datastore;
-
-import com.google.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.val;
 
@@ -60,10 +59,10 @@ public class SeedResource {
   @Context
   private HttpHeaders requestHeaders;
 
-  @Inject
+  @Autowired
   private Datastore datastore;
 
-  @Inject
+  @Autowired
   private DccFileSystem fileSystem;
 
   @POST
@@ -76,8 +75,7 @@ public class SeedResource {
 
       @QueryParam("delete") @DefaultValue("false") boolean delete
 
-      )
-  {
+  ) {
     if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
     }
@@ -99,8 +97,7 @@ public class SeedResource {
 
       @QueryParam("delete") @DefaultValue("false") boolean delete
 
-      )
-  {
+  ) {
     if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
     }
@@ -122,8 +119,7 @@ public class SeedResource {
 
       @QueryParam("delete") @DefaultValue("false") boolean delete
 
-      )
-  {
+  ) {
     if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
     }
@@ -145,8 +141,7 @@ public class SeedResource {
 
       @QueryParam("delete") @DefaultValue("false") boolean delete
 
-      )
-  {
+  ) {
     if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
     }
@@ -170,8 +165,7 @@ public class SeedResource {
 
       @QueryParam("delete") @DefaultValue("false") boolean delete
 
-      )
-  {
+  ) {
     if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
     }
@@ -195,8 +189,7 @@ public class SeedResource {
 
       InputStream fileContents
 
-      )
-  {
+  ) {
     if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
     }

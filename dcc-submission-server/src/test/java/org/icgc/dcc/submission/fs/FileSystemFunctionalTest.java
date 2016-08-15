@@ -28,41 +28,41 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.util.ThreadContext;
 import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
-import org.icgc.dcc.submission.config.ConfigModule;
-import org.icgc.dcc.submission.config.CoreModule;
-import org.icgc.dcc.submission.config.PersistenceModule;
-import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
-import org.icgc.dcc.submission.repository.RepositoryModule;
-import org.icgc.dcc.submission.shiro.ShiroModule;
+import org.icgc.dcc.submission.config.PersistenceConfig;
+import org.icgc.dcc.submission.config.ServerConfig;
+import org.icgc.dcc.submission.config.ValidationConfig;
+import org.icgc.dcc.submission.repository.RepositoryConfig;
+import org.icgc.dcc.submission.service.ServiceConfig;
+import org.icgc.dcc.submission.sftp.SftpConfig;
+import org.icgc.dcc.submission.shiro.ShiroConfig;
 import org.icgc.dcc.submission.shiro.ShiroPasswordAuthenticator;
+import org.icgc.dcc.submission.test.TestConfig;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
-import com.google.inject.Inject;
 
-import junit.framework.Assert;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RunWith(GuiceJUnitRunner.class)
-@GuiceModules({ ConfigModule.class, CoreModule.class, FileSystemModule.class, PersistenceModule.class, RepositoryModule.class, ShiroModule.class })
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = { TestConfig.class, FileSystemConfig.class, ShiroConfig.class, PersistenceConfig.class, RepositoryConfig.class, SftpConfig.class, ServiceConfig.class, ValidationConfig.class, ServerConfig.class })
 public class FileSystemFunctionalTest extends FileSystemTest {
 
   protected DccFileSystem dccFileSystem;
 
+  @Autowired
   private FileSystem fileSystem;
 
+  @Autowired
   private ShiroPasswordAuthenticator passwordAuthenticator;
-
-  @Inject
-  public void setFileSystem(FileSystem fileSystem, ShiroPasswordAuthenticator passwordAuthenticator) {
-    this.fileSystem = fileSystem;
-    this.passwordAuthenticator = passwordAuthenticator;
-  }
 
   @Override
   public void setUp() throws IOException {

@@ -15,48 +15,35 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.config;
+package org.icgc.dcc.submission.test;
 
-import static com.google.inject.name.Names.named;
+import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.checkExistence;
+import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.getFileStatus;
+import static org.junit.Assert.assertTrue;
 
-import java.util.Map;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientFactory;
 
-import org.icgc.dcc.submission.core.config.SubmissionProperties;
-import org.icgc.dcc.submission.core.util.InjectionNames;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.TypeLiteral;
+import lombok.SneakyThrows;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+public class BaseIntegrationTest {
 
-/**
- * Makes {@code Config} injectable instead of accessible as a singleton.
- */
-@Slf4j
-@RequiredArgsConstructor
-public class ConfigModule extends AbstractModule {
-
-  /**
-   * Constants.
-   */
-  private static final TypeLiteral<Map<String, String>> STRING_MAP = new TypeLiteral<Map<String, String>>() {};
-
-  @NonNull
-  private final SubmissionProperties properties;
-
-  @Override
-  protected void configure() {
-    bind(SubmissionProperties.class).toInstance(properties);
-
-    // Bind hadoop properties for use in reporter
-    val hadoopProperties = properties.getHadoop().getProperties();
-    log.info("Hadoop properties: '{}'", hadoopProperties);
-    bind(STRING_MAP)
-        .annotatedWith(
-            named(InjectionNames.HADOOP_PROPERTIES))
-        .toInstance(hadoopProperties);
+  static {
+    // See http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
+    System.setProperty("java.security.krb5.realm", "OX.AC.UK");
+    System.setProperty("java.security.krb5.kdc", "kdc0.ox.ac.uk:kdc1.ox.ac.uk");
   }
+
+  protected final Client client = ClientFactory.newClient();
+
+  @SneakyThrows
+  protected static void assertEmptyFile(FileSystem fileSystem, String dir, String path) {
+    Path errorFile = new Path(dir, path);
+    assertTrue("Expected file does not exist: " + path, checkExistence(fileSystem, errorFile));
+    assertTrue("Expected empty file: " + path, getFileStatus(fileSystem, errorFile).get().getLen() == 0);
+  }
+
 }

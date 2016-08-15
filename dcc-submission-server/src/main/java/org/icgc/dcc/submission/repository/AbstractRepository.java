@@ -28,9 +28,9 @@ import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
 import org.mongodb.morphia.query.UpdateResults;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
-import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 import com.mysema.query.types.EntityPath;
@@ -59,7 +59,7 @@ public abstract class AbstractRepository<E, Q extends EntityPath<E>> {
    */
   protected final Q entity;
 
-  @Inject
+  @Autowired
   public AbstractRepository(@NonNull Morphia morphia, @NonNull Datastore datastore, @NonNull Q entityPath) {
     this.morphia = morphia;
     this.datastore = datastore;

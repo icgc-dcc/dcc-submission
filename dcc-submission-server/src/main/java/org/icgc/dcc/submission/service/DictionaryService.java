@@ -33,11 +33,11 @@ import org.icgc.dcc.submission.dictionary.visitor.DictionaryCloneVisitor;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.repository.CodeListRepository;
 import org.icgc.dcc.submission.repository.DictionaryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.inject.Inject;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +45,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DictionaryService {
 
   /**

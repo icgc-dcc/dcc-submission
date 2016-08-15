@@ -35,7 +35,6 @@ import org.apache.hadoop.io.compress.CompressionCodecFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.inject.Inject;
 
 import lombok.Cleanup;
 import lombok.NonNull;
@@ -49,8 +48,11 @@ public class ByteOffsetToLineNumber {
 
   private static final int BUFFER_SIZE_BYTES = 1000 * 1000;
 
-  @Inject
   protected static FileSystem fileSystem;
+
+  public static void setFileSystem(FileSystem fileSystem) {
+    ByteOffsetToLineNumber.fileSystem = fileSystem;
+  }
 
   public static Map<Long, Long> convert(@NonNull Path file, @NonNull Collection<Long> offsets) {
     return convert(file, offsets, true);

@@ -29,8 +29,7 @@ import org.apache.shiro.util.ThreadContext;
 import org.icgc.dcc.submission.core.model.User;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.submission.service.UserService;
-
-import com.google.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
  * Implements {@code UsernamePasswordAuthenticator} on top of {@code Shiro}.
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator {
 
   @NonNull
@@ -91,9 +90,9 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
       removeSubject();
       userService.reprimandUser(user);
 
-      log.info(user.isLocked() ?
-          "User {} was locked after too many failed attempts" :
-          "User {} was reprimanded after a failed attempt", username);
+      log.info(
+          user.isLocked() ? "User {} was locked after too many failed attempts" : "User {} was reprimanded after a failed attempt",
+          username);
 
       return null;
     }

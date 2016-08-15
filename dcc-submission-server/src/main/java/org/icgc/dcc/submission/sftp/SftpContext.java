@@ -44,10 +44,10 @@ import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.submission.service.MailService;
 import org.icgc.dcc.submission.service.ProjectService;
 import org.icgc.dcc.submission.service.ReleaseService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
-import com.google.inject.Inject;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +65,7 @@ import lombok.extern.slf4j.Slf4j;
  * @see http://www.allankelly.net/static/patterns/encapsulatecontext.pdf
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SftpContext {
 
   /**

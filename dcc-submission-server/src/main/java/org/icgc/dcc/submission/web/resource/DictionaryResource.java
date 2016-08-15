@@ -54,8 +54,7 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.service.DictionaryService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
-
-import com.google.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -70,7 +69,7 @@ public class DictionaryResource {
   public static final String VALIDATION_ERROR_HEADER = "X-Validation-Error";
   public static final String VALIDATION_WARNING_HEADER = "X-Validation-Warning";
 
-  @Inject
+  @Autowired
   private DictionaryService dictionaryService;
 
   private final boolean validate = true;

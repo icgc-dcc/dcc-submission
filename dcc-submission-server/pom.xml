@@ -53,6 +53,12 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <version>${project.version}</version>
     </dependency>
 
+    <!-- Spring -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+    </dependency>
+
     <!-- REST -->
     <dependency>
       <groupId>org.glassfish.jersey.containers</groupId>
@@ -129,16 +135,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <scope>runtime</scope>
     </dependency>
 
-    <!-- Dependency injection -->
-    <dependency>
-      <groupId>com.google.inject</groupId>
-      <artifactId>guice</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.inject.extensions</groupId>
-      <artifactId>guice-multibindings</artifactId>
-    </dependency>
-
     <!-- Cryptography -->
     <dependency>
       <groupId>org.bouncycastle</groupId>
@@ -204,6 +200,13 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>dcc-common-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    
+    <!-- Testing - Spring -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
       <scope>test</scope>
     </dependency>
 

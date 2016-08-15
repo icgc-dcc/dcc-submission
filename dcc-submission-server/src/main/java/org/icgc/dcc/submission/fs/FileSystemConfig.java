@@ -15,16 +15,28 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.http;
+package org.icgc.dcc.submission.fs;
 
-import org.glassfish.grizzly.http.server.HttpServer;
-import org.icgc.dcc.submission.service.AbstractDccModule;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.submission.config.AbstractConfig;
+import org.springframework.context.annotation.Bean;
 
-public class HttpModule extends AbstractDccModule {
+@org.springframework.context.annotation.Configuration
+public class FileSystemConfig extends AbstractConfig {
 
-  @Override
-  protected void configure() {
-    bind(HttpServer.class).toInstance(new HttpServer());
-    bindService(HttpServerService.class);
+  @Bean
+  public Configuration configuration() {
+    return new Configuration();
   }
+
+  public SubmissionFileSystemProvider submissionFileSystemProvider() {
+    return singleton(SubmissionFileSystemProvider.class);
+  }
+
+  @Bean
+  public FileSystem fileSystem() {
+    return submissionFileSystemProvider().get();
+  }
+
 }

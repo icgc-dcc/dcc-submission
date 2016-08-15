@@ -15,31 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.config;
+package org.icgc.dcc.submission.test;
 
-import java.util.logging.LogManager;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import org.icgc.dcc.submission.core.DccRuntime;
-import org.icgc.dcc.submission.service.AbstractDccModule;
-import org.slf4j.bridge.SLF4JBridgeHandler;
+@Configuration
+public class TestConfig {
 
-import com.google.common.util.concurrent.Service;
-import com.google.inject.Singleton;
-import com.google.inject.multibindings.Multibinder;
-
-public class CoreModule extends AbstractDccModule {
-
-  public CoreModule() {
-    // Reset java.util.logging settings
-    LogManager.getLogManager().reset();
-    // Redirect java.util.logging to SLF4J
-    SLF4JBridgeHandler.install();
-  }
-
-  @Override
-  protected void configure() {
-    bind(DccRuntime.class).in(Singleton.class);
-    Multibinder.newSetBinder(binder(), Service.class);
+  @Bean
+  public SubmissionProperties submissionProperties() {
+    return Tests.TEST_PROPERTIES;
   }
 
 }

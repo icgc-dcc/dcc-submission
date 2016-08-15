@@ -22,7 +22,7 @@ public class SystemResourceTest extends ResourceTest {
   @Override
   @Before
   public void setUp() {
-    service = injector.getInstance(SftpServerService.class);
+    service = getBean(SftpServerService.class);
     service.startAsync().awaitRunning();
   }
 

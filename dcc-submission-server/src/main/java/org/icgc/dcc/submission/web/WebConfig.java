@@ -17,11 +17,14 @@
  */
 package org.icgc.dcc.submission.web;
 
+import javax.annotation.PostConstruct;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 
+import org.glassfish.hk2.api.InjectionResolver;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.icgc.dcc.submission.http.jersey.BasicHttpAuthenticationFilter;
 import org.icgc.dcc.submission.http.jersey.CorsFilter;
@@ -40,53 +43,64 @@ import org.icgc.dcc.submission.web.resource.ReleaseResource;
 import org.icgc.dcc.submission.web.resource.SeedResource;
 import org.icgc.dcc.submission.web.resource.SystemResource;
 import org.icgc.dcc.submission.web.resource.UserResource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
+@Configuration
+public class WebConfig {
 
-public class WebModule extends AbstractModule {
+  @Autowired
+  ResourceConfig config;
+  @Autowired
+  InjectionResolver<?> injectionResolver;
 
-  @Override
-  protected void configure() {
-    bind(RootResources.class).asEagerSingleton();
-    bind(Validator.class).toInstance(Validation.buildDefaultValidatorFactory().getValidator());
+  @Bean
+  public Validator validator() {
+    return Validation.buildDefaultValidatorFactory().getValidator();
   }
 
   /**
    * Used to register resources in {@code Jersey}. This is required because {@code Jersey} cannot use Guice to discover
    * resources.
    */
-  public static class RootResources {
+  @PostConstruct
+  @SuppressWarnings("unchecked")
+  public void init() {
+    // Binders
+    config.addBinders(new AbstractBinder() {
 
-    @SuppressWarnings("unchecked")
-    @Inject
-    public RootResources(ResourceConfig config) {
-      // Providers
-      config.register(ValidatingJacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
+      @Override
+      protected void configure() {
+        bind(injectionResolver).to(InjectionResolver.class);
+      }
 
-      // Resources
-      config.addClasses(SystemResource.class);
-      config.addClasses(ProjectResource.class);
-      config.addClasses(ReleaseResource.class);
-      config.addClasses(NextReleaseResource.class);
-      config.addClasses(DictionaryResource.class);
-      config.addClasses(CodeListResource.class);
-      config.addClasses(UserResource.class);
-      config.addClasses(SeedResource.class); // TODO be sure to remove this from production environment (see DCC-819)
+    });
 
-      // Filters
-      config.addClasses(VersionFilter.class);
-      config.addClasses(CorsFilter.class);
-      config.addClasses(BasicHttpAuthenticationFilter.class);
+    // Providers
+    config.register(ValidatingJacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
 
-      // Exception mappers
-      config.addClasses(UnsatisfiedPreconditionExceptionMapper.class);
-      config.addClasses(ReleaseExceptionMapper.class);
-      config.addClasses(InvalidNameExceptionMapper.class);
-      config.addClasses(DuplicateNameExceptionMapper.class);
-      config.addClasses(UnhandledExceptionMapper.class);
-    }
+    // Resources
+    config.addClasses(SystemResource.class);
+    config.addClasses(ProjectResource.class);
+    config.addClasses(ReleaseResource.class);
+    config.addClasses(NextReleaseResource.class);
+    config.addClasses(DictionaryResource.class);
+    config.addClasses(CodeListResource.class);
+    config.addClasses(UserResource.class);
+    config.addClasses(SeedResource.class); // TODO be sure to remove this from production environment (see DCC-819)
 
+    // Filters
+    config.addClasses(VersionFilter.class);
+    config.addClasses(CorsFilter.class);
+    config.addClasses(BasicHttpAuthenticationFilter.class);
+
+    // Exception mappers
+    config.addClasses(UnsatisfiedPreconditionExceptionMapper.class);
+    config.addClasses(ReleaseExceptionMapper.class);
+    config.addClasses(InvalidNameExceptionMapper.class);
+    config.addClasses(DuplicateNameExceptionMapper.class);
+    config.addClasses(UnhandledExceptionMapper.class);
   }
 
 }

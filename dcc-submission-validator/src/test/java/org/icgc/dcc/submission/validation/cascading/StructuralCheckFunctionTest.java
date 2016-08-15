@@ -31,7 +31,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 import cascading.tuple.TupleListCollector;
-import junit.framework.Assert;
+import org.junit.Assert;
 import lombok.val;
 
 /**

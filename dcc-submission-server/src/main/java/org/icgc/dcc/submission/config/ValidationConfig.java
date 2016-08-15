@@ -19,15 +19,15 @@ package org.icgc.dcc.submission.config;
 
 import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.inject.multibindings.Multibinder.newSetBinder;
 
 import java.util.Set;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.common.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
-import org.icgc.dcc.submission.service.AbstractDccModule;
 import org.icgc.dcc.submission.service.DictionaryService;
 import org.icgc.dcc.submission.validation.ValidationExecutor;
 import org.icgc.dcc.submission.validation.core.Validator;
@@ -44,14 +44,23 @@ import org.icgc.dcc.submission.validation.primary.core.RestrictionContext;
 import org.icgc.dcc.submission.validation.primary.core.RestrictionType;
 import org.icgc.dcc.submission.validation.primary.planner.Planner;
 import org.icgc.dcc.submission.validation.primary.report.ByteOffsetToLineNumber;
+import org.icgc.dcc.submission.validation.primary.restriction.CodeListRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.DiscreteValuesRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.RangeFieldRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.RegexRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.RequiredRestriction;
+import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
 import org.icgc.dcc.submission.validation.rgv.ReferenceGenomeValidator;
 import org.icgc.dcc.submission.validation.rgv.reference.HtsjdkReferenceGenome;
 import org.icgc.dcc.submission.validation.sample.SampleTypeValidator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.core.annotation.Order;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -61,7 +70,8 @@ import lombok.extern.slf4j.Slf4j;
  * Module that wires together components of the validation subsystem.
  */
 @Slf4j
-public class ValidationModule extends AbstractDccModule {
+@Configuration
+public class ValidationConfig extends AbstractConfig {
 
   /**
    * Validator specifications.
@@ -76,29 +86,74 @@ public class ValidationModule extends AbstractDccModule {
   private static final String SAMPLE_TYPE_VALIDATOR_CONFIG_VALUE = "sample";
   private static final String NORMALIZATION_VALIDATOR_CONFIG_VALUE = "nv";
 
-  @Override
-  protected void configure() {
-    requestStaticInjection(ByteOffsetToLineNumber.class);
-    bind(SubmissionPlatformStrategyFactory.class).toProvider(SubmissionPlatformStrategyFactoryProvider.class).in(
-        Singleton.class);
-    bind(Planner.class).in(Singleton.class);
+  @Autowired
+  FileSystem fileSystem;
 
-    // Set binder will preserve bind order as iteration order for injectees
-    val types = newSetBinder(binder(), RestrictionType.class);
-    for (val type : RestrictionType.TYPES) {
-      types.addBinding().to(type).in(Singleton.class);
-    }
+  @PostConstruct
+  public void init() {
+    ByteOffsetToLineNumber.setFileSystem(fileSystem);
   }
 
-  @Provides
-  @Singleton
+  @Bean
+  public Planner planner(Set<RestrictionType> restrictions) {
+    return new Planner(restrictions);
+  }
+
+  @Bean
+  public SubmissionPlatformStrategyFactoryProvider submissionPlatformStrategyFactoryProvider() {
+    return singleton(SubmissionPlatformStrategyFactoryProvider.class);
+  }
+
+  @Bean
+  public SubmissionPlatformStrategyFactory submissionPlatformStrategyFactory() {
+    return submissionPlatformStrategyFactoryProvider().get();
+  }
+
+  @Bean
   public ValidationExecutor validationExecutor(SubmissionProperties properties) {
     val maxValidating = properties.getValidator().getMaxSimultaneous();
 
     return new ValidationExecutor(maxValidating);
   }
 
-  @Provides
+  @Bean
+  @Order(1)
+  public RestrictionType discreteValuesRestrictionType() {
+    return singleton(DiscreteValuesRestriction.Type.class);
+  }
+
+  @Bean
+  @Order(2)
+  public RestrictionType rangeFieldRestrictionType() {
+    return singleton(RangeFieldRestriction.Type.class);
+  }
+
+  @Bean
+  @Order(3)
+  public RestrictionType requiredRestrictionType() {
+    return singleton(RequiredRestriction.Type.class);
+  }
+
+  @Bean
+  @Order(4)
+  public RestrictionType codeListRestrictionType() {
+    return singleton(CodeListRestriction.Type.class);
+  }
+
+  @Bean
+  @Order(5)
+  public RestrictionType regexRestrictionType() {
+    return singleton(RegexRestriction.Type.class);
+  }
+
+  @Bean
+  @Order(6)
+  public RestrictionType scriptRestrictionType() {
+    return singleton(ScriptRestriction.Type.class);
+  }
+
+  @Bean
+  @Scope(scopeName = "prototype")
   public RestrictionContext restrictionContext(final DictionaryService dictionaryService) {
     return new RestrictionContext() {
 
@@ -117,8 +172,7 @@ public class ValidationModule extends AbstractDccModule {
    * <p>
    * TODO: address hard-codings
    */
-  @Provides
-  @Singleton
+  @Bean
   public DccFileSystem2 dccFileSystem2(SubmissionProperties properties, FileSystem fileSystem) {
     val rootDir = properties.getFsRoot();
     val hdfs = properties.getFsUrl().startsWith("hdfs");
@@ -126,8 +180,7 @@ public class ValidationModule extends AbstractDccModule {
     return new DccFileSystem2(fileSystem, rootDir, hdfs);
   }
 
-  @Provides
-  @Singleton
+  @Bean
   public Set<Validator> validators(SubmissionProperties properties, DccFileSystem2 dccFileSystem2, Planner planner) {
     // Bind common components
 

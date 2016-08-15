@@ -31,7 +31,7 @@ import org.junit.Test;
 
 import com.google.common.io.ByteStreams;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class SubmissionDirectoryTest extends FileSystemTest {
 

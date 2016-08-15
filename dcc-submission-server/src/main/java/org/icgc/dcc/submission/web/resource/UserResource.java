@@ -40,8 +40,7 @@ import org.icgc.dcc.submission.service.UserService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Authorizations;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
-
-import com.google.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -53,10 +52,10 @@ import lombok.extern.slf4j.Slf4j;
 @Path("users")
 public class UserResource {
 
-  @Inject
+  @Autowired
   private UserService userService;
 
-  @Inject
+  @Autowired
   private MailService mailService;
 
   @GET
@@ -65,8 +64,7 @@ public class UserResource {
 
       @Context SecurityContext securityContext
 
-      )
-  {
+  ) {
     val username = Authorizations.getUsername(securityContext);
     val admin = isSuperUser(securityContext);
     val user = new DetailedUser(username, admin);
@@ -94,8 +92,7 @@ public class UserResource {
 
       @Context SecurityContext securityContext
 
-      )
-  {
+  ) {
     log.info("Unlocking user: {}", username);
     if (isSuperUser(securityContext) == false) {
       return unauthorizedResponse();
@@ -104,8 +101,7 @@ public class UserResource {
     val optionalUser = userService.getUserByUsername(username);
     if (optionalUser.isPresent() == false) {
       log.warn("unknown user {} provided", username);
-      return Response.
-          status(BAD_REQUEST)
+      return Response.status(BAD_REQUEST)
           .entity(new ServerErrorResponseMessage(NO_SUCH_ENTITY, username))
           .build();
     } else {

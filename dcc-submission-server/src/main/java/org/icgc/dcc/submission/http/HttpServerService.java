@@ -33,7 +33,6 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Set;
 
-import javax.inject.Inject;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
@@ -46,6 +45,7 @@ import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.server.StaticHttpHandler;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -59,7 +59,7 @@ import lombok.extern.slf4j.Slf4j;
  * A {@code Service} for managing the {@code HttpServer} life cycle.
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class HttpServerService extends AbstractService {
 
   /**
@@ -122,7 +122,7 @@ public class HttpServerService extends AbstractService {
     serverConfig.addHttpHandler(new RedirectHttpHandler(), "/releases", "/login");
   }
 
-  private void addListeners(final java.lang.String host, final int port, final boolean useSsl) {
+  private void addListeners(String host, final int port, final boolean useSsl) {
     val networkListener = new NetworkListener(LISTENER_NAME, host, port);
     if (useSsl) {
       networkListener.setSecure(true);

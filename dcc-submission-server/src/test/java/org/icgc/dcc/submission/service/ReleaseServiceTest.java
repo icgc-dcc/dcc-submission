@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.submission.service;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.spy;
@@ -56,7 +56,7 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)

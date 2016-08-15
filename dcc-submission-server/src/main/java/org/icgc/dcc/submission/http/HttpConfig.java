@@ -15,29 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.http.jersey;
+package org.icgc.dcc.submission.http;
 
-import org.glassfish.jersey.server.ResourceConfig;
-import org.icgc.dcc.submission.http.HttpHandlerProvider;
+import org.glassfish.grizzly.http.server.HttpServer;
+import org.icgc.dcc.submission.config.AbstractConfig;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.multibindings.Multibinder;
+@Configuration
+public class HttpConfig extends AbstractConfig {
 
-import lombok.val;
-
-public class JerseyModule extends AbstractModule {
-
-  @Override
-  protected void configure() {
-    bind(ResourceConfig.class).toInstance(new ResourceConfig());
-    val handlerBinder = createHandlerBinder();
-    handlerBinder.addBinding().to(JerseyHandler.class);
-
-    install(new InjectModule());
+  @Bean
+  public HttpServer httpServer() {
+    return new HttpServer();
   }
 
-  private Multibinder<HttpHandlerProvider> createHandlerBinder() {
-    return Multibinder.newSetBinder(binder(), HttpHandlerProvider.class);
+  @Bean
+  public HttpServerService httpServerService() {
+    return singleton(HttpServerService.class);
   }
 
 }

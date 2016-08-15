@@ -28,15 +28,14 @@ import org.icgc.dcc.submission.core.model.QProject;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Key;
 import org.mongodb.morphia.Morphia;
-
-import com.google.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.NonNull;
 import lombok.val;
 
 public class ProjectRepository extends AbstractRepository<Project, QProject> {
 
-  @Inject
+  @Autowired
   public ProjectRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
     super(morphia, datastore, project);
   }

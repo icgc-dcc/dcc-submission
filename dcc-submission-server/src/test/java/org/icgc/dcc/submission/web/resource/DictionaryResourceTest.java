@@ -7,21 +7,20 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import javax.ws.rs.core.Application;
+import javax.annotation.Resource;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.service.AbstractDccModule;
 import org.icgc.dcc.submission.service.DictionaryService;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.junit.Test;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import com.google.common.collect.ImmutableList;
-import com.google.inject.Module;
 
 import lombok.val;
 
@@ -31,38 +30,45 @@ public class DictionaryResourceTest extends ResourceTest {
   private static final String DICTIONARY_VERSION1 = "0.6c";
   private static final String DICTIONARY_VERSION2 = "0.6d";
 
+  @Resource
   private Dictionary dictionary1;
+  @Resource
   private Dictionary dictionary2;
 
-  private DictionaryService mockDictionaryService;
-  private ReleaseService mockReleaseService;
+  @Configuration
+  static class ResourceConfig {
 
-  @Override
-  protected Application configure() {
-    // Cannot use MockitoJUnitRunner since this gets called before the class constructor is called
-    dictionary1 = new Dictionary(DICTIONARY_VERSION1);
-    dictionary2 = new Dictionary(DICTIONARY_VERSION2);
+    @Bean
+    public Dictionary dictionary1() {
+      return new Dictionary(DICTIONARY_VERSION1);
+    }
 
-    mockDictionaryService = mock(DictionaryService.class);
-    mockReleaseService = mock(ReleaseService.class);
+    @Bean
+    public Dictionary dictionary2() {
+      return new Dictionary(DICTIONARY_VERSION2);
+    }
 
-    when(mockDictionaryService.getDictionaries()).thenReturn(ImmutableList.of(dictionary1, dictionary2));
-    when(mockReleaseService.getNextDictionary()).thenReturn(dictionary2);
+    @Bean
+    public DictionaryService dictionaryService() {
+      val dictionaryService = mock(DictionaryService.class);
+      when(dictionaryService.getDictionaries()).thenReturn(ImmutableList.of(dictionary1(), dictionary2()));
 
-    return super.configure();
+      return dictionaryService;
+    }
+
+    @Bean
+    public ReleaseService releaseService() {
+      val releaseService = mock(ReleaseService.class);
+      when(releaseService.getNextDictionary()).thenReturn(dictionary2());
+
+      return releaseService;
+    }
+
   }
 
   @Override
-  protected Collection<? extends Module> configureModules() {
-    return ImmutableList.of(new AbstractDccModule() {
-
-      @Override
-      protected void configure() {
-        bind(DictionaryService.class).toInstance(mockDictionaryService);
-        bind(ReleaseService.class).toInstance(mockReleaseService);
-      }
-
-    });
+  protected void register() {
+    register(ResourceConfig.class);
   }
 
   @Test

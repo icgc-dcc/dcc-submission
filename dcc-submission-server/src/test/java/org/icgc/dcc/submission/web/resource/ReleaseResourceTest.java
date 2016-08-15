@@ -7,39 +7,50 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.Collection;
-
-import javax.ws.rs.core.Application;
-
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.service.AbstractDccModule;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
-import com.google.inject.Module;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import lombok.val;
 
 public class ReleaseResourceTest extends ResourceTest {
 
-  private Release release;
-  private ReleaseService mockReleaseService;
+  @Autowired
+  Release release;
+
+  @Configuration
+  static class ResourceConfig {
+
+    @Bean
+    public Release release() {
+      val release = new Release();
+      release.setDictionaryVersion("0.6e");
+      release.setName("ICGC13");
+      release.setReleaseDate();
+      release.addSubmission(new Submission("project1", "project one", release.getName()));
+      release.addSubmission(new Submission("project2", "project two", release.getName()));
+
+      return release;
+    }
+
+    @Bean
+    public ReleaseService releaseService() {
+      val mockReleaseService = mock(ReleaseService.class);
+      when(mockReleaseService.getReleasesBySubject(any(Subject.class))).thenReturn(newArrayList(release()));
+
+      return mockReleaseService;
+    }
+
+  }
 
   @Override
-  protected Application configure() {
-    release = new Release();
-    release.setDictionaryVersion("0.6e");
-    release.setName("ICGC13");
-    release.setReleaseDate();
-    release.addSubmission(new Submission("project1", "project one", release.getName()));
-    release.addSubmission(new Submission("project2", "project two", release.getName()));
-
-    mockReleaseService = mock(ReleaseService.class);
-    when(mockReleaseService.getReleasesBySubject(any(Subject.class))).thenReturn(newArrayList(release));
-    return super.configure();
+  protected void register() {
+    register(ResourceConfig.class);
   }
 
   @Test
@@ -53,17 +64,6 @@ public class ReleaseResourceTest extends ResourceTest {
                 + release.getReleaseDate().getTime()
                 + ",\"dictionaryVersion\":\"0.6e\",\"submissions\":[{\"projectKey\":\"project1\",\"projectName\":\"project one\",\"releaseName\":\"ICGC13\"},"
                 + "{\"projectKey\":\"project2\",\"projectName\":\"project two\",\"releaseName\":\"ICGC13\"}]}]");
-  }
-
-  @Override
-  protected Collection<? extends Module> configureModules() {
-    return ImmutableList.of(new AbstractDccModule() {
-
-      @Override
-      protected void configure() {
-        bind(ReleaseService.class).toInstance(mockReleaseService);
-      }
-    });
   }
 
 }

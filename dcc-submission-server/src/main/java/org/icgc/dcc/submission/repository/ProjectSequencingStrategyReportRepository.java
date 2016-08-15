@@ -25,15 +25,14 @@ import org.icgc.dcc.submission.core.model.ProjectSequencingStrategyReport;
 import org.icgc.dcc.submission.core.model.QProjectSequencingStrategyReport;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
-
-import com.google.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.NonNull;
 
 public class ProjectSequencingStrategyReportRepository extends
     AbstractRepository<ProjectSequencingStrategyReport, QProjectSequencingStrategyReport> {
 
-  @Inject
+  @Autowired
   public ProjectSequencingStrategyReportRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
     super(morphia, datastore, projectSequencingStrategyReport);
   }

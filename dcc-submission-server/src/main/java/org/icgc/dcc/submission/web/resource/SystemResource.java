@@ -35,9 +35,9 @@ import org.icgc.dcc.submission.http.jersey.PATCH;
 import org.icgc.dcc.submission.service.SystemService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Responses;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.inject.Inject;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,7 +56,7 @@ import lombok.extern.slf4j.Slf4j;
 @Consumes("application/json")
 public class SystemResource {
 
-  @Inject
+  @Autowired
   private SystemService systemService;
 
   @GET

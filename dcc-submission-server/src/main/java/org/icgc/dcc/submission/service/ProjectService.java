@@ -8,9 +8,9 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.mongodb.morphia.Key;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
-import com.google.inject.Inject;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ProjectService {
 
   @NonNull

@@ -17,11 +17,42 @@
  */
 package org.icgc.dcc.submission.shiro;
 
-public class ShiroConfig {
+import java.util.Collection;
 
-  /**
-   * Realm for Shiro (user management)
-   */
-  public static final String SHIRO_INI_FILE = "shiro.realm";
+import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.realm.Realm;
+import org.icgc.dcc.submission.config.AbstractConfig;
+import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
+import org.icgc.dcc.submission.service.UserService;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class ShiroConfig extends AbstractConfig {
+
+  @Bean
+  public RealmProvider realmProvider() {
+    return singleton(RealmProvider.class);
+  }
+
+  @Bean
+  public Collection<Realm> realms() {
+    return realmProvider().get();
+  }
+
+  @Bean
+  public UsernamePasswordAuthenticator usernamePasswordAuthenticator(UserService userService) {
+    return new ShiroPasswordAuthenticator(userService);
+  }
+
+  @Bean
+  public SecurityManagerProvider securityManagerProvider() {
+    return singleton(SecurityManagerProvider.class);
+  }
+
+  @Bean
+  public SecurityManager securityManager() {
+    return securityManagerProvider().get();
+  }
 
 }

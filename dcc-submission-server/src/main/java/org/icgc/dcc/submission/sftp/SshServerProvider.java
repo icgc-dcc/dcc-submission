@@ -21,6 +21,8 @@ import static java.lang.String.valueOf;
 import static org.apache.sshd.common.FactoryManager.DEFAULT_NIO_WORKERS;
 import static org.apache.sshd.common.FactoryManager.NIO_WORKERS;
 
+import javax.inject.Provider;
+
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.server.Command;
@@ -28,11 +30,10 @@ import org.apache.sshd.server.keyprovider.PEMGeneratorHostKeyProvider;
 import org.apache.sshd.server.sftp.SftpSubsystem;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.sftp.fs.HdfsFileSystemFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
  * Factory class for encapsulating the "complex" logic of creating an {@link SshServer}.
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SshServerProvider implements Provider<SshServer> {
 
   /**

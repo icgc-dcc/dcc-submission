@@ -39,10 +39,10 @@ import org.apache.shiro.codec.Base64;
 import org.glassfish.grizzly.http.Method;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.submission.shiro.ShiroSecurityContext;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.inject.Inject;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Provider
 @BindingPriority(AUTHENTICATION)
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class BasicHttpAuthenticationFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
   /**
@@ -82,8 +82,7 @@ public class BasicHttpAuthenticationFilter implements ContainerRequestFilter, Co
       "/codeLists",
       "/dictionaries",
       "/executiveReports/projectDataType",
-      "/executiveReports/projectSequencingStrategy"
-      );
+      "/executiveReports/projectSequencingStrategy");
 
   /**
    * Request property that carries the previous thread name within the request for later restoration.
@@ -181,7 +180,8 @@ public class BasicHttpAuthenticationFilter implements ContainerRequestFilter, Co
     return Response
         .status(UNAUTHORIZED)
         .header(WWW_AUTHENTICATE,
-            String.format("%s realm=\"%s\"", HTTP_AUTH_PREFIX, WWW_AUTHENTICATE_REALM)).build();
+            String.format("%s realm=\"%s\"", HTTP_AUTH_PREFIX, WWW_AUTHENTICATE_REALM))
+        .build();
   }
 
   /**
@@ -189,8 +189,7 @@ public class BasicHttpAuthenticationFilter implements ContainerRequestFilter, Co
    */
   private static Optional<String> getOpenAccessPath(ContainerRequestContext context) {
     String path = removePathTrailingSlash(context.getUriInfo());
-    return isGetMethod(context) && isOpenPath(path) ?
-        Optional.of(path) : Optional.<String> absent();
+    return isGetMethod(context) && isOpenPath(path) ? Optional.of(path) : Optional.<String> absent();
   }
 
   private static boolean isGetMethod(ContainerRequestContext context) {

@@ -30,11 +30,11 @@ import org.apache.sshd.common.session.AbstractSession;
 import org.icgc.dcc.submission.core.model.Status;
 import org.icgc.dcc.submission.core.model.UserSession;
 import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Maps;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.AbstractService;
-import com.google.inject.Inject;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +45,7 @@ import lombok.extern.slf4j.Slf4j;
  * Service abstraction to the SFTP sub-system.
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject) )
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SftpServerService extends AbstractService {
 
   /**

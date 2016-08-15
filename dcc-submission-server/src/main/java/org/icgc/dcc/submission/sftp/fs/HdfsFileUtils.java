@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.apache.sshd.common.file.SshFile;
 
-import com.google.inject.TypeLiteral;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor(access = PRIVATE)
 public final class HdfsFileUtils {
 
-  public static final TypeLiteral<List<SshFile>> SshFileList = new TypeLiteral<List<SshFile>>() {};
+  public static final TypeReference<List<SshFile>> SshFileList = new TypeReference<List<SshFile>>() {};
 
   /**
    * Apache MINA exception handling method designed to evade Java's checked exception mechanism to propagate
@@ -75,7 +75,7 @@ public final class HdfsFileUtils {
    * @return nothing
    */
   @SneakyThrows
-  public static <T> T handleException(TypeLiteral<T> type, Exception e) {
+  public static <T> T handleException(TypeReference<T> type, Exception e) {
     handle(e);
     return null;
   }

@@ -128,7 +128,7 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
     log.info("Properties: {}", properties);
 
     val provider =
-        new SubmissionPlatformStrategyFactoryProvider(properties.getHadoop().getProperties(), getFileSystem());
+        new SubmissionPlatformStrategyFactoryProvider(properties, getFileSystem());
     val factory = provider.get();
 
     // Reuse primary validation component

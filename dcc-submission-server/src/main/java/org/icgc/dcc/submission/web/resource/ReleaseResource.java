@@ -45,10 +45,10 @@ import org.icgc.dcc.submission.service.SystemService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 import org.icgc.dcc.submission.web.util.Responses;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.inject.Inject;
 
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -57,9 +57,9 @@ import lombok.extern.slf4j.Slf4j;
 @Path("releases")
 public class ReleaseResource {
 
-  @Inject
+  @Autowired
   private ReleaseService releaseService;
-  @Inject
+  @Autowired
   private SystemService systemService;
 
   // TODO: This method seems like it should be removed since it is being exposed just for testing

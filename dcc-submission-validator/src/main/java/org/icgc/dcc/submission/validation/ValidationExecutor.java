@@ -34,10 +34,10 @@ import javax.annotation.concurrent.ThreadSafe;
 
 import org.icgc.dcc.common.core.util.concurrent.ThreadNamingRunnable;
 import org.icgc.dcc.submission.validation.core.Validation;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.MapMaker;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.inject.Inject;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -53,7 +53,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @ThreadSafe
-@RequiredArgsConstructor(onConstructor = @___(@Inject))
+@RequiredArgsConstructor(onConstructor = @___(@Autowired))
 public class ValidationExecutor {
 
   /**

@@ -26,9 +26,9 @@ import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.eventbus.Subscribe;
-import com.google.inject.Inject;
 
 import lombok.NonNull;
 import lombok.val;
@@ -40,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
  * Delegates to Shiro based implementation by way of the {@link SftpContext}.
  */
 @Slf4j
-class SftpAuthenticator implements PasswordAuthenticator {
+public class SftpAuthenticator implements PasswordAuthenticator {
 
   /**
    * Disconnect message sent to clients when disabled.
@@ -57,7 +57,7 @@ class SftpAuthenticator implements PasswordAuthenticator {
   private final SftpContext context;
   private volatile boolean enabled = true;
 
-  @Inject
+  @Autowired
   public SftpAuthenticator(UsernamePasswordAuthenticator authenticator, SftpContext context) {
     this.authenticator = authenticator;
     this.context = context;

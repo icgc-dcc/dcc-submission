@@ -24,33 +24,31 @@ import javax.inject.Singleton;
 import org.glassfish.hk2.api.Injectee;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.ServiceHandle;
-import org.glassfish.jersey.internal.inject.AbstractBinder;
-import org.glassfish.jersey.server.ResourceConfig;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Used to register an {@code InjectionResolver} that will resolve Guice's {@code Inject} annotation.
  */
-public class InjectModule extends AbstractModule {
+@Configuration
+public class InjectConfig {
 
-  @Override
-  protected void configure() {
-    bind(GuiceInjectResolver.class).asEagerSingleton();
-    bind(GuiceModule.class).asEagerSingleton();
+  @Bean
+  public InjectionResolver<?> injectionResolver(ApplicationContext context) {
+    return new SpringInjectionResolver(context);
   }
 
   @Singleton
-  public static class GuiceInjectResolver implements InjectionResolver<Inject> {
+  @RequiredArgsConstructor
+  public static class SpringInjectionResolver implements InjectionResolver<Autowired> {
 
-    private final Injector injector;
-
-    @Inject
-    public GuiceInjectResolver(Injector injector) {
-      this.injector = injector;
-    }
+    @NonNull
+    private final ApplicationContext context;
 
     @Override
     public boolean isConstructorParameterIndicator() {
@@ -66,26 +64,10 @@ public class InjectModule extends AbstractModule {
     public Object resolve(Injectee injectee, ServiceHandle<?> root) {
       Type type = injectee.getRequiredType();
       if (type instanceof Class) {
-        return injector.getInstance((Class<?>) type);
+        return context.getBean((Class<?>) type);
       }
       throw new IllegalStateException(String.format("don't know how to inject type %s (%s)", type,
           type == null ? null : type.getClass()));
-    }
-  }
-
-  public static final class GuiceModule extends AbstractBinder {
-
-    private final GuiceInjectResolver guiceResolver;
-
-    @Inject
-    public GuiceModule(GuiceInjectResolver guiceResolver, ResourceConfig config) {
-      this.guiceResolver = guiceResolver;
-      config.addBinders(this);
-    }
-
-    @Override
-    protected void configure() {
-      bind(guiceResolver).to(InjectionResolver.class);
     }
   }
 

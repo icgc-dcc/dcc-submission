@@ -15,59 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.cascading;
+package org.icgc.dcc.submission.config;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.common.cascading.Tuples2.sameContent;
+import java.util.Set;
+import java.util.logging.LogManager;
 
-import java.util.Iterator;
+import org.icgc.dcc.submission.core.DccRuntime;
+import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.slf4j.bridge.SLF4JBridgeHandler;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import cascading.CascadingTestCase;
-import cascading.operation.Buffer;
-import cascading.operation.Function;
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
-import cascading.tuple.TupleEntry;
+import com.google.common.util.concurrent.Service;
 
-/**
- * Create dcc-test-hadoop (see DCC-2415)
- */
-public class CascadingTestUtils {
+@Configuration
+public class ServerConfig extends AbstractConfig {
 
-  public static Iterator<TupleEntry> invokeFunction(Function<?> function, TupleEntry[] entries, Fields resultFields) {
-    return CascadingTestCase
-        .invokeFunction(
-            function,
-            entries,
-            resultFields)
-        .entryIterator();
+  {
+    // Reset java.util.logging settings
+    LogManager.getLogManager().reset();
+    // Redirect java.util.logging to SLF4J
+    SLF4JBridgeHandler.install();
   }
 
-  public static Iterator<TupleEntry> invokeBuffer(Buffer<?> buffer, TupleEntry[] entries, Fields resultFields) {
-    return CascadingTestCase
-        .invokeBuffer(
-            buffer,
-            entries,
-            resultFields)
-        .entryIterator();
+  @Bean
+  public DccRuntime dccRuntime(Set<Service> services) {
+    return new DccRuntime(services);
   }
 
-  public static void checkOperationResults(Iterator<TupleEntry> iterator, Tuple[] resultTuples) {
-    for (int i = 0; i < resultTuples.length; i++) {
-      assertThat(iterator.hasNext());
-      TupleEntry entry = iterator.next();
-      Tuple actualTuple = entry.getTuple();
-      Tuple expectedTuple = resultTuples[i];
-      assertTrue(
-          String.format("%s != %s",
-              actualTuple,
-              expectedTuple),
-          sameContent(
-              entry.getTuple(),
-              expectedTuple));
-    }
-    assertFalse(iterator.hasNext());
+  @Bean
+  public DccFileSystem dccFileSystem() {
+    return singleton(DccFileSystem.class);
   }
+
 }

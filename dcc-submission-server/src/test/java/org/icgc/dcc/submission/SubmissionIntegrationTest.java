@@ -30,35 +30,6 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.common.test.Tests.TEST_FIXTURES_DIR;
-import static org.icgc.dcc.submission.TestUtils.$;
-import static org.icgc.dcc.submission.TestUtils.CODELISTS_ENDPOINT;
-import static org.icgc.dcc.submission.TestUtils.DICTIONARIES_ENDPOINT;
-import static org.icgc.dcc.submission.TestUtils.NEXT_RELEASE_ENPOINT;
-import static org.icgc.dcc.submission.TestUtils.PROJECTS_ENDPOINT;
-import static org.icgc.dcc.submission.TestUtils.QUEUE_ENDPOINT;
-import static org.icgc.dcc.submission.TestUtils.RELEASES_ENDPOINT;
-import static org.icgc.dcc.submission.TestUtils.SEED_CODELIST_ENDPOINT;
-import static org.icgc.dcc.submission.TestUtils.SEED_DICTIONARIES_ENDPOINT;
-import static org.icgc.dcc.submission.TestUtils.SIGNOFF_ENDPOINT;
-import static org.icgc.dcc.submission.TestUtils.TEST_CONFIG_FILE;
-import static org.icgc.dcc.submission.TestUtils.TEST_PROPERTIES;
-import static org.icgc.dcc.submission.TestUtils.UPDATE_RELEASE_ENDPOINT;
-import static org.icgc.dcc.submission.TestUtils.VALIDATION_ENDPOINT;
-import static org.icgc.dcc.submission.TestUtils.addScript;
-import static org.icgc.dcc.submission.TestUtils.asDetailedSubmission;
-import static org.icgc.dcc.submission.TestUtils.asRelease;
-import static org.icgc.dcc.submission.TestUtils.asReleaseView;
-import static org.icgc.dcc.submission.TestUtils.asString;
-import static org.icgc.dcc.submission.TestUtils.codeListsToString;
-import static org.icgc.dcc.submission.TestUtils.dataTypesToString;
-import static org.icgc.dcc.submission.TestUtils.delete;
-import static org.icgc.dcc.submission.TestUtils.dictionary;
-import static org.icgc.dcc.submission.TestUtils.dictionaryToString;
-import static org.icgc.dcc.submission.TestUtils.dictionaryVersion;
-import static org.icgc.dcc.submission.TestUtils.get;
-import static org.icgc.dcc.submission.TestUtils.post;
-import static org.icgc.dcc.submission.TestUtils.put;
-import static org.icgc.dcc.submission.TestUtils.replaceDictionaryVersion;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.writeDictionary;
 import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
@@ -69,6 +40,35 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.QUEUED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
+import static org.icgc.dcc.submission.test.Tests.$;
+import static org.icgc.dcc.submission.test.Tests.CODELISTS_ENDPOINT;
+import static org.icgc.dcc.submission.test.Tests.DICTIONARIES_ENDPOINT;
+import static org.icgc.dcc.submission.test.Tests.NEXT_RELEASE_ENPOINT;
+import static org.icgc.dcc.submission.test.Tests.PROJECTS_ENDPOINT;
+import static org.icgc.dcc.submission.test.Tests.QUEUE_ENDPOINT;
+import static org.icgc.dcc.submission.test.Tests.RELEASES_ENDPOINT;
+import static org.icgc.dcc.submission.test.Tests.SEED_CODELIST_ENDPOINT;
+import static org.icgc.dcc.submission.test.Tests.SEED_DICTIONARIES_ENDPOINT;
+import static org.icgc.dcc.submission.test.Tests.SIGNOFF_ENDPOINT;
+import static org.icgc.dcc.submission.test.Tests.TEST_CONFIG_FILE;
+import static org.icgc.dcc.submission.test.Tests.TEST_PROPERTIES;
+import static org.icgc.dcc.submission.test.Tests.UPDATE_RELEASE_ENDPOINT;
+import static org.icgc.dcc.submission.test.Tests.VALIDATION_ENDPOINT;
+import static org.icgc.dcc.submission.test.Tests.addScript;
+import static org.icgc.dcc.submission.test.Tests.asDetailedSubmission;
+import static org.icgc.dcc.submission.test.Tests.asRelease;
+import static org.icgc.dcc.submission.test.Tests.asReleaseView;
+import static org.icgc.dcc.submission.test.Tests.asString;
+import static org.icgc.dcc.submission.test.Tests.codeListsToString;
+import static org.icgc.dcc.submission.test.Tests.dataTypesToString;
+import static org.icgc.dcc.submission.test.Tests.delete;
+import static org.icgc.dcc.submission.test.Tests.dictionary;
+import static org.icgc.dcc.submission.test.Tests.dictionaryToString;
+import static org.icgc.dcc.submission.test.Tests.dictionaryVersion;
+import static org.icgc.dcc.submission.test.Tests.get;
+import static org.icgc.dcc.submission.test.Tests.post;
+import static org.icgc.dcc.submission.test.Tests.put;
+import static org.icgc.dcc.submission.test.Tests.replaceDictionaryVersion;
 import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.REPORT_FILES_INFO_SEPARATOR;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
 import static org.junit.Assert.assertEquals;
@@ -88,27 +88,29 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.dcc.AppUtils;
 import org.icgc.dcc.common.core.model.FileTypes;
-import org.icgc.dcc.submission.config.ConfigModule;
-import org.icgc.dcc.submission.config.PersistenceModule;
+import org.icgc.dcc.submission.config.PersistenceConfig;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.GuiceJUnitRunner;
-import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.sftp.Sftp;
+import org.icgc.dcc.submission.test.BaseIntegrationTest;
+import org.icgc.dcc.submission.test.MiniHadoop;
+import org.icgc.dcc.submission.test.TestConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mongodb.morphia.Datastore;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.dumbster.smtp.SimpleSmtpServer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.inject.Inject;
 import com.jcraft.jsch.SftpException;
 
 import lombok.NonNull;
@@ -117,8 +119,8 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RunWith(GuiceJUnitRunner.class)
-@GuiceModules({ ConfigModule.class, PersistenceModule.class })
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = { TestConfig.class, PersistenceConfig.class })
 public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   /**
@@ -298,7 +300,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   /**
    * Test utilities.
    */
-  @Inject
+  @Autowired
   private Datastore datastore;
   private SimpleSmtpServer smtpServer;
   private MiniHadoop hadoop;

@@ -30,4 +30,5 @@ public class CertificateNotFoundException extends RuntimeException {
   public CertificateNotFoundException(String message, Exception e) {
     super(message, e);
   }
+
 }

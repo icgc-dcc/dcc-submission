@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.submission.dictionary;
 
-import static org.icgc.dcc.submission.TestUtils.codeLists;
-import static org.icgc.dcc.submission.TestUtils.dictionary;
+import static org.icgc.dcc.submission.test.Tests.codeLists;
+import static org.icgc.dcc.submission.test.Tests.dictionary;
 
 import org.junit.Before;
 import org.junit.Test;

@@ -21,26 +21,25 @@ import static org.mockito.Mockito.when;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.NON_EXTENSIBLE;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
+import javax.annotation.Resource;
 import javax.ws.rs.core.Response;
 
 import org.elasticsearch.common.collect.Lists;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.service.AbstractDccModule;
 import org.icgc.dcc.submission.service.ProjectService;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
-import com.google.inject.Module;
 import com.mongodb.CommandResult;
 import com.mongodb.MongoException.DuplicateKey;
 
@@ -52,9 +51,9 @@ public class ProjectResourceTest extends ResourceTest {
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
-  private final String UNAUTH_USER = "nobody";
-  private final String AUTH_ALLOWED_USER = "richard";
-  private final String AUTH_NOT_ALLOWED_USER = "ricardo";
+  private static final String UNAUTH_USER = "nobody";
+  private static final String AUTH_ALLOWED_USER = "richard";
+  private static final String AUTH_NOT_ALLOWED_USER = "ricardo";
 
   private static final String AUTH_HEADER = Authorization.toString();
 
@@ -62,57 +61,89 @@ public class ProjectResourceTest extends ResourceTest {
     return "X-DCC-Auth " + encodeAsString(username + ":" + username + "spasswd");
   }
 
+  @Autowired
   private ProjectService projectService;
-
+  @Autowired
   private ReleaseService releaseService;
-
+  @Autowired
+  private List<Release> releases;
+  @Resource
+  private Submission submissionOne;
+  @Resource
+  private Submission submissionTwo;
+  @Resource
   private Project projectOne;
-
+  @Resource
   private Project projectTwo;
 
-  private Release release;
+  @Configuration
+  static class ResourceConfig {
 
-  private List<Release> releases;
+    @Bean
+    public Project projectTwo() {
+      return new Project("PRJ2", "Project Two");
+    }
 
-  private Submission submissionOne;
+    @Bean
+    public Project projectOne() {
+      val projectOne = new Project("PRJ1", "Project One");
+      projectOne.setUsers(Sets.newHashSet(AUTH_ALLOWED_USER));
+    
+      return projectOne;
+    }
 
-  private Submission submissionTwo;
+    @Bean
+    public Submission submissionTwo() {
+      return new Submission("PRJ2", "Project Two", release().getName());
+    }
 
-  private Set<Submission> submissions;
+    @Bean
+    public Submission submissionOne() {
+      return new Submission("PRJ1", "Project One", release().getName());
+    }
+
+    @Bean
+    public Release release() {
+      val release = new Release("REL1");
+
+      return release;
+    }
+
+    @Bean
+    public ReleaseService releaseService() {
+      val releases = Lists.newArrayList(release());
+
+      val releaseService = mock(ReleaseService.class);
+      when(releaseService.getNextRelease()).thenReturn(release());
+      when(releaseService.getReleases()).thenReturn(releases);
+
+      return releaseService;
+    }
+
+    @Bean
+    public ProjectService projectService() {
+      val projectOne = projectOne();
+      val projectTwo = projectTwo();
+
+      val submissionOne = submissionOne();
+      val submissionTwo = submissionTwo();
+      val submissions = Sets.newHashSet(submissionOne, submissionTwo);
+
+      val projectService = mock(ProjectService.class);
+      when(projectService.getProject(projectOne.getKey())).thenReturn(projectOne);
+      when(projectService.getProjectByUser(projectOne.getKey(), AUTH_ALLOWED_USER)).thenReturn(projectOne);
+      when(projectService.getProjectsByUser(any(String.class))).thenReturn(Lists.newArrayList(projectOne));
+      when(projectService.getProjects()).thenReturn(Lists.newArrayList(projectOne, projectTwo));
+      when(projectService.getSubmissions(Lists.newArrayList(release()), projectOne.getKey())).thenReturn(submissions);
+
+      return projectService;
+    }
+
+  }
 
   @Override
-  protected Collection<? extends Module> configureModules() {
-    return ImmutableList.of(new AbstractDccModule() {
-
-      @Override
-      protected void configure() {
-        release = new Release("REL1");
-        releases = Lists.newArrayList(release);
-
-        releaseService = mock(ReleaseService.class);
-        when(releaseService.getNextRelease()).thenReturn(release);
-        when(releaseService.getReleases()).thenReturn(releases);
-
-        projectOne = new Project("PRJ1", "Project One");
-        projectOne.setUsers(Sets.newHashSet(AUTH_ALLOWED_USER));
-        projectTwo = new Project("PRJ2", "Project Two");
-
-        submissionOne = new Submission("PRJ1", "Project One", release.getName());
-        submissionTwo = new Submission("PRJ2", "Project Two", release.getName());
-        submissions = Sets.newHashSet(submissionOne, submissionTwo);
-
-        projectService = mock(ProjectService.class);
-        when(projectService.getProject(projectOne.getKey())).thenReturn(projectOne);
-        when(projectService.getProjectByUser(projectOne.getKey(), AUTH_ALLOWED_USER)).thenReturn(projectOne);
-        when(projectService.getProjectsByUser(any(String.class))).thenReturn(Lists.newArrayList(projectOne));
-        when(projectService.getProjects()).thenReturn(Lists.newArrayList(projectOne, projectTwo));
-        when(projectService.getSubmissions(releases, projectOne.getKey())).thenReturn(submissions);
-
-        bind(ProjectService.class).toInstance(projectService);
-        bind(ReleaseService.class).toInstance(releaseService);
-      }
-
-    });
+  protected void register() {
+    register(ResourceConfig.class);
   }
 
   @Test

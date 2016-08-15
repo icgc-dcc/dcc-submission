@@ -34,9 +34,9 @@ import org.icgc.dcc.submission.validation.primary.visitor.PlanningVisitor;
 import org.icgc.dcc.submission.validation.primary.visitor.RowBasedRestrictionPlanningVisitor;
 import org.icgc.dcc.submission.validation.primary.visitor.SummaryReportingPlanningVisitor;
 import org.icgc.dcc.submission.validation.primary.visitor.ValueTypePlanningVisitor;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
-import com.google.inject.Inject;
 
 import cascading.pipe.Pipe;
 import lombok.NonNull;
@@ -45,7 +45,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject) )
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class Planner {
 
   @NonNull

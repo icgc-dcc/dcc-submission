@@ -24,8 +24,7 @@ import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.primary.core.Plan;
 import org.icgc.dcc.submission.validation.primary.planner.Planner;
-
-import com.google.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -43,7 +42,7 @@ public class PrimaryValidator implements Validator {
 
   private final Planner planner;
 
-  @Inject
+  @Autowired
   public PrimaryValidator(@NonNull Planner planner) {
     this.planner = planner;
   }

@@ -17,29 +17,10 @@
  */
 package org.icgc.dcc.submission.validation.primary.core;
 
-import java.util.List;
-
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
-import org.icgc.dcc.submission.validation.primary.restriction.CodeListRestriction;
-import org.icgc.dcc.submission.validation.primary.restriction.DiscreteValuesRestriction;
-import org.icgc.dcc.submission.validation.primary.restriction.RangeFieldRestriction;
-import org.icgc.dcc.submission.validation.primary.restriction.RegexRestriction;
-import org.icgc.dcc.submission.validation.primary.restriction.RequiredRestriction;
-import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
-
-import com.google.common.collect.ImmutableList;
 
 public interface RestrictionType {
-
-  public static final List<Class<? extends RestrictionType>> TYPES =
-      ImmutableList.<Class<? extends RestrictionType>> of(
-          DiscreteValuesRestriction.Type.class,
-          RangeFieldRestriction.Type.class,
-          RequiredRestriction.Type.class,
-          CodeListRestriction.Type.class,
-          RegexRestriction.Type.class,
-          ScriptRestriction.Type.class);
 
   public String getType();
 

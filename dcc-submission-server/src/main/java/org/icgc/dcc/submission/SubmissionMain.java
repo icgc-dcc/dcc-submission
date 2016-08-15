@@ -1,4 +1,8 @@
 /*
+
+
+ * 
+ * 
  * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
@@ -23,7 +27,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.padEnd;
 import static com.google.common.io.Resources.getResource;
 import static com.google.common.io.Resources.readLines;
-import static com.google.inject.Guice.createInjector;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.common.core.dcc.Versions.getScmInfo;
@@ -33,26 +36,16 @@ import java.lang.management.ManagementFactory;
 import java.util.Map.Entry;
 
 import org.icgc.dcc.common.hadoop.util.HadoopProperties;
-import org.icgc.dcc.submission.config.ConfigModule;
-import org.icgc.dcc.submission.config.CoreModule;
-import org.icgc.dcc.submission.config.PersistenceModule;
-import org.icgc.dcc.submission.config.ValidationModule;
 import org.icgc.dcc.submission.core.DccRuntime;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
-import org.icgc.dcc.submission.fs.FileSystemModule;
-import org.icgc.dcc.submission.http.HttpModule;
-import org.icgc.dcc.submission.http.jersey.JerseyModule;
-import org.icgc.dcc.submission.repository.RepositoryModule;
-import org.icgc.dcc.submission.service.ServiceModule;
-import org.icgc.dcc.submission.sftp.SftpModule;
-import org.icgc.dcc.submission.shiro.ShiroModule;
-import org.icgc.dcc.submission.web.WebModule;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.inject.Inject;
 
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +54,7 @@ import lombok.extern.slf4j.Slf4j;
  * SubmissionMain class for the submission system. Starts the DCC Submission System daemon.
  */
 @Slf4j
+@AllArgsConstructor
 public class SubmissionMain {
 
   static {
@@ -75,25 +69,30 @@ public class SubmissionMain {
   /**
    * Services handle.
    */
-  @Inject
+  @NonNull
+  private AnnotationConfigApplicationContext context;
+  @NonNull
   private DccRuntime dccRuntime;
 
   /**
    * SubmissionMain method for the submission system.
    */
   public static void main(String... args) {
-    instance = new SubmissionMain(args);
-
-    instance.start();
-    log.info("Exiting main method.");
-  }
-
-  private SubmissionMain(String[] args) {
     val properties = loadProperties(args);
     logBanner(args, properties);
 
-    inject(properties);
-    registerShutdownHook();
+    val context = new AnnotationConfigApplicationContext();
+    context.getBeanFactory().registerSingleton("submissionProperties", properties);
+    context.scan(getType().getPackage().getName());
+    context.refresh();
+
+    val dccRuntime = context.getBean(DccRuntime.class);
+
+    instance = new SubmissionMain(context, dccRuntime);
+    instance.registerShutdownHook();
+    instance.start();
+
+    log.info("Exiting main method.");
   }
 
   private void registerShutdownHook() {
@@ -149,31 +148,8 @@ public class SubmissionMain {
     return readConfig(configFile);
   }
 
-  private void inject(SubmissionProperties properties) {
-    val injector = createInjector(
-        // Config module
-        new ConfigModule(properties),
-
-        // Infrastructure modules
-        new CoreModule(),
-        new PersistenceModule(),
-        new HttpModule(),
-        new JerseyModule(),
-        new WebModule(),
-        new RepositoryModule(),
-        new ShiroModule(),
-        new FileSystemModule(),
-        new SftpModule(),
-
-        // Business modules
-        new ServiceModule(),
-        new ValidationModule());
-
-    injector.injectMembers(this);
-  }
-
   @SneakyThrows
-  private void logBanner(String[] args, SubmissionProperties properties) {
+  private static void logBanner(String[] args, SubmissionProperties properties) {
     log.info("{}", repeat("-", 100));
     for (String line : readLines(getResource("banner.txt"), UTF_8)) {
       log.info(line);
@@ -193,24 +169,28 @@ public class SubmissionMain {
     log.info("Properties:  {}", properties);
   }
 
-  private String getVersion() {
-    val version = getClass().getPackage().getImplementationVersion();
+  private static String getVersion() {
+    val version = getType().getPackage().getImplementationVersion();
     return version == null ? "[unknown version]" : version;
   }
 
-  private String getBuildTimestamp() {
-    val buildTimestamp = getClass().getPackage().getSpecificationVersion();
+  private static String getBuildTimestamp() {
+    val buildTimestamp = getType().getPackage().getSpecificationVersion();
     return buildTimestamp == null ? "[unknown build timestamp]" : buildTimestamp;
   }
 
-  private String getJarName() {
-    val jarPath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+  private static String getJarName() {
+    val jarPath = getType().getProtectionDomain().getCodeSource().getLocation().getPath();
     val jarFile = new File(jarPath);
 
     return jarFile.getName();
   }
 
-  private String formatArguments(String[] args) {
+  private static Class<SubmissionMain> getType() {
+    return SubmissionMain.class;
+  }
+
+  private static String formatArguments(String[] args) {
     val runtime = ManagementFactory.getRuntimeMXBean();
     val inputArguments = runtime.getInputArguments();
 

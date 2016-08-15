@@ -19,13 +19,12 @@ package org.icgc.dcc.submission.validation.platform;
 
 import java.util.Map;
 
+import javax.inject.Provider;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.common.core.util.Scheme;
-import org.icgc.dcc.submission.core.util.InjectionNames;
-
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.name.Named;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -36,12 +35,12 @@ public class SubmissionPlatformStrategyFactoryProvider implements Provider<Submi
   private final FileSystem fs;
   private final Map<String, String> hadoopProperties;
 
-  @Inject
+  @Autowired
   public SubmissionPlatformStrategyFactoryProvider(
-      @Named(InjectionNames.HADOOP_PROPERTIES) @NonNull final Map<String, String> hadoopProperties,
+      @NonNull SubmissionProperties properties,
       @NonNull final FileSystem fs) {
     this.fs = fs;
-    this.hadoopProperties = hadoopProperties;
+    this.hadoopProperties = properties.getHadoop().getProperties();
   }
 
   @Override
@@ -58,4 +57,5 @@ public class SubmissionPlatformStrategyFactoryProvider implements Provider<Submi
       throw new RuntimeException("Unknown file system type: " + fsUrl + ". Expected file or hdfs");
     }
   }
+
 }

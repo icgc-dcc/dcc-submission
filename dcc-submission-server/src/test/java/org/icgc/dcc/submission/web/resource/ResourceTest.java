@@ -1,15 +1,10 @@
 package org.icgc.dcc.submission.web.resource;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.inject.util.Modules.EMPTY_MODULE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.glassfish.grizzly.http.util.Header.Authorization;
 import static org.glassfish.jersey.internal.util.Base64.encodeAsString;
-import static org.icgc.dcc.submission.TestUtils.TEST_PROPERTIES;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
 
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
@@ -21,23 +16,22 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.inmemory.InMemoryTestContainerFactory;
 import org.glassfish.jersey.test.spi.TestContainerFactory;
-import org.icgc.dcc.submission.config.ConfigModule;
-import org.icgc.dcc.submission.config.CoreModule;
-import org.icgc.dcc.submission.config.PersistenceModule;
-import org.icgc.dcc.submission.config.ValidationModule;
-import org.icgc.dcc.submission.fs.FileSystemModule;
-import org.icgc.dcc.submission.http.jersey.JerseyModule;
-import org.icgc.dcc.submission.sftp.SftpModule;
-import org.icgc.dcc.submission.shiro.ShiroModule;
-import org.icgc.dcc.submission.web.WebModule;
+import org.icgc.dcc.submission.config.PersistenceConfig;
+import org.icgc.dcc.submission.config.ServerConfig;
+import org.icgc.dcc.submission.config.ValidationConfig;
+import org.icgc.dcc.submission.fs.FileSystemConfig;
+import org.icgc.dcc.submission.http.jersey.InjectConfig;
+import org.icgc.dcc.submission.http.jersey.JerseyConfig;
+import org.icgc.dcc.submission.repository.RepositoryConfig;
+import org.icgc.dcc.submission.service.ServiceConfig;
+import org.icgc.dcc.submission.sftp.SftpConfig;
+import org.icgc.dcc.submission.shiro.ShiroConfig;
+import org.icgc.dcc.submission.test.TestConfig;
+import org.icgc.dcc.submission.web.WebConfig;
 import org.junit.After;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-import com.google.common.collect.ImmutableList;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Module;
-import com.google.inject.util.Modules;
 
 public abstract class ResourceTest extends JerseyTest {
 
@@ -45,7 +39,7 @@ public abstract class ResourceTest extends JerseyTest {
   private static final String AUTH_VALUE = "X-DCC-Auth " + encodeAsString("admin:adminspasswd");
   protected static final String MIME_TYPE = APPLICATION_JSON;
 
-  protected Injector injector;
+  private AnnotationConfigApplicationContext context;
 
   @After
   public void after() {
@@ -60,25 +54,28 @@ public abstract class ResourceTest extends JerseyTest {
 
   @Override
   protected Application configure() {
-    List<Module> modules = newArrayList(
-        // Infrastructure modules
-        (Module) new ConfigModule(TEST_PROPERTIES),
-        (Module) new CoreModule(),
-        (Module) new JerseyModule(),
-        (Module) new WebModule(),
-        (Module) new ShiroModule(),
-        (Module) new PersistenceModule(),
-        (Module) new FileSystemModule(),
-        (Module) new SftpModule(),
+    this.context = new AnnotationConfigApplicationContext();
 
-        // Business modules
-        (Module) new ValidationModule());
+    context.register(
+        TestConfig.class,
+        InjectConfig.class,
+        JerseyConfig.class,
+        ShiroConfig.class,
+        WebConfig.class,
+        PersistenceConfig.class,
+        FileSystemConfig.class,
+        RepositoryConfig.class,
+        ServiceConfig.class,
+        SftpConfig.class,
+        ValidationConfig.class,
+        ServerConfig.class);
 
-    // modules.addAll(configureModules());
+    register();
+    context.refresh();
 
-    injector = Guice.createInjector(Modules.override(modules).with(configureModules()));
+    context.getBeanFactory().autowireBean(this);
 
-    return injector.getInstance(ResourceConfig.class);
+    return context.getBean(ResourceConfig.class);
   }
 
   @Override
@@ -94,10 +91,17 @@ public abstract class ResourceTest extends JerseyTest {
   }
 
   /**
-   * To be overriden if more modules are necessary (and to mock them for instance).
+   * To be overriden if more configs are necessary (and to mock them for instance).
    */
-  protected Collection<? extends Module> configureModules() {
-    return ImmutableList.of(EMPTY_MODULE);
+  protected void register() {
+  }
+
+  protected <T> T getBean(Class<T> clazz) {
+    return context.getBean(clazz);
+  }
+
+  protected void register(Class<?> clazz) {
+    context.register(clazz);
   }
 
 }

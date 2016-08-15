@@ -15,23 +15,57 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.service;
+package org.icgc.dcc.submission.sftp;
 
-import com.google.common.util.concurrent.Service;
-import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
-import com.google.inject.multibindings.Multibinder;
+import javax.annotation.PostConstruct;
 
-public abstract class AbstractDccModule extends AbstractModule {
+import org.apache.sshd.SshServer;
+import org.apache.sshd.server.PasswordAuthenticator;
+import org.icgc.dcc.submission.config.AbstractConfig;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-  /**
-   * Creates a singleton binding for a {@code Service} class. This will allow managing the service's lifecycle
-   * automatically.
-   */
-  protected void bindService(Class<? extends Service> serviceClass) {
-    bind(serviceClass).in(Singleton.class);
-    Multibinder<Service> servicesBinder = Multibinder.newSetBinder(binder(), Service.class);
-    servicesBinder.addBinding().to(serviceClass);
+import com.google.common.eventbus.EventBus;
+
+/**
+ * Dependency injection module for the SFTP subsystem.
+ */
+@Configuration
+public class SftpConfig extends AbstractConfig {
+
+  @Bean
+  public EventBus eventBus() {
+    return new EventBus();
+  }
+
+  @Bean
+  public SftpContext sftpContext() {
+    return singleton(SftpContext.class);
+  }
+
+  @Bean
+  public PasswordAuthenticator passwordAuthenicator() {
+    return singleton(SftpAuthenticator.class);
+  }
+
+  @Bean
+  public SftpServerService sftpServerService() {
+    return singleton(SftpServerService.class);
+  }
+
+  @Bean
+  public SshServerProvider sshServerProvider() {
+    return singleton(SshServerProvider.class);
+  }
+
+  @Bean
+  public SshServer sshServer() {
+    return sshServerProvider().get();
+  }
+
+  @PostConstruct
+  public void init() {
+    eventBus().register(passwordAuthenicator());
   }
 
 }

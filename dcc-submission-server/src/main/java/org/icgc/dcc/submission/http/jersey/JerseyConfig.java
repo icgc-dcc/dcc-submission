@@ -15,35 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission;
+package org.icgc.dcc.submission.http.jersey;
 
-import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.checkExistence;
-import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.getFileStatus;
-import static org.junit.Assert.assertTrue;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.icgc.dcc.submission.config.AbstractConfig;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientFactory;
+@Configuration
+public class JerseyConfig extends AbstractConfig {
 
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-
-import lombok.SneakyThrows;
-
-public class BaseIntegrationTest {
-
-  static {
-    // See http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
-    System.setProperty("java.security.krb5.realm", "OX.AC.UK");
-    System.setProperty("java.security.krb5.kdc", "kdc0.ox.ac.uk:kdc1.ox.ac.uk");
+  @Bean
+  public ResourceConfig resourceConfig() {
+    return new ResourceConfig();
   }
 
-  protected final Client client = ClientFactory.newClient();
-
-  @SneakyThrows
-  protected static void assertEmptyFile(FileSystem fileSystem, String dir, String path) {
-    Path errorFile = new Path(dir, path);
-    assertTrue("Expected file does not exist: " + path, checkExistence(fileSystem, errorFile));
-    assertTrue("Expected empty file: " + path, getFileStatus(fileSystem, errorFile).get().getLen() == 0);
+  @Bean
+  public JerseyHandler jerseyHandler() {
+    return singleton(JerseyHandler.class);
   }
 
 }

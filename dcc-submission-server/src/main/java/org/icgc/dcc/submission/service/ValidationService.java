@@ -51,11 +51,11 @@ import org.icgc.dcc.submission.validation.core.Validation;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.AbstractScheduledService;
-import com.google.inject.Inject;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -69,7 +69,7 @@ import lombok.extern.slf4j.Slf4j;
  * responsible for mediating validation cancellation requests coming from the web layer.
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ValidationService extends AbstractScheduledService {
 
   /**

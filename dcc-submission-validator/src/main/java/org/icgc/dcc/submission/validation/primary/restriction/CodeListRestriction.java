@@ -35,11 +35,11 @@ import org.icgc.dcc.submission.validation.primary.core.RestrictionTypeSchema.Fie
 import org.icgc.dcc.submission.validation.primary.core.RestrictionTypeSchema.ParameterType;
 import org.icgc.dcc.submission.validation.primary.core.RowBasedPlanElement;
 import org.icgc.dcc.submission.validation.primary.planner.PlanningException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import com.google.inject.Inject;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -104,7 +104,7 @@ public class CodeListRestriction implements RowBasedPlanElement {
 
     private final RestrictionContext context;
 
-    @Inject
+    @Autowired
     public Type(RestrictionContext context) {
       this.context = context;
     }

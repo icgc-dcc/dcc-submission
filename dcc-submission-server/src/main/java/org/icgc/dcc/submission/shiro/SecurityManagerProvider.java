@@ -19,22 +19,25 @@ package org.icgc.dcc.submission.shiro;
 
 import java.util.Collection;
 
+import javax.inject.Provider;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.DefaultSessionStorageEvaluator;
 import org.apache.shiro.mgt.DefaultSubjectDAO;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.Realm;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SecurityManagerProvider implements Provider<SecurityManager> {
 
-  @Inject
-  private Collection<Realm> realms;
+  @NonNull
+  private final Collection<Realm> realms;
 
   @Override
   public SecurityManager get() {

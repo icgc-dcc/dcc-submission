@@ -37,15 +37,14 @@ import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
-
-import com.google.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.NonNull;
 import lombok.val;
 
 public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
 
-  @Inject
+  @Autowired
   public ReleaseRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
     super(morphia, datastore, release);
   }

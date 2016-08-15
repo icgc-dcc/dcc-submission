@@ -33,9 +33,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.release.model.Release;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Joiner;
-import com.google.inject.Inject;
 
 import lombok.NonNull;
 import lombok.val;
@@ -52,7 +52,7 @@ public class DccFileSystem {
   private final FileSystem fileSystem;
   private final String rootStringPath;
 
-  @Inject
+  @Autowired
   public DccFileSystem(@NonNull SubmissionProperties properties, @NonNull FileSystem fileSystem) {
     this.fileSystem = fileSystem;
 

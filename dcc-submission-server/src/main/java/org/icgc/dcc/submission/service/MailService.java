@@ -44,9 +44,9 @@ import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.core.model.Feedback;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.core.state.State;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.inject.Inject;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -55,7 +55,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class MailService {
 
   /**

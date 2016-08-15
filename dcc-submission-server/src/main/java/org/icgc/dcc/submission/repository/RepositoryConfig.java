@@ -15,59 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.cascading;
+package org.icgc.dcc.submission.repository;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.common.cascading.Tuples2.sameContent;
+import org.icgc.dcc.submission.config.AbstractConfig;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import java.util.Iterator;
+@Configuration
+public class RepositoryConfig extends AbstractConfig {
 
-import cascading.CascadingTestCase;
-import cascading.operation.Buffer;
-import cascading.operation.Function;
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
-import cascading.tuple.TupleEntry;
-
-/**
- * Create dcc-test-hadoop (see DCC-2415)
- */
-public class CascadingTestUtils {
-
-  public static Iterator<TupleEntry> invokeFunction(Function<?> function, TupleEntry[] entries, Fields resultFields) {
-    return CascadingTestCase
-        .invokeFunction(
-            function,
-            entries,
-            resultFields)
-        .entryIterator();
+  @Bean
+  public CodeListRepository codeListRepository() {
+    return singleton(CodeListRepository.class);
   }
 
-  public static Iterator<TupleEntry> invokeBuffer(Buffer<?> buffer, TupleEntry[] entries, Fields resultFields) {
-    return CascadingTestCase
-        .invokeBuffer(
-            buffer,
-            entries,
-            resultFields)
-        .entryIterator();
+  @Bean
+  public DictionaryRepository dictionaryRepository() {
+    return singleton(DictionaryRepository.class);
   }
 
-  public static void checkOperationResults(Iterator<TupleEntry> iterator, Tuple[] resultTuples) {
-    for (int i = 0; i < resultTuples.length; i++) {
-      assertThat(iterator.hasNext());
-      TupleEntry entry = iterator.next();
-      Tuple actualTuple = entry.getTuple();
-      Tuple expectedTuple = resultTuples[i];
-      assertTrue(
-          String.format("%s != %s",
-              actualTuple,
-              expectedTuple),
-          sameContent(
-              entry.getTuple(),
-              expectedTuple));
-    }
-    assertFalse(iterator.hasNext());
+  @Bean
+  public ProjectDataTypeReportRepository projectDataTypeReportRepository() {
+    return singleton(ProjectDataTypeReportRepository.class);
   }
+
+  @Bean
+  public ProjectRepository projectRepository() {
+    return singleton(ProjectRepository.class);
+  }
+
+  @Bean
+  public ProjectSequencingStrategyReportRepository projectSequencingStrategyReportRepository() {
+    return singleton(ProjectSequencingStrategyReportRepository.class);
+  }
+
+  @Bean
+  public ReleaseRepository releaseRepository() {
+    return singleton(ReleaseRepository.class);
+  }
+
+  @Bean
+  public UserRepository userRepository() {
+    return singleton(UserRepository.class);
+  }
+
 }

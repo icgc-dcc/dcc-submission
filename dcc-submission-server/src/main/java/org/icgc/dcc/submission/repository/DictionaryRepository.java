@@ -30,16 +30,16 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.QDictionary;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.inject.Inject;
 
 import lombok.NonNull;
 import lombok.val;
 
 public class DictionaryRepository extends AbstractRepository<Dictionary, QDictionary> {
 
-  @Inject
+  @Autowired
   public DictionaryRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
     super(morphia, datastore, dictionary);
   }

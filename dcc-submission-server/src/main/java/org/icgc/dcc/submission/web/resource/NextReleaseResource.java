@@ -64,11 +64,11 @@ import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Authorizations;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 import org.icgc.dcc.submission.web.util.Responses;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HttpHeaders;
-import com.google.inject.Inject;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -80,13 +80,13 @@ public class NextReleaseResource {
 
   private static final Joiner JOINER = Joiner.on("/");
 
-  @Inject
+  @Autowired
   private SubmissionProperties properties;
-  @Inject
+  @Autowired
   private ReleaseService releaseService;
-  @Inject
+  @Autowired
   private ValidationService validationScheduler;
-  @Inject
+  @Autowired
   private SystemService systemService;
 
   @GET

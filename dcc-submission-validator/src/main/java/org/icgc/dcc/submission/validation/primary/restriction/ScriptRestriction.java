@@ -174,7 +174,7 @@ public class ScriptRestriction implements RowBasedPlanElement {
 
   @SuppressWarnings("rawtypes")
   @Slf4j
-  public static class ScriptFunction extends BaseOperation<ScriptContext>implements Function<ScriptContext> {
+  public static class ScriptFunction extends BaseOperation<ScriptContext> implements Function<ScriptContext> {
 
     private static final Joiner.MapJoiner VARIABLE_JOINER = Joiner.on(", ").withKeyValueSeparator(" = ")
         .useForNull("null");

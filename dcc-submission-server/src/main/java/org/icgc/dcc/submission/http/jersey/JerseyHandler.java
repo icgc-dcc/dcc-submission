@@ -23,8 +23,7 @@ import org.glassfish.jersey.server.ApplicationHandler;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.http.HttpHandlerProvider;
-
-import com.google.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +33,7 @@ import lombok.val;
  * A {@link HttpHandlerProvider} that will mount {@code Jersey} on a particular path. The path is configured through the
  * {@code http.ws.path} parameter.
  */
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class JerseyHandler implements HttpHandlerProvider {
 
   @NonNull

@@ -43,8 +43,8 @@ import org.icgc.dcc.submission.service.ProjectService;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Responses;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.inject.Inject;
 import com.mongodb.MongoException.DuplicateKey;
 
 import lombok.val;
@@ -56,9 +56,9 @@ import lombok.extern.slf4j.Slf4j;
 @Consumes("application/json")
 public class ProjectResource {
 
-  @Inject
+  @Autowired
   private ProjectService projectService;
-  @Inject
+  @Autowired
   private ReleaseService releaseService;
 
   @GET

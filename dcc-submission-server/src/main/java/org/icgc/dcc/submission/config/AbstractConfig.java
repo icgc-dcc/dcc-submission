@@ -15,24 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.shiro;
+package org.icgc.dcc.submission.config;
 
-import java.util.Collection;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.GenericApplicationContext;
 
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.realm.Realm;
-import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
+public class AbstractConfig {
 
-import com.google.inject.AbstractModule;
-import com.google.inject.TypeLiteral;
+  @Autowired
+  GenericApplicationContext context;
 
-public class ShiroModule extends AbstractModule {
-
-  @Override
-  protected void configure() {
-    bind(new TypeLiteral<Collection<Realm>>() {}).toProvider(RealmProvider.class);
-    bind(SecurityManager.class).toProvider(SecurityManagerProvider.class).asEagerSingleton();
-    bind(UsernamePasswordAuthenticator.class).to(ShiroPasswordAuthenticator.class);
+  protected <T> T singleton(Class<T> clazz) {
+    return context.getBeanFactory().createBean(clazz);
   }
 
 }

@@ -24,14 +24,13 @@ import org.icgc.dcc.submission.core.model.QUser;
 import org.icgc.dcc.submission.core.model.User;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
-
-import com.google.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.NonNull;
 
 public class UserRepository extends AbstractRepository<User, QUser> {
 
-  @Inject
+  @Autowired
   public UserRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
     super(morphia, datastore, user);
   }

@@ -126,7 +126,7 @@ public class KeyValidationContext extends AbstractValidationContext {
 
   private SubmissionPlatformStrategy createPlatformStrategy() {
     val provider =
-        new SubmissionPlatformStrategyFactoryProvider(getProperties().getHadoop().getProperties(), getFileSystem());
+        new SubmissionPlatformStrategyFactoryProvider(getProperties(), getFileSystem());
     val factory = provider.get();
 
     // Reuse primary validation component

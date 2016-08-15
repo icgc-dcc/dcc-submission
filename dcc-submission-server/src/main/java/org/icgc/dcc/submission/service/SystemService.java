@@ -19,13 +19,12 @@ package org.icgc.dcc.submission.service;
 
 import org.icgc.dcc.submission.core.model.Status;
 import org.icgc.dcc.submission.sftp.SftpServerService;
-
-import com.google.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SystemService {
 
   @NonNull

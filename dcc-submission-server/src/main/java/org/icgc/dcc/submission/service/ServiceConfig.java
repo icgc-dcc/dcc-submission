@@ -15,21 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.fs;
+package org.icgc.dcc.submission.service;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.submission.config.AbstractConfig;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
+@Configuration
+public class ServiceConfig extends AbstractConfig {
 
-public class FileSystemModule extends AbstractModule {
+  @Bean
+  public DictionaryService dictionaryService() {
+    return singleton(DictionaryService.class);
+  }
 
-  @Override
-  protected void configure() {
-    bind(Configuration.class).toInstance(new Configuration());
-    bind(FileSystem.class).toProvider(SubmissionFileSystemProvider.class).in(Singleton.class);
-    bind(DccFileSystem.class).in(Singleton.class);
+  @Bean
+  public MailService mailService() {
+    return singleton(MailService.class);
+  }
+
+  @Bean
+  public ProjectService projectService() {
+    return singleton(ProjectService.class);
+  }
+
+  @Bean
+  public ReleaseService releaseService() {
+    return singleton(ReleaseService.class);
+  }
+
+  @Bean
+  public SystemService systemService() {
+    return singleton(SystemService.class);
+  }
+
+  @Bean
+  public UserService userService() {
+    return singleton(UserService.class);
+  }
+
+  @Bean
+  public ValidationService validationService() {
+    return singleton(ValidationService.class);
   }
 
 }
