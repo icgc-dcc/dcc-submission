@@ -415,12 +415,12 @@ h3.change-addition-header {
 }
 
 .jsondiffpatch-delta {
-  width: 100%;
-  overflow: scroll;
+  width: 100% !important;
+  overflow: scroll !important;
 }
 
 .well{
-  border-radius: 0px;
-  margin-bottom: 0px;
-  background-color: #FFF;
+  border-radius: 0px !important;
+  margin-bottom: 0px !important;
+  background-color: #FFF !important;
 }
