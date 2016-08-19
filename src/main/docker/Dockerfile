@@ -12,6 +12,9 @@ MAINTAINER ICGC <dcc-support@icgc.org>
 # Base image doesn't start in root
 WORKDIR /
 
+# Avoid ERROR: invoke-rc.d: policy-rc.d denied execution of start.
+RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d
+
 #
 # Install MongoDB
 #
@@ -45,19 +48,22 @@ RUN sudo apt-get install -y hadoop-0.20-conf-pseudo
 # Copy updated config files
 COPY conf/core-site.xml /etc/hadoop/conf/core-site.xml
 COPY conf/hdfs-site.xml /etc/hadoop/conf/hdfs-site.xml
+COPY conf/mapred-site.xml /etc/hadoop/conf/mapred-site.xml
 COPY conf/hadoop-env.sh /etc/hadoop/conf/hadoop-env.sh
-COPY conf/fair-scheduler.xml /etc/hadoop/conf/fair-scheduler.xml
 
-# Format HDFS
-RUN sudo -u hdfs hdfs namenode -format
+# Format the namenode if it's not already done
+RUN su -l -c 'mkdir -p /var/lib/hadoop-hdfs/hdfs-data/namenode /var/lib/hadoop-hdfs/hdfs-data/datanode && hdfs namenode -format -nonInteractive' hdfs
+
+# Setup other Hadoop directories
+RUN su -l -c 'mkdir -p /var/lib/hadoop-hdfs/dn_socket' hdfs
 
 #
 # Setup
 #
 
 # Execution script
-COPY conf/run.sh /usr/bin/run.sh
-RUN chmod +x /usr/bin/run.sh
+COPY bin/entrypoint.sh /usr/bin/entrypoint.sh
+RUN chmod +x /usr/bin/entrypoint.sh
 
 # Mongo
 EXPOSE 27017 28017
@@ -69,10 +75,11 @@ EXPOSE 8020 50070
 EXPOSE 50010 50020 50075
 
 # JobTracker (M/R)
-EXPOSE 50030 50060
+EXPOSE 8021 50030 50060
 
 #
 # Entrypoint
 #
 
-CMD ["/usr/bin/run.sh"]
+# docker run -it -p 27017:27017 -p 8020:8020 -p 8021:8021 -p 50070:50070 -p 50010:50010 -p 50020:50020 -p 50075:50075 -p 50030:50030 -p 50060:50060 dcc-submission
+CMD ["/usr/bin/entrypoint.sh"]

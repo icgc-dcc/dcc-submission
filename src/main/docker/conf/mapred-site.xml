@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
   <property>
-    <name>fs.defaultFS</name>
-    <value>hdfs://localhost:8020/</value>
+    <name>mapred.job.tracker</name>
+    <value>0.0.0.0:8021</value>
   </property>
 </configuration>

@@ -26,15 +26,14 @@ import javax.ws.rs.client.ClientFactory;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.common.hadoop.util.HadoopProperties;
 
 import lombok.SneakyThrows;
 
 public class BaseIntegrationTest {
 
   static {
-    // See http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
-    System.setProperty("java.security.krb5.realm", "OX.AC.UK");
-    System.setProperty("java.security.krb5.kdc", "kdc0.ox.ac.uk:kdc1.ox.ac.uk");
+    HadoopProperties.setHadoopUserNameProperty();
   }
 
   protected final Client client = ClientFactory.newClient();
