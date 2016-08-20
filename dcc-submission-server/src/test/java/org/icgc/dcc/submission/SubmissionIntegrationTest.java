@@ -129,6 +129,13 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private static final boolean LOCAL = true;
 
   /**
+   * Switch that will change environments to "docker" if {@code true} and "embeeded" if {@code false}.
+   * <p>
+   * Only applieds when {@link #LOCAL} is {@code false}.
+   */
+  private static final boolean DOCKER = true;
+
+  /**
    * Test file system.
    */
   private static final String DESTINATION_DIR_NAME = "submission";
@@ -313,24 +320,43 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   public void setUp() throws IOException {
     banner("Setting up ...");
 
+    val config = new Configuration();
     if (LOCAL) {
       status("init", "Setting up local environment...");
-      fileSystem = FileSystem.get(new Configuration());
+      fileSystem = FileSystem.get(config);
 
       status("init", "Deleting local root filesystem...");
       fileSystem.delete(new Path(submission), true);
     } else {
-      // Setup Hadoop infrastructure
-      status("init", "Setting up Hadoop environment...");
-      hadoop = new MiniHadoop(new Configuration(), 1, 1, new File("/tmp/hadoop"));
-      fileSystem = hadoop.getFileSystem();
+      if (!DOCKER) {
+        // Setup Embedded Hadoop infrastructure
+        status("init", "Setting up embedded Hadoop environment...");
+        hadoop = new MiniHadoop(config, 1, 1, new File("/tmp/hadoop"));
+        fileSystem = hadoop.getFileSystem();
 
-      // Config overrides for {@code SubmissionMain} consumption
-      val jobConf = hadoop.createJobConf();
-      System.setProperty("fs.url", jobConf.get("fs.defaultFS"));
-      System.setProperty("hadoop.fs.defaultFS", jobConf.get("fs.defaultFS"));
-      System.setProperty("hadoop.mapred.job.tracker", jobConf.get("mapred.job.tracker"));
-      AppUtils.setTestEnvironment();
+        // Config overrides for {@code SubmissionMain} consumption
+        val jobConf = hadoop.createJobConf();
+        System.setProperty("fs.url", jobConf.get("fs.defaultFS"));
+        System.setProperty("hadoop.fs.defaultFS", jobConf.get("fs.defaultFS"));
+        System.setProperty("hadoop.mapred.job.tracker", jobConf.get("mapred.job.tracker"));
+        AppUtils.setTestEnvironment();
+      } else {
+        // Setup Docker Hadoop infrastructure
+        // Note: This is only useful for setting up mongo, staging files, etc. and trying to run a MR job will fail due
+        // to no jar!
+        status("init", "Setting up Docker Hadoop environment...");
+        val fsUrl = "hdfs://localhost:8020";
+        config.set("fs.defaultFS", fsUrl);
+        fileSystem = FileSystem.get(config);
+
+        status("init", "Deleting root filesystem...");
+        fileSystem.delete(new Path(submission), true);
+
+        // Config overrides for {@code SubmissionMain} consumption
+        System.setProperty("fsUrl", fsUrl);
+        System.setProperty("hadoop.fs.defaultFS", fsUrl);
+        System.setProperty("hadoop.mapred.job.tracker", "localhost:8021");
+      }
     }
 
     status("init", "Dropping database...");
@@ -374,9 +400,11 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   public void testSystem() throws Exception {
     status("test", "Starting test...");
     try {
+      // Setup and staging of data
       seedSystem();
       adminCreatesRelease();
       userSubmitsFiles();
+
       userValidates();
       adminTweaksCodeListAndTerms();
       adminRevalidates();

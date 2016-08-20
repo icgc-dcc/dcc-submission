@@ -8,27 +8,43 @@
 # Usage: 
 #   ./entrypoint.sh
 
-echo '\n*** Starting Mongo...\n'
+echo
+echo '*** Starting Mongo...'
+echo
+
 /usr/bin/mongod --fork --logpath /var/log/mongod.log
 
-# Clear all logs
-echo '\n*** Cleaning logs...\n'
+echo
+echo '*** Cleaning logs...'
+echo
+
 rm -fr /var/log/hadoop-*/*
 
-# Start HDFS
-echo '\n*** Starting HDFS...\n'
+echo
+echo '*** Starting HDFS...'
+echo
+
 service hadoop-hdfs-namenode start
 service hadoop-hdfs-datanode start
 
-echo '\n*** Initializing HDFS...\n'
+echo
+echo '*** Initializing HDFS...'
+echo
+
 su -l -c 'hadoop fs -mkdir -p hdfs:///tmp/hadoop-mapred/mapred/system' hdfs
 su -l -c 'hadoop fs -chown -R mapred:hadoop hdfs:///tmp/hadoop-mapred' hdfs
 
-# Hadoop 0.20 Job Tracker
-echo '\n*** Starting M/R...\n'
+echo
+echo '*** Starting M/R...'
+echo
+
 service hadoop-0.20-mapreduce-tasktracker start
 service hadoop-0.20-mapreduce-jobtracker start
 
-echo '\n*** Finished!\n'
+echo
+echo '*** Finished!'
+echo
+
+echo '...entering bash shell'
 bash
 	

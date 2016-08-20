@@ -207,7 +207,7 @@ public class SubmissionMain {
    */
   @VisibleForTesting
   public static void shutdown() {
-    instance.stop();
+    if (instance != null) instance.stop();
   }
 
 }
