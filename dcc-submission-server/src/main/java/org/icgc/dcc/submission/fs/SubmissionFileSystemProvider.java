@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.fs;
 
 import static org.icgc.dcc.common.hadoop.fs.Configurations.addFsDefault;
 import static org.icgc.dcc.common.hadoop.fs.FileSystems.getFileSystem;
-import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.getConfigurationDescription;
 
 import javax.inject.Provider;
 
@@ -45,7 +44,7 @@ public class SubmissionFileSystemProvider implements Provider<FileSystem> {
   @Override
   public FileSystem get() {
     val fs = getFileSystem(addFsDefault(configuration, properties.getFsUrl()));
-    log.info("Hadoop configuration: '{}'", getConfigurationDescription(fs.getConf()));
+    log.info("Hadoop configuration: '{}'", fs);
 
     return fs;
   }

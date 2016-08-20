@@ -31,6 +31,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.List;
 import java.util.Set;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -47,6 +48,7 @@ import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.AbstractService;
 
 import lombok.Cleanup;
@@ -111,7 +113,7 @@ public class HttpServerService extends AbstractService {
     notifyStopped();
   }
 
-  private void addHandlers(Set<String> resources) {
+  private void addHandlers(List<String> resources) {
     val serverConfig = server.getServerConfiguration();
 
     for (val provider : handlerProviders) {
@@ -245,8 +247,8 @@ public class HttpServerService extends AbstractService {
 
   private static class StaticCorsHttpHandler extends StaticHttpHandler {
 
-    private StaticCorsHttpHandler(Set<String> docRoots) {
-      super(docRoots);
+    private StaticCorsHttpHandler(List<String> docRoots) {
+      super(ImmutableSet.copyOf(docRoots));
       setFileCacheEnabled(false);
     }
 

@@ -23,6 +23,9 @@ import static com.google.common.util.concurrent.Service.State.TERMINATED;
 
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.util.concurrent.Service;
@@ -40,12 +43,14 @@ public class DccRuntime {
   @NonNull
   private final Set<Service> services;
 
+  @PostConstruct
   public void start() {
     for (Service service : services) {
       tryStartService(service);
     }
   }
 
+  @PreDestroy
   public void stop() {
     for (Service service : services) {
       tryStopService(service);

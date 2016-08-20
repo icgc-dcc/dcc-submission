@@ -19,12 +19,10 @@ package org.icgc.dcc.submission.core.config;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Sets.newHashSet;
 
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import lombok.Data;
 
@@ -137,7 +135,7 @@ public class SubmissionProperties {
     String listen;
     Integer port;
     Boolean ssl;
-    Set<String> resources = newHashSet();
+    List<String> resources = newArrayList();
     String path;
 
   }

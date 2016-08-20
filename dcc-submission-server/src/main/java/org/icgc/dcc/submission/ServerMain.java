@@ -15,45 +15,20 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.config;
+package org.icgc.dcc.submission;
 
-import java.util.Set;
-import java.util.logging.LogManager;
+import static org.springframework.boot.SpringApplication.run;
 
-import org.icgc.dcc.submission.core.DccRuntime;
-import org.icgc.dcc.submission.core.config.SubmissionProperties;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.slf4j.bridge.SLF4JBridgeHandler;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import com.google.common.util.concurrent.Service;
+/**
+ * Application entry point.
+ */
+@SpringBootApplication
+public class ServerMain {
 
-@Configuration
-public class ServerConfig extends AbstractConfig {
-
-  {
-    // Reset java.util.logging settings
-    LogManager.getLogManager().reset();
-    // Redirect java.util.logging to SLF4J
-    SLF4JBridgeHandler.install();
-  }
-
-  @Bean
-  @ConfigurationProperties
-  public SubmissionProperties submissionProperties() {
-    return new SubmissionProperties();
-  }
-
-  @Bean
-  public DccRuntime dccRuntime(Set<Service> services) {
-    return new DccRuntime(services);
-  }
-
-  @Bean
-  public DccFileSystem dccFileSystem() {
-    return singleton(DccFileSystem.class);
+  public static void main(String... args) {
+    run(ServerMain.class, args);
   }
 
 }
