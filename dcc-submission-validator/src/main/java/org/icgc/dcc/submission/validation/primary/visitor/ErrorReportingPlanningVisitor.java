@@ -151,7 +151,7 @@ public class ErrorReportingPlanningVisitor extends ReportingPlanningVisitor {
 
       @SneakyThrows
       private MappingIterator<TupleState> getTupleStates(InputStream reportInputStream) {
-        val reader = new ObjectMapper().reader().withType(TupleState.class);
+        val reader = new ObjectMapper().reader().forType(TupleState.class);
 
         return reader.readValues(reportInputStream);
       }

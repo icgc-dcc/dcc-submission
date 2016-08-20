@@ -221,8 +221,18 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <!-- Versions - DCC -->
     <dcc-common.version>4.0.17</dcc-common.version>
 
-    <!-- Versions - Spring -->
+    <!-- Spring -->
     <spring.version>4.3.2.RELEASE</spring.version>
+    <!-- Spring Boot -->
+    <spring-boot.version>1.4.0.RELEASE</spring-boot.version>
+    <!-- Spring Boot - Logging -->
+    <logback.version>1.1.7</logback.version>
+    <!-- Spring Boot - H2 -->
+    <h2.version>1.4.192</h2.version>
+    <!-- Spring Boot - Jackson -->
+    <jackson.version>2.7.5</jackson.version>    
+    
+    <jackson-yaml.version>${jackson.version}</jackson-yaml.version>
     
     <!-- Versions - Database -->
     <orientdb.version>2.1.9</orientdb.version>

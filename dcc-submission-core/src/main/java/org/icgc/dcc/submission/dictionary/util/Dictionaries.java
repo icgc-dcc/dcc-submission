@@ -61,9 +61,9 @@ public class Dictionaries {
   /**
    * Constants.
    */
-  private static final ObjectReader FILE_SCHEMA_READER = Jackson.DEFAULT.reader(FileSchema.class);
-  private static final ObjectReader DICTIONARY_SCHEMA_READER = Jackson.DEFAULT.reader(Dictionary.class);
-  private static final ObjectReader CODELIST_SCHEMA_READER = Jackson.DEFAULT.reader(CodeList.class);
+  private static final ObjectReader FILE_SCHEMA_READER = Jackson.DEFAULT.readerFor(FileSchema.class);
+  private static final ObjectReader DICTIONARY_SCHEMA_READER = Jackson.DEFAULT.readerFor(Dictionary.class);
+  private static final ObjectReader CODELIST_SCHEMA_READER = Jackson.DEFAULT.readerFor(CodeList.class);
 
   @SneakyThrows
   public static FileSchema readResourcesFileSchema(FileType fileType) {

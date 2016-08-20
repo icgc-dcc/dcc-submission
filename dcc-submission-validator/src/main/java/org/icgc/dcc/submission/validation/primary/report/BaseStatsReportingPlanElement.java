@@ -104,8 +104,7 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
 
   @Override
   public String getElementName() {
-    return optionalSummaryType.isPresent() ?
-        optionalSummaryType.get().getDescription() : COMPLETENESS;
+    return optionalSummaryType.isPresent() ? optionalSummaryType.get().getDescription() : COMPLETENESS;
   }
 
   @Override
@@ -199,7 +198,7 @@ public abstract class BaseStatsReportingPlanElement implements ReportingPlanElem
     private Iterator<FieldSummary> getFieldSummaries(InputStream reportIntputStream) {
       return MAPPER
           .reader()
-          .withType(FieldSummary.class)
+          .forType(FieldSummary.class)
           .readValues(reportIntputStream);
     }
 

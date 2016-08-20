@@ -96,7 +96,7 @@ public class DictionaryService {
       for (val release : dictReleases) {
         releaseList.add(release.getName());
       }
-      dictJson.put("releases", releaseList);
+      dictJson.set("releases", releaseList);
 
       response.add(dictJson);
     }
