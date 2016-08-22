@@ -11,6 +11,7 @@ module.exports = {
     'babel-plugin-transform-class-properties',
     'babel-plugin-transform-object-rest-spread',
     'babel-plugin-add-module-exports',
+    'babel-plugin-transform-async-to-generator',
   ].map(require.resolve).concat([
     [require.resolve('babel-plugin-transform-runtime'), {
       helpers: false,
