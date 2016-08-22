@@ -17,8 +17,9 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 -->
 
 <configuration debug="false">
-  <property name="log.name" value="dcc-server" />
-  <property name="log.debug.name" value="dcc-server.debug" />
+  <property name="log.dir" value="${logging.path:-/tmp/dcc-submission-server/logs}" />
+  <property name="log.name" value="dcc-submission-server" />
+  <property name="log.debug.name" value="dcc-submission-server.debug" />
   <property name="pattern" value="%date{ISO8601} [%thread] %-5level %logger{20} - %msg%n" />
 
   <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">

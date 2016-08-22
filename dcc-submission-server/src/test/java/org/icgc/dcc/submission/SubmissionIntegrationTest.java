@@ -337,8 +337,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
         // Config overrides for {@code SubmissionMain} consumption
         val jobConf = hadoop.createJobConf();
         System.setProperty("fs.url", jobConf.get("fs.defaultFS"));
-        System.setProperty("hadoop.fs.defaultFS", jobConf.get("fs.defaultFS"));
-        System.setProperty("hadoop.mapred.job.tracker", jobConf.get("mapred.job.tracker"));
+        System.setProperty("hadoop.properties.mapred.job.tracker", jobConf.get("mapred.job.tracker"));
         AppUtils.setTestEnvironment();
       } else {
         // Setup Docker Hadoop infrastructure
@@ -366,7 +365,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     smtpServer = SimpleSmtpServer.start(Integer.valueOf(TEST_PROPERTIES.getMail().getSmtpPort()));
 
     status("init", "Starting submission server...");
-    SubmissionMain.main("external", TEST_CONFIG_FILE.getAbsolutePath());
+    ServerMain.main("--spring.config.location=" + TEST_CONFIG_FILE.getAbsolutePath());
   }
 
   @After
@@ -385,7 +384,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("shutdown", "SMTP server shut down.");
 
     status("shutdown", "Shutting down submission server...");
-    SubmissionMain.shutdown();
+    ServerMain.stop();
     status("shutdown", "Submission server shut down.");
 
     if (hadoop != null) {

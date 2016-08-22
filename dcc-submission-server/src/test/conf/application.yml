@@ -34,10 +34,10 @@ sftp:
   nioWorkers : 20
   # key: "<Fill in public key here, without algorithm prefix>"
 
-hadoop: # Hadoop properties MUST be quoted here, we don't want the HOCON feature in that case
+hadoop: 
   # Everything set below this node ends up in the JobConf
   properties:
-    fs.defaultFS: file:///
+    "fs.defaultFS": ${fsUrl}
 
     # Configure the job tracker
     "mapred.job.tracker": localhost
