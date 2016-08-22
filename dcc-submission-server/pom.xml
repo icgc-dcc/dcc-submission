@@ -301,18 +301,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
             <version>${spring-boot.version}</version>
           </dependency>
         </dependencies>
-        <configuration combine.self="override">
-          <filters>
-            <filter>
-              <artifact>*:*</artifact>
-              <excludes>
-                <exclude>META-INF/*.SF</exclude>
-                <exclude>META-INF/*.DSA</exclude>
-                <exclude>META-INF/*.RSA</exclude>
-              </excludes>
-            </filter>
-          </filters>
-        </configuration>
         <executions>
           <execution>
             <phase>package</phase>
@@ -330,16 +318,13 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/spring.handlers</resource>
                 </transformer>
-                <transformer implementation="org.springframework.boot.maven.PropertiesMergingResourceTransformer">
+                <transformer implementation="org.springframework.boot.maven.PropertiesMergingResourceTransformer" combine.self="override">
                   <resource>META-INF/spring.factories</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/spring.schemas</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>${main.class}</mainClass>
-                </transformer>
               </transformers>
             </configuration>
           </execution>
@@ -383,13 +368,13 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
               <value>src/main/conf/logback.xml</value>
             </systemProperty>
             <systemProperty>
-              <key>log.dir</key>
+              <key>logging.path</key>
               <value>target/logs</value>
             </systemProperty>
           </systemProperties>
           <arguments>
-            <argument>external</argument>
-            <argument>src/test/conf/application.conf</argument>
+            <argument>--spring.config.location</argument>
+            <argument>src/test/application/application.yml</argument>
           </arguments>
         </configuration>
       </plugin>
