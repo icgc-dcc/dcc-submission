@@ -15,60 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.http.jersey;
+package org.icgc.dcc.submission.controller;
 
-import java.lang.reflect.Type;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import javax.inject.Singleton;
+public class ResponseEntities {
 
-import org.glassfish.hk2.api.Injectee;
-import org.glassfish.hk2.api.InjectionResolver;
-import org.glassfish.hk2.api.ServiceHandle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
-/**
- * Used to register an {@code InjectionResolver} that will resolve Guice's {@code Inject} annotation.
- */
-@Configuration
-public class InjectConfig {
-
-  @Bean
-  public InjectionResolver<?> injectionResolver(ApplicationContext context) {
-    return new SpringInjectionResolver(context);
-  }
-
-  @Singleton
-  @RequiredArgsConstructor
-  public static class SpringInjectionResolver implements InjectionResolver<Autowired> {
-
-    @NonNull
-    private final ApplicationContext context;
-
-    @Override
-    public boolean isConstructorParameterIndicator() {
-      return true;
-    }
-
-    @Override
-    public boolean isMethodParameterIndicator() {
-      return false;
-    }
-
-    @Override
-    public Object resolve(Injectee injectee, ServiceHandle<?> root) {
-      Type type = injectee.getRequiredType();
-      if (type instanceof Class) {
-        return context.getBean((Class<?>) type);
-      }
-      throw new IllegalStateException(String.format("don't know how to inject type %s (%s)", type,
-          type == null ? null : type.getClass()));
-    }
+  public static ResponseEntity<Void> created() {
+    return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
 }

@@ -19,14 +19,14 @@ package org.icgc.dcc.submission.http.jersey;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static com.google.common.net.HttpHeaders.WWW_AUTHENTICATE;
-import static javax.ws.rs.BindingPriority.AUTHENTICATION;
+import static javax.ws.rs.Priorities.AUTHENTICATION;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.apache.commons.lang.StringUtils.isBlank;
 
 import java.util.List;
 
-import javax.ws.rs.BindingPriority;
+import javax.annotation.Priority;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -36,7 +36,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.shiro.codec.Base64;
-import org.glassfish.grizzly.http.Method;
+import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.submission.shiro.ShiroSecurityContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +58,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Provider
-@BindingPriority(AUTHENTICATION)
+@Priority(AUTHENTICATION)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class BasicHttpAuthenticationFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
@@ -193,7 +193,7 @@ public class BasicHttpAuthenticationFilter implements ContainerRequestFilter, Co
   }
 
   private static boolean isGetMethod(ContainerRequestContext context) {
-    return Method.GET.getMethodString().equals(context.getMethod());
+    return "GET".equals(context.getMethod());
   }
 
   private static boolean isOpenPath(String path) {

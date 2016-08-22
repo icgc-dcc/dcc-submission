@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.apache.shiro.subject.Subject;
+import org.glassfish.jersey.message.internal.OutboundJaxrsResponse;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.service.ReleaseService;
@@ -55,7 +56,7 @@ public class ReleaseResourceTest extends ResourceTest {
 
   @Test
   public void testGetReleases() {
-    val reponse = target().path("releases").request(MIME_TYPE).get();
+    val reponse = (OutboundJaxrsResponse) target().path("releases").request(MIME_TYPE).get();
 
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
     assertThat(reponse.readEntity(String.class))

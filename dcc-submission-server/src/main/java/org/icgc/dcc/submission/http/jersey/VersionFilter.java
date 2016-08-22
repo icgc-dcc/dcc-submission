@@ -17,14 +17,14 @@
  */
 package org.icgc.dcc.submission.http.jersey;
 
-import static javax.ws.rs.BindingPriority.HEADER_DECORATOR;
+import static javax.ws.rs.Priorities.HEADER_DECORATOR;
 import static org.icgc.dcc.common.core.dcc.Versions.getApiVersion;
 import static org.icgc.dcc.common.core.dcc.Versions.getCommitId;
 import static org.icgc.dcc.common.core.dcc.Versions.getVersion;
 
 import java.io.IOException;
 
-import javax.ws.rs.BindingPriority;
+import javax.annotation.Priority;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
@@ -38,7 +38,7 @@ import lombok.val;
  * Adds system version and commit id to each response.
  */
 @Provider
-@BindingPriority(HEADER_DECORATOR)
+@Priority(HEADER_DECORATOR)
 public class VersionFilter implements ContainerResponseFilter {
 
   /**

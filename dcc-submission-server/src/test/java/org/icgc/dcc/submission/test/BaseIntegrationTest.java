@@ -22,7 +22,7 @@ import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.getFileStatus;
 import static org.junit.Assert.assertTrue;
 
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientFactory;
+import javax.ws.rs.client.ClientBuilder;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -36,7 +36,7 @@ public class BaseIntegrationTest {
     HadoopProperties.setHadoopUserNameProperty();
   }
 
-  protected final Client client = ClientFactory.newClient();
+  protected final Client client = ClientBuilder.newClient();
 
   @SneakyThrows
   protected static void assertEmptyFile(FileSystem fileSystem, String dir, String path) {

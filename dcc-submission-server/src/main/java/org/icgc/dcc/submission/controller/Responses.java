@@ -15,20 +15,46 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.http;
+package org.icgc.dcc.submission.controller;
 
-public class CertificateNotFoundException extends RuntimeException {
+import org.icgc.dcc.submission.web.model.ServerErrorCode;
+import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-  public CertificateNotFoundException(Exception e) {
-    super(e);
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class Responses {
+
+  public static ResponseEntity<?> unauthorizedResponse() {
+    return unauthorizedResponse(false);
   }
 
-  public CertificateNotFoundException(String message) {
-    super(message);
+  public static ResponseEntity<?> unauthorizedResponse(boolean important) {
+    ServerErrorResponseMessage errorMessage = new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED);
+    if (important) {
+      log.info("unauthorized action: {}", errorMessage);
+    }
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
   }
 
-  public CertificateNotFoundException(String message, Exception e) {
-    super(message, e);
+  public static ResponseEntity<?> badRequest(ServerErrorCode code, Object... args) {
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .body(new ServerErrorResponseMessage(code, args));
+  }
+
+  public static ResponseEntity<?> created() {
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .build();
+  }
+
+  public static ResponseEntity<?> noContent() {
+    return ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .build();
   }
 
 }

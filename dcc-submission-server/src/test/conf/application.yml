@@ -8,10 +8,11 @@
 # See:
 #   http://wrapper.tanukisoftware.com/doc/english/prop-working-dir.html
 
-http:
-  listen: "0.0.0.0"
+
+server:
   port: 5380
-  ssl: false
+  
+http:
   path: "/ws"
 
   resources:
@@ -26,7 +27,7 @@ shiro:
 # Root directory of DCC filesystem
 fsRoot: "/tmp/submission"
 # FileSystem Scheme. This sets hadoop's fs.defaultFS
-fsUrl: "file:///"
+fsUrl: "hdfs://localhost:8020"
 
 sftp:
   port : 5322
@@ -37,10 +38,10 @@ sftp:
 hadoop: # Hadoop properties MUST be quoted here, we don't want the HOCON feature in that case
   # Everything set below this node ends up in the JobConf
   properties:
-    fs.defaultFS: file:///
+    fs.defaultFS: hdfs://localhost:8020
 
     # Configure the job tracker
-    "mapred.job.tracker": localhost
+    "mapred.job.tracker": localhost:8021
     "mapred.job.shuffle.input.buffer.percent": 0.5
 
 validator:

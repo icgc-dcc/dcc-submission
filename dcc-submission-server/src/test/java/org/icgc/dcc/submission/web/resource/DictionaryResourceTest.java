@@ -11,8 +11,8 @@ import java.util.List;
 
 import javax.annotation.Resource;
 import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.Response;
 
+import org.glassfish.jersey.message.internal.OutboundJaxrsResponse;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.service.DictionaryService;
 import org.icgc.dcc.submission.service.ReleaseService;
@@ -91,7 +91,8 @@ public class DictionaryResourceTest extends ResourceTest {
   @Test
   public void testMalformedDictionary() {
     val malformedDictionaryJson = json("{\"x\":\"1\",\"y\":\"2\"}");
-    Response response = target().path("dictionaries").request(MIME_TYPE).post(malformedDictionaryJson);
+    val response =
+        (OutboundJaxrsResponse) target().path("dictionaries").request(MIME_TYPE).post(malformedDictionaryJson);
 
     assertThat(response.getStatus()).isEqualTo(UNPROCESSABLE_ENTITY.getStatusCode());
     assertThat(response.readEntity(String.class)).contains("Unrecognized field \"x\"");

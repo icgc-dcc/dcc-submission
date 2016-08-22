@@ -15,24 +15,14 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.http;
+package org.icgc.dcc.submission.controller;
 
-import org.glassfish.grizzly.http.server.HttpServer;
-import org.icgc.dcc.submission.config.AbstractConfig;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-@Configuration
-public class HttpConfig extends AbstractConfig {
+import org.springframework.security.access.prepost.PreAuthorize;
 
-  @Bean
-  public HttpServer httpServer() {
-    return new HttpServer();
-  }
-
-  @Bean
-  public HttpServerService httpServerService() {
-    return singleton(HttpServerService.class);
-  }
-
+@Retention(RetentionPolicy.RUNTIME)
+@PreAuthorize("hasRole('ADMIN')")
+public @interface SuperUser {
 }

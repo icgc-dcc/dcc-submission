@@ -23,7 +23,6 @@ import static com.google.common.base.Strings.repeat;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.abbreviate;
-import static org.glassfish.grizzly.http.util.Header.Authorization;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readResourcesDictionary;
 
 import java.io.File;
@@ -37,6 +36,7 @@ import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.Response;
 
 import org.glassfish.jersey.internal.util.Base64;
+import org.glassfish.jersey.message.internal.OutboundJaxrsResponse;
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
@@ -55,6 +55,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.io.Resources;
+import com.google.common.net.HttpHeaders;
 import com.mongodb.BasicDBObject;
 
 import lombok.NoArgsConstructor;
@@ -211,7 +212,7 @@ public final class Tests {
         .target(BASEURI)
         .path(path)
         .request(APPLICATION_JSON)
-        .header(Authorization.toString(), AUTHORIZATION_HEADER_VALUE);
+        .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION_HEADER_VALUE);
   }
 
   @SneakyThrows
@@ -250,7 +251,8 @@ public final class Tests {
     return logPotentialErrors(build(client, endPoint).delete());
   }
 
-  private static Response logPotentialErrors(Response response) {
+  private static Response logPotentialErrors(Response r) {
+    val response = (OutboundJaxrsResponse) r;
     int status = response.getStatus();
     if (status < 200 || status >= 300) { // TODO: use Response.fromStatusCode(code).getFamily() rather
       boolean buffered = response.bufferEntity();
@@ -260,7 +262,7 @@ public final class Tests {
     return response;
   }
 
-  public static String asString(Response response) {
+  public static String asString(OutboundJaxrsResponse response) {
     return response.readEntity(String.class);
   }
 
@@ -270,22 +272,22 @@ public final class Tests {
   }
 
   @SneakyThrows
-  public static JsonNode $(Response response) {
+  public static JsonNode $(OutboundJaxrsResponse response) {
     return $(asString(response));
   }
 
   @SneakyThrows
-  public static Release asRelease(Response response) {
+  public static Release asRelease(OutboundJaxrsResponse response) {
     return MAPPER.readValue(asString(response), Release.class);
   }
 
   @SneakyThrows
-  public static ReleaseView asReleaseView(Response response) {
+  public static ReleaseView asReleaseView(OutboundJaxrsResponse response) {
     return MAPPER.readValue(asString(response), ReleaseView.class);
   }
 
   @SneakyThrows
-  public static DetailedSubmission asDetailedSubmission(Response response) {
+  public static DetailedSubmission asDetailedSubmission(OutboundJaxrsResponse response) {
     return MAPPER.readValue(asString(response), DetailedSubmission.class);
   }
 

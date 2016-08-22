@@ -15,43 +15,29 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web.resource;
+package org.icgc.dcc.submission.controller;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static javax.ws.rs.core.Response.status;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
+import static org.icgc.dcc.submission.controller.Authorizations.hasReleaseClosePrivilege;
+import static org.icgc.dcc.submission.controller.Authorizations.hasReleaseViewPrivilege;
+import static org.icgc.dcc.submission.controller.Authorizations.hasSpecificProjectPrivilege;
+import static org.icgc.dcc.submission.controller.Authorizations.hasSubmissionSignoffPrivilege;
+import static org.icgc.dcc.submission.controller.Authorizations.isSuperUser;
+import static org.icgc.dcc.submission.controller.Responses.badRequest;
+import static org.icgc.dcc.submission.controller.Responses.noContent;
+import static org.icgc.dcc.submission.controller.Responses.unauthorizedResponse;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.RELEASE_EXCEPTION;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.UNAVAILABLE;
-import static org.icgc.dcc.submission.web.util.Authorizations.hasReleaseClosePrivilege;
-import static org.icgc.dcc.submission.web.util.Authorizations.hasReleaseModifyPrivilege;
-import static org.icgc.dcc.submission.web.util.Authorizations.hasReleaseViewPrivilege;
-import static org.icgc.dcc.submission.web.util.Authorizations.hasSpecificProjectPrivilege;
-import static org.icgc.dcc.submission.web.util.Authorizations.hasSubmissionSignoffPrivilege;
-import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
-import static org.icgc.dcc.submission.web.util.Responses.badRequest;
-import static org.icgc.dcc.submission.web.util.Responses.noContent;
-import static org.icgc.dcc.submission.web.util.Responses.unauthorizedResponse;
 
 import java.util.List;
 
 import javax.validation.Valid;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
 
 import org.icgc.dcc.submission.core.InvalidStateException;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
@@ -60,38 +46,47 @@ import org.icgc.dcc.submission.service.SystemService;
 import org.icgc.dcc.submission.service.ValidationService;
 import org.icgc.dcc.submission.web.model.ServerErrorCode;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
-import org.icgc.dcc.submission.web.util.Authorizations;
-import org.icgc.dcc.submission.web.util.ResponseTimestamper;
-import org.icgc.dcc.submission.web.util.Responses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HttpHeaders;
 
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Path("nextRelease")
-public class NextReleaseResource {
+@RestController
+@RequestMapping("nextRelease")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+public class NextReleaseController {
 
   private static final Joiner JOINER = Joiner.on("/");
 
-  @Autowired
-  private SubmissionProperties properties;
-  @Autowired
-  private ReleaseService releaseService;
-  @Autowired
-  private ValidationService validationScheduler;
-  @Autowired
-  private SystemService systemService;
+  /**
+   * Dependencies.
+   */
+  private final SubmissionProperties properties;
+  private final ReleaseService releaseService;
+  private final ValidationService validationScheduler;
+  private final SystemService systemService;
 
-  @GET
-  public Response getNextRelease(@Context SecurityContext securityContext) {
+  @GetMapping
+  public ResponseEntity<?> getNextRelease(Authentication authentication) {
     log.debug("Getting nextRelease");
-    if (hasReleaseViewPrivilege(securityContext) == false) {
+    if (hasReleaseViewPrivilege(authentication) == false) {
       return unauthorizedResponse();
     }
 
@@ -102,7 +97,7 @@ public class NextReleaseResource {
         releaseService.getNextRelease() // guaranteed not to be null
             .getName());
 
-    return Response.status(Status.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, redirectionPath).build();
+    return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, redirectionPath).build();
   }
 
   /**
@@ -111,30 +106,23 @@ public class NextReleaseResource {
    * More: <code>{@link ReleaseService#getNextDictionary()}</code><br/>
    * Open-access intentional (DCC-758)
    */
-  @GET
-  @Path("dictionary")
-  public Response getDictionary(@Context Request request) {
-    val dictionary = releaseService.getNextDictionary();
-
-    ResponseTimestamper.evaluate(request, dictionary);
-    return ResponseTimestamper.ok(dictionary).build();
+  @GetMapping("dictionary")
+  public Dictionary getDictionary() {
+    return releaseService.getNextDictionary();
   }
 
-  @POST
-  public Response release(Release nextRelease, @Context Request request, @Context SecurityContext securityContext) {
+  @PostMapping
+  public ResponseEntity<?> release(Release nextRelease, Authentication authentication) {
     log.info("Releasing nextRelease, new release will be: {}", nextRelease);
 
     // TODO: This is intentionally not validated, since we're only currently using the name. This seems sketchy to me
-    if (hasReleaseClosePrivilege(securityContext) == false) {
-      return Responses.unauthorizedResponse();
+    if (hasReleaseClosePrivilege(authentication) == false) {
+      return unauthorizedResponse();
     }
 
     Release release = releaseService.getNextRelease(); // guaranteed not null
     String oldReleaseName = release.getName();
     log.info("Releasing {}", oldReleaseName);
-
-    // Check the timestamp of the oldRelease, since that is the object being updated
-    ResponseTimestamper.evaluate(request, release);
 
     Release newRelease = null;
     try {
@@ -143,41 +131,38 @@ public class NextReleaseResource {
     } catch (ReleaseException e) {
       ServerErrorCode code = RELEASE_EXCEPTION;
       log.error(code.getFrontEndString(), e);
-      return Response.status(BAD_REQUEST).entity(new ServerErrorResponseMessage(code)).build();
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponseMessage(code));
     } catch (InvalidStateException e) {
       ServerErrorCode code = e.getCode();
       log.error(code.getFrontEndString(), e);
-      return Response.status(BAD_REQUEST).entity(new ServerErrorResponseMessage(code)).build();
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponseMessage(code));
     }
-    return ResponseTimestamper.ok(newRelease).build();
+    return ResponseEntity.ok(newRelease);
   }
 
-  @GET
-  @Path("queue")
-  public Response getQueue() {
+  @GetMapping("queue")
+  public ResponseEntity<?> getQueue() {
     // No authorization check needed, but authentication required (see DCC-808)
     log.debug("Getting the queue for nextRelease");
     List<String> projectIds = releaseService.getQueuedProjectKeys();
     Object[] projectIdArray = projectIds.toArray();
 
-    return Response.ok(projectIdArray).build();
+    return ResponseEntity.ok(projectIdArray);
   }
 
-  @POST
-  @Path("queue")
-  public Response queue(@Valid List<QueuedProject> queuedProjects, @Context Request request,
-      @Context SecurityContext securityContext) {
+  @PostMapping("queue")
+  public ResponseEntity<?> queue(@Valid List<QueuedProject> queuedProjects, Authentication authentication) {
     log.info("Enqueuing projects for nextRelease: {}", queuedProjects);
 
-    if (!isAccessible(securityContext)) {
-      log.warn("Not accessible to '{}'", securityContext.getUserPrincipal());
+    if (!isAccessible(authentication)) {
+      log.warn("Not accessible to '{}'", authentication.getName());
       return unauthorizedResponse();
     }
 
     List<String> projectKeys = newArrayList();
     for (val queuedProject : queuedProjects) {
       val projectKey = queuedProject.getKey();
-      if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
+      if (hasSpecificProjectPrivilege(authentication, projectKey) == false) {
         return unauthorizedResponse();
       }
 
@@ -201,21 +186,19 @@ public class NextReleaseResource {
       val code = UNAVAILABLE;
       log.error(code.getFrontEndString(), e);
 
-      return Response
-          .status(SERVICE_UNAVAILABLE)
-          .header("Retry-After", 3)
-          .entity(new ServerErrorResponseMessage(code)).build();
+      return ResponseEntity
+          .status(HttpStatus.SERVICE_UNAVAILABLE)
+          .header("Retry-After", "3")
+          .body(new ServerErrorResponseMessage(code));
     }
 
     return noContent();
   }
 
-  @DELETE
-  @Path("queue")
-  @SneakyThrows
-  public Response removeAllQueued(@Context SecurityContext securityContext) {
+  @DeleteMapping("queue")
+  public ResponseEntity<?> removeAllQueued(Authentication authentication) {
     log.info("Removing all queued projects");
-    if (isSuperUser(securityContext) == false) {
+    if (isSuperUser(authentication) == false) {
       return unauthorizedResponse();
     }
 
@@ -230,16 +213,15 @@ public class NextReleaseResource {
       throw t;
     }
 
-    return Response.ok().build();
+    return ResponseEntity.ok().build();
   }
 
-  @DELETE
-  @Path("validation/{projectKey}")
   @SneakyThrows
-  public Response cancelValidation(@PathParam("projectKey") String projectKey,
-      @Context SecurityContext securityContext) {
+  @DeleteMapping("validation/{projectKey}")
+  public ResponseEntity<?> cancelValidation(@PathVariable("projectKey") String projectKey,
+      Authentication authentication) {
     log.info("Cancelling validation for {}", projectKey);
-    if (!hasSpecificProjectPrivilege(securityContext, projectKey)) {
+    if (!hasSpecificProjectPrivilege(authentication, projectKey)) {
       return unauthorizedResponse();
     }
 
@@ -254,17 +236,14 @@ public class NextReleaseResource {
       throw t;
     }
 
-    return Response.ok().build();
+    return ResponseEntity.ok().build();
   }
 
-  @DELETE
-  @Path("state/{projectKey}")
+  @SuperUser
   @SneakyThrows
-  public Response resetState(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
+  @DeleteMapping("state/{projectKey}")
+  public ResponseEntity<?> resetState(@PathVariable("projectKey") String projectKey) {
     log.info("Resetting state for '{}'", projectKey);
-    if (isSuperUser(securityContext) == false) {
-      return unauthorizedResponse();
-    }
 
     try {
       releaseService.resetSubmissions(ImmutableList.<String> of(projectKey));
@@ -273,91 +252,82 @@ public class NextReleaseResource {
       throw t;
     }
 
-    return Response.ok().build();
+    return ResponseEntity.ok().build();
   }
 
-  @GET
-  @Path("signed")
-  public Response getSignedOff() {
+  @GetMapping("signed")
+  public ResponseEntity<?> getSignedOff() {
     /* no authorization check needed (see DCC-808) */
 
     log.debug("Getting signed off projects for nextRelease");
     List<String> projectIds = releaseService.getSignedOffReleases();
-    return Response.ok(projectIds.toArray()).build();
+    return ResponseEntity.ok(projectIds.toArray());
   }
 
-  @POST
-  @Path("signed")
-  public Response signOff(List<String> projectKeys, @Context Request request,
-      @Context SecurityContext securityContext) {
+  @PostMapping("signed")
+  public ResponseEntity<?> signOff(List<String> projectKeys, Authentication authentication) {
     log.info("Signing off projects {}", projectKeys);
 
-    if (!isAccessible(securityContext)) {
-      log.warn("Not accessible to '{}'", securityContext.getUserPrincipal());
+    if (!isAccessible(authentication)) {
+      log.warn("Not accessible to '{}'", authentication.getName());
       return unauthorizedResponse();
     }
 
-    if (hasSubmissionSignoffPrivilege(securityContext) == false) {
+    if (hasSubmissionSignoffPrivilege(authentication) == false) {
       return unauthorizedResponse();
     }
 
     try {
-      String username = Authorizations.getUsername(securityContext);
+      String username = authentication.getName();
       releaseService.signOffRelease(projectKeys, username);
     } catch (ReleaseException e) {
       ServerErrorCode code = ServerErrorCode.NO_SUCH_ENTITY;
       log.error(code.getFrontEndString(), e);
-      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code, projectKeys)).build();
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponseMessage(code, projectKeys));
     } catch (InvalidStateException e) {
       ServerErrorCode code = e.getCode();
       log.error(code.getFrontEndString(), e);
-      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code)).build();
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponseMessage(code));
     } catch (DccModelOptimisticLockException e) { // not very likely
       ServerErrorCode code = ServerErrorCode.UNAVAILABLE;
       log.error(code.getFrontEndString(), e);
-      return Response.status(Status.SERVICE_UNAVAILABLE)
-          .header("Retry-After", 3)
-          .entity(new ServerErrorResponseMessage(code)).build();
+      return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+          .header("Retry-After", "3")
+          .body(new ServerErrorResponseMessage(code));
     }
 
-    return Response.ok().build();
+    return ResponseEntity.ok().build();
   }
 
   /**
    * See {@link ReleaseService#update(Release)}.
    */
-  @PUT
-  @Path("update")
-  public Response update(@Valid Release release, @Context Request request, @Context SecurityContext securityContext) {
+  @SuperUser
+  @PutMapping("update")
+  public ResponseEntity<?> update(@Valid Release release, Authentication authentication) {
     log.info("Updating nextRelease with: {}", release);
-    if (hasReleaseModifyPrivilege(securityContext) == false) {
-      return Responses.unauthorizedResponse();
-    }
-
     if (release != null) {
       String name = release.getName();
 
       log.info("updating {}", name);
-      ResponseTimestamper.evaluate(request, release);
-
       val empty = releaseService.countReleases() == 0;
       if (empty) {
-        return status(BAD_REQUEST).build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
       } else {
         val updatedName = release.getName();
         val updatedDictionaryVersion = release.getDictionaryVersion();
         val updatedRelease = releaseService.updateRelease(updatedName, updatedDictionaryVersion);
         log.info("updated {}", name);
 
-        return ResponseTimestamper.ok(updatedRelease).build();
+        return ResponseEntity.ok(updatedRelease);
       }
     } else {
-      return Response.status(BAD_REQUEST).build();
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
   }
 
-  private boolean isAccessible(SecurityContext securityContext) {
-    return systemService.isEnabled() || isSuperUser(securityContext);
+  private boolean isAccessible(Authentication authentication) {
+    return systemService.isEnabled() || isSuperUser(authentication);
   }
 
 }

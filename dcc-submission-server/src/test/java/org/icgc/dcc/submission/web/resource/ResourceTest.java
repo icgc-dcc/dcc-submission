@@ -1,7 +1,6 @@
 package org.icgc.dcc.submission.web.resource;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.glassfish.grizzly.http.util.Header.Authorization;
 import static org.glassfish.jersey.internal.util.Base64.encodeAsString;
 
 import java.io.IOException;
@@ -20,7 +19,6 @@ import org.icgc.dcc.submission.config.PersistenceConfig;
 import org.icgc.dcc.submission.config.ServerConfig;
 import org.icgc.dcc.submission.config.ValidationConfig;
 import org.icgc.dcc.submission.fs.FileSystemConfig;
-import org.icgc.dcc.submission.http.jersey.InjectConfig;
 import org.icgc.dcc.submission.http.jersey.JerseyConfig;
 import org.icgc.dcc.submission.repository.RepositoryConfig;
 import org.icgc.dcc.submission.service.ServiceConfig;
@@ -32,10 +30,11 @@ import org.junit.After;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.google.common.net.HttpHeaders;
 
 public abstract class ResourceTest extends JerseyTest {
 
-  private static final String AUTH_HEADER = Authorization.toString();
+  private static final String AUTH_HEADER = HttpHeaders.AUTHORIZATION.toString();
   private static final String AUTH_VALUE = "X-DCC-Auth " + encodeAsString("admin:adminspasswd");
   protected static final String MIME_TYPE = APPLICATION_JSON;
 
@@ -58,7 +57,6 @@ public abstract class ResourceTest extends JerseyTest {
 
     context.register(
         TestConfig.class,
-        InjectConfig.class,
         JerseyConfig.class,
         ShiroConfig.class,
         WebConfig.class,

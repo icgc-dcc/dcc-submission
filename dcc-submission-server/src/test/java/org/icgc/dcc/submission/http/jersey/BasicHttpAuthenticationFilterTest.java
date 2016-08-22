@@ -37,6 +37,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.shiro.subject.Subject;
+import org.glassfish.jersey.message.internal.OutboundJaxrsResponse;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 import org.junit.After;
 import org.junit.Before;
@@ -132,8 +133,9 @@ public class BasicHttpAuthenticationFilterTest {
     ArgumentCaptor<Response> response = ArgumentCaptor.forClass(Response.class);
     verify(mockRequestContext).abortWith(response.capture());
     assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getValue().getStatus());
-    assertEquals(String.format("%s realm=\"%s\"", HTTP_AUTH_PREFIX, WWW_AUTHENTICATE_REALM), response.getValue()
-        .getHeaderString(HttpHeaders.WWW_AUTHENTICATE));
+    assertEquals(String.format("%s realm=\"%s\"", HTTP_AUTH_PREFIX, WWW_AUTHENTICATE_REALM),
+        ((OutboundJaxrsResponse) response.getValue())
+            .getHeaderString(HttpHeaders.WWW_AUTHENTICATE));
   }
 
   @Test
@@ -146,8 +148,9 @@ public class BasicHttpAuthenticationFilterTest {
     ArgumentCaptor<Response> response = ArgumentCaptor.forClass(Response.class);
     verify(mockRequestContext).abortWith(response.capture());
     assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getValue().getStatus());
-    assertEquals(String.format("%s realm=\"%s\"", HTTP_AUTH_PREFIX, WWW_AUTHENTICATE_REALM), response.getValue()
-        .getHeaderString(HttpHeaders.WWW_AUTHENTICATE));
+    assertEquals(String.format("%s realm=\"%s\"", HTTP_AUTH_PREFIX, WWW_AUTHENTICATE_REALM),
+        ((OutboundJaxrsResponse) response.getValue())
+            .getHeaderString(HttpHeaders.WWW_AUTHENTICATE));
   }
 
   @Test

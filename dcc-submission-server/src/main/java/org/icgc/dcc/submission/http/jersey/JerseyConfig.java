@@ -17,22 +17,63 @@
  */
 package org.icgc.dcc.submission.http.jersey;
 
+import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.MessageBodyWriter;
+
 import org.glassfish.jersey.server.ResourceConfig;
 import org.icgc.dcc.submission.config.AbstractConfig;
+import org.icgc.dcc.submission.web.mapper.DuplicateNameExceptionMapper;
+import org.icgc.dcc.submission.web.mapper.InvalidNameExceptionMapper;
+import org.icgc.dcc.submission.web.mapper.ReleaseExceptionMapper;
+import org.icgc.dcc.submission.web.mapper.UnhandledExceptionMapper;
+import org.icgc.dcc.submission.web.mapper.UnsatisfiedPreconditionExceptionMapper;
+import org.icgc.dcc.submission.web.provider.ValidatingJacksonJsonProvider;
+import org.icgc.dcc.submission.web.resource.CodeListResource;
+import org.icgc.dcc.submission.web.resource.DictionaryResource;
+import org.icgc.dcc.submission.web.resource.NextReleaseResource;
+import org.icgc.dcc.submission.web.resource.ProjectResource;
+import org.icgc.dcc.submission.web.resource.ReleaseResource;
+import org.icgc.dcc.submission.web.resource.SeedResource;
+import org.icgc.dcc.submission.web.resource.SystemResource;
+import org.icgc.dcc.submission.web.resource.UserResource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import lombok.val;
 
 @Configuration
 public class JerseyConfig extends AbstractConfig {
 
   @Bean
   public ResourceConfig resourceConfig() {
-    return new ResourceConfig();
-  }
+    val config = new ResourceConfig();
 
-  @Bean
-  public JerseyHandler jerseyHandler() {
-    return singleton(JerseyHandler.class);
+    // Providers
+    config.register(ValidatingJacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
+
+    // Resources
+    config.register(SystemResource.class);
+    config.register(ProjectResource.class);
+    config.register(ReleaseResource.class);
+    config.register(NextReleaseResource.class);
+    config.register(DictionaryResource.class);
+    config.register(CodeListResource.class);
+    config.register(UserResource.class);
+    config.register(SeedResource.class); // TODO be sure to remove this from production environment (see DCC-819)
+
+    // Filters
+    config.register(VersionFilter.class);
+    config.register(CorsFilter.class);
+    config.register(BasicHttpAuthenticationFilter.class);
+
+    // Exception mappers
+    config.register(UnsatisfiedPreconditionExceptionMapper.class);
+    config.register(ReleaseExceptionMapper.class);
+    config.register(InvalidNameExceptionMapper.class);
+    config.register(DuplicateNameExceptionMapper.class);
+    config.register(UnhandledExceptionMapper.class);
+
+    return config;
   }
 
 }

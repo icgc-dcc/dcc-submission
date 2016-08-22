@@ -8,7 +8,6 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.glassfish.grizzly.http.util.Header.Authorization;
 import static org.glassfish.jersey.internal.util.Base64.encodeAsString;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.atLeast;
@@ -27,6 +26,7 @@ import javax.annotation.Resource;
 import javax.ws.rs.core.Response;
 
 import org.elasticsearch.common.collect.Lists;
+import org.glassfish.jersey.message.internal.OutboundJaxrsResponse;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
@@ -40,6 +40,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.google.common.collect.Sets;
+import com.google.common.net.HttpHeaders;
 import com.mongodb.CommandResult;
 import com.mongodb.MongoException.DuplicateKey;
 
@@ -55,7 +56,7 @@ public class ProjectResourceTest extends ResourceTest {
   private static final String AUTH_ALLOWED_USER = "richard";
   private static final String AUTH_NOT_ALLOWED_USER = "ricardo";
 
-  private static final String AUTH_HEADER = Authorization.toString();
+  private static final String AUTH_HEADER = HttpHeaders.AUTHORIZATION.toString();
 
   private String getAuthValue(String username) {
     return "X-DCC-Auth " + encodeAsString(username + ":" + username + "spasswd");
@@ -88,7 +89,7 @@ public class ProjectResourceTest extends ResourceTest {
     public Project projectOne() {
       val projectOne = new Project("PRJ1", "Project One");
       projectOne.setUsers(Sets.newHashSet(AUTH_ALLOWED_USER));
-    
+
       return projectOne;
     }
 
@@ -149,7 +150,8 @@ public class ProjectResourceTest extends ResourceTest {
   @Test
   public void testGetProjectsWhenNotAuthorized() {
     val reponse =
-        target().path("projects").request(MIME_TYPE).header(AUTH_HEADER, getAuthValue(UNAUTH_USER)).get();
+        (OutboundJaxrsResponse) target().path("projects").request(MIME_TYPE)
+            .header(AUTH_HEADER, getAuthValue(UNAUTH_USER)).get();
     verifyZeroInteractions(projectService);
     assertThat(reponse.getStatus()).isEqualTo(UNAUTHORIZED.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("");
@@ -177,7 +179,7 @@ public class ProjectResourceTest extends ResourceTest {
   @Test
   public void testGetProjectWhenNotAuthorized() {
     val reponse =
-        target().path("projects/" + projectOne.getKey()).request(MIME_TYPE)
+        (OutboundJaxrsResponse) target().path("projects/" + projectOne.getKey()).request(MIME_TYPE)
             .header(AUTH_HEADER, getAuthValue(UNAUTH_USER)).get();
     verifyZeroInteractions(projectService);
     assertThat(reponse.getStatus()).isEqualTo(UNAUTHORIZED.getStatusCode());
@@ -217,7 +219,8 @@ public class ProjectResourceTest extends ResourceTest {
   @Test
   public void testAddProjectWhenNotAuthorized() throws Exception {
     val reponse =
-        target().path("projects").request(MIME_TYPE).header(AUTH_HEADER, getAuthValue(UNAUTH_USER)).post(json("{}"));
+        (OutboundJaxrsResponse) target().path("projects").request(MIME_TYPE)
+            .header(AUTH_HEADER, getAuthValue(UNAUTH_USER)).post(json("{}"));
     verifyZeroInteractions(projectService);
     assertThat(reponse.getStatus()).isEqualTo(UNAUTHORIZED.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("");
@@ -266,7 +269,8 @@ public class ProjectResourceTest extends ResourceTest {
   @Test
   public void testAddProjectWhenAdmin() throws Exception {
     val projectJson = json("{\"key\":\"PRJ1\",\"name\":\"Project One\", \"users\": [\"myuser\"]}");
-    val reponse = target().path("projects").request(MIME_TYPE).post(projectJson);
+    val reponse =
+        (OutboundJaxrsResponse) target().path("projects").request(MIME_TYPE).post(projectJson);
 
     verify(projectService).addProject(any(Project.class));
     verify(releaseService).addSubmission("PRJ1", "Project One");
@@ -325,7 +329,7 @@ public class ProjectResourceTest extends ResourceTest {
   @Test
   public void testGetProjectSubmissionsWhenNotAuthorized() throws Exception {
     val reponse =
-        target().path("projects/" + projectOne.getKey() + "/releases").request(MIME_TYPE)
+        (OutboundJaxrsResponse) target().path("projects/" + projectOne.getKey() + "/releases").request(MIME_TYPE)
             .header(AUTH_HEADER, getAuthValue(UNAUTH_USER)).get();
 
     verifyZeroInteractions(releaseService);
@@ -373,7 +377,7 @@ public class ProjectResourceTest extends ResourceTest {
 
   @SneakyThrows
   private static void assertEntity(Response response, String expected) {
-    val actual = response.readEntity(String.class);
+    val actual = ((OutboundJaxrsResponse) response).readEntity(String.class);
     assertEquals(expected, actual, NON_EXTENSIBLE);
   }
 
