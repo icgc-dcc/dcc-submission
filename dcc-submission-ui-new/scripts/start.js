@@ -144,7 +144,7 @@ function openBrowser(port) {
 function runDevServer(port) {
   new WebpackDevServer(compiler, {
     historyApiFallback: true,
-    hot: true, // Note: only CSS is currently hot reloaded
+    hot: true,
     publicPath: config.output.publicPath,
     quiet: true,
     watchOptions: {
