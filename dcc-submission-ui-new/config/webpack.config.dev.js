@@ -9,7 +9,7 @@ module.exports = {
   devtool: 'eval',
   entry: [
     require.resolve('webpack-dev-server/client') + '?/',
-    require.resolve('webpack/hot/dev-server'),
+    require.resolve('webpack/hot/only-dev-server'),
     require.resolve('./polyfills'),
     path.join(paths.appSrc, 'index')
   ],
@@ -50,8 +50,7 @@ module.exports = {
       {
         test: /\.js$/,
         include: paths.appSrc,
-        loader: 'babel',
-        query: require('./babel.dev')
+        loaders: ['react-hot', 'babel?' + JSON.stringify(require('./babel.dev'))],
       },
       {
         test: /\.css$/,
