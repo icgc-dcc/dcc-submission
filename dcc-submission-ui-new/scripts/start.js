@@ -11,7 +11,7 @@ var prompt = require('./utils/prompt');
 var config = require('../config/webpack.config.dev');
 
 // Tools like Cloud9 rely on this
-var DEFAULT_PORT = process.env.PORT || 3000;
+var DEFAULT_PORT = process.env.PORT || 3333;
 var compiler;
 
 // TODO: hide this behind a flag and eliminate dead code on eject.
