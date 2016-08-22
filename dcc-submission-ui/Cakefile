@@ -13,7 +13,8 @@ startServer = ->
   options =
     router:
       #"localhost/ws/": "hwww-dev.res.oicr.on.ca:5380/ws/"
-      "localhost/ws/": "localhost:5380/ws/"
+      #"localhost/ws/": "localhost:5380/ws/"
+      "localhost/ws/": "http://10.30.128.146:5380/ws/"
       "localhost": "localhost:3333"
 
   httpProxy.createServer(options).listen 3334, ->
