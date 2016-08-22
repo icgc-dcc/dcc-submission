@@ -1,5 +1,4 @@
 var path = require('path');
-var autoprefixer = require('autoprefixer');
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
@@ -98,7 +97,27 @@ module.exports = {
     useEslintrc: false
   },
   postcss: function() {
-    return [autoprefixer];
+    return [
+      // Unwrap nested rules like how Sass does it
+      // https://github.com/postcss/postcss-nested
+      require('postcss-nested'),
+      // Transfer @import rule by inlining content, e.g. @import 'normalize.css'
+      // https://github.com/postcss/postcss-import
+      require('postcss-import'),
+      // W3C CSS Custom Media Queries, e.g. @custom-media --small-viewport (max-width: 30em);
+      // https://github.com/postcss/postcss-custom-media
+      require('postcss-custom-properties'),
+      // CSS4 Media Queries, e.g. @media screen and (width >= 500px) and (width <= 1200px) { }
+      // https://github.com/postcss/postcss-media-minmax
+      require('postcss-media-minmax'),
+      // W3C CSS Level4 :matches() pseudo class, e.g. p:matches(:first-child, .special) { }
+      // https://github.com/postcss/postcss-selector-matches
+      require('postcss-selector-matches')(),
+      // Transforms :not() W3C CSS Level 4 pseudo class to :not() CSS Level 3 selectors
+      // https://github.com/postcss/postcss-selector-not
+      require('postcss-selector-not'),
+      require('autoprefixer'),
+    ];
   },
   plugins: [
     new HtmlWebpackPlugin({
