@@ -22,11 +22,16 @@ import static java.lang.String.format;
 import static lombok.AccessLevel.PUBLIC;
 import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.OPTIONAL_RELATION;
-import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION1;
-import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION2;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION;
 import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
 
 import java.util.List;
+import java.util.Map;
+
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.SpecialValue;
@@ -39,14 +44,6 @@ import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
 import com.google.common.base.Optional;
 
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
-/**
- * TODO: MUST split class on a per type basis
- */
 @Slf4j
 @RequiredArgsConstructor(access = PUBLIC)
 public final class KVFileProcessor {
@@ -70,21 +67,18 @@ public final class KVFileProcessor {
 
   @SneakyThrows
   public void processFile(
-      final KVDictionary dictionary, // TODO: necessary?
+      final KVDictionary dictionary,
       final KVFileParser fileParser,
       final KVReporter reporter, // To report all but surjection errors at this point
-      final KVPrimaryKeys primaryKeys,
-      final Optional<KVReferencedPrimaryKeys> optionallyReferencedPrimaryKeys1, // N/A for DONOR for instance
-      final Optional<KVReferencedPrimaryKeys> optionallyReferencedPrimaryKeys2, // Applicable for METH_ARRAY_P but N/A
-                                                                                // for SSM_P for instance
-      final Optional<KVEncounteredForeignKeys> optionalEncounteredKeys // N/A for SSM_P for instance
+      final KVPrimaryKeys primaryKeys, // FileType's primary keys
+      final Map<KVFileType, KVReferencedPrimaryKeys> referencedPrimaryKeys, // Parent's primary keys
+      final Map<KVFileType, KVEncounteredForeignKeys> encounteredKeys // Which parent keys are actually encountered.
+                                                                      // Used for the future surjection check
   ) {
-    log.info("{}", fileType, filePath);
+    log.info("{} - {}", fileType, filePath);
 
     val context = new KVRowContext(filePath.getName(), fileType, reporter,
-        primaryKeys,
-        optionallyReferencedPrimaryKeys1, optionallyReferencedPrimaryKeys2,
-        optionalEncounteredKeys);
+        primaryKeys, encounteredKeys, referencedPrimaryKeys);
 
     fileParser.parse(filePath, new FileRecordProcessor<List<String>>() {
 
@@ -96,17 +90,11 @@ public final class KVFileProcessor {
 
         // Process the row
         log.debug("Row: '{}'", row);
-        processRow(context);
+        processRow(context, dictionary);
         processStatus(lineNumber);
       }
 
     });
-  }
-
-  private void processStatus(long lineNumber) {
-    if ((lineNumber % DEFAULT_LOG_THRESHOLD) == 0) {
-      log.info("{} lines processed for '{}'", formatCount(lineNumber), filePath.getName());
-    }
   }
 
   /**
@@ -114,229 +102,31 @@ public final class KVFileProcessor {
    * <p>
    * TODO: very ugly, split per file type (subclass or compose), also for systems and referencing/non-referencing
    */
-  private void processRow(KVRowContext context) {
-    // @formatter:off
-    switch (fileType) {
-    
-    // Order matters!!
-    
-    //
-    // Clinical
-    //
-    
-    // CORE:
-    case DONOR:             processDonor(context); break;
-    case SPECIMEN:          processGenericClinical(context); break;
-    case SAMPLE:            processGenericClinical(context); break;
-                            
-    // SUPPLEMENTAL:        
-    case BIOMARKER:         processBiomarker(context); break;    
-    case FAMILY:            processFamily(context); break;    
-    case EXPOSURE:          processExposure(context); break;    
-    case SURGERY:           processSurgery(context); break;    
-    case THERAPY:           processTherapy(context); break;    
-    
-    //
-    // Feature Types
-    //    
-    
-    // SSM:
-    case SSM_M:             processGenericMetaWithOptionalFK(context); break;
-    case SSM_P:             processGenericPrimaryWithoutSecondary(context); break;
-      
-    // CNSM:
-    case CNSM_M:            processGenericMetaWithOptionalFK(context); break;
-    case CNSM_P:            processGenericPrimaryWithSecondary(context); break;
-    case CNSM_S:            processGenericSecondary(context); break;
-
-    // STSM:
-    case STSM_M:            processGenericMetaWithOptionalFK(context); break;
-    case STSM_P:            processGenericPrimaryWithSecondary(context); break;
-    case STSM_S:            processGenericSecondary(context); break;
-
-    // METH ARRAY:
-    case METH_ARRAY_M:      processGenericMetaWithoutOptionalFK(context); break;
-    case METH_ARRAY_PROBES: processMethArrayProbes(context); break;
-    case METH_ARRAY_P:      processMethArrayPrimary(context); break;
-
-    // METH SEQ:
-    case METH_SEQ_M:        processGenericMetaWithoutOptionalFK(context); break;
-    case METH_SEQ_P:        processGenericPrimaryWithoutSecondary(context); break;
-    
-    // EXP ARRAY
-    case EXP_ARRAY_M:       processGenericMetaWithoutOptionalFK(context); break;
-    case EXP_ARRAY_P:       processExpPrimary(context); break;
-    
-    // EXP SEQ
-    case EXP_SEQ_M:         processGenericMetaWithoutOptionalFK(context); break;
-    case EXP_SEQ_P:         processExpPrimary(context); break;
-
-    // MIRNA SEQ
-    case MIRNA_SEQ_M:       processGenericMetaWithoutOptionalFK(context); break;
-    case MIRNA_SEQ_P:       processGenericPrimaryWithoutSecondary(context); break;
-    
-    // PEXP:
-    case PEXP_M:            processGenericMetaWithoutOptionalFK(context); break;
-    case PEXP_P:            processGenericPrimaryWithoutSecondary(context); break;
-
-    // JCN:
-    case JCN_M:             processGenericMetaWithoutOptionalFK(context); break;
-    case JCN_P:             processGenericPrimaryWithoutSecondary(context); break;
-
-    // SGV:
-    case SGV_M:             processGenericMetaWithoutOptionalFK(context); break;
-    case SGV_P:             processGenericPrimaryWithoutSecondary(context); break;
-    
-    default:                throw new UnsupportedOperationException(fileType + " is not supported");
-    }
-    // @formatter:on
-  }
-
-  private void processDonor(KVRowContext context) {
-    valid.validateUniqueness(context);
-    ; // No foreign key checks for DONOR
-
-    sanity.ensureNoFK1(context.getRow());
-    sanity.ensureNoFK2(context.getRow());
-    sanity.ensureNoOptionalFK(context.getRow());
-
-    addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
-    ; // No surjection check for DONOR
-  }
-
-  /*
-   * Supplemental
-   */
-
-  private void processBiomarker(KVRowContext context) {
-    valid.validateUniqueness(context);
-    valid.validateForeignKey1(context);
-    valid.validateForeignKey2(context);
-    addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
-  }
-
-  private void processFamily(KVRowContext context) {
-    valid.validateUniqueness(context);
-    valid.validateForeignKey1(context);
-    addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
-  }
-
-  private void processExposure(KVRowContext context) {
-    valid.validateUniqueness(context);
-    valid.validateForeignKey1(context);
-    addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
-  }
-
-  private void processSurgery(KVRowContext context) {
-    valid.validateUniqueness(context);
-    valid.validateForeignKey1(context);
-    valid.validateOptionalForeignKey(context, context.getOptionallyReferencedPrimaryKeys2());
-    addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
-  }
-
-  private void processTherapy(KVRowContext context) {
-    valid.validateUniqueness(context);
-    valid.validateForeignKey1(context);
-    addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
-  }
-
-  /*
-   * Generic
-   */
-
-  private void processGenericMetaWithOptionalFK(KVRowContext context) {
-    valid.validateUniqueness(context);
-    valid.validateForeignKey1(context);
-    if (context.getRow().hasCheckeableOptionalFk()) {
-      valid.validateOptionalForeignKey(context, context.getOptionallyReferencedPrimaryKeys1());
-    }
-
-    sanity.ensureNoFK2(context.getRow());
-
-    addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
-    ; // No surjection check for meta files
-  }
-
-  private void processGenericMetaWithoutOptionalFK(KVRowContext context) {
-    valid.validateUniqueness(context);
-    valid.validateForeignKey1(context);
-
-    sanity.ensureNoFK2(context.getRow());
-    sanity.ensureNoOptionalFK(context.getRow());
-
-    addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
-    ; // No surjection check for meta files
-  }
-
-  private void processGenericPrimaryWithoutSecondary(KVRowContext context) {
-    ; // No uniqueness check
-    valid.validateForeignKey1(context);
-
-    sanity.ensureNoPK(context.getRow());
-    sanity.ensureNoFK2(context.getRow());
-    sanity.ensureNoOptionalFK(context.getRow());
-
-    addEncounteredForeignKey(context.getFileName(), context.getOptionallyEncounteredKeys(), context.getRow());
-  }
-
-  private void processGenericClinical(KVRowContext context) {
-    processMostGeneric(context);
-  }
-
-  private void processGenericPrimaryWithSecondary(KVRowContext context) {
-    processMostGeneric(context);
-  }
-
-  /**
-   * Avoid calling directly, instead use aliases as shown above.
-   */
-  private void processMostGeneric(KVRowContext context) {
-    valid.validateUniqueness(context);
-    valid.validateForeignKey1(context);
-
-    sanity.ensureNoFK2(context.getRow());
-    sanity.ensureNoOptionalFK(context.getRow());
-
-    addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
-    addEncounteredForeignKey(context.getFileName(), context.getOptionallyEncounteredKeys(), context.getRow());
-  }
-
-  private void processGenericSecondary(KVRowContext context) {
-    ; // No uniqueness check
-    valid.validateForeignKey1(context);
-
-    sanity.ensureNoPK(context.getRow());
-    sanity.ensureNoFK2(context.getRow());
-    sanity.ensureNoOptionalFK(context.getRow());
-
-    ; // No surjection check for secondary files
-  }
-
-  private void processMethArrayPrimary(KVRowContext context) {
+  private void processRow(KVRowContext context, KVDictionary dictionary) {
+    val fileType = context.getFileType();
     // No uniqueness check for METH_ARRAY_P (at Vincent's request)
-    valid.validateForeignKey1(context);
-    valid.validateForeignKey2(context);
+    if (fileType != KVFileType.METH_ARRAY_P) { // TODO: Encode in the dictionary
+      valid.validateUniqueness(context);
+    }
 
-    sanity.ensureNoOptionalFK(context.getRow());
+    valid.validateForeignKeys(context);
+    valid.validateOptionalForeignKeys(context);
 
-    addEncounteredForeignKey(context.getFileName(), context.getOptionallyEncounteredKeys(), context.getRow());
+    // E.g. Primary file types without secondary ones don't need to add their PKs as the surjection check will not be
+    // performed for them.
+    if (dictionary.hasChildren(fileType)) {
+      addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
+    }
+
+    if (!dictionary.getSurjectiveReferencedTypes(fileType).isEmpty()) {
+      addEncounteredForeignKeys(context.getFileName(), context.getEncounteredKeys(), context.getRow());
+    }
   }
 
-  private void processMethArrayProbes(KVRowContext context) {
-    ; // We perform no validation on system files at the moment
-
-    // We only gather PKs for future relation check
-    addEncounteredPrimaryKey(context.getFileName(), context.getPrimaryKeys(), context.getRow());
-  }
-
-  private void processExpPrimary(KVRowContext context) {
-    valid.validateUniqueness(context);
-    valid.validateForeignKey1(context);
-
-    sanity.ensureNoFK2(context.getRow());
-    sanity.ensureNoOptionalFK(context.getRow());
-
-    addEncounteredForeignKey(context.getFileName(), context.getOptionallyEncounteredKeys(), context.getRow());
+  private void processStatus(long lineNumber) {
+    if ((lineNumber % DEFAULT_LOG_THRESHOLD) == 0) {
+      log.info("{} lines processed for '{}'", formatCount(lineNumber), filePath.getName());
+    }
   }
 
   /**
@@ -350,17 +140,19 @@ public final class KVFileProcessor {
   /**
    * For future surjection check.
    */
-  private void addEncounteredForeignKey(
-      String fileName, Optional<KVEncounteredForeignKeys> optionallyEncounteredKeys, KVRow row) {
+  private void addEncounteredForeignKeys(String fileName, Map<KVFileType, KVEncounteredForeignKeys> encounteredKeys,
+      KVRow row) {
     if (ROW_CHECKS_ENABLED) {
-      checkState(optionallyEncounteredKeys.isPresent(),
-          "Encountered keys are expected to be present for type '%s'", fileType);
+      checkState(!encounteredKeys.isEmpty(), "Encountered keys are expected to be present for type '%s'", fileType);
     }
 
-    // Always uses FK1 at the moment.
-    sanity.ensureFK1(fileName, row);
-    optionallyEncounteredKeys.get()
-        .addEncounteredForeignKey(row.getFk1());
+    encounteredKeys.entrySet()
+        .forEach(entry -> {
+          KVFileType referencedFileType = entry.getKey();
+          KVEncounteredForeignKeys encounteredFk = entry.getValue();
+          sanity.ensureFk(fileName, row, referencedFileType);
+          encounteredFk.addEncounteredForeignKey(row.getFk(referencedFileType));
+        });
   }
 
   /**
@@ -378,64 +170,68 @@ public final class KVFileProcessor {
       }
     }
 
-    private void validateForeignKey1(KVRowContext context) {
-      validateForeignKey(context,
-          context.getOptionallyReferencedPrimaryKeys1(),
-          context.getRow().getFk1(),
-          RELATION1);
-    }
+    private void validateForeignKeys(KVRowContext context) {
+      val referencedPks = context.getReferencedPrimaryKeys();
+      val fks = context.getRow().getFks();
+      for (val entry : fks.entrySet()) {
+        val referencedFileType = entry.getKey();
+        val fk = entry.getValue();
+        val referencedPk = referencedPks.get(referencedFileType);
 
-    private void validateForeignKey2(KVRowContext context) {
-      validateForeignKey(context,
-          context.getOptionallyReferencedPrimaryKeys2(),
-          context.getRow().getFk2(),
-          RELATION2);
-    }
-
-    private void validateOptionalForeignKey(KVRowContext context,
-        Optional<KVReferencedPrimaryKeys> optionallyReferencedPrimaryKeys) {
-      val optionalFk = context.getRow().getOptionalFk();
-
-      // DCC-3926: If any of the foreign key values are -888 then skip validation. This is because
-      // optionallyReferencedPrimaryKeys.get().hasMatchingReference(fk) would not match anything because -888 is not
-      // allowed for a primary key
-      if (hasNotApplicableCode(optionalFk)) {
-        return;
+        validateForeignKey(context,
+            referencedPk,
+            fk,
+            RELATION,
+            referencedFileType);
       }
+    }
 
-      validateForeignKey(context,
-          optionallyReferencedPrimaryKeys,
-          optionalFk,
-          OPTIONAL_RELATION);
+    private void validateOptionalForeignKeys(KVRowContext context) {
+      val row = context.getRow();
+      if (row.hasOptionalFks()) {
+        row.getOptionalFks().entrySet()
+            .forEach(entry -> {
+              KVFileType referencedFileType = entry.getKey();
+              KVKey optionalFk = entry.getValue();
+              KVReferencedPrimaryKeys referencedPks = context.getReferencedPrimaryKeys().get(referencedFileType);
+
+              // DCC-3926: If any of the foreign key values are -888 then skip validation. This is because
+              // optionallyReferencedPrimaryKeys.get().hasMatchingReference(fk) would not match anything because -888 is
+              // not allowed for a primary key
+                if (hasNotApplicableCode(optionalFk)) {
+                  return;
+                }
+                validateForeignKey(context,
+                    referencedPks,
+                    optionalFk,
+                    OPTIONAL_RELATION,
+                    referencedFileType);
+              });
+      }
     }
 
     /**
      * Do not call directly outside of the inner class.
-     * @param context TODO
      */
     private void validateForeignKey(KVRowContext context,
-        Optional<KVReferencedPrimaryKeys> optionallyReferencedPrimaryKeys, KVKey fk, KVErrorType errorType) {
+        KVReferencedPrimaryKeys referencedPrimaryKeys,
+        KVKey fk,
+        KVErrorType errorType,
+        KVFileType referencedFileType) {
       val fileType = context.getFileType();
       val fileName = context.getFileName();
       val lineNumber = context.getLineNumber();
 
-      if (ROW_CHECKS_ENABLED) {
-        checkState(
-            optionallyReferencedPrimaryKeys.isPresent(),
-            "Referenced PKs are expected to be present for type '%s'", fileType);
-      }
-
-      val foreignKeyViolation = !optionallyReferencedPrimaryKeys.get().hasMatchingReference(fk);
+      val foreignKeyViolation = !referencedPrimaryKeys.hasMatchingReference(fk);
       if (foreignKeyViolation) {
         switch (errorType) {
-        case RELATION1:
-          context.getReporter().reportRelation1Error(fileType, fileName, lineNumber, fk);
-          break;
-        case RELATION2:
-          context.getReporter().reportRelation2Error(fileType, fileName, lineNumber, fk);
+        case RELATION:
+          context.getReporter().reportRelationError(fileType, fileName, lineNumber, fk,
+              Optional.of(referencedFileType));
           break;
         case OPTIONAL_RELATION:
-          context.getReporter().reportOptionalRelationError(fileType, fileName, lineNumber, fk);
+          context.getReporter().reportOptionalRelationError(fileType, fileName, lineNumber, fk,
+              Optional.of(referencedFileType));
           break;
         default:
           throw new IllegalStateException(format("Invalid error type provided: '%s'", errorType));
@@ -468,34 +264,10 @@ public final class KVFileProcessor {
           "Expecting to have a PK: '%s' ('%s')", row, fileName);
     }
 
-    private void ensureFK1(String fileName, KVRow row) {
+    private void ensureFk(String fileName, KVRow row, KVFileType fileType) {
       if (!active) return;
-      checkState(row.hasFk1(),
-          "Expecting to have an FK1: '%s' ('%s')", row, fileName);
-    }
-
-    private void ensureNoPK(KVRow row) {
-      if (!active) return;
-      checkState(!row.hasPk(),
-          "Row is not expected to contain a PK for type '%s': '%s'", fileType, row);
-    }
-
-    private void ensureNoFK1(KVRow row) {
-      if (!active) return;
-      checkState(!row.hasFk1(),
-          "Row is not expected to contain an FK1 for type '%s': '%s'", fileType, row);
-    }
-
-    private void ensureNoFK2(KVRow row) {
-      if (!active) return;
-      checkState(!row.hasFk2(),
-          "Row is not expected to contain an FK2 for type '%s': '%s'", fileType, row);
-    }
-
-    private void ensureNoOptionalFK(KVRow row) {
-      if (!active) return;
-      checkState(!row.hasOptionalFk(),
-          "Row is not expected to contain a seconary FK for type '%s': '%s'", fileType, row);
+      checkState(row.hasFk(fileType),
+          "Expecting to have an FK: '%s' for type '%s' ('%s')", row, fileType, fileName);
     }
 
   }

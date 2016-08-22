@@ -15,29 +15,43 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.data;
+package org.icgc.dcc.submission.test;
 
-import static java.lang.String.format;
-import static org.icgc.dcc.common.core.util.Formats.formatCount;
-import lombok.NonNull;
-import lombok.Value;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.zip.GZIPInputStream;
 
-import org.icgc.dcc.submission.validation.key.core.KVFileType;
+import lombok.Cleanup;
+import lombok.SneakyThrows;
+import lombok.val;
 
-@Value
-public class KVReferencedPrimaryKeys {
+import org.icgc.dcc.common.test.AbstractTest;
+import org.junit.Before;
 
-  KVFileType referencedFileType;
-  KVPrimaryKeys referencedPks;
+import com.google.common.io.ByteStreams;
 
-  public boolean hasMatchingReference(@NonNull KVKey fk) {
-    return referencedPks.containsPk(fk);
+public abstract class AbstractDictionaryTest extends AbstractTest {
+
+  private static final File COMPRESSED_DICTIONARY = new File("../dcc-submission-test/" + INPUT_TEST_FIXTURES_DIR,
+      "dictionary.json.gz");
+  protected File dictionaryFile;
+
+  @Before
+  @Override
+  public void setUp() {
+    super.setUp();
+    dictionaryFile = new File(workingDir, "dictionary.json");
+    uncompressDictionaryFile();
   }
 
-  @Override
-  public String toString() {
-    return format("KVReferencedPrimaryKeys(referencedFileType=%s, referencedPks=%s)",
-        referencedFileType, formatCount(referencedPks.getSize()));
+  @SneakyThrows
+  protected void uncompressDictionaryFile() {
+    @Cleanup
+    val input = new GZIPInputStream(new FileInputStream(COMPRESSED_DICTIONARY));
+    @Cleanup
+    val output = new FileOutputStream(dictionaryFile);
+    ByteStreams.copy(input, output);
   }
 
 }

@@ -17,19 +17,29 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
-import static com.google.common.collect.ImmutableList.copyOf;
-import static com.google.common.collect.Iterables.transform;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.OPTIONAL_RELATION;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.SURJECTION;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.UNIQUENESS;
 
+import java.util.Collection;
 import java.util.List;
 
-import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.common.core.model.FileTypes.FileType;
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-
 import lombok.RequiredArgsConstructor;
+import lombok.val;
+
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.dictionary.model.Relation;
+import org.icgc.dcc.submission.dictionary.model.RestrictionType;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * WIP (use {@link KVHardcodedDictionary} until finished).
@@ -41,132 +51,188 @@ public class KVDynamicDictionary implements KVDictionary {
 
   @Override
   public Iterable<KVExperimentalDataType> getExperimentalDataTypes() {
-    return copyOf(transform(dictionary.getFeatureTypes(),
-        new Function<FeatureType, KVExperimentalDataType>() {
-
-          @Override
-          public KVExperimentalDataType apply(FeatureType featureType) {
-            return KVExperimentalDataType.from(featureType);
-          }
-
-        }));
+    return dictionary.getFeatureTypes().stream()
+        .map(featureType -> KVExperimentalDataType.from(featureType))
+        .collect(toImmutableList());
   }
 
   @Override
   public List<KVFileType> getExperimentalFileTypes(KVExperimentalDataType dataType) {
-    return copyOf(transform(
-        dictionary.getFileTypesReferencedBranch(dataType.getFeatureType()),
-        new Function<FileType, KVFileType>() {
-
-          @Override
-          public KVFileType apply(FileType fileType) {
-            return KVFileType.from(fileType);
-          }
-
-        }));
+    return dictionary.getFileTypesReferencedBranch(dataType.getFeatureType()).stream()
+        .map(KVFileType::from)
+        .collect(toImmutableList());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.icgc.dcc.submission.validation.key.core.KVDictionary#hasOutgoingSurjectiveRelation(org.icgc.dcc.submission.
-   * validation.key.core.KVFileType)
-   */
-  @Override
-  public boolean hasOutgoingSurjectiveRelation(KVFileType fileType) {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.icgc.dcc.submission.validation.key.core.KVDictionary#getKeysIndices(org.icgc.dcc.submission.validation.key.
-   * core.KVFileType)
-   */
   @Override
   public KVFileTypeKeysIndices getKeysIndices(KVFileType fileType) {
-    // TODO Auto-generated method stub
-    return null;
+    val fileSchema = getFileSchema(fileType);
+    val fieldNames = fileSchema.fieldNames();
+    val primaryKeys = fileSchema.getUniqueFields();
+
+    val relations = fileSchema.getRelations();
+    val foreignKeys = resolveForeignKeys(fieldNames, relations, fileSchema);
+    val optionalKeys = resolveOptionalKeys(fieldNames, relations, fileSchema);
+
+    val builder = KVFileTypeKeysIndices.builder()
+        .pk(resolveKeyIndices(fieldNames, primaryKeys))
+        .fks(foreignKeys);
+
+    if (!optionalKeys.isEmpty()) {
+      builder.optionalFks(optionalKeys);
+    }
+
+    return builder.build();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.icgc.dcc.submission.validation.key.core.KVDictionary#getOptionalReferencedFileType1(org.icgc.dcc.submission
-   * .validation.key.core.KVFileType)
-   */
   @Override
-  public Optional<KVFileType> getOptionalReferencedFileType1(KVFileType fileType) {
-    // TODO Auto-generated method stub
-    return null;
+  public List<String> getErrorFieldNames(KVFileType fileType, KVErrorType errorType,
+      Optional<KVFileType> optionalReferencedFileType) {
+    if (errorType == UNIQUENESS || errorType == SURJECTION) {
+      return getPrimaryKeyNames(fileType);
+    }
+
+    val fileSchema = getFileSchema(fileType);
+    val referencedFileType = optionalReferencedFileType.get();
+
+    val relationsStream = fileSchema.getRelations().stream()
+        .filter(relation -> referencedFileType == KVFileType.from(relation.getOtherFileType()));
+
+    checkArgument(optionalReferencedFileType.isPresent(), "Referenced file type must be provided for '%s' error "
+        + "type", KVErrorType.class.getSimpleName());
+
+    if (errorType == RELATION) {
+      val errorFileds = relationsStream
+          .filter(relation -> !hasOptionalFk(relation, fileSchema))
+          .map(relation -> getFileTypeFKs(relation, fileSchema))
+          .findFirst();
+      checkState(errorFileds.isPresent(), "Failed to resolve error fields for file type '%s'; error type '%s' and "
+          + "referenced file type '%s'", fileType, errorType, referencedFileType);
+
+      return errorFileds.get();
+    }
+
+    if (errorType == OPTIONAL_RELATION) {
+      val errorFileds = relationsStream
+          .filter(relation -> hasOptionalFk(relation, fileSchema))
+          .map(relation -> getOptionalFileTypeFKs(relation, fileSchema))
+          .findFirst();
+      checkState(errorFileds.isPresent(), "Failed to resolve error fields for file type '%s'; error type '%s' and "
+          + "referenced file type '%s'", fileType, errorType, referencedFileType);
+
+      return errorFileds.get();
+    }
+
+    throw new IllegalArgumentException(format("Failed to resolve error filed names for error type '%s'", errorType));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.icgc.dcc.submission.validation.key.core.KVDictionary#getOptionalReferencedFileType2(org.icgc.dcc.submission
-   * .validation.key.core.KVFileType)
-   */
-  @Override
-  public Optional<KVFileType> getOptionalReferencedFileType2(KVFileType fileType) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.icgc.dcc.submission.validation.key.core.KVDictionary#getErrorFieldNames(org.icgc.dcc.submission.validation.
-   * key.core.KVFileType, org.icgc.dcc.submission.validation.key.core.KVErrorType)
-   */
-  @Override
-  public List<String> getErrorFieldNames(KVFileType fileType, KVErrorType errorType) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.icgc.dcc.submission.validation.key.core.KVDictionary#getPrimaryKeyNames(org.icgc.dcc.submission.validation.
-   * key.core.KVFileType)
-   */
   @Override
   public List<String> getPrimaryKeyNames(KVFileType fileType) {
-    // TODO Auto-generated method stub
-    return null;
+    val fileSchema = getFileSchema(fileType);
+
+    return fileSchema.getUniqueFields();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.icgc.dcc.submission.validation.key.core.KVDictionary#getSurjectionForeignKeyNames(org.icgc.dcc.submission.
-   * validation.key.core.KVFileType)
-   */
   @Override
-  public List<String> getSurjectionForeignKeyNames(KVFileType fileType) {
-    // TODO Auto-generated method stub
-    return null;
+  public Iterable<KVFileType> getTopologicallyOrderedFileTypes() {
+    return KVDynamicDictionaryHelper.getTopologicallyOrderedFileTypes(dictionary);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.icgc.dcc.submission.validation.key.core.KVDictionary#getReferencingFileType(org.icgc.dcc.submission.validation
-   * .key.core.KVFileType)
-   */
   @Override
-  public KVFileType getReferencingFileType(KVFileType fileType) {
-    // TODO Auto-generated method stub
-    return null;
+  public Collection<KVFileType> getParents(KVFileType fileType) {
+    return dictionary.getParents(fileType.getFileType()).stream()
+        .map(KVFileType::from)
+        .collect(toImmutableList());
+  }
+
+  @Override
+  public boolean hasChildren(KVFileType fileType) {
+    return dictionary.getFiles().stream()
+        .flatMap(file -> file.getRelations().stream())
+        .map(relation -> relation.getOtherFileType())
+        .map(KVFileType::from)
+        .anyMatch(ft -> ft == fileType);
+  }
+
+  @Override
+  public Collection<KVFileType> getSurjectiveReferencedTypes(KVFileType fileType) {
+    val fileSchema = getFileSchema(fileType);
+
+    return fileSchema.getRelations().stream()
+        .filter(Relation::isBidirectional)
+        .map(Relation::getOtherFileType)
+        .map(KVFileType::from)
+        .collect(toImmutableList());
+  }
+
+  private FileSchema getFileSchema(KVFileType fileType) {
+    return dictionary.getFileSchema(fileType.getFileType());
+  }
+
+  private static List<Integer> resolveKeyIndices(List<String> fieldNames, List<String> primaryKeys) {
+    return primaryKeys.stream()
+        .map(pk -> fieldNames.indexOf(pk))
+        .collect(toImmutableList());
+  }
+
+  private static Multimap<KVFileType, Integer> resolveForeignKeys(List<String> fieldNames, List<Relation> relations,
+      FileSchema fileSchema) {
+    val foreignKeys = ArrayListMultimap.<KVFileType, Integer> create();
+
+    for (val relation : relations) {
+      if (hasOptionalFk(relation, fileSchema)) {
+        continue;
+      }
+
+      val type = relation.getOtherFileType();
+      val fkFields = getFileTypeFKs(relation, fileSchema);
+      val fkIndices = resolveKeyIndices(fieldNames, fkFields);
+      foreignKeys.putAll(KVFileType.from(type), fkIndices);
+    }
+
+    return foreignKeys;
+  }
+
+  private static Multimap<KVFileType, Integer> resolveOptionalKeys(List<String> fieldNames, List<Relation> relations,
+      FileSchema fileSchema) {
+    val foreignKeys = ArrayListMultimap.<KVFileType, Integer> create();
+
+    for (val relation : relations) {
+      if (!hasOptionalFk(relation, fileSchema)) {
+        continue;
+      }
+
+      val type = relation.getOtherFileType();
+      val fkFields = getOptionalFileTypeFKs(relation, fileSchema);
+      val fkIndices = resolveKeyIndices(fieldNames, fkFields);
+      foreignKeys.putAll(KVFileType.from(type), fkIndices);
+    }
+
+    return foreignKeys;
+  }
+
+  private static boolean hasOptionalFk(Relation relation, FileSchema fileSchema) {
+    return relation.getFields().stream()
+        .anyMatch(fkField -> isOptionalFk(fileSchema, fkField));
+  }
+
+  private static List<String> getFileTypeFKs(Relation relation, FileSchema fileSchema) {
+    return relation.getFields().stream()
+        .filter(fkField -> !isOptionalFk(fileSchema, fkField))
+        .collect(toImmutableList());
+  }
+
+  private static List<String> getOptionalFileTypeFKs(Relation relation, FileSchema fileSchema) {
+    return relation.getFields().stream()
+        .filter(fkField -> isOptionalFk(fileSchema, fkField))
+        .collect(toImmutableList());
+  }
+
+  private static boolean isOptionalFk(FileSchema fileSchema, String fkField) {
+    val field = fileSchema.getField(fkField);
+
+    return field.getRestrictions().stream()
+        .filter(rest -> rest.getType() == RestrictionType.REQUIRED)
+        .allMatch(rest -> rest.getConfig().getBoolean("acceptMissingCode"));
   }
 
 }

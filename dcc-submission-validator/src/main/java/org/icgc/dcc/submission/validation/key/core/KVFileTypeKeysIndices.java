@@ -18,47 +18,67 @@
 package org.icgc.dcc.submission.validation.key.core;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableList.copyOf;
+import static java.util.Collections.emptyMap;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableMap;
 import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
 
 import java.util.List;
 
-import org.icgc.dcc.submission.validation.key.data.KVKey;
-import org.icgc.dcc.submission.validation.key.data.KVRow;
-
 import lombok.Builder;
 import lombok.Value;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
+import org.icgc.dcc.submission.validation.key.data.KVKey;
+import org.icgc.dcc.submission.validation.key.data.KVRow;
+
+import com.google.common.collect.Multimap;
 
 /**
  * Represents the indices for the keys that are relevant to a particular {@link KVFileType}.
  */
 @Value
 @Builder
+@Slf4j
 public class KVFileTypeKeysIndices {
 
   private final List<Integer> pk;
-  private final List<Integer> fk1;
-  private final List<Integer> fk2;
-  private final List<Integer> optionalFk;
+  private Multimap<KVFileType, Integer> fks;
+  private Multimap<KVFileType, Integer> optionalFks;
 
   public KVRow getRow(List<String> row) {
-    if (ROW_CHECKS_ENABLED) checkState(
-        pk != null || fk1 != null, "Invalid row: '%s'", row);
+    if (ROW_CHECKS_ENABLED) {
+      checkState(pk != null || !fks.isEmpty(), "Invalid row: '%s'", row);
+    }
+
     val builder = KVRow.builder();
 
     if (pk != null) {
       builder.pk(KVKey.from(row, pk));
     }
-    if (fk1 != null) {
-      builder.fk1(KVKey.from(row, fk1));
+
+    log.info("FKs: {}", fks);
+    if (!fks.isEmpty()) {
+      val rowFks = fks.keySet().stream()
+          .collect(toImmutableMap(fileType -> fileType, fileType -> KVKey.from(row, copyOf(fks.get(fileType)))));
+      log.info("Row fks: {}", rowFks);
+      builder.fks(rowFks);
+    } else {
+      builder.fks(emptyMap());
     }
-    if (fk2 != null) {
-      builder.fk2(KVKey.from(row, fk2));
-    }
-    if (optionalFk != null) {
-      builder.optionalFk(KVKey.from(row, optionalFk));
+
+    if (optionalFks != null && !optionalFks.isEmpty()) {
+      val rowOptionalFks = optionalFks.keySet().stream()
+          .collect(toImmutableMap(
+              fileType -> fileType,
+              fileType -> KVKey.from(row, copyOf(optionalFks.get(fileType)))));
+      builder.optionalFks(rowOptionalFks);
+    } else {
+      builder.optionalFks(emptyMap());
     }
 
     return builder.build();
   }
+
 }

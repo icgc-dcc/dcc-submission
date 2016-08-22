@@ -15,29 +15,47 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.data;
+package org.icgc.dcc.submission.dictionary.model;
 
-import static java.lang.String.format;
-import static org.icgc.dcc.common.core.util.Formats.formatCount;
-import lombok.NonNull;
-import lombok.Value;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.METH_ARRAY_M_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.METH_ARRAY_PROBES_TYPE;
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.METH_ARRAY_P_TYPE;
 
-import org.icgc.dcc.submission.validation.key.core.KVFileType;
+import java.util.Collections;
 
-@Value
-public class KVReferencedPrimaryKeys {
+import lombok.SneakyThrows;
+import lombok.val;
 
-  KVFileType referencedFileType;
-  KVPrimaryKeys referencedPks;
+import org.icgc.dcc.submission.dictionary.util.Dictionaries;
+import org.icgc.dcc.submission.test.AbstractDictionaryTest;
+import org.junit.Test;
 
-  public boolean hasMatchingReference(@NonNull KVKey fk) {
-    return referencedPks.containsPk(fk);
-  }
+import com.google.common.collect.Lists;
+
+public class FileSchemaTest extends AbstractDictionaryTest {
+
+  Dictionary dictionary;
 
   @Override
-  public String toString() {
-    return format("KVReferencedPrimaryKeys(referencedFileType=%s, referencedPks=%s)",
-        referencedFileType, formatCount(referencedPks.getSize()));
+  @SneakyThrows
+  public void setUp() {
+    super.setUp();
+    dictionary = Dictionaries.readDictionary(dictionaryFile.toURI().toURL());
+  }
+
+  @Test
+  public void testCompareTo() throws Exception {
+    val methArrayM = dictionary.getFileSchema(METH_ARRAY_M_TYPE);
+    val methArrayP = dictionary.getFileSchema(METH_ARRAY_P_TYPE);
+    val methArrayProbes = dictionary.getFileSchema(METH_ARRAY_PROBES_TYPE);
+    assertThat(methArrayM.compareTo(methArrayP)).isEqualTo(-1);
+    assertThat(methArrayM.compareTo(methArrayProbes)).isEqualTo(-1);
+    assertThat(methArrayP.compareTo(methArrayProbes)).isEqualTo(1);
+
+    val fileTypes = Lists.newArrayList(METH_ARRAY_PROBES_TYPE, METH_ARRAY_P_TYPE, METH_ARRAY_M_TYPE);
+    Collections.sort(fileTypes);
+    assertThat(fileTypes).containsExactly(METH_ARRAY_M_TYPE, METH_ARRAY_PROBES_TYPE, METH_ARRAY_P_TYPE);
   }
 
 }

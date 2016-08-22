@@ -24,6 +24,12 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.Collection;
 
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.Value;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -33,14 +39,9 @@ import org.icgc.dcc.common.hadoop.parser.FileLineListParser;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
-import com.google.common.base.Stopwatch;
-
 import cascading.flow.hadoop.HadoopFlowStep;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.Value;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+
+import com.google.common.base.Stopwatch;
 
 /**
  * Runner that operates within a Cascading step.
@@ -82,7 +83,7 @@ public class KVValidatorRunner implements FlowExecutorJob, Serializable {
     log.info("Starting key validation with memory: {}...", formatMemory());
 
     val fileSystem = getFileSystem(configuration);
-    val kvDictionary = new KVHardcodedDictionary(); // TODO: inject
+    val kvDictionary = new KVDynamicDictionary(dictionary); // TODO: inject
     val report = new KVReporter(kvDictionary, fileSystem, new Path(reportPath));
     val watch = createStopwatch();
     try {

@@ -20,15 +20,13 @@ package org.icgc.dcc.submission.validation.key.core;
 import static org.icgc.dcc.submission.core.report.ErrorType.RELATION_PARENT_VALUE_ERROR;
 import static org.icgc.dcc.submission.core.report.ErrorType.RELATION_VALUE_ERROR;
 import static org.icgc.dcc.submission.core.report.ErrorType.UNIQUE_VALUE_ERROR;
-import static org.icgc.dcc.submission.validation.key.core.KVKeyType.FK1;
-import static org.icgc.dcc.submission.validation.key.core.KVKeyType.FK2;
+import static org.icgc.dcc.submission.validation.key.core.KVKeyType.FK;
 import static org.icgc.dcc.submission.validation.key.core.KVKeyType.OPTIONAL_FK;
 import static org.icgc.dcc.submission.validation.key.core.KVKeyType.PK;
-
-import org.icgc.dcc.submission.core.report.ErrorType;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+
+import org.icgc.dcc.submission.core.report.ErrorType;
 
 /**
  * Type of key validator errors.
@@ -36,8 +34,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum KVErrorType {
   UNIQUENESS(PK, UNIQUE_VALUE_ERROR),
-  RELATION1(FK1, RELATION_VALUE_ERROR),
-  RELATION2(FK2, RELATION_VALUE_ERROR), // TODO: distinguish?
+  RELATION(FK, RELATION_VALUE_ERROR),
   OPTIONAL_RELATION(OPTIONAL_FK, RELATION_VALUE_ERROR), // TODO: we should distinguish with primary (for ErrorType)
   SURJECTION(PK, RELATION_PARENT_VALUE_ERROR);
 
@@ -49,4 +46,5 @@ public enum KVErrorType {
 
   @Getter
   private final ErrorType errorType;
+
 }

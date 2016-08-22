@@ -17,38 +17,29 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.google.common.base.Optional;
 
-/**
- * TODO
- */
 public interface KVDictionary {
 
   Iterable<KVExperimentalDataType> getExperimentalDataTypes();
 
   List<KVFileType> getExperimentalFileTypes(KVExperimentalDataType dataType);
 
-  boolean hasOutgoingSurjectiveRelation(KVFileType fileType);
-
   KVFileTypeKeysIndices getKeysIndices(KVFileType fileType);
 
-  Optional<KVFileType> getOptionalReferencedFileType1(KVFileType fileType);
-
-  Optional<KVFileType> getOptionalReferencedFileType2(KVFileType fileType);
-
-  List<String> getErrorFieldNames(KVFileType fileType, KVErrorType errorType);
+  List<String> getErrorFieldNames(KVFileType fileType, KVErrorType errorType, Optional<KVFileType> referencedFileType);
 
   List<String> getPrimaryKeyNames(KVFileType fileType);
 
-  List<String> getSurjectionForeignKeyNames(KVFileType fileType);
+  Iterable<KVFileType> getTopologicallyOrderedFileTypes();
 
-  /**
-   * Do *not* apply with {@link KVFileType#SAMPLE}.
-   * <p>
-   * TODO: optional
-   */
-  KVFileType getReferencingFileType(KVFileType fileType);
+  Collection<KVFileType> getParents(KVFileType fileType);
+
+  boolean hasChildren(KVFileType fileType);
+
+  Collection<KVFileType> getSurjectiveReferencedTypes(KVFileType fileType);
 
 }

@@ -21,10 +21,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
 
-import org.icgc.dcc.submission.validation.key.core.KVKeyType;
+import java.util.Map;
 
 import lombok.Builder;
 import lombok.Value;
+
+import org.icgc.dcc.submission.validation.key.core.KVFileType;
+import org.icgc.dcc.submission.validation.key.core.KVKeyType;
 
 /**
  * Data relevant to the key validation for a given row.
@@ -38,15 +41,8 @@ public class KVRow {
    */
   private final KVKey pk;
 
-  /**
-   * Applicable for all files but 'donor'.
-   */
-  private final KVKey fk1;
-
-  /**
-   * Only applicable for the array types.
-   */
-  private final KVKey fk2;
+  private final Map<KVFileType, KVKey> fks;
+  private final Map<KVFileType, KVKey> optionalFks;
 
   /**
    * Only applicable for some meta files. See {@link KVKeyType#OPTIONAL_FK}.
@@ -57,16 +53,16 @@ public class KVRow {
     return pk != null;
   }
 
-  public boolean hasFk1() {
-    return fk1 != null;
+  public boolean hasFk(KVFileType fileType) {
+    return fks.containsKey(fileType);
   }
 
-  public boolean hasFk2() {
-    return fk2 != null;
+  public boolean hasOptionalFks() {
+    return optionalFks != null && !optionalFks.isEmpty();
   }
 
-  public boolean hasOptionalFk() {
-    return optionalFk != null;
+  public KVKey getFk(KVFileType fileType) {
+    return fks.get(fileType);
   }
 
   /**
