@@ -66,7 +66,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <outputDirectory>/conf</outputDirectory>
     </file>
     <file>
-      <source>src/test/conf/application.yml</source>
+      <source>src/test/resources/application.yml</source>
       <outputDirectory>/conf</outputDirectory>
     </file>
   </files>

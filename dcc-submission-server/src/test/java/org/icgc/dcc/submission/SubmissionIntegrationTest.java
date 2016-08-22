@@ -51,7 +51,6 @@ import static org.icgc.dcc.submission.test.Tests.SEED_CODELIST_ENDPOINT;
 import static org.icgc.dcc.submission.test.Tests.SEED_DICTIONARIES_ENDPOINT;
 import static org.icgc.dcc.submission.test.Tests.SIGNOFF_ENDPOINT;
 import static org.icgc.dcc.submission.test.Tests.TEST_CONFIG_FILE;
-import static org.icgc.dcc.submission.test.Tests.TEST_PROPERTIES;
 import static org.icgc.dcc.submission.test.Tests.UPDATE_RELEASE_ENDPOINT;
 import static org.icgc.dcc.submission.test.Tests.VALIDATION_ENDPOINT;
 import static org.icgc.dcc.submission.test.Tests.addScript;
@@ -89,6 +88,7 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.dcc.AppUtils;
 import org.icgc.dcc.common.core.model.FileTypes;
 import org.icgc.dcc.submission.config.PersistenceConfig;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.ReleaseState;
@@ -104,8 +104,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mongodb.morphia.Datastore;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.dumbster.smtp.SimpleSmtpServer;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -119,8 +119,8 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { TestConfig.class, PersistenceConfig.class })
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { TestConfig.class, PersistenceConfig.class })
 public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   /**
@@ -302,13 +302,15 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
    * Submission file system.
    */
   private static final String PROJECT1_VALIDATION_DIR = INITITAL_RELEASE_NAME + "/" + PROJECT1_KEY + "/.validation";
-  private static final String submission = TEST_PROPERTIES.getFsRoot();
 
   /**
    * Test utilities.
    */
   @Autowired
   private Datastore datastore;
+  @Autowired
+  private SubmissionProperties properties;
+
   private SimpleSmtpServer smtpServer;
   private MiniHadoop hadoop;
   private FileSystem fileSystem;
@@ -326,7 +328,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       fileSystem = FileSystem.get(config);
 
       status("init", "Deleting local root filesystem...");
-      fileSystem.delete(new Path(submission), true);
+      fileSystem.delete(new Path(properties.getFsRoot()), true);
     } else {
       if (!DOCKER) {
         // Setup Embedded Hadoop infrastructure
@@ -349,7 +351,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
         fileSystem = FileSystem.get(config);
 
         status("init", "Deleting root filesystem...");
-        fileSystem.delete(new Path(submission), true);
+        fileSystem.delete(new Path(properties.getFsRoot()), true);
 
         // Config overrides for {@code SubmissionMain} consumption
         System.setProperty("fsUrl", fsUrl);
@@ -362,7 +364,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     datastore.getDB().dropDatabase();
 
     status("init", "Starting SMTP server...");
-    smtpServer = SimpleSmtpServer.start(Integer.valueOf(TEST_PROPERTIES.getMail().getSmtpPort()));
+    smtpServer = SimpleSmtpServer.start(Integer.valueOf(properties.getMail().getSmtpPort()));
 
     status("init", "Starting submission server...");
     ServerMain.main("--spring.config.location=" + TEST_CONFIG_FILE.getAbsolutePath());
@@ -453,7 +455,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   @SneakyThrows
   private void userSubmitsFiles() throws IOException {
     val source = new Path(FS_DIR);
-    val destination = new Path(submission);
+    val destination = new Path(properties.getFsRoot());
     status("user", "SFTP transferring files from '{}' to '{}'...", source, destination);
 
     boolean manipulatedFiles = false;
@@ -812,9 +814,10 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     // Project 1
     assertEmptyFile(fileSystem,
-        submission, PROJECT1_VALIDATION_DIR + "/donor.txt.bz2.internal" + REPORT_FILES_INFO_SEPARATOR + "errors.json");
+        properties.getFsRoot(),
+        PROJECT1_VALIDATION_DIR + "/donor.txt.bz2.internal" + REPORT_FILES_INFO_SEPARATOR + "errors.json");
     assertEmptyFile(fileSystem,
-        submission,
+        properties.getFsRoot(),
         PROJECT1_VALIDATION_DIR + "/specimen.txt.gz.internal" + REPORT_FILES_INFO_SEPARATOR + "errors.json");
   }
 

@@ -17,6 +17,7 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.service.DictionaryService;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.junit.Test;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -67,8 +68,8 @@ public class DictionaryResourceTest extends ResourceTest {
   }
 
   @Override
-  protected void register() {
-    register(ResourceConfig.class);
+  protected void register(SpringApplicationBuilder builder) {
+    builder.sources(ResourceConfig.class);
   }
 
   @Test

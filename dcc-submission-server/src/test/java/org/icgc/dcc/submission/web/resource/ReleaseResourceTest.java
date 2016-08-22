@@ -13,6 +13,7 @@ import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -49,8 +50,8 @@ public class ReleaseResourceTest extends ResourceTest {
   }
 
   @Override
-  protected void register() {
-    register(ResourceConfig.class);
+  protected void register(SpringApplicationBuilder builder) {
+    builder.sources(ResourceConfig.class);
   }
 
   @Test

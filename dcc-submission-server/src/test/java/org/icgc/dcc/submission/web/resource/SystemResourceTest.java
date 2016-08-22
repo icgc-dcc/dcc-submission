@@ -23,7 +23,7 @@ public class SystemResourceTest extends ResourceTest {
   @Before
   public void setUp() {
     service = getBean(SftpServerService.class);
-    service.startAsync().awaitRunning();
+    service.awaitRunning();
   }
 
   @Test
