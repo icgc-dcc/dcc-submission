@@ -24,8 +24,6 @@ releases.fetch = action('fetch releases', async function () {
   });
 });
 
-window.asdf = releases;
-
 function Actions ({ state }) {
   // TODO: see submissions_table_view.coffee#158-228
   return <div>actions for {state}</div>
