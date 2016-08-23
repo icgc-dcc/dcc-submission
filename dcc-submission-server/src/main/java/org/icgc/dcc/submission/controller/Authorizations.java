@@ -88,7 +88,7 @@ public final class Authorizations {
 
     return authentication.getAuthorities().stream()
         .map(GrantedAuthority::getAuthority)
-        .anyMatch(a -> a.equals(authority));
+        .anyMatch(a -> a.equals(authority) || a.equals("*"));
   }
 
 }

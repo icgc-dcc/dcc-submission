@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -71,7 +72,7 @@ public class UserController {
 
   @PostMapping("self")
   @PreAuthorize("hasRole('USER')")
-  public void feedback(Feedback feedback) {
+  public void feedback(@RequestBody Feedback feedback) {
     // No authorization check necessary
     log.info("Sending feedback email: {}", feedback);
     mailService.sendSupportFeedback(feedback);

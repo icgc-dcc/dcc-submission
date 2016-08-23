@@ -46,6 +46,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -101,11 +102,7 @@ public class DictionaryController {
 
   @CrossOrigin
   @GetMapping("{version}")
-  public ResponseEntity<?> getDictionary(
-
-      @PathVariable("version") String version
-
-  ) {
+  public ResponseEntity<?> getDictionary(@PathVariable("version") String version) {
     // No authorization check necessary
     log.debug("Getting dictionary: {}", version);
     Dictionary dict = this.dictionaryService.getDictionaryByVersion(version);
@@ -122,11 +119,7 @@ public class DictionaryController {
    */
   @SuperUser
   @PostMapping
-  public ResponseEntity<?> addDictionary(
-
-      @Valid Dictionary dict
-
-  ) {
+  public ResponseEntity<?> addDictionary(@Valid @RequestBody Dictionary dict) {
     log.info("Adding dictionary: {}", dict == null ? null : dict.getVersion());
 
     val violations = validateDictionary(dict);
@@ -165,7 +158,7 @@ public class DictionaryController {
   public ResponseEntity<?> updateDictionary(
       @PathVariable("version") String version,
       @RequestParam(name = "reset", defaultValue = "true") boolean reset, // Reset by default
-      @Valid Dictionary newDictionary) {
+      @Valid @RequestBody Dictionary newDictionary) {
     checkArgument(version != null);
     checkArgument(newDictionary != null);
     checkArgument(newDictionary.getVersion() != null);

@@ -55,6 +55,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -151,7 +152,8 @@ public class NextReleaseController {
   }
 
   @PostMapping("queue")
-  public ResponseEntity<?> queue(@Valid List<QueuedProject> queuedProjects, Authentication authentication) {
+  public ResponseEntity<?> queue(@Valid @RequestBody List<QueuedProject> queuedProjects,
+      Authentication authentication) {
     log.info("Enqueuing projects for nextRelease: {}", queuedProjects);
 
     if (!isAccessible(authentication)) {
@@ -304,7 +306,7 @@ public class NextReleaseController {
    */
   @SuperUser
   @PutMapping("update")
-  public ResponseEntity<?> update(@Valid Release release, Authentication authentication) {
+  public ResponseEntity<?> update(@Valid @RequestBody Release release, Authentication authentication) {
     log.info("Updating nextRelease with: {}", release);
     if (release != null) {
       String name = release.getName();

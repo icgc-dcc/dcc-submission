@@ -40,6 +40,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -63,7 +64,7 @@ public class ReleaseController {
   @PutMapping
   @VisibleForTesting
   public ResponseEntity<?> initialize(
-      @Valid Release release,
+      @Valid @RequestBody Release release,
       Authentication authentication) {
     log.info("Initializing releases with: {}", release);
     if (isSuperUser(authentication) == false) {

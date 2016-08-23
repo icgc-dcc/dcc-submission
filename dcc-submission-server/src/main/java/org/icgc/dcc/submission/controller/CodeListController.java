@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -71,7 +72,7 @@ public class CodeListController {
 
   @SuperUser
   @PostMapping
-  public ResponseEntity<?> addCodeLists(@Valid List<CodeList> codeLists) {
+  public ResponseEntity<?> addCodeLists(@Valid @RequestBody List<CodeList> codeLists) {
     for (val codeList : codeLists) {
       val codes = Sets.<String> newHashSet();
       val values = Sets.<String> newHashSet();

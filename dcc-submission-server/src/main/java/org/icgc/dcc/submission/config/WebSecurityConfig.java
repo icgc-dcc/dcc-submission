@@ -14,8 +14,11 @@
  * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER                              
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * @formatter:off
  */
 package org.icgc.dcc.submission.config;
+
+import static org.springframework.http.HttpMethod.GET;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -32,17 +35,28 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
     http
         .authorizeRequests()
-        .antMatchers("/ws/**").authenticated()
+          .antMatchers(
+              GET,
+              "/ws/nextRelease/dictionary",
+              "/ws/codeLists",
+              "/ws/dictionaries")
+          .permitAll()
+          .antMatchers("/ws/**")
+            .authenticated()
         .and()
-        .httpBasic();
-    // .regexMatchers("^/(?!ws/).*").permitAll();
+          .httpBasic()
+        .and()
+          .csrf().disable();
   }
 
   @Autowired
   public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
     auth
         .inMemoryAuthentication()
-        .withUser("user").password("password").roles("USER");
+          .withUser("admin")
+          .password("adminspasswd")
+          .roles("ADMIN")
+          .authorities("*");
   }
 
 }

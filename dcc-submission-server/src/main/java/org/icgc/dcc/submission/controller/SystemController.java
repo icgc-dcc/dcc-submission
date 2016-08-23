@@ -27,6 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -64,7 +65,7 @@ public class SystemController {
 
   @SuperUser
   @PatchMapping
-  public ResponseEntity<?> patch(JsonNode state) {
+  public ResponseEntity<?> patch(@RequestBody JsonNode state) {
     log.info("Setting SFTP state to {}...", state);
     JsonNode active = state.path("active");
     if (active.isMissingNode()) {

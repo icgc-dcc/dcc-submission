@@ -40,6 +40,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -77,7 +78,7 @@ public class ProjectController {
   }
 
   @PostMapping
-  public ResponseEntity<?> addProject(Authentication authentication, @Valid Project project) {
+  public ResponseEntity<?> addProject(@Valid @RequestBody Project project, Authentication authentication) {
     log.info("Request to add Project '{}'", project);
 
     val user = getUsername(authentication);
@@ -130,7 +131,7 @@ public class ProjectController {
   @PostMapping("{projectKey}")
   public ResponseEntity<?> updateProject(
       @PathVariable("projectKey") String projectKey,
-      @Valid Project project,
+      @Valid @RequestBody Project project,
       Authentication authentication) {
     log.info("Request to update Project '{}' with '{}'", projectKey, project);
 

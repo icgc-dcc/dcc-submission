@@ -36,6 +36,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -64,7 +65,7 @@ public class SeedController {
   @SuperUser
   @PostMapping("users")
   public ResponseEntity<?> seedUsers(
-      @Valid User[] users,
+      @Valid @RequestBody User[] users,
       @RequestParam(name = "delete", defaultValue = "false") boolean delete) {
     log.info("Seeding users...");
     if (delete) {
@@ -77,7 +78,7 @@ public class SeedController {
   @SuperUser
   @PostMapping("projects")
   public ResponseEntity<?> seedProjects(
-      @Valid Project[] projects,
+      @Valid @RequestBody Project[] projects,
       @RequestParam(name = "delete", defaultValue = "false") boolean delete) {
     log.info("Seeding projects...");
     if (delete) {
@@ -90,7 +91,7 @@ public class SeedController {
   @SuperUser
   @PostMapping("releases")
   public ResponseEntity<?> seedReleases(
-      @Valid Release[] releases,
+      @Valid @RequestBody Release[] releases,
       @RequestParam(name = "delete", defaultValue = "false") boolean delete) {
     log.info("Seeding releases...");
     if (delete) {
@@ -103,7 +104,7 @@ public class SeedController {
   @SuperUser
   @PostMapping("dictionaries")
   public ResponseEntity<?> seedDictionaries(
-      @Valid Dictionary[] dictionaries,
+      @Valid @RequestBody Dictionary[] dictionaries,
       @RequestParam(name = "delete", defaultValue = "false") boolean delete) {
     log.info("Seeding dictionaries...");
     if (delete) {
@@ -118,7 +119,7 @@ public class SeedController {
   @SuperUser
   @PostMapping("codelists")
   public ResponseEntity<?> seedCodeLists(
-      @Valid CodeList[] codelists,
+      @Valid @RequestBody CodeList[] codelists,
       @RequestParam(name = "delete", defaultValue = "false") boolean delete) {
     log.info("Seeding code lists...");
     if (delete) {
