@@ -87,13 +87,17 @@ public class KVDynamicDictionary implements KVDictionary {
   @Override
   public List<String> getErrorFieldNames(KVFileType fileType, KVErrorType errorType,
       Optional<KVFileType> optionalReferencedFileType) {
-    if (errorType == UNIQUENESS || errorType == SURJECTION) {
+    if (errorType == UNIQUENESS) {
       return getPrimaryKeyNames(fileType);
     }
 
-    val fileSchema = getFileSchema(fileType);
     val referencedFileType = optionalReferencedFileType.get();
+    // Return parent's fields for surjection
+    if (errorType == SURJECTION) {
+      return getPrimaryKeyNames(referencedFileType);
+    }
 
+    val fileSchema = getFileSchema(fileType);
     val relationsStream = fileSchema.getRelations().stream()
         .filter(relation -> referencedFileType == KVFileType.from(relation.getOtherFileType()));
 

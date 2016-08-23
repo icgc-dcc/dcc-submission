@@ -19,11 +19,15 @@ package org.icgc.dcc.submission.validation.key.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.OPTIONAL_RELATION;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.SURJECTION;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.UNIQUENESS;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.CNSM_M;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_ARRAY_M;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_ARRAY_P;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_ARRAY_PROBES;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.SAMPLE;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.SPECIMEN;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.SSM_M;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -116,10 +120,12 @@ public class KVDynamicDictionaryTest extends AbstractDictionaryTest {
   public void testGetErrorFieldNames() throws Exception {
     assertThat(kvDictionary.getErrorFieldNames(SSM_M, OPTIONAL_RELATION, Optional.of(SAMPLE)))
         .containsExactly("matched_sample_id");
-    assertThat(kvDictionary.getErrorFieldNames(SSM_M, KVErrorType.RELATION, Optional.of(SAMPLE)))
+    assertThat(kvDictionary.getErrorFieldNames(SSM_M, RELATION, Optional.of(SAMPLE)))
         .containsExactly("analyzed_sample_id");
-    assertThat(kvDictionary.getErrorFieldNames(SSM_M, KVErrorType.UNIQUENESS, Optional.of(SAMPLE)))
+    assertThat(kvDictionary.getErrorFieldNames(SSM_M, UNIQUENESS, Optional.of(SAMPLE)))
         .containsExactly("analysis_id", "analyzed_sample_id");
+    assertThat(kvDictionary.getErrorFieldNames(SAMPLE, SURJECTION, Optional.of(SPECIMEN)))
+        .containsExactly("specimen_id");
   }
 
 }
