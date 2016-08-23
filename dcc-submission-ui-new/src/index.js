@@ -8,7 +8,6 @@ import App from './App';
 import './index.css';
 
 import Login from './Login/Login.js';
-import Releases from './Releases/Releases.js';
 
 import user from '~/user.js';
 
@@ -39,7 +38,8 @@ ReactDOM.render((
     <Route path="/" component={App}>
       <IndexRoute component={Login}/>
       <Route path="login" component={Login}/>
-      <Route path="releases" component={Releases} onEnter={requireAuth}/>
+      <Route path="releases" component={require('./Releases/Releases.js')} onEnter={requireAuth}/>
+      <Route path="releases/:id" component={require('./Release/Release.js')} onEnter={requireAuth}/>
     </Route>
   </Router>
   ), document.getElementById('root')
