@@ -1,16 +1,11 @@
 import React, { Component } from 'react';
 
-async function login (username, password) {
-  const accessToken = global.btoa(`${username}:${password}`);
-  return await fetch('/ws/users/self', {
-      headers: {
-        Authorization: `X-DCC-Auth ${accessToken}`,
-        Accept: 'application/json'
-      }
-    }); 
-}
+import {observer} from 'mobx-react';
 
-export default class extends Component {
+import user from '~/user.js';
+
+@observer
+class Login extends Component {
 
   state = {
     username: '',
@@ -19,21 +14,7 @@ export default class extends Component {
 
   submit = async () => {
     const { username, password } = this.state;
-    const response = await login(username, password);
-    
-    if (response.status === 200) {
-      const user = await response.json();
-      this.handleLogin(user);
-    } else if (response.status === 401) {
-      throw new Error('Incorrect username or password');
-    } else {
-      throw new Error('Login failed');
-    }
-  }
-
-  handleLogin = (user) => {
-    // TODO: save to global state, redirect to post-login home page
-    console.log('login success', user);
+    user.login(username, password);
   }
 
   render() {
@@ -55,7 +36,12 @@ export default class extends Component {
           />
         </label>
         <button onClick={this.submit}/>
+        <pre>
+        {JSON.stringify(user, null, '  ')}
+        </pre>
       </div>
     );
   }
 }
+
+export default Login;
