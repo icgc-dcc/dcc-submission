@@ -27,6 +27,13 @@ function requireAuth(nextState, replace) {
   }
 }
 
+// hardcode user to be logged in
+
+user.name = 'admin';
+user.token = 'YWRtaW46YWRtaW5zcGFzc3dk';
+user.roles = ['admin'];
+user.isLoggedIn = true;
+
 ReactDOM.render((
   <Router history={browserHistory}>
     <Route path="/" component={App}>
