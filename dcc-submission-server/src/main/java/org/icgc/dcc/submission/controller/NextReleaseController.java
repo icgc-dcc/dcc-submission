@@ -219,7 +219,7 @@ public class NextReleaseController {
   }
 
   @SneakyThrows
-  @DeleteMapping("validation/{projectKey}")
+  @DeleteMapping("validation/{projectKey:.+}")
   public ResponseEntity<?> cancelValidation(@PathVariable("projectKey") String projectKey,
       Authentication authentication) {
     log.info("Cancelling validation for {}", projectKey);
@@ -243,7 +243,7 @@ public class NextReleaseController {
 
   @SuperUser
   @SneakyThrows
-  @DeleteMapping("state/{projectKey}")
+  @DeleteMapping("state/{projectKey:.+}")
   public ResponseEntity<?> resetState(@PathVariable("projectKey") String projectKey) {
     log.info("Resetting state for '{}'", projectKey);
 

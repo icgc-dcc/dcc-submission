@@ -29,7 +29,6 @@ import org.icgc.dcc.submission.service.UserService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -59,7 +58,6 @@ public class UserController {
   private final MailService mailService;
 
   @GetMapping("self")
-  @PreAuthorize("hasRole('USER')")
   public DetailedUser getResource(Authentication authentication) {
     if (authentication == null) return null;
 
@@ -71,7 +69,6 @@ public class UserController {
   }
 
   @PostMapping("self")
-  @PreAuthorize("hasRole('USER')")
   public void feedback(@RequestBody Feedback feedback) {
     // No authorization check necessary
     log.info("Sending feedback email: {}", feedback);
@@ -80,7 +77,7 @@ public class UserController {
   }
 
   @SuperUser
-  @PutMapping("unlock/{username}")
+  @PutMapping("unlock/{username:.+}")
   public ResponseEntity<?> unlock(@PathVariable("username") String username, Authentication authentication) {
     log.info("Unlocking user: {}", username);
     val optionalUser = userService.getUserByUsername(username);

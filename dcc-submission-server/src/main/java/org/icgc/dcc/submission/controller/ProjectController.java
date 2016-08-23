@@ -106,7 +106,7 @@ public class ProjectController {
     return response;
   }
 
-  @GetMapping("{projectKey}")
+  @GetMapping("{projectKey:.+}")
   public ResponseEntity<?> getProject(@PathVariable("projectKey") String projectKey, Authentication authentication) {
     log.info("Request for Project '{}'", projectKey);
 

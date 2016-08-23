@@ -35,7 +35,7 @@ module.exports = class SchemaReport extends Model
     @urlPath = ->
       url = "releases/#{@get('release')}/" +
         "submissions/#{@get('submission')}" +
-        "/report/#{@get('name')}"
+        "/report/#{@get('name')}/"
 
     if @get "errorReports"
       errors = []
@@ -45,7 +45,7 @@ module.exports = class SchemaReport extends Model
           # Make datatable happy, ensure there are no nulls
           c.fieldNames = [] if c.fieldNames == null
           c.lineNumbers = [] if c.lineNumbers == null
-         
+
           c.errorType = e.errorType
           c.lineValueMap = {}
           for i in [0 .. c.lineNumbers.length - 1]
@@ -57,7 +57,7 @@ module.exports = class SchemaReport extends Model
           errors.push c
 
 
- 
+
 
     @set "errorReports", new SchemaReportErrors errors
     @set "fieldReports", new SchemaReportFieldReports @get "fieldReports"

@@ -73,7 +73,7 @@ public class DictionaryController {
 
   @CrossOrigin
   @GetMapping
-  public List<Dictionary> getDictionary() {
+  public List<Dictionary> getDictionaries() {
     // No authorization check necessary
     log.debug("Getting dictionaries");
     List<Dictionary> dictionaries = dictionaryService.getDictionaries();
@@ -101,7 +101,7 @@ public class DictionaryController {
   }
 
   @CrossOrigin
-  @GetMapping("{version}")
+  @GetMapping("{version:.+}")
   public ResponseEntity<?> getDictionary(@PathVariable("version") String version) {
     // No authorization check necessary
     log.debug("Getting dictionary: {}", version);

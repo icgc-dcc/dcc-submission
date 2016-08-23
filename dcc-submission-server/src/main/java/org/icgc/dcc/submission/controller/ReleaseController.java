@@ -120,7 +120,7 @@ public class ReleaseController {
     return ResponseEntity.ok(result);
   }
 
-  @GetMapping("{name}/submissions/{projectKey}")
+  @GetMapping("{name}/submissions/{projectKey:.+}")
   public ResponseEntity<?> getSubmission(
       @PathVariable("name") String releaseName,
       @PathVariable("projectKey") String projectKey,
@@ -141,7 +141,7 @@ public class ReleaseController {
     return ResponseEntity.ok(detailedSubmission);
   }
 
-  @GetMapping("{name}/submissions/{projectKey}/report")
+  @GetMapping("{name}/submissions/{projectKey:.*}/report")
   public ResponseEntity<?> getReport(
       @PathVariable("name") String releaseName,
       @PathVariable("projectKey") String projectKey,
@@ -163,7 +163,7 @@ public class ReleaseController {
     return ResponseEntity.ok(report);
   }
 
-  @GetMapping("{name}/submissions/{projectKey}/report/{fileName}")
+  @GetMapping("{name}/submissions/{projectKey:.+}/report/{fileName:.+}/")
   public ResponseEntity<?> getFileReport(
       @PathVariable("name") String releaseName,
       @PathVariable("projectKey") String projectKey,
@@ -182,7 +182,7 @@ public class ReleaseController {
     return ResponseEntity.ok(fileReport.get());
   }
 
-  @GetMapping("{name}/submissions/{projectKey}/files")
+  @GetMapping("{name}/submissions/{projectKey:.*}/files")
   public ResponseEntity<?> getSubmissionFileList(
       @PathVariable("name") String releaseName,
       @PathVariable("projectKey") String projectKey,
