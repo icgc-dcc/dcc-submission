@@ -39,7 +39,7 @@ ReactDOM.render((
       <IndexRoute component={Login}/>
       <Route path="login" component={Login}/>
       <Route path="releases" component={require('./Releases/Releases.js')} onEnter={requireAuth}/>
-      <Route path="releases/:id" component={require('./Release/Release.js')} onEnter={requireAuth}/>
+      <Route path="releases/:name" component={require('./Release/Release.js')} onEnter={requireAuth}/>
     </Route>
   </Router>
   ), document.getElementById('root')
