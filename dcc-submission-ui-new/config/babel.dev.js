@@ -18,6 +18,7 @@ module.exports = {
       helpers: false,
       polyfill: false,
       regenerator: true
-    }]
+    }],
+    ['babel-root-import', { 'rootPathSuffix': 'src' }],
   ])
 };
