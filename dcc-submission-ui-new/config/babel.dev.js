@@ -12,6 +12,7 @@ module.exports = {
     'babel-plugin-transform-object-rest-spread',
     'babel-plugin-add-module-exports',
     'babel-plugin-transform-async-to-generator',
+    'babel-plugin-transform-decorators-legacy',
   ].map(require.resolve).concat([
     [require.resolve('babel-plugin-transform-runtime'), {
       helpers: false,
