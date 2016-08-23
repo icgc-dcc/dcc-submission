@@ -37,7 +37,7 @@ export default @observer
 class Release extends Component {
 
   componentWillMount () {
-    const releaseName = this.props.params.name
+    const releaseName = this.props.params.releaseName;
     release.fetch(releaseName);
   }
 

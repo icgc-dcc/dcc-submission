@@ -39,7 +39,8 @@ ReactDOM.render((
       <IndexRoute component={Login}/>
       <Route path="login" component={Login}/>
       <Route path="releases" component={require('./Releases/Releases.js')} onEnter={requireAuth}/>
-      <Route path="releases/:name" component={require('./Release/Release.js')} onEnter={requireAuth}/>
+      <Route path="releases/:releaseName" component={require('./Release/Release.js')} onEnter={requireAuth}/>
+      <Route path="releases/:releaseName/submissions/:projectKey" component={require('./Submission/Submission.js')} onEnter={requireAuth}/>
     </Route>
   </Router>
   ), document.getElementById('root')
