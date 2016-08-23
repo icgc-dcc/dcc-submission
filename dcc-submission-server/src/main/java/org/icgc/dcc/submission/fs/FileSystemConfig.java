@@ -39,4 +39,9 @@ public class FileSystemConfig extends AbstractConfig {
     return submissionFileSystemProvider().get();
   }
 
+  @Bean
+  public DccFileSystem dccFileSystem() {
+    return singleton(DccFileSystem.class);
+  }
+
 }

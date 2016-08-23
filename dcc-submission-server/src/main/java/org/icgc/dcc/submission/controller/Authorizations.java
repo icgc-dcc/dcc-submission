@@ -46,6 +46,8 @@ public final class Authorizations {
   }
 
   public static String getUsername(Authentication authentication) {
+    if (authentication == null) return null;
+
     return authentication.getName();
   }
 
@@ -82,6 +84,8 @@ public final class Authorizations {
   }
 
   private static boolean hasPrivilege(Authentication authentication, String authority) {
+    if (authentication == null) return false;
+
     return authentication.getAuthorities().stream()
         .map(GrantedAuthority::getAuthority)
         .anyMatch(a -> a.equals(authority));

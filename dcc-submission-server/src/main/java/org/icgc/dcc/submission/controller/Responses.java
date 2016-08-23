@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.controller;
 
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.NO_SUCH_ENTITY;
+
 import org.icgc.dcc.submission.web.model.ServerErrorCode;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.springframework.http.HttpStatus;
@@ -55,6 +57,25 @@ public class Responses {
     return ResponseEntity
         .status(HttpStatus.NO_CONTENT)
         .build();
+  }
+
+  public static ResponseEntity<?> notFound(String name) {
+    return ResponseEntity
+        .status(HttpStatus.NOT_FOUND)
+        .body(new ServerErrorResponseMessage(NO_SUCH_ENTITY, name));
+  }
+
+  public static ResponseEntity<?> noSuchEntityResponse(String... names) {
+    return noSuchEntityResponse(false, names);
+  }
+
+  public static ResponseEntity<?> noSuchEntityResponse(boolean important, String... names) {
+    ServerErrorResponseMessage errorMessage =
+        new ServerErrorResponseMessage(NO_SUCH_ENTITY, (Object[]) names);
+    if (important) {
+      log.info("No such entity: {}", errorMessage);
+    }
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
   }
 
 }

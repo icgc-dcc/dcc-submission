@@ -22,7 +22,6 @@ import java.util.logging.LogManager;
 
 import org.icgc.dcc.submission.core.DccRuntime;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
-import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -49,11 +48,6 @@ public class ServerConfig extends AbstractConfig {
   @Bean
   public DccRuntime dccRuntime(Set<Service> services) {
     return new DccRuntime(services);
-  }
-
-  @Bean
-  public DccFileSystem dccFileSystem() {
-    return singleton(DccFileSystem.class);
   }
 
 }

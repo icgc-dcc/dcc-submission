@@ -35,6 +35,8 @@
 # These settings can be modified to fit the needs of your application
 # Optimized for use with version 3.5.19 of the Wrapper.
 
+unset MAIL
+
 # Application
 APP_NAME="dcc-submission-server"
 APP_LONG_NAME="DCC Submission Server"

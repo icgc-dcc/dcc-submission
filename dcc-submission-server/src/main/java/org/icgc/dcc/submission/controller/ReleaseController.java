@@ -15,27 +15,17 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web.resource;
+package org.icgc.dcc.submission.controller;
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static org.icgc.dcc.submission.controller.Authorizations.hasReleaseViewPrivilege;
+import static org.icgc.dcc.submission.controller.Authorizations.hasSpecificProjectPrivilege;
+import static org.icgc.dcc.submission.controller.Authorizations.isSuperUser;
+import static org.icgc.dcc.submission.controller.Responses.noSuchEntityResponse;
+import static org.icgc.dcc.submission.controller.Responses.unauthorizedResponse;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.ALREADY_INITIALIZED;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.EMPTY_REQUEST;
-import static org.icgc.dcc.submission.web.util.Authorizations.getSubject;
-import static org.icgc.dcc.submission.web.util.Authorizations.hasReleaseViewPrivilege;
-import static org.icgc.dcc.submission.web.util.Authorizations.hasSpecificProjectPrivilege;
-import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
-import static org.icgc.dcc.submission.web.util.Responses.noSuchEntityResponse;
-import static org.icgc.dcc.submission.web.util.Responses.unauthorizedResponse;
 
 import javax.validation.Valid;
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 
 import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
@@ -43,83 +33,81 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.icgc.dcc.submission.service.SystemService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
-import org.icgc.dcc.submission.web.util.ResponseTimestamper;
-import org.icgc.dcc.submission.web.util.Responses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.annotations.VisibleForTesting;
 
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Path("releases")
-public class ReleaseResource {
+@RestController
+@RequestMapping("/ws/releases")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+public class ReleaseController {
 
-  @Autowired
-  private ReleaseService releaseService;
-  @Autowired
-  private SystemService systemService;
+  private final ReleaseService releaseService;
+  private final SystemService systemService;
 
   // TODO: This method seems like it should be removed since it is being exposed just for testing
+  @PutMapping
   @VisibleForTesting
-  @PUT
-  public Response initialize(
+  public ResponseEntity<?> initialize(
       @Valid Release release,
-      @Context Request request,
-      @Context SecurityContext securityContext) {
+      Authentication authentication) {
     log.info("Initializing releases with: {}", release);
-    if (isSuperUser(securityContext) == false) {
+    if (isSuperUser(authentication) == false) {
       return Responses.unauthorizedResponse();
     }
 
     if (release != null) {
-      ResponseTimestamper.evaluate(request, release);
-
       val empty = releaseService.countOpenReleases() == 0;
       if (empty) {
         releaseService.createInitialRelease(release);
 
-        return ResponseTimestamper
-            .ok(release)
-            .build();
+        return ResponseEntity
+            .ok(release);
       } else {
-        return Response
-            .status(BAD_REQUEST)
-            .entity(new ServerErrorResponseMessage(ALREADY_INITIALIZED))
-            .build();
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(new ServerErrorResponseMessage(ALREADY_INITIALIZED));
       }
     } else {
-      return Response
-          .status(BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage(EMPTY_REQUEST))
-          .build();
+      return ResponseEntity
+          .status(HttpStatus.BAD_REQUEST)
+          .body(new ServerErrorResponseMessage(EMPTY_REQUEST));
     }
   }
 
-  @GET
+  @GetMapping
   @JsonView(Digest.class)
-  public Response getReleases(@Context SecurityContext securityContext) {
+  public ResponseEntity<?> getReleases(Authentication authentication) {
     log.debug("Getting visible releases");
-    if (hasReleaseViewPrivilege(securityContext) == false) {
+    if (hasReleaseViewPrivilege(authentication) == false) {
       return unauthorizedResponse();
     }
 
-    val subject = getSubject(securityContext);
-    val visibileReleases = releaseService.getReleasesBySubject(subject);
+    val visibileReleases = releaseService.getReleasesBySubject(authentication);
 
-    return Response.ok(visibileReleases).build();
+    return ResponseEntity.ok(visibileReleases);
   }
 
-  @GET
-  @Path("{name}")
-  public Response getReleaseByName(
-      @PathParam("name") String name,
-      @Context SecurityContext securityContext) {
+  @GetMapping("{name}")
+  public ResponseEntity<?> getReleaseByName(
+      @PathVariable("name") String name,
+      Authentication authentication) {
     log.debug("Getting release using: {}", name);
-    val subject = getSubject(securityContext);
-    val releaseView = releaseService.getReleaseViewBySubject(name, subject);
+    val releaseView = releaseService.getReleaseViewBySubject(name, authentication);
 
     if (releaseView.isPresent() == false) {
       return noSuchEntityResponse(name);
@@ -128,17 +116,16 @@ public class ReleaseResource {
     val result = releaseView.get();
     result.setLocked(!systemService.isEnabled());
 
-    return Response.ok(result).build();
+    return ResponseEntity.ok(result);
   }
 
-  @GET
-  @Path("{name}/submissions/{projectKey}")
-  public Response getSubmission(
-      @PathParam("name") String releaseName,
-      @PathParam("projectKey") String projectKey,
-      @Context SecurityContext securityContext) {
+  @GetMapping("{name}/submissions/{projectKey}")
+  public ResponseEntity<?> getSubmission(
+      @PathVariable("name") String releaseName,
+      @PathVariable("projectKey") String projectKey,
+      Authentication authentication) {
     log.debug("Getting detailed submission: {}.{}", releaseName, projectKey);
-    if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
+    if (hasSpecificProjectPrivilege(authentication, projectKey) == false) {
       return Responses.unauthorizedResponse();
     }
 
@@ -150,17 +137,16 @@ public class ReleaseResource {
 
     detailedSubmission.setLocked(!systemService.isEnabled());
 
-    return Response.ok(detailedSubmission).build();
+    return ResponseEntity.ok(detailedSubmission);
   }
 
-  @GET
-  @Path("{name}/submissions/{projectKey}/report")
-  public Response getReport(
-      @PathParam("name") String releaseName,
-      @PathParam("projectKey") String projectKey,
-      @Context SecurityContext securityContext) {
+  @GetMapping("{name}/submissions/{projectKey}/report")
+  public ResponseEntity<?> getReport(
+      @PathVariable("name") String releaseName,
+      @PathVariable("projectKey") String projectKey,
+      Authentication authentication) {
     log.debug("Getting submission report for: {}.{}", releaseName, projectKey);
-    if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
+    if (hasSpecificProjectPrivilege(authentication, projectKey) == false) {
       return Responses.unauthorizedResponse();
     }
 
@@ -173,18 +159,17 @@ public class ReleaseResource {
     // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
     // dcc-submission-server and dcc-submission-core.
     val report = submission.getReport();
-    return Response.ok(report).build();
+    return ResponseEntity.ok(report);
   }
 
-  @GET
-  @Path("{name}/submissions/{projectKey}/report/{fileName}")
-  public Response getFileReport(
-      @PathParam("name") String releaseName,
-      @PathParam("projectKey") String projectKey,
-      @PathParam("fileName") String fileName,
-      @Context SecurityContext securityContext) {
+  @GetMapping("{name}/submissions/{projectKey}/report/{fileName}")
+  public ResponseEntity<?> getFileReport(
+      @PathVariable("name") String releaseName,
+      @PathVariable("projectKey") String projectKey,
+      @PathVariable("fileName") String fileName,
+      Authentication authentication) {
     log.debug("Getting file report for: {}.{}.{}", new Object[] { releaseName, projectKey, fileName });
-    if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
+    if (hasSpecificProjectPrivilege(authentication, projectKey) == false) {
       return Responses.unauthorizedResponse();
     }
 
@@ -193,17 +178,16 @@ public class ReleaseResource {
       return noSuchEntityResponse(releaseName, projectKey, fileName);
     }
 
-    return Response.ok(fileReport.get()).build();
+    return ResponseEntity.ok(fileReport.get());
   }
 
-  @GET
-  @Path("{name}/submissions/{projectKey}/files")
-  public Response getSubmissionFileList(
-      @PathParam("name") String releaseName,
-      @PathParam("projectKey") String projectKey,
-      @Context SecurityContext securityContext) {
+  @GetMapping("{name}/submissions/{projectKey}/files")
+  public ResponseEntity<?> getSubmissionFileList(
+      @PathVariable("name") String releaseName,
+      @PathVariable("projectKey") String projectKey,
+      Authentication authentication) {
     log.debug("Getting submission file list for release {} and project {}", releaseName, projectKey);
-    if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
+    if (hasSpecificProjectPrivilege(authentication, projectKey) == false) {
       return Responses.unauthorizedResponse();
     }
 
@@ -212,7 +196,7 @@ public class ReleaseResource {
     }
 
     val submissionFiles = releaseService.getSubmissionFiles(releaseName, projectKey);
-    return Response.ok(submissionFiles).build();
+    return ResponseEntity.ok(submissionFiles);
   }
 
 }

@@ -61,11 +61,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-jersey</artifactId>
-      <version>${spring-boot.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
       <version>${spring-boot.version}</version>
     </dependency>    
@@ -204,8 +199,9 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     
     <!-- Testing - Spring -->
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-test</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <version>${spring-boot.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -301,20 +297,39 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <!-- Package -->
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
-        <configuration>
-          <artifactSet>
-            <excludes>
-              <exclude>${project.groupId}:dcc-submission-ui</exclude>
-              <exclude>com.sun.jersey:*</exclude>
-            </excludes>
-          </artifactSet>
-        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <version>${spring-boot.version}</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <phase>package</phase>
             <goals>
               <goal>shade</goal>
             </goals>
+            <configuration>
+              <artifactSet>
+                <excludes>
+                  <exclude>${project.groupId}:dcc-submission-ui</exclude>
+                  <exclude>com.sun.jersey:*</exclude>
+                </excludes>
+              </artifactSet>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/spring.handlers</resource>
+                </transformer>
+                <transformer implementation="org.springframework.boot.maven.PropertiesMergingResourceTransformer" combine.self="override">
+                  <resource>META-INF/spring.factories</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/spring.schemas</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+              </transformers>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -356,13 +371,13 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
               <value>src/main/conf/logback.xml</value>
             </systemProperty>
             <systemProperty>
-              <key>log.dir</key>
+              <key>logging.path</key>
               <value>target/logs</value>
             </systemProperty>
           </systemProperties>
           <arguments>
-            <argument>external</argument>
-            <argument>src/test/conf/application.conf</argument>
+            <argument>--spring.config.location</argument>
+            <argument>src/test/application/application.yml</argument>
           </arguments>
         </configuration>
       </plugin>
@@ -371,7 +386,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
   <properties>
     <!-- Entry point -->
-    <main.class>org.icgc.dcc.submission.SubmissionMain</main.class>
+    <main.class>org.icgc.dcc.submission.ServerMain</main.class>
 
     <!-- Versions -->
     <jersey.version>2.23.1</jersey.version>

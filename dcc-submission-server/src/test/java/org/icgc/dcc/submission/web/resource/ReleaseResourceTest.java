@@ -7,15 +7,16 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.apache.shiro.subject.Subject;
 import org.glassfish.jersey.message.internal.OutboundJaxrsResponse;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.Authentication;
 
 import lombok.val;
 
@@ -42,7 +43,7 @@ public class ReleaseResourceTest extends ResourceTest {
     @Bean
     public ReleaseService releaseService() {
       val mockReleaseService = mock(ReleaseService.class);
-      when(mockReleaseService.getReleasesBySubject(any(Subject.class))).thenReturn(newArrayList(release()));
+      when(mockReleaseService.getReleasesBySubject(any(Authentication.class))).thenReturn(newArrayList(release()));
 
       return mockReleaseService;
     }
@@ -50,8 +51,8 @@ public class ReleaseResourceTest extends ResourceTest {
   }
 
   @Override
-  protected void register() {
-    register(ResourceConfig.class);
+  protected void register(SpringApplicationBuilder builder) {
+    builder.sources(ResourceConfig.class);
   }
 
   @Test

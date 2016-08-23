@@ -29,7 +29,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.shiro.util.ThreadContext;
 import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.config.PersistenceConfig;
-import org.icgc.dcc.submission.config.ServerConfig;
 import org.icgc.dcc.submission.config.ValidationConfig;
 import org.icgc.dcc.submission.repository.RepositoryConfig;
 import org.icgc.dcc.submission.service.ServiceConfig;
@@ -42,8 +41,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
@@ -52,8 +51,8 @@ import com.google.common.io.ByteStreams;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { TestConfig.class, FileSystemConfig.class, ShiroConfig.class, PersistenceConfig.class, RepositoryConfig.class, SftpConfig.class, ServiceConfig.class, ValidationConfig.class, ServerConfig.class })
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { TestConfig.class, FileSystemConfig.class, ShiroConfig.class, PersistenceConfig.class, RepositoryConfig.class, SftpConfig.class, ServiceConfig.class, ValidationConfig.class })
 public class FileSystemFunctionalTest extends FileSystemTest {
 
   protected DccFileSystem dccFileSystem;

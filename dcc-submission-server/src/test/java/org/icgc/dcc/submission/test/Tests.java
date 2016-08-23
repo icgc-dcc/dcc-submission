@@ -102,8 +102,7 @@ public final class Tests {
   /**
    * Test configuration constants.
    */
-  public static final File TEST_CONFIG_FILE = new File("src/test/conf/application.yml");
-  public static final SubmissionProperties TEST_PROPERTIES = readConfig(TEST_CONFIG_FILE);
+  public static final File TEST_CONFIG_FILE = new File("src/test/resources/application.yml");
 
   @SneakyThrows
   private static SubmissionProperties readConfig(File configFile) {

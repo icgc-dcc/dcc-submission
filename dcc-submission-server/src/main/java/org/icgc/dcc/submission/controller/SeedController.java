@@ -15,24 +15,12 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web.resource;
-
-import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
+package org.icgc.dcc.submission.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 import javax.validation.Valid;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FileSystem;
@@ -42,158 +30,111 @@ import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.web.util.Responses;
 import org.mongodb.morphia.Datastore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * TODO: discard class: DCC-819 (was originally created in the context of DCC-135)
  * <p>
  * The integration test currently relies on it
  */
-@Path("seed")
-public class SeedResource {
+@Slf4j
+@RestController
+@RequestMapping("/ws/seed")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+public class SeedController {
 
-  @Context
-  private HttpHeaders requestHeaders;
+  /**
+   * Dependencies.
+   */
+  private final Datastore datastore;
+  private final DccFileSystem fileSystem;
 
-  @Autowired
-  private Datastore datastore;
-
-  @Autowired
-  private DccFileSystem fileSystem;
-
-  @POST
-  @Path("users")
-  public Response seedUsers(
-
-      @Context SecurityContext securityContext,
-
+  @SuperUser
+  @PostMapping("users")
+  public ResponseEntity<?> seedUsers(
       @Valid User[] users,
-
-      @QueryParam("delete") @DefaultValue("false") boolean delete
-
-  ) {
-    if (isSuperUser(securityContext) == false) {
-      return Responses.unauthorizedResponse();
-    }
-
+      @RequestParam(name = "delete", defaultValue = "false") boolean delete) {
+    log.info("Seeding users...");
     if (delete) {
       datastore.getCollection(User.class).drop();
     }
     datastore.save(users);
-    return Response.status(Status.CREATED).build();
+    return created();
   }
 
-  @POST
-  @Path("projects")
-  public Response seedProjects(
-
-      @Context SecurityContext securityContext,
-
+  @SuperUser
+  @PostMapping("projects")
+  public ResponseEntity<?> seedProjects(
       @Valid Project[] projects,
-
-      @QueryParam("delete") @DefaultValue("false") boolean delete
-
-  ) {
-    if (isSuperUser(securityContext) == false) {
-      return Responses.unauthorizedResponse();
-    }
-
+      @RequestParam(name = "delete", defaultValue = "false") boolean delete) {
+    log.info("Seeding projects...");
     if (delete) {
       datastore.getCollection(Project.class).drop();
     }
     datastore.save(projects);
-    return Response.status(Status.CREATED).build();
+    return created();
   }
 
-  @POST
-  @Path("releases")
-  public Response seedReleases(
-
-      @Context SecurityContext securityContext,
-
+  @SuperUser
+  @PostMapping("releases")
+  public ResponseEntity<?> seedReleases(
       @Valid Release[] releases,
-
-      @QueryParam("delete") @DefaultValue("false") boolean delete
-
-  ) {
-    if (isSuperUser(securityContext) == false) {
-      return Responses.unauthorizedResponse();
-    }
-
+      @RequestParam(name = "delete", defaultValue = "false") boolean delete) {
+    log.info("Seeding releases...");
     if (delete) {
       datastore.getCollection(Release.class).drop();
     }
     datastore.save(releases);
-    return Response.status(Status.CREATED).build();
+    return created();
   }
 
-  @POST
-  @Path("dictionaries")
-  public Response seedDictionaries(
-
-      @Context SecurityContext securityContext,
-
+  @SuperUser
+  @PostMapping("dictionaries")
+  public ResponseEntity<?> seedDictionaries(
       @Valid Dictionary[] dictionaries,
-
-      @QueryParam("delete") @DefaultValue("false") boolean delete
-
-  ) {
-    if (isSuperUser(securityContext) == false) {
-      return Responses.unauthorizedResponse();
-    }
-
+      @RequestParam(name = "delete", defaultValue = "false") boolean delete) {
+    log.info("Seeding dictionaries...");
     if (delete) {
       datastore.getCollection(Dictionary.class).drop();
     }
 
     datastore.save(dictionaries);
 
-    return Response.status(Status.CREATED).build();
+    return created();
   }
 
-  @POST
-  @Path("codelists")
-  public Response seedCodeLists(
-
-      @Context SecurityContext securityContext,
-
+  @SuperUser
+  @PostMapping("codelists")
+  public ResponseEntity<?> seedCodeLists(
       @Valid CodeList[] codelists,
-
-      @QueryParam("delete") @DefaultValue("false") boolean delete
-
-  ) {
-    if (isSuperUser(securityContext) == false) {
-      return Responses.unauthorizedResponse();
-    }
-
+      @RequestParam(name = "delete", defaultValue = "false") boolean delete) {
+    log.info("Seeding code lists...");
     if (delete) {
       datastore.getCollection(CodeList.class).drop();
     }
 
     datastore.save(codelists);
 
-    return Response.status(Status.CREATED).build();
+    return created();
   }
 
-  @POST
-  @Path("fs/{filepath: .*}")
-  public Response seedFileSystem(
-
-      @Context SecurityContext securityContext,
-
-      @PathParam("filepath") String filename,
-
-      InputStream fileContents
-
-  ) {
-    if (isSuperUser(securityContext) == false) {
-      return Responses.unauthorizedResponse();
-    }
-
+  @SuperUser
+  @PostMapping("fs/{filepath: .*}")
+  public ResponseEntity<?> seedFileSystem(
+      @PathVariable("filepath") String filename, InputStream fileContents) {
+    log.info("Seeding file system...");
     FileSystem fs = this.fileSystem.getFileSystem();
     val destinationPath = new org.apache.hadoop.fs.Path(fileSystem.getRootStringPath() + "/" + filename);
 
@@ -204,10 +145,14 @@ public class SeedResource {
       fileDestination.flush();
       fileDestination.close();
     } catch (IOException e) {
-      return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
-    return Response.status(Status.CREATED).build();
+    return created();
+  }
+
+  public ResponseEntity<?> created() {
+    return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
 }

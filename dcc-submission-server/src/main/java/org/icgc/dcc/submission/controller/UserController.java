@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.controller;
 
+import static org.icgc.dcc.submission.controller.Authorizations.getUsername;
+import static org.icgc.dcc.submission.controller.Authorizations.isSuperUser;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.NO_SUCH_ENTITY;
 
 import org.icgc.dcc.submission.core.model.Feedback;
@@ -27,8 +29,8 @@ import org.icgc.dcc.submission.service.UserService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,7 +47,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RestController
-@RequestMapping("users")
+@RequestMapping("/ws/users")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class UserController {
 
@@ -56,15 +58,19 @@ public class UserController {
   private final MailService mailService;
 
   @GetMapping("self")
+  @PreAuthorize("hasRole('USER')")
   public DetailedUser getResource(Authentication authentication) {
-    val username = authentication.getName();
-    val admin = isAdmin(authentication);
+    if (authentication == null) return null;
+
+    val username = getUsername(authentication);
+    val admin = isSuperUser(authentication);
     val user = new DetailedUser(username, admin);
 
     return user;
   }
 
   @PostMapping("self")
+  @PreAuthorize("hasRole('USER')")
   public void feedback(Feedback feedback) {
     // No authorization check necessary
     log.info("Sending feedback email: {}", feedback);
@@ -92,12 +98,6 @@ public class UserController {
 
       return ResponseEntity.ok(user);
     }
-  }
-
-  private static boolean isAdmin(Authentication authentication) {
-    return authentication.getAuthorities().stream()
-        .map(GrantedAuthority::getAuthority)
-        .anyMatch(a -> a.equals("admin"));
   }
 
 }

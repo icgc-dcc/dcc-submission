@@ -12,12 +12,6 @@
 server:
   port: 5380
   
-http:
-  path: "/ws"
-
-  resources:
-    - "../dcc-submission-ui/public/"
-
 mongo:
   uri: "mongodb://localhost/icgc-local"
 
@@ -27,7 +21,7 @@ shiro:
 # Root directory of DCC filesystem
 fsRoot: "/tmp/submission"
 # FileSystem Scheme. This sets hadoop's fs.defaultFS
-fsUrl: "hdfs://localhost:8020"
+fsUrl: "file:///"
 
 sftp:
   port : 5322
@@ -35,13 +29,13 @@ sftp:
   nioWorkers : 20
   # key: "<Fill in public key here, without algorithm prefix>"
 
-hadoop: # Hadoop properties MUST be quoted here, we don't want the HOCON feature in that case
+hadoop: 
   # Everything set below this node ends up in the JobConf
   properties:
-    fs.defaultFS: hdfs://localhost:8020
+    "fs.defaultFS": ${fsUrl}
 
     # Configure the job tracker
-    "mapred.job.tracker": localhost:8021
+    "mapred.job.tracker": localhost
     "mapred.job.shuffle.input.buffer.percent": 0.5
 
 validator:

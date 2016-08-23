@@ -56,7 +56,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("dictionaries")
+@RequestMapping("/ws/dictionaries")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DictionaryController {
 

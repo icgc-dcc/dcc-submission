@@ -69,7 +69,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("nextRelease")
+@RequestMapping("/ws/nextRelease")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class NextReleaseController {
 

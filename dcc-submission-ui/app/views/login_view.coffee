@@ -75,7 +75,7 @@ module.exports = class LoginView extends PageView
       type: 'get'
       dataType: 'json'
       beforeSend: (xhr) ->
-        xhr.setRequestHeader 'Authorization', "X-DCC-Auth  #{accessToken}"
+        xhr.setRequestHeader 'Authorization', "Basic  #{accessToken}"
 
       success: (data, status, xhr) ->
         data.accessToken = accessToken

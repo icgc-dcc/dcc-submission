@@ -22,11 +22,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.lsFile;
+import static org.icgc.dcc.submission.controller.Authorizations.getUsername;
+import static org.icgc.dcc.submission.controller.Authorizations.hasSpecificProjectPrivilege;
 import static org.icgc.dcc.submission.core.util.NameValidator.validateEntityName;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
-import static org.icgc.dcc.submission.shiro.AuthorizationPrivileges.projectViewPrivilege;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.DUPLICATE_RELEASE_NAME;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.QUEUE_NOT_EMPTY;
@@ -42,7 +43,6 @@ import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.core.InvalidStateException;
@@ -69,6 +69,7 @@ import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.icgc.dcc.submission.repository.ReleaseRepository;
 import org.icgc.dcc.submission.web.InvalidNameException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -129,8 +130,8 @@ public class ReleaseService extends AbstractService {
    * Returns a list of {@code Release}s with their @{code Submission} filtered based on the user's privilege on
    * projects.
    */
-  public List<Release> getReleasesBySubject(Subject subject) {
-    log.debug("getting releases for {}", subject.getPrincipal());
+  public List<Release> getReleasesBySubject(Authentication authentication) {
+    log.debug("getting releases for {}", getUsername(authentication));
 
     List<Release> releases = releaseRepository.findReleaseSummaries();
     log.debug("Number of releases:{} ", releases.size());
@@ -139,8 +140,7 @@ public class ReleaseService extends AbstractService {
     for (val release : releases) {
       val builder = ImmutableList.<Submission> builder();
       for (val submission : release.getSubmissions()) {
-        val privilege = projectViewPrivilege(submission.getProjectKey());
-        val permitted = subject.isPermitted(privilege);
+        val permitted = hasSpecificProjectPrivilege(authentication, submission.getProjectKey());
         if (permitted) {
           builder.add(submission);
         }
@@ -167,12 +167,12 @@ public class ReleaseService extends AbstractService {
    * Optionally returns a {@code ReleaseView} matching the given name, and for which {@code Submission}s are filtered
    * based on the user's privileges.
    */
-  public Optional<ReleaseView> getReleaseViewBySubject(String releaseName, Subject subject) {
+  public Optional<ReleaseView> getReleaseViewBySubject(String releaseName, Authentication authentication) {
     val release = releaseRepository.findReleaseSummaryByName(releaseName);
     Optional<ReleaseView> releaseView = Optional.absent();
     if (release != null) {
       // populate project name for submissions
-      val projects = getProjects(release, subject);
+      val projects = getProjects(release, authentication);
       val submissionFilesMap = getSubmissionFilesByProjectKey(releaseName, release);
 
       releaseView = Optional.of(new ReleaseView(release, projects, submissionFilesMap));
@@ -760,11 +760,10 @@ public class ReleaseService extends AbstractService {
     return submission;
   }
 
-  private List<Project> getProjects(Release release, Subject user) {
+  private List<Project> getProjects(Release release, Authentication authentication) {
     val builder = ImmutableList.<String> builder();
     for (val projectKey : release.getProjectKeys()) {
-      val privilege = projectViewPrivilege(projectKey);
-      val viewable = user.isPermitted(privilege);
+      val viewable = hasSpecificProjectPrivilege(authentication, projectKey);
       if (viewable) {
         builder.add(projectKey);
       }

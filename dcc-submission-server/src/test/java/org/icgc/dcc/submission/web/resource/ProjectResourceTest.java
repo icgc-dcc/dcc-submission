@@ -36,6 +36,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -143,8 +144,8 @@ public class ProjectResourceTest extends ResourceTest {
   }
 
   @Override
-  protected void register() {
-    register(ResourceConfig.class);
+  protected void register(SpringApplicationBuilder builder) {
+    builder.sources(ResourceConfig.class);
   }
 
   @Test

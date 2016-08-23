@@ -27,7 +27,6 @@ import javax.validation.Valid;
 
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.service.DictionaryService;
-import org.icgc.dcc.submission.web.resource.DictionaryResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("codeLists")
+@RequestMapping("/ws/codeLists")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CodeListController {
 
@@ -81,7 +80,7 @@ public class CodeListController {
           log.warn("Code or value of {} is duplicated in {}", term, codeList);
           return ResponseEntity
               .status(HttpStatus.UNPROCESSABLE_ENTITY)
-              .header(DictionaryResource.VALIDATION_ERROR_HEADER,
+              .header(DictionaryController.VALIDATION_ERROR_HEADER,
                   "Code or value in " + term + " is duplicated in " + codeList)
               .build();
         } else {
@@ -94,7 +93,7 @@ public class CodeListController {
     checkArgument(codeLists != null);
     dictionaryService.addCodeList(codeLists);
 
-    return ResponseEntities.created();
+    return Responses.created();
   }
 
   @CrossOrigin

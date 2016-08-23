@@ -2,6 +2,7 @@ package org.icgc.dcc.submission.web.resource;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.glassfish.jersey.internal.util.Base64.encodeAsString;
+import static org.icgc.dcc.submission.test.Tests.TEST_CONFIG_FILE;
 
 import java.io.IOException;
 
@@ -27,10 +28,13 @@ import org.icgc.dcc.submission.shiro.ShiroConfig;
 import org.icgc.dcc.submission.test.TestConfig;
 import org.icgc.dcc.submission.web.WebConfig;
 import org.junit.After;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.common.net.HttpHeaders;
+
+import lombok.val;
 
 public abstract class ResourceTest extends JerseyTest {
 
@@ -38,12 +42,14 @@ public abstract class ResourceTest extends JerseyTest {
   private static final String AUTH_VALUE = "X-DCC-Auth " + encodeAsString("admin:adminspasswd");
   protected static final String MIME_TYPE = APPLICATION_JSON;
 
-  private AnnotationConfigApplicationContext context;
+  private ConfigurableApplicationContext context;
 
   @After
   public void after() {
     // Clean-up threads
     ThreadContext.remove();
+
+    context.close();
   }
 
   @Override
@@ -53,9 +59,7 @@ public abstract class ResourceTest extends JerseyTest {
 
   @Override
   protected Application configure() {
-    this.context = new AnnotationConfigApplicationContext();
-
-    context.register(
+    val builder = new SpringApplicationBuilder(
         TestConfig.class,
         JerseyConfig.class,
         ShiroConfig.class,
@@ -68,8 +72,9 @@ public abstract class ResourceTest extends JerseyTest {
         ValidationConfig.class,
         ServerConfig.class);
 
-    register();
-    context.refresh();
+    register(builder);
+    val app = builder.build();
+    context = app.run("--spring.config.location=" + TEST_CONFIG_FILE.getAbsolutePath());
 
     context.getBeanFactory().autowireBean(this);
 
@@ -88,18 +93,11 @@ public abstract class ResourceTest extends JerseyTest {
     });
   }
 
-  /**
-   * To be overriden if more configs are necessary (and to mock them for instance).
-   */
-  protected void register() {
+  protected void register(SpringApplicationBuilder builder) {
   }
 
   protected <T> T getBean(Class<T> clazz) {
     return context.getBean(clazz);
-  }
-
-  protected void register(Class<?> clazz) {
-    context.register(clazz);
   }
 
 }

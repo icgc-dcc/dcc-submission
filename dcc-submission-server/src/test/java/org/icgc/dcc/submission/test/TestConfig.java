@@ -18,15 +18,19 @@
 package org.icgc.dcc.submission.test;
 
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@EnableConfigurationProperties
 public class TestConfig {
 
   @Bean
+  @ConfigurationProperties
   public SubmissionProperties submissionProperties() {
-    return Tests.TEST_PROPERTIES;
+    return new SubmissionProperties();
   }
 
 }

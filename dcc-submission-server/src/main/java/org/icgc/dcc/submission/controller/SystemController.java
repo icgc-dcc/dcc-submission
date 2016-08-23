@@ -15,30 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web.resource;
+package org.icgc.dcc.submission.controller;
 
-import static javax.ws.rs.core.Response.ok;
-import static javax.ws.rs.core.Response.status;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.MISSING_REQUIRED_DATA;
-import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 
 import org.icgc.dcc.submission.core.model.Status;
-import org.icgc.dcc.submission.http.jersey.PATCH;
 import org.icgc.dcc.submission.service.SystemService;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
-import org.icgc.dcc.submission.web.util.Responses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -52,49 +46,30 @@ import lombok.extern.slf4j.Slf4j;
  * ://stackoverflow.com/questions/5591348/how-to-implement-a-restful-resource-for-a-state-machine-or-finite-automata
  */
 @Slf4j
-@Path("/")
-@Consumes("application/json")
-public class SystemResource {
+@RestController
+@RequestMapping("/ws/systems")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+public class SystemController {
 
-  @Autowired
-  private SystemService systemService;
+  private final SystemService systemService;
 
-  @GET
-  @Path("/systems")
-  public Response getStatus(
-
-      @Context SecurityContext securityContext
-
-  ) {
+  @SuperUser
+  @GetMapping
+  public ResponseEntity<?> getStatus() {
     log.info("Getting status...");
-    if (isSuperUser(securityContext) == false) {
-      return Responses.unauthorizedResponse();
-    }
-
     Status status = systemService.getStatus();
 
-    return Response.ok(status).build();
+    return ResponseEntity.ok(status);
   }
 
-  @PATCH
-  @Path("/systems")
-  public Response patch(
-
-      @Context SecurityContext securityContext,
-
-      JsonNode state
-
-  ) {
+  @SuperUser
+  @PatchMapping
+  public ResponseEntity<?> patch(JsonNode state) {
     log.info("Setting SFTP state to {}...", state);
-    if (isSuperUser(securityContext) == false) {
-      return Responses.unauthorizedResponse();
-    }
-
     JsonNode active = state.path("active");
     if (active.isMissingNode()) {
-      return status(BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage(MISSING_REQUIRED_DATA))
-          .build();
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(new ServerErrorResponseMessage(MISSING_REQUIRED_DATA));
     }
 
     if (active.asBoolean()) {
@@ -105,7 +80,7 @@ public class SystemResource {
 
     Status status = systemService.getStatus();
 
-    return ok(status).build();
+    return ResponseEntity.ok(status);
   }
 
 }
