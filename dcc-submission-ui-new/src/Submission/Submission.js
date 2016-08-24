@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import {Link} from 'react-router';
-import {observable, action, runInAction} from 'mobx';
+import {observable, action, runInAction, computed} from 'mobx';
 import {observer} from 'mobx-react';
-import { fetchHeaders } from '~/utils';
+import { fetchHeaders, formatFileSize } from '~/utils';
 
 const submission = observable({
   isLoading: false,
@@ -35,6 +35,10 @@ submission.fetch = action('fetch single submission/project', async function (rel
   });
 });
 
+submission.totalFileSizeInBytes = computed(function () {
+  return submission.submissionFiles.reduce((acc, file) => acc + file.size, 0);
+})
+
 window.ssss = () => submission.fetch('release1', 'project.1');
 
 export default @observer
@@ -47,6 +51,9 @@ class Release extends Component {
   }
 
   render () {
+    const releaseName = this.props.params.releaseName;
+    const projectKey = this.props.params.projectKey;
+
     return <div>
       <h1>Submission Summary</h1>
       <ul>
@@ -63,6 +70,7 @@ class Release extends Component {
           //       if file.fileState == "VALID"
           //         response.validFileCount += 1
         }
+        <li>Size of submission data: {formatFileSize(submission.totalFileSizeInBytes.get())}</li>
         <li>State {submission.state}</li>
         <li>Actions: TODO</li>
       </ul>
@@ -80,7 +88,27 @@ class Release extends Component {
             </tr>
           </thead>
           <tbody>
-           
+            { submission.submissionFiles.map( file => (
+              <tr key={file.name}>
+                <td>{file.name}</td>
+                <td>{file.lastUpdate}</td>
+                <td>{file.size}</td>
+                <td>{
+                  // TODO: see
+                  // # Inject report into submission file list
+                  // if response.report
+                  //   for file in data.schemaReports
+                  //     for dataTypeReport in response.report.dataTypeReports
+                  //       for fileTypeReport in dataTypeReport.fileTypeReports
+                  //         for fileReport in fileTypeReport.fileReports
+                  //           if fileReport.fileName == file.name
+                  //             _.extend(file, fileReport)
+                  //             break
+                  file.status
+                }</td>
+                <td><Link to={`/releases/${releaseName}/submissions/${projectKey}/report/${file.name}`}>view report</Link></td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
