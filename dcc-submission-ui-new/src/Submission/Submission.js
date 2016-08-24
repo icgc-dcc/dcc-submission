@@ -6,6 +6,7 @@ import { fetchHeaders, formatFileSize } from '~/utils';
 
 import injectReportsToSubmissionFiles from './injectReportsToSubmissionFiles.coffee';
 import getReportState from './getReportState.coffee';
+import getValidFileCount from './getValidFileCount.coffee';
 
 const submission = observable({
   isLoading: false,
@@ -62,17 +63,7 @@ class Release extends Component {
       <ul>
         <li>Name {submission.projectName}</li>
         <li>Number of submitted files{submission.submissionFiles.length}</li>
-        <li>Number of valid files: {'TODO'}</li>
-
-        {
-          // for valid files, reference: 
-          // response.validFileCount = 0
-          // response.report.dataTypeReports.forEach (dataType)->
-          //   dataType.fileTypeReports.forEach (fileType)->
-          //     fileType.fileReports.forEach (file)->
-          //       if file.fileState == "VALID"
-          //         response.validFileCount += 1
-        }
+        <li>Number of valid files: {getValidFileCount(submission.report)}</li>
         <li>Size of submission data: {formatFileSize(submission.totalFileSizeInBytes.get())}</li>
         <li>State {submission.state}</li>
         <li>Actions: TODO</li>
