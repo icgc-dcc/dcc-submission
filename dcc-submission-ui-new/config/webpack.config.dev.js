@@ -52,6 +52,10 @@ module.exports = {
         loaders: ['react-hot', 'babel?' + JSON.stringify(require('./babel.dev'))],
       },
       {
+        test: /\.coffee$/,
+        loader: 'coffee-loader'
+      },
+      {
         test: /\.css$/,
         include: [paths.appSrc, paths.appNodeModules],
         loader: 'style!css!postcss'

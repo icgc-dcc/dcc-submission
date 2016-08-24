@@ -59,6 +59,10 @@ module.exports = {
         query: require('./babel.prod')
       },
       {
+        test: /\.coffee$/,
+        loader: 'coffee-loader'
+      },
+      {
         test: /\.css$/,
         include: [paths.appSrc, paths.appNodeModules],
         // Disable autoprefixer in css-loader itself:
