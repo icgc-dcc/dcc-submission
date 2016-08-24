@@ -41,6 +41,7 @@ ReactDOM.render((
       <Route path="releases" component={require('./Releases/Releases.js')} onEnter={requireAuth}/>
       <Route path="releases/:releaseName" component={require('./Release/Release.js')} onEnter={requireAuth}/>
       <Route path="releases/:releaseName/submissions/:projectKey" component={require('./Submission/Submission.js')} onEnter={requireAuth}/>
+      <Route path="releases/:releaseName/submissions/:projectKey/report/:fileName" component={require('./Report/Report.js')} onEnter={requireAuth}/>
     </Route>
   </Router>
   ), document.getElementById('root')
