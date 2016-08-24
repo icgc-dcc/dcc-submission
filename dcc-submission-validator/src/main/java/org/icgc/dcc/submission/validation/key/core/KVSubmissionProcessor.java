@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
-import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.common.core.util.Formats.formatBytes;
@@ -45,6 +44,8 @@ import org.icgc.dcc.submission.validation.key.data.KVPrimaryKeys;
 import org.icgc.dcc.submission.validation.key.data.KVReferencedPrimaryKeys;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
 import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
+
+import com.google.common.base.Stopwatch;
 
 /**
  * Main processor for the key validation.
@@ -129,7 +130,7 @@ public class KVSubmissionProcessor {
     val dataFilePaths = kvFileSystem.getDataFilePaths(fileType);
     if (dataFilePaths.isPresent()) {
       for (val dataFilePath : dataFilePaths.get()) {
-        val watch = createStarted();
+        val watch = createStopwatch();
         log.info("{}", banner("-"));
         log.info("Processing '{}' file: '{}'; has referencing is '{}'",
             new Object[] { fileType, !referencedPrimaryKeys.isEmpty(), dataFilePath });
@@ -194,6 +195,13 @@ public class KVSubmissionProcessor {
 
   private static String formatFreeMemory() {
     return formatBytes(Runtime.getRuntime().freeMemory());
+  }
+
+  @SuppressWarnings("deprecation")
+  private static Stopwatch createStopwatch() {
+    // Can't use the new API here because Hadoop doesn't know about it cluster side. Trying to use it will result in
+    // errors.
+    return new Stopwatch().start();
   }
 
 }

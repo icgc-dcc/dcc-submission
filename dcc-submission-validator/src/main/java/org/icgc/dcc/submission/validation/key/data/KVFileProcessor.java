@@ -105,7 +105,7 @@ public final class KVFileProcessor {
   private void processRow(KVRowContext context, KVDictionary dictionary) {
     val fileType = context.getFileType();
     // No uniqueness check for METH_ARRAY_P (at Vincent's request)
-    if (fileType != KVFileType.METH_ARRAY_P) { // TODO: Encode in the dictionary
+    if (hasPrimaryKeys(dictionary, fileType) && fileType != KVFileType.METH_ARRAY_P) { // TODO: Encode in the dictionary
       valid.validateUniqueness(context);
     }
 
@@ -153,6 +153,10 @@ public final class KVFileProcessor {
           sanity.ensureFk(fileName, row, referencedFileType);
           encounteredFk.addEncounteredForeignKey(row.getFk(referencedFileType));
         });
+  }
+
+  private static boolean hasPrimaryKeys(KVDictionary dictionary, KVFileType fileType) {
+    return !dictionary.getPrimaryKeyNames(fileType).isEmpty();
   }
 
   /**

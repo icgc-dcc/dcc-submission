@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation.key.core;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.OPTIONAL_RELATION;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION;
@@ -41,9 +42,6 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
-/**
- * WIP (use {@link KVHardcodedDictionary} until finished).
- */
 @RequiredArgsConstructor
 public class KVDynamicDictionary implements KVDictionary {
 
@@ -66,15 +64,35 @@ public class KVDynamicDictionary implements KVDictionary {
   @Override
   public KVFileTypeKeysIndices getKeysIndices(KVFileType fileType) {
     val fileSchema = getFileSchema(fileType);
-    val fieldNames = fileSchema.fieldNames();
+    val schemaFieldNames = fileSchema.fieldNames();
     val primaryKeys = fileSchema.getUniqueFields();
 
     val relations = fileSchema.getRelations();
-    val foreignKeys = resolveForeignKeys(fieldNames, relations, fileSchema);
-    val optionalKeys = resolveOptionalKeys(fieldNames, relations, fileSchema);
+    // We assumed that optionals mean which fields should be used to relate to the other file type.
+    // E.g. biomarker has the following structure. Optionals '1' means that 'specimen_id' should be used
+    // @formatter:off
+    //      {
+    //        "fields": [
+    //          "donor_id",
+    //          "specimen_id"
+    //        ],
+    //        "bidirectional": false,
+    //        "other": "specimen",
+    //        "otherFields": [
+    //          "donor_id",
+    //          "specimen_id"
+    //        ],
+    //        "optionals": [
+    //          1
+    //        ]
+    //      }
+    // @formatter:on
+    // resolveForeignKeys() and resolveOptionalKeys() take into consideration optionals when resolve keys
+    val foreignKeys = resolveForeignKeys(schemaFieldNames, relations, fileSchema);
+    val optionalKeys = resolveOptionalKeys(schemaFieldNames, relations, fileSchema);
 
     val builder = KVFileTypeKeysIndices.builder()
-        .pk(resolveKeyIndices(fieldNames, primaryKeys))
+        .pk(resolveKeyIndices(schemaFieldNames, primaryKeys))
         .fks(foreignKeys);
 
     if (!optionalKeys.isEmpty()) {
@@ -220,14 +238,33 @@ public class KVDynamicDictionary implements KVDictionary {
   }
 
   private static List<String> getFileTypeFKs(Relation relation, FileSchema fileSchema) {
+    val optionalFields = resolveOptionalFields(relation);
+
     return relation.getFields().stream()
+        .filter(fkField -> optionalFields.isEmpty() || optionalFields.contains(fkField))
         .filter(fkField -> !isOptionalFk(fileSchema, fkField))
         .collect(toImmutableList());
   }
 
   private static List<String> getOptionalFileTypeFKs(Relation relation, FileSchema fileSchema) {
+    val optionalFields = resolveOptionalFields(relation);
+
     return relation.getFields().stream()
+        .filter(fkField -> optionalFields.isEmpty() || optionalFields.contains(fkField))
         .filter(fkField -> isOptionalFk(fileSchema, fkField))
+        .collect(toImmutableList());
+  }
+
+  private static List<String> resolveOptionalFields(Relation relation) {
+    val optionals = relation.getOptionals();
+    if (optionals == null || optionals.isEmpty()) {
+      return emptyList();
+    }
+
+    val fields = relation.getFields();
+
+    return optionals.stream()
+        .map(index -> fields.get(index))
         .collect(toImmutableList());
   }
 

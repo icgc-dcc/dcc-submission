@@ -31,6 +31,7 @@ import static org.icgc.dcc.submission.validation.key.core.KVFileType.SPECIMEN;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.SSM_M;
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.util.Dictionaries;
@@ -41,6 +42,7 @@ import org.junit.Test;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
+@Slf4j
 public class KVDynamicDictionaryTest extends AbstractDictionaryTest {
 
   private KVDynamicDictionary kvDictionary;
@@ -80,9 +82,12 @@ public class KVDynamicDictionaryTest extends AbstractDictionaryTest {
     val optionalFks = ssmKeys.getOptionalFks();
     assertThat(optionalFks.size()).isEqualTo(1);
     assertThat(optionalFks.get(KVFileType.SAMPLE)).containsExactly(2);
+  }
 
-    // Surgery
+  @Test
+  public void testGetKeysIndices_surgery() {
     val surgeryKeys = kvDictionary.getKeysIndices(KVFileType.SURGERY);
+    log.info("{}", surgeryKeys);
 
     assertThat(surgeryKeys.getPk()).containsExactly(0, 5);
 
@@ -93,6 +98,27 @@ public class KVDynamicDictionaryTest extends AbstractDictionaryTest {
     val surgeryOptionalFks = surgeryKeys.getOptionalFks();
     assertThat(surgeryOptionalFks.size()).isEqualTo(1);
     assertThat(surgeryOptionalFks.get(KVFileType.SPECIMEN)).containsExactly(5);
+  }
+
+  @Test
+  public void testGetKeysIndices_biomarker() {
+    val keys = kvDictionary.getKeysIndices(KVFileType.BIOMARKER);
+    log.info("{}", keys);
+
+    assertThat(keys.getPk()).containsExactly(0, 1, 2);
+
+    val surgeryFks = keys.getFks();
+    assertThat(surgeryFks.size()).isEqualTo(2);
+    assertThat(surgeryFks.get(KVFileType.DONOR)).containsExactly(0);
+    assertThat(surgeryFks.get(KVFileType.SPECIMEN)).containsExactly(1);
+
+    assertThat(keys.getOptionalFks()).isNull();
+  }
+
+  @Test
+  public void tmp() {
+    val surgeryKeys = kvDictionary.getKeysIndices(KVFileType.BIOMARKER);
+    log.info("{}", surgeryKeys);
   }
 
   @Test

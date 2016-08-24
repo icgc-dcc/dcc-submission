@@ -28,7 +28,6 @@ import java.util.List;
 import lombok.Builder;
 import lombok.Value;
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.validation.key.data.KVKey;
 import org.icgc.dcc.submission.validation.key.data.KVRow;
@@ -40,7 +39,6 @@ import com.google.common.collect.Multimap;
  */
 @Value
 @Builder
-@Slf4j
 public class KVFileTypeKeysIndices {
 
   private final List<Integer> pk;
@@ -58,11 +56,9 @@ public class KVFileTypeKeysIndices {
       builder.pk(KVKey.from(row, pk));
     }
 
-    log.info("FKs: {}", fks);
     if (!fks.isEmpty()) {
       val rowFks = fks.keySet().stream()
           .collect(toImmutableMap(fileType -> fileType, fileType -> KVKey.from(row, copyOf(fks.get(fileType)))));
-      log.info("Row fks: {}", rowFks);
       builder.fks(rowFks);
     } else {
       builder.fks(emptyMap());
