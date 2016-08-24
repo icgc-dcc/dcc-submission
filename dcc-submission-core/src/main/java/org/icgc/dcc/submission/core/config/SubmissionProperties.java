@@ -39,7 +39,7 @@ public class SubmissionProperties {
 
   HttpProperties http = new HttpProperties();
   SftpProperties sftp = new SftpProperties();
-  MailProperties mail = new MailProperties();
+  MailProperties email = new MailProperties();
   ShiroProperties shiro = new ShiroProperties();
   HadoopProperties hadoop = new HadoopProperties();
   MongoProperties mongo = new MongoProperties();

@@ -62,7 +62,7 @@ reference:
   # The filename is what will be reported to users as the assembly version.
   fasta: "/tmp/GRCh37.fasta"
 
-mail:
+email:
   enabled: true
   smtpHost: localhost
   smtpPort: 9999

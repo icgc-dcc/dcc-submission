@@ -82,6 +82,11 @@ import java.util.Map;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -112,11 +117,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.jcraft.jsch.SftpException;
-
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RunWith(SpringRunner.class)
@@ -364,7 +364,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     datastore.getDB().dropDatabase();
 
     status("init", "Starting SMTP server...");
-    smtpServer = SimpleSmtpServer.start(Integer.valueOf(properties.getMail().getSmtpPort()));
+    smtpServer = SimpleSmtpServer.start(Integer.valueOf(properties.getEmail().getSmtpPort()));
 
     status("init", "Starting submission server...");
     ServerMain.main("--spring.config.location=" + TEST_CONFIG_FILE.getAbsolutePath());

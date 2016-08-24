@@ -40,6 +40,12 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.core.model.Feedback;
 import org.icgc.dcc.submission.core.report.Report;
@@ -47,12 +53,6 @@ import org.icgc.dcc.submission.core.state.State;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -92,7 +92,7 @@ public class MailService {
 
     send(
         feedback.getEmail(),
-        properties.getMail().getSupportEmail(),
+        properties.getEmail().getSupportEmail(),
         feedback.getSubject(),
         feedback.getMessage());
   }
@@ -101,8 +101,8 @@ public class MailService {
     sendNotification(format("Support issue - '%s'", subject));
 
     send(
-        properties.getMail().getFromEmail(),
-        properties.getMail().getSupportEmail(),
+        properties.getEmail().getFromEmail(),
+        properties.getEmail().getSupportEmail(),
         subject,
         message);
   }
@@ -126,7 +126,7 @@ public class MailService {
       @NonNull String nextReleaseName) {
     sendNotification(
         format("Signed off Projects: %s", projectKeys),
-        template(properties.getMail().getSignoffBody(), user, projectKeys, nextReleaseName));
+        template(properties.getEmail().getSignoffBody(), user, projectKeys, nextReleaseName));
   }
 
   public void sendValidationStarted(@NonNull String releaseName, @NonNull String projectKey,
@@ -153,9 +153,9 @@ public class MailService {
 
     try {
       val message = message();
-      message.setFrom(address(properties.getMail().getFromEmail()));
+      message.setFrom(address(properties.getEmail().getFromEmail()));
       message.addRecipients(TO, addresses(emails));
-      message.setSubject(template(properties.getMail().getSubject(), projectKey, state, report));
+      message.setSubject(template(properties.getEmail().getSubject(), projectKey, state, report));
       message.setText(getResult(releaseName, projectKey, state));
 
       send(message);
@@ -165,11 +165,11 @@ public class MailService {
   }
 
   public Boolean isEnabled() {
-    return properties.getMail().getEnabled();
+    return properties.getEmail().getEnabled();
   }
 
   private String getResult(String releaseName, String projectKey, State state) {
-    val mail = properties.getMail();
+    val mail = properties.getEmail();
     // @formatter:off
     return
       state == ERROR         ? template(mail.getErrorBody(),        projectKey, state)                         : 
@@ -182,8 +182,8 @@ public class MailService {
 
   private void sendNotification(String subject, String message) {
     send(
-        properties.getMail().getFromEmail(),
-        properties.getMail().getNotificationEmail(),
+        properties.getEmail().getFromEmail(),
+        properties.getEmail().getNotificationEmail(),
         NOTIFICATION_SUBJECT_PREFEX + subject,
         message);
   }
@@ -238,10 +238,10 @@ public class MailService {
 
   private Message message() {
     val props = new Properties();
-    props.put(MAIL_SMTP_HOST, properties.getMail().getSmtpHost());
-    props.put(MAIL_SMTP_PORT, properties.getMail().getSmtpPort());
-    props.put(MAIL_SMTP_TIMEOUT, properties.getMail().getSmtpTimeout());
-    props.put(MAIL_SMTP_CONNECTION_TIMEOUT, properties.getMail().getSmtpConnectionTimeout());
+    props.put(MAIL_SMTP_HOST, properties.getEmail().getSmtpHost());
+    props.put(MAIL_SMTP_PORT, properties.getEmail().getSmtpPort());
+    props.put(MAIL_SMTP_TIMEOUT, properties.getEmail().getSmtpTimeout());
+    props.put(MAIL_SMTP_CONNECTION_TIMEOUT, properties.getEmail().getSmtpConnectionTimeout());
 
     return new MimeMessage(Session.getDefaultInstance(props, null));
   }
