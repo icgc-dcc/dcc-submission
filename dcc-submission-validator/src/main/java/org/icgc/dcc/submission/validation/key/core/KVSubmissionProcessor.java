@@ -21,14 +21,6 @@ import static com.google.common.collect.Maps.newHashMap;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.common.core.util.Formats.formatBytes;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableMap;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.BIOMARKER;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXPOSURE;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.FAMILY;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.SAMPLE;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.SPECIMEN;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.SURGERY;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.THERAPY;
 
 import java.util.Map;
 
@@ -73,34 +65,8 @@ public class KVSubmissionProcessor {
 
   public void processSubmission() {
     log.info("Loading data");
-
-    // TODO: Add metadata to the dictionary which indicates which file type is this clinical or experimantal(feature)?
-    // val fileTypes = dictionary.getTopologicallyOrderedFileTypes();
-
-    // Process clinical data
-    log.info("Processing clinical data");
-    processFileType(DONOR);
-    processFileType(SPECIMEN);
-    processFileType(SAMPLE);
-
-    log.info("Processing clinicla supplemental data");
-    processFileType(BIOMARKER);
-    processFileType(FAMILY);
-    processFileType(EXPOSURE);
-    processFileType(SURGERY);
-    processFileType(THERAPY);
-
-    // Process experimental data
-    for (val dataType : dictionary.getExperimentalDataTypes()) {
-      if (kvFileSystem.hasDataType(dataType)) {
-        log.info("Processing '{}' data", dataType);
-        for (val fileType : dictionary.getExperimentalFileTypes(dataType)) { // Order matters!
-          processFileType(fileType);
-        }
-      } else {
-        log.info("No '{}' data", dataType);
-      }
-    }
+    val fileTypes = dictionary.getTopologicallyOrderedFileTypes();
+    fileTypes.forEach(fileType -> processFileType(fileType));
 
     log.info("{}", banner("="));
     for (val fileType : fileTypeToPrimaryKeys.keySet()) {

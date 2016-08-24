@@ -105,7 +105,7 @@ public class KVDynamicDictionaryTest extends AbstractDictionaryTest {
     val keys = kvDictionary.getKeysIndices(KVFileType.BIOMARKER);
     log.info("{}", keys);
 
-    assertThat(keys.getPk()).containsExactly(0, 1, 2);
+    assertThat(keys.getPk()).containsExactly(2, 0, 1);
 
     val surgeryFks = keys.getFks();
     assertThat(surgeryFks.size()).isEqualTo(2);
@@ -113,12 +113,6 @@ public class KVDynamicDictionaryTest extends AbstractDictionaryTest {
     assertThat(surgeryFks.get(KVFileType.SPECIMEN)).containsExactly(1);
 
     assertThat(keys.getOptionalFks()).isNull();
-  }
-
-  @Test
-  public void tmp() {
-    val surgeryKeys = kvDictionary.getKeysIndices(KVFileType.BIOMARKER);
-    log.info("{}", surgeryKeys);
   }
 
   @Test

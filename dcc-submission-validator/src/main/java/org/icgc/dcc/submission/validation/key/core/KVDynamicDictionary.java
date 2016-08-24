@@ -65,7 +65,7 @@ public class KVDynamicDictionary implements KVDictionary {
   public KVFileTypeKeysIndices getKeysIndices(KVFileType fileType) {
     val fileSchema = getFileSchema(fileType);
     val schemaFieldNames = fileSchema.fieldNames();
-    val primaryKeys = fileSchema.getUniqueFields();
+    val primaryKeys = getPrimaryKeyNames(fileType);
 
     val relations = fileSchema.getRelations();
     // We assumed that optionals mean which fields should be used to relate to the other file type.
@@ -151,7 +151,9 @@ public class KVDynamicDictionary implements KVDictionary {
   public List<String> getPrimaryKeyNames(KVFileType fileType) {
     val fileSchema = getFileSchema(fileType);
 
-    return fileSchema.getUniqueFields();
+    return fileSchema.getUniqueFields().stream()
+        .sorted()
+        .collect(toImmutableList());
   }
 
   @Override
@@ -243,6 +245,7 @@ public class KVDynamicDictionary implements KVDictionary {
     return relation.getFields().stream()
         .filter(fkField -> optionalFields.isEmpty() || optionalFields.contains(fkField))
         .filter(fkField -> !isOptionalFk(fileSchema, fkField))
+        .sorted()
         .collect(toImmutableList());
   }
 
@@ -252,6 +255,7 @@ public class KVDynamicDictionary implements KVDictionary {
     return relation.getFields().stream()
         .filter(fkField -> optionalFields.isEmpty() || optionalFields.contains(fkField))
         .filter(fkField -> isOptionalFk(fileSchema, fkField))
+        .sorted()
         .collect(toImmutableList());
   }
 
