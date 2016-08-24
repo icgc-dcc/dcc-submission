@@ -57,6 +57,7 @@
     "whatwg-fetch": "1.0.0"
   },
   "dependencies": {
+    "highlight.js": "9.6.0",
     "mobx": "2.4.3",
     "mobx-react": "3.5.5",
     "react": "^15.2.1",
