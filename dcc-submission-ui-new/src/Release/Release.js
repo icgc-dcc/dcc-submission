@@ -31,8 +31,6 @@ release.fetch = action('fetch single release', async function (releaseName) {
   });
 });
 
-window.rrrr = () => release.fetch('release1');
-
 export default @observer
 class Release extends Component {
 
@@ -42,6 +40,8 @@ class Release extends Component {
   }
 
   render () {
+    const releaseName = this.props.params.releaseName;
+    window.debugLoad = () => release.fetch(releaseName);
     return <div>
       <h1>Release Summary</h1>
       <ul>

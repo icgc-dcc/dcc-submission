@@ -106,9 +106,8 @@ class Report extends Component {
   }
 
   render () {
-    window.debugLoad = () => report.fetch('release1', 'project.1', 'donor.txt.bz2');
-
     const {releaseName, projectKey, fileName } = this.props.params;
+    window.debugLoad = () => report.fetch(releaseName, projectKey, fileName);
 
     const hasErrors = report.errorReports.length
     const pageTitle = hasErrors ? 'Error Report' : 'Detailed Report';
