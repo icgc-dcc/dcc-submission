@@ -60,7 +60,7 @@ module.exports = {
       },
       {
         test: /\.coffee$/,
-        loader: 'coffee-loader'
+        loader: 'coffee'
       },
       {
         test: /\.css$/,

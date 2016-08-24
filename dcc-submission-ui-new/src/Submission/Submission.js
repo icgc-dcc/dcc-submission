@@ -4,6 +4,9 @@ import {observable, action, runInAction, computed} from 'mobx';
 import {observer} from 'mobx-react';
 import { fetchHeaders, formatFileSize } from '~/utils';
 
+import injectReportsToSubmissionFiles from './injectReportsToSubmissionFiles.coffee';
+import getReportState from './getReportState.coffee';
+
 const submission = observable({
   isLoading: false,
   lastUpdated: undefined,
@@ -32,14 +35,13 @@ submission.fetch = action('fetch single submission/project', async function (rel
 
   runInAction('update submission', () => {
     Object.assign(this, submissionData);
+    injectReportsToSubmissionFiles(this.submissionFiles, this.report);
   });
 });
 
 submission.totalFileSizeInBytes = computed(function () {
   return submission.submissionFiles.reduce((acc, file) => acc + file.size, 0);
 })
-
-window.ssss = () => submission.fetch('release1', 'project.1');
 
 export default @observer
 class Release extends Component {
@@ -53,6 +55,7 @@ class Release extends Component {
   render () {
     const releaseName = this.props.params.releaseName;
     const projectKey = this.props.params.projectKey;
+    window.debugLoad = () => submission.fetch(releaseName, projectKey);
 
     return <div>
       <h1>Submission Summary</h1>
@@ -88,27 +91,22 @@ class Release extends Component {
             </tr>
           </thead>
           <tbody>
-            { submission.submissionFiles.map( file => (
-              <tr key={file.name}>
-                <td>{file.name}</td>
-                <td>{file.lastUpdate}</td>
-                <td>{file.size}</td>
-                <td>{
-                  // TODO: see
-                  // # Inject report into submission file list
-                  // if response.report
-                  //   for file in data.schemaReports
-                  //     for dataTypeReport in response.report.dataTypeReports
-                  //       for fileTypeReport in dataTypeReport.fileTypeReports
-                  //         for fileReport in fileTypeReport.fileReports
-                  //           if fileReport.fileName == file.name
-                  //             _.extend(file, fileReport)
-                  //             break
-                  file.status
-                }</td>
-                <td><Link to={`/releases/${releaseName}/submissions/${projectKey}/report/${file.name}`}>view report</Link></td>
-              </tr>
-            ))}
+            { submission.submissionFiles.map( file => {
+              const hasAnyReports = [].concat(file.errorReports, file.fieldReports, file.summaryReports).filter(Boolean).length > 0;
+              return (
+                <tr key={file.name}>
+                  <td>{file.name}</td>
+                  <td>{file.lastUpdate}</td>
+                  <td>{formatFileSize(file.size)}</td>
+                  <td dangerouslySetInnerHTML={{__html: getReportState(file, 'display')}}></td>
+                  <td>
+                      { hasAnyReports ? (
+                        <Link to={`/releases/${releaseName}/submissions/${projectKey}/report/${file.name}`}>view report</Link>
+                      ) : null }
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
