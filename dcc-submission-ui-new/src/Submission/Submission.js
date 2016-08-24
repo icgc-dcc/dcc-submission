@@ -4,8 +4,9 @@ import {observable, action, runInAction, computed} from 'mobx';
 import {observer} from 'mobx-react';
 import { fetchHeaders, formatFileSize } from '~/utils';
 
+import Status from '~/common/components/Status';
+
 import injectReportsToSubmissionFiles from './injectReportsToSubmissionFiles.coffee';
-import getReportState from './getReportState.coffee';
 import getValidFileCount from './getValidFileCount.coffee';
 
 const submission = observable({
@@ -89,7 +90,9 @@ class Release extends Component {
                   <td>{file.name}</td>
                   <td>{file.lastUpdate}</td>
                   <td>{formatFileSize(file.size)}</td>
-                  <td dangerouslySetInnerHTML={{__html: getReportState(file, 'display')}}></td>
+                  <td>
+                    <Status statusCode={file.fileState} />
+                  </td>
                   <td>
                       { hasAnyReports ? (
                         <Link to={`/releases/${releaseName}/submissions/${projectKey}/report/${file.name}`}>view report</Link>
