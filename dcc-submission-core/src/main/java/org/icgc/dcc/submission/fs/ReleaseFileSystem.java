@@ -17,16 +17,15 @@
  */
 package org.icgc.dcc.submission.fs;
 
-import static org.icgc.dcc.submission.core.util.Constants.Authorizations_ADMIN_ROLE;
-import static org.icgc.dcc.submission.shiro.AuthorizationPrivileges.projectViewPrivilege;
+import static org.icgc.dcc.submission.core.auth.Authorizations.hasSpecificProjectPrivilege;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
+import org.springframework.security.core.Authentication;
 
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -49,7 +48,7 @@ public class ReleaseFileSystem {
   private final DccFileSystem dccFileSystem;
   @NonNull
   private final Release release;
-  private final Subject userSubject;
+  private final Authentication authentication;
 
   public ReleaseFileSystem(DccFileSystem dccFilesystem, Release release) {
     this(dccFilesystem, release, null);
@@ -59,7 +58,7 @@ public class ReleaseFileSystem {
     val allowed = hasPrivileges(projectKey);
     if (!allowed) {
       throw new DccFileSystemException("User '%s' with principal '%s' does not have permission to access project '%s'",
-          userSubject, userSubject == null ? null : userSubject.getPrincipal(), projectKey);
+          authentication, authentication == null ? null : authentication.getName(), projectKey);
     }
 
     val optional = release.getSubmission(projectKey);
@@ -124,16 +123,12 @@ public class ReleaseFileSystem {
     return getSystemDirPath().getName().equals(path.getName());
   }
 
-  public boolean isAdminUser() {
-    return userSubject.hasRole(Authorizations_ADMIN_ROLE);
-  }
-
   private boolean isApplication() {
-    return userSubject == null;
+    return authentication == null;
   }
 
   private boolean hasPrivileges(String projectKey) {
-    return isApplication() || userSubject.isPermitted(projectViewPrivilege(projectKey));
+    return isApplication() || hasSpecificProjectPrivilege(authentication, projectKey);
   }
 
   private static void copySubmissionDir(String projectKey, ReleaseFileSystem previous, ReleaseFileSystem next,

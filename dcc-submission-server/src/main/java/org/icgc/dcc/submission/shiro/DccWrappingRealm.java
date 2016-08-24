@@ -25,6 +25,7 @@ import org.apache.shiro.authc.SimpleAccount;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.icgc.dcc.submission.core.auth.AuthorizationPrivileges;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.service.ProjectService;
 import org.icgc.dcc.submission.web.util.Authorizations;

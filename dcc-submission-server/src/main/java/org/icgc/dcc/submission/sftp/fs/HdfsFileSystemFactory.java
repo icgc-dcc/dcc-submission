@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.sftp.fs;
 
-import static org.icgc.dcc.submission.sftp.SftpSessions.getSessionSubject;
+import static org.icgc.dcc.submission.sftp.SftpSessions.getAuthentication;
 
 import java.io.IOException;
 
@@ -38,9 +38,9 @@ public class HdfsFileSystemFactory implements FileSystemFactory {
 
   @Override
   public FileSystemView createFileSystemView(Session session) throws IOException {
-    val subject = getSessionSubject(session);
+    val authentication = getAuthentication(session);
 
-    return new HdfsFileSystemView(context, subject);
+    return new HdfsFileSystemView(context, authentication);
   }
 
 }

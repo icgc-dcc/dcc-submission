@@ -24,8 +24,8 @@ import javax.ws.rs.core.SecurityContext;
 import org.apache.shiro.realm.SimpleAccountRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
+import org.icgc.dcc.submission.core.auth.AuthorizationPrivileges;
 import org.icgc.dcc.submission.core.util.Constants;
-import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.submission.shiro.ShiroSecurityContext;
 
 import lombok.AccessLevel;

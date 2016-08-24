@@ -17,20 +17,22 @@
  */
 package org.icgc.dcc.submission.sftp;
 
-import static org.icgc.dcc.submission.sftp.SftpSessions.setSessionSubject;
+import static org.icgc.dcc.submission.core.auth.Authorizations.isSuperUser;
+import static org.icgc.dcc.submission.sftp.SftpSessions.setAuthentication;
 
 import java.io.IOException;
 
-import org.apache.shiro.subject.Subject;
 import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
-import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
-import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
 import com.google.common.eventbus.Subscribe;
 
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,6 +42,7 @@ import lombok.extern.slf4j.Slf4j;
  * Delegates to Shiro based implementation by way of the {@link SftpContext}.
  */
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SftpAuthenticator implements PasswordAuthenticator {
 
   /**
@@ -52,25 +55,20 @@ public class SftpAuthenticator implements PasswordAuthenticator {
    * Authenticator state.
    */
   @NonNull
-  private final UsernamePasswordAuthenticator authenticator;
+  private final AuthenticationManager authenticator;
   @NonNull
   private final SftpContext context;
-  private volatile boolean enabled = true;
 
-  @Autowired
-  public SftpAuthenticator(UsernamePasswordAuthenticator authenticator, SftpContext context) {
-    this.authenticator = authenticator;
-    this.context = context;
-  }
+  private volatile boolean enabled = true;
 
   @Override
   public boolean authenticate(String username, String password, ServerSession session) {
-    boolean authenticated = authenticate(username, password);
+    val authentication = authenticate(username, password);
+
+    val authenticated = authentication.isAuthenticated();
     if (authenticated) {
       // Add principal to MINA SFTP session
-      val subject = authenticator.getSubject();
-
-      if (!isAccessible(subject)) {
+      if (!isAccessible(authentication)) {
         // Only allow new connection when enabled
         log.info("Blocked connection for user '{}' because SFTP is disabled", username);
         disconnect(session);
@@ -78,10 +76,10 @@ public class SftpAuthenticator implements PasswordAuthenticator {
         return false;
       }
 
-      setSessionSubject(session, subject);
+      setAuthentication(session, authentication);
 
       // Send an informative message
-      sendBanner(username, session, subject);
+      sendBanner(username, session, authentication);
     }
 
     return authenticated;
@@ -113,19 +111,20 @@ public class SftpAuthenticator implements PasswordAuthenticator {
     }
   }
 
-  private boolean authenticate(String username, String password) {
-    // Delegate to Shiro
-    return authenticator.authenticate(username, password.toCharArray(), null) != null;
+  private Authentication authenticate(String username, String password) {
+    // Delegate to Spring
+    val authentication = new UsernamePasswordAuthenticationToken(username, password);
+    return authenticator.authenticate(authentication);
   }
 
-  private void sendBanner(String username, ServerSession session, Subject subject) {
+  private void sendBanner(String username, ServerSession session, Authentication authentication) {
     // Send a custom welcome message
-    val banner = new SftpBanner(context, subject);
+    val banner = new SftpBanner(context, authentication);
     banner.send(username, session);
   }
 
-  private boolean isAccessible(Subject subject) {
-    return !isDisabled() || subject.isPermitted(AuthorizationPrivileges.ALL.getPrefix());
+  private boolean isAccessible(Authentication authentication) {
+    return !isDisabled() || isSuperUser(authentication);
   }
 
 }

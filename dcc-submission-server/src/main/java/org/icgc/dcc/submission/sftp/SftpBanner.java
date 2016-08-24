@@ -24,10 +24,10 @@ import static lombok.AccessLevel.PACKAGE;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.shiro.subject.Subject;
 import org.apache.sshd.common.SshConstants;
 import org.apache.sshd.common.util.Buffer;
 import org.apache.sshd.server.session.ServerSession;
+import org.springframework.security.core.Authentication;
 
 import com.google.common.io.Resources;
 
@@ -68,7 +68,7 @@ class SftpBanner {
   @NonNull
   private final SftpContext context;
   @NonNull
-  private final Subject subject;
+  private final Authentication authentication;
 
   public void send(String username, ServerSession session) {
     try {
@@ -76,7 +76,7 @@ class SftpBanner {
       val releaseName = context.getNextReleaseName();
 
       // User specific information
-      val projectKeys = context.getUserProjectKeys(subject);
+      val projectKeys = context.getUserProjectKeys(authentication);
 
       // Create a customized message for the supplied user
       val message = getMessage(releaseName, username, projectKeys);

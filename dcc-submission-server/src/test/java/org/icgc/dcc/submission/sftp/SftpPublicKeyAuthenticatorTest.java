@@ -29,7 +29,6 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.submission.service.MailService;
 import org.icgc.dcc.submission.service.ProjectService;
 import org.icgc.dcc.submission.service.ReleaseService;
@@ -41,6 +40,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.security.authentication.AuthenticationManager;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.io.Files;
@@ -67,7 +67,7 @@ public class SftpPublicKeyAuthenticatorTest {
   SubmissionProperties properties = new SubmissionProperties();
 
   @Mock
-  UsernamePasswordAuthenticator authenticator;
+  AuthenticationManager authenticator;
   @Mock
   SftpAuthenticator sftpAuthenticator;
   @Mock

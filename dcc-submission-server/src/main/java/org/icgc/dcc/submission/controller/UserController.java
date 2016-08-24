@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.submission.controller;
 
-import static org.icgc.dcc.submission.controller.Authorizations.getUsername;
-import static org.icgc.dcc.submission.controller.Authorizations.isSuperUser;
+import static org.icgc.dcc.submission.core.auth.Authorizations.getUsername;
+import static org.icgc.dcc.submission.core.auth.Authorizations.isSuperUser;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.NO_SUCH_ENTITY;
 
 import org.icgc.dcc.submission.core.model.Feedback;

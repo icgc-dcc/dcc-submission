@@ -18,14 +18,14 @@
 package org.icgc.dcc.submission.controller;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.submission.controller.Authorizations.hasReleaseClosePrivilege;
-import static org.icgc.dcc.submission.controller.Authorizations.hasReleaseViewPrivilege;
-import static org.icgc.dcc.submission.controller.Authorizations.hasSpecificProjectPrivilege;
-import static org.icgc.dcc.submission.controller.Authorizations.hasSubmissionSignoffPrivilege;
-import static org.icgc.dcc.submission.controller.Authorizations.isSuperUser;
 import static org.icgc.dcc.submission.controller.Responses.badRequest;
 import static org.icgc.dcc.submission.controller.Responses.noContent;
 import static org.icgc.dcc.submission.controller.Responses.unauthorizedResponse;
+import static org.icgc.dcc.submission.core.auth.Authorizations.hasReleaseClosePrivilege;
+import static org.icgc.dcc.submission.core.auth.Authorizations.hasReleaseViewPrivilege;
+import static org.icgc.dcc.submission.core.auth.Authorizations.hasSpecificProjectPrivilege;
+import static org.icgc.dcc.submission.core.auth.Authorizations.hasSubmissionSignoffPrivilege;
+import static org.icgc.dcc.submission.core.auth.Authorizations.isSuperUser;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.RELEASE_EXCEPTION;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.UNAVAILABLE;
@@ -113,7 +113,7 @@ public class NextReleaseController {
   }
 
   @PostMapping
-  public ResponseEntity<?> release(Release nextRelease, Authentication authentication) {
+  public ResponseEntity<?> release(@RequestBody Release nextRelease, Authentication authentication) {
     log.info("Releasing nextRelease, new release will be: {}", nextRelease);
 
     // TODO: This is intentionally not validated, since we're only currently using the name. This seems sketchy to me
@@ -267,7 +267,7 @@ public class NextReleaseController {
   }
 
   @PostMapping("signed")
-  public ResponseEntity<?> signOff(List<String> projectKeys, Authentication authentication) {
+  public ResponseEntity<?> signOff(@RequestBody List<String> projectKeys, Authentication authentication) {
     log.info("Signing off projects {}", projectKeys);
 
     if (!isAccessible(authentication)) {

@@ -49,9 +49,9 @@ import java.util.Map;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
-import org.apache.shiro.subject.Subject;
 import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.sftp.SftpContext;
+import org.springframework.security.core.Authentication;
 
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -82,7 +82,7 @@ public abstract class HdfsSshFile implements SshFile {
   @NonNull
   protected final FileSystem fileSystem;
   @NonNull
-  protected final Subject subject;
+  protected final Authentication authentication;
 
   @Override
   public Map<Attribute, Object> getAttributes(boolean followLinks) throws IOException {

@@ -24,10 +24,10 @@ import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 import java.io.FileNotFoundException;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.shiro.subject.Subject;
 import org.apache.sshd.common.file.FileSystemView;
 import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.sftp.SftpContext;
+import org.springframework.security.core.Authentication;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +42,7 @@ public class HdfsFileSystemView implements FileSystemView {
   @NonNull
   private final SftpContext context;
   @NonNull
-  private final Subject subject;
+  private final Authentication authentication;
 
   /**
    * Returns the appropriate file system abstraction for the specified {@code file} path.
@@ -54,7 +54,7 @@ public class HdfsFileSystemView implements FileSystemView {
   public SshFile getFile(String file) {
     try {
       Path filePath = getFilePath(file);
-      RootHdfsSshFile root = new RootHdfsSshFile(context, subject);
+      RootHdfsSshFile root = new RootHdfsSshFile(context, authentication);
 
       switch (filePath.depth()) {
       case 0:
@@ -126,7 +126,7 @@ public class HdfsFileSystemView implements FileSystemView {
 
   private BaseDirectoryHdfsSshFile getHdfsSshFile(RootHdfsSshFile root, Path path) {
     BaseDirectoryHdfsSshFile result;
-    if (context.isSystemDirectory(path, subject) && context.isAdminUser(subject)) {
+    if (context.isSystemDirectory(path, authentication) && context.isAdminUser(authentication)) {
       result = new SystemFileHdfsSshFile(context, root, path.getName());
     } else { // FIXME? What happens if is-system-dir but not is-admin...?
       result = new SubmissionDirectoryHdfsSshFile(context, root, path.getName());

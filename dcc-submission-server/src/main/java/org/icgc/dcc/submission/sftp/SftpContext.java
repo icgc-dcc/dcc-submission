@@ -21,7 +21,6 @@ import static com.google.common.base.Optional.fromNullable;
 import static org.icgc.dcc.submission.fs.SubmissionFileEventType.FILE_CREATED;
 import static org.icgc.dcc.submission.fs.SubmissionFileEventType.FILE_REMOVED;
 import static org.icgc.dcc.submission.fs.SubmissionFileEventType.FILE_RENAMED;
-import static org.icgc.dcc.submission.shiro.AuthorizationPrivileges.projectViewPrivilege;
 
 import java.io.IOException;
 import java.util.Date;
@@ -29,9 +28,9 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
+import org.icgc.dcc.submission.core.auth.Authorizations;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
@@ -40,11 +39,12 @@ import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 import org.icgc.dcc.submission.fs.SubmissionFileRenamedEvent;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.submission.service.MailService;
 import org.icgc.dcc.submission.service.ProjectService;
 import org.icgc.dcc.submission.service.ReleaseService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
@@ -78,14 +78,14 @@ public class SftpContext {
   @NonNull
   private final ProjectService projectService;
   @NonNull
-  private final UsernamePasswordAuthenticator authenticator;
+  private final AuthenticationManager authenticator;
   @NonNull
   private final MailService mailService;
 
-  public List<String> getUserProjectKeys(Subject subject) {
+  public List<String> getUserProjectKeys(Authentication authentication) {
     val projectKeys = Lists.<String> newArrayList();
     for (val project : projectService.getProjects()) {
-      if (subject.isPermitted(projectViewPrivilege(project.getKey()))) {
+      if (Authorizations.hasSpecificProjectPrivilege(authentication, project.getKey())) {
         projectKeys.add(project.getKey());
       }
     }
@@ -103,28 +103,28 @@ public class SftpContext {
   }
 
   // TODO: Return Paths or Strings and nothing in org.dcc.filesystem.*
-  public ReleaseFileSystem getReleaseFileSystem(Subject subject) {
-    return fs.getReleaseFilesystem(getNextRelease(), subject);
+  public ReleaseFileSystem getReleaseFileSystem(Authentication authentication) {
+    return fs.getReleaseFilesystem(getNextRelease(), authentication);
   }
 
   public FileSystem getFileSystem() {
     return fs.getFileSystem();
   }
 
-  public boolean isSystemDirectory(Path path, Subject subject) {
-    return getReleaseFileSystem(subject).isSystemDirectory(path);
+  public boolean isSystemDirectory(Path path, Authentication authentication) {
+    return getReleaseFileSystem(authentication).isSystemDirectory(path);
   }
 
-  public boolean isAdminUser(Subject subject) {
-    return getReleaseFileSystem(subject).isAdminUser();
+  public boolean isAdminUser(Authentication authentication) {
+    return Authorizations.isAdmin(authentication);
   }
 
   public SubmissionFile getSubmissionFile(@NonNull Path path) throws IOException {
     return getSubmissionFile(releaseService.getNextDictionary(), path);
   }
 
-  public SubmissionDirectory getSubmissionDirectory(String projectKey, Subject subject) {
-    return getReleaseFileSystem(subject).getSubmissionDirectory(projectKey);
+  public SubmissionDirectory getSubmissionDirectory(String projectKey, Authentication authentication) {
+    return getReleaseFileSystem(authentication).getSubmissionDirectory(projectKey);
   }
 
   public Path getReleasePath() {
@@ -136,8 +136,9 @@ public class SftpContext {
     releaseService.resetSubmissions();
   }
 
-  public void registerSubmissionEvent(@NonNull String projectKey, @NonNull SubmissionFileEvent event, Subject subject) {
-    val user = (String) subject.getPrincipal();
+  public void registerSubmissionEvent(@NonNull String projectKey, @NonNull SubmissionFileEvent event,
+      Authentication authentication) {
+    val user = authentication.getName();
     val fileName = event.getFile().getName();
 
     if (event.getType() == FILE_CREATED) {
@@ -153,10 +154,6 @@ public class SftpContext {
     }
 
     releaseService.modifySubmission(getNextReleaseName(), projectKey, event);
-  }
-
-  public Subject getCurrentUser() {
-    return authenticator.getSubject();
   }
 
   // TODO: Duplicated code with ReleaseService

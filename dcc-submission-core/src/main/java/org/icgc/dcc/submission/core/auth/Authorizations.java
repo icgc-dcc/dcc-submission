@@ -15,14 +15,10 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.controller;
+package org.icgc.dcc.submission.core.auth;
 
-import java.util.Collection;
-
-import org.apache.shiro.realm.SimpleAccountRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.icgc.dcc.submission.core.util.Constants;
-import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -37,22 +33,26 @@ public final class Authorizations {
 
   public static final String ADMIN_ROLE = Constants.Authorizations_ADMIN_ROLE; // TODO: hardcoded value..!! (DCC-759)
 
-  /**
-   * Returns the username from a "principal" {@code Object}. Using toString seems to be the only way (as used in Shiro's
-   * own classes: {@link SimpleAccountRealm#getUsername()} for instance)
-   */
-  public static String getUsername(Object principal) {
-    return principal == null ? null : principal.toString();
-  }
-
   public static String getUsername(Authentication authentication) {
     if (authentication == null) return null;
 
     return authentication.getName();
   }
 
-  public static boolean hasAdminRole(Collection<String> roles) {
-    return roles.contains(Authorizations.ADMIN_ROLE);
+  public static boolean hasPrivilege(Authentication authentication, String authority) {
+    if (authentication == null) return false;
+
+    return authentication.getAuthorities().stream()
+        .map(GrantedAuthority::getAuthority)
+        .anyMatch(a -> a.equals(authority) || a.equals("*"));
+  }
+
+  public static boolean hasRole(Authentication authentication, String role) {
+    return hasPrivilege(authentication, "role_" + role);
+  }
+
+  public static boolean isAdmin(Authentication authentication) {
+    return hasRole(authentication, Authorizations.ADMIN_ROLE);
   }
 
   public static boolean isSuperUser(Authentication authentication) {
@@ -81,14 +81,6 @@ public final class Authorizations {
    */
   public static boolean hasSpecificProjectPrivilege(Authentication authentication, String projectKey) {
     return hasPrivilege(authentication, AuthorizationPrivileges.projectViewPrivilege(projectKey));
-  }
-
-  private static boolean hasPrivilege(Authentication authentication, String authority) {
-    if (authentication == null) return false;
-
-    return authentication.getAuthorities().stream()
-        .map(GrantedAuthority::getAuthority)
-        .anyMatch(a -> a.equals(authority) || a.equals("*"));
   }
 
 }

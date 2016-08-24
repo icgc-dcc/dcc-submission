@@ -34,7 +34,6 @@ import org.icgc.dcc.submission.repository.RepositoryConfig;
 import org.icgc.dcc.submission.service.ServiceConfig;
 import org.icgc.dcc.submission.sftp.SftpConfig;
 import org.icgc.dcc.submission.shiro.ShiroConfig;
-import org.icgc.dcc.submission.shiro.ShiroPasswordAuthenticator;
 import org.icgc.dcc.submission.test.TestConfig;
 import org.junit.After;
 import org.junit.Assert;
@@ -42,12 +41,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -59,9 +60,6 @@ public class FileSystemFunctionalTest extends FileSystemTest {
 
   @Autowired
   private FileSystem fileSystem;
-
-  @Autowired
-  private ShiroPasswordAuthenticator passwordAuthenticator;
 
   @Override
   public void setUp() throws IOException {
@@ -103,10 +101,11 @@ public class FileSystemFunctionalTest extends FileSystemTest {
 
     log.info("ls = " + filenameList0);
 
-    this.passwordAuthenticator.authenticate("admin", "adminspasswd".toCharArray(), null);
+    val authentication = new UsernamePasswordAuthenticationToken("admin", "adminspasswd");
+    authentication.setAuthenticated(true);
 
     ReleaseFileSystem myReleaseFilesystem =
-        this.dccFileSystem.getReleaseFilesystem(this.mockRelease, this.passwordAuthenticator.getSubject());
+        this.dccFileSystem.getReleaseFilesystem(this.mockRelease, authentication);
     Assert.assertNotNull(myReleaseFilesystem);
     log.info("release file system = " + myReleaseFilesystem);
 

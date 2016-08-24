@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.sftp;
 
-import static org.icgc.dcc.submission.sftp.SftpSessions.setSessionSubject;
+import static org.icgc.dcc.submission.sftp.SftpSessions.setAuthentication;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,11 +26,10 @@ import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 
 import org.apache.shiro.codec.Base64;
-import org.apache.shiro.subject.SimplePrincipalCollection;
-import org.apache.shiro.subject.Subject;
 import org.apache.sshd.common.Session;
 import org.apache.sshd.server.PublickeyAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import com.google.common.base.Charsets;
 
@@ -79,9 +78,11 @@ public class SftpPublicKeyAuthenticator implements PublickeyAuthenticator {
   @SneakyThrows
   private void login(String username, Session session) {
     try {
-      val principals = new SimplePrincipalCollection(username, "");
-      val subject = new Subject.Builder().principals(principals).authenticated(true).buildSubject();
-      setSessionSubject(session, subject);
+      // TODO: Apply authorities!!!
+      val authentication = new UsernamePasswordAuthenticationToken(username, "");
+      authentication.setAuthenticated(true);
+
+      setAuthentication(session, authentication);
     } catch (Throwable t) {
       log.error("Exception logging in user '{}': {}", username, t.getMessage());
       throw t;

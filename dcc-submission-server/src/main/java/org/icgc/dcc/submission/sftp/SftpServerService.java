@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.sftp;
 
 import static com.google.common.util.concurrent.Service.State.TERMINATED;
 import static java.lang.String.valueOf;
+import static org.icgc.dcc.submission.sftp.SftpSessions.getAuthentication;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,9 +28,9 @@ import java.util.Map;
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.io.IoSession;
 import org.apache.sshd.common.session.AbstractSession;
+import org.icgc.dcc.submission.core.auth.Authorizations;
 import org.icgc.dcc.submission.core.model.Status;
 import org.icgc.dcc.submission.core.model.UserSession;
-import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Maps;
@@ -177,8 +178,8 @@ public class SftpServerService extends AbstractService {
   }
 
   private static boolean isSuperUser(AbstractSession activeSession) {
-    val subject = SftpSessions.getSessionSubject(activeSession);
-    return subject.isPermitted(AuthorizationPrivileges.ALL.getPrefix());
+    val authentication = getAuthentication(activeSession);
+    return Authorizations.isSuperUser(authentication);
   }
 
 }

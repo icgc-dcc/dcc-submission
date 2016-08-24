@@ -30,10 +30,10 @@ import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.release.model.Release;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 
 import com.google.common.base.Joiner;
 
@@ -81,8 +81,8 @@ public class DccFileSystem {
    * Creates new user-tailored "view" of a given release filesystem. We may change that behavior later to not creating
    * it on the fly (for now we have very few users and don't plan on having millions ever).
    */
-  public ReleaseFileSystem getReleaseFilesystem(Release release, Subject subject) {
-    return new ReleaseFileSystem(this, release, subject);
+  public ReleaseFileSystem getReleaseFilesystem(Release release, Authentication authentication) {
+    return new ReleaseFileSystem(this, release, authentication);
   }
 
   /**

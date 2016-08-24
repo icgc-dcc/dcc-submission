@@ -40,7 +40,7 @@ public class FileHdfsSshFile extends HdfsSshFile {
   private final BaseDirectoryHdfsSshFile directory;
 
   public FileHdfsSshFile(SftpContext context, BaseDirectoryHdfsSshFile directory, String fileName) {
-    super(context, new Path(directory.path, fileName), directory.fileSystem, directory.subject);
+    super(context, new Path(directory.path, fileName), directory.fileSystem, directory.authentication);
     this.directory = directory;
   }
 
@@ -188,7 +188,7 @@ public class FileHdfsSshFile extends HdfsSshFile {
 
   protected void registerEvent(SubmissionFileEvent event) {
     val projectKey = directory.getName();
-    context.registerSubmissionEvent(projectKey, event, subject);
+    context.registerSubmissionEvent(projectKey, event, authentication);
   }
 
 }

@@ -19,22 +19,22 @@ package org.icgc.dcc.submission.sftp;
 
 import static lombok.AccessLevel.PRIVATE;
 
-import org.apache.shiro.subject.Subject;
 import org.apache.sshd.common.Session;
 import org.apache.sshd.common.Session.AttributeKey;
+import org.springframework.security.core.Authentication;
 
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class SftpSessions {
 
-  private static final AttributeKey<Subject> SESSION_KEY = new AttributeKey<Subject>();
+  private static final AttributeKey<Authentication> SESSION_KEY = new AttributeKey<Authentication>();
 
-  public static void setSessionSubject(Session session, Subject subject) {
-    session.setAttribute(SESSION_KEY, subject);
+  public static void setAuthentication(Session session, Authentication authentication) {
+    session.setAttribute(SESSION_KEY, authentication);
   }
 
-  public static Subject getSessionSubject(Session session) {
+  public static Authentication getAuthentication(Session session) {
     return session.getAttribute(SESSION_KEY);
   }
 

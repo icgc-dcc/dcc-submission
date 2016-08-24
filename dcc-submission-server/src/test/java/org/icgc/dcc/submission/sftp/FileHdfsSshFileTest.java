@@ -11,7 +11,6 @@ import java.util.Date;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RawLocalFileSystem;
-import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.fs.SubmissionFile;
@@ -27,6 +26,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.security.core.Authentication;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FileHdfsSshFileTest {
@@ -49,7 +49,7 @@ public class FileHdfsSshFileTest {
   @Mock
   SftpContext context;
   @Mock
-  Subject subject;
+  Authentication authentication;
 
   SubmissionDirectoryHdfsSshFile directory;
 
@@ -66,9 +66,9 @@ public class FileHdfsSshFileTest {
     when(context.getFileSystem()).thenReturn(createFileSystem());
     when(context.getReleasePath()).thenReturn(new Path(root.getAbsolutePath()));
     when(context.getSubmissionFile(any(Path.class))).thenReturn(new SubmissionFile("", new Date(), 0, null));
-    when(context.getSubmissionDirectory(PROJECT_KEY, subject)).thenReturn(submissionDirectory);
+    when(context.getSubmissionDirectory(PROJECT_KEY, authentication)).thenReturn(submissionDirectory);
 
-    RootHdfsSshFile rootDirectory = new RootHdfsSshFile(context, subject);
+    RootHdfsSshFile rootDirectory = new RootHdfsSshFile(context, authentication);
     String directoryName = PROJECT_KEY;
     directory = new SubmissionDirectoryHdfsSshFile(context, rootDirectory, directoryName);
   }

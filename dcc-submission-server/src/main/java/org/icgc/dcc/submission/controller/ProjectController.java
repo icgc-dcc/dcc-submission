@@ -17,9 +17,9 @@
  */
 package org.icgc.dcc.submission.controller;
 
-import static org.icgc.dcc.submission.controller.Authorizations.getUsername;
-import static org.icgc.dcc.submission.controller.Authorizations.hasSpecificProjectPrivilege;
-import static org.icgc.dcc.submission.controller.Authorizations.isSuperUser;
+import static org.icgc.dcc.submission.core.auth.Authorizations.getUsername;
+import static org.icgc.dcc.submission.core.auth.Authorizations.hasSpecificProjectPrivilege;
+import static org.icgc.dcc.submission.core.auth.Authorizations.isSuperUser;
 import static org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder.fromMethodCall;
 import static org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder.on;
 

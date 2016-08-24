@@ -17,11 +17,11 @@
  */
 package org.icgc.dcc.submission.controller;
 
-import static org.icgc.dcc.submission.controller.Authorizations.hasReleaseViewPrivilege;
-import static org.icgc.dcc.submission.controller.Authorizations.hasSpecificProjectPrivilege;
-import static org.icgc.dcc.submission.controller.Authorizations.isSuperUser;
 import static org.icgc.dcc.submission.controller.Responses.noSuchEntityResponse;
 import static org.icgc.dcc.submission.controller.Responses.unauthorizedResponse;
+import static org.icgc.dcc.submission.core.auth.Authorizations.hasReleaseViewPrivilege;
+import static org.icgc.dcc.submission.core.auth.Authorizations.hasSpecificProjectPrivilege;
+import static org.icgc.dcc.submission.core.auth.Authorizations.isSuperUser;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.ALREADY_INITIALIZED;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.EMPTY_REQUEST;
 

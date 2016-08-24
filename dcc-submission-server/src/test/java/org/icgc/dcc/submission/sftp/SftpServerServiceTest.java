@@ -42,7 +42,6 @@ import java.util.concurrent.ExecutorService;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.sshd.SshServer;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
@@ -56,7 +55,6 @@ import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.submission.service.MailService;
 import org.icgc.dcc.submission.service.ProjectService;
 import org.icgc.dcc.submission.service.ReleaseService;
@@ -69,6 +67,8 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 
 import com.google.common.base.Optional;
 import com.google.common.eventbus.EventBus;
@@ -101,9 +101,9 @@ public class SftpServerServiceTest {
   SubmissionProperties properties = new SubmissionProperties();
 
   @Mock
-  Subject subject;
+  Authentication authentication;
   @Mock
-  UsernamePasswordAuthenticator authenticator;
+  AuthenticationManager authenticator;
   @Mock
   Release release;
   @Mock
@@ -141,9 +141,8 @@ public class SftpServerServiceTest {
     properties.getSftp().setNioWorkers(NIO_WORKERS);
 
     // Mock authentication
-    when(subject.getPrincipal()).thenReturn("test-user");
-    when(authenticator.authenticate(anyString(), (char[]) any(), anyString())).thenReturn(subject);
-    when(authenticator.getSubject()).thenReturn(subject);
+    when(authentication.getName()).thenReturn("test-user");
+    when(authenticator.authenticate(any())).thenReturn(authentication);
 
     // Mock release / project
     when(project.getKey()).thenReturn(PROJECT_KEY);
@@ -158,7 +157,7 @@ public class SftpServerServiceTest {
 
     // Mock file system
     when(fs.buildReleaseStringPath(release.getName())).thenReturn(root.getAbsolutePath());
-    when(fs.getReleaseFilesystem(release, subject)).thenReturn(releaseFileSystem);
+    when(fs.getReleaseFilesystem(release, authentication)).thenReturn(releaseFileSystem);
     when(fs.getFileSystem()).thenReturn(fileSystem());
     when(releaseFileSystem.getDccFileSystem()).thenReturn(fs);
     when(releaseFileSystem.getRelease()).thenReturn(release);
