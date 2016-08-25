@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
+import { browserHistory } from 'react-router';
 
+import {observe} from 'mobx';
 import {observer} from 'mobx-react';
 
 import user from '~/user.js';
@@ -11,6 +13,15 @@ class Login extends Component {
     username: '',
     password: '',
   };
+
+  componentWillMount() {
+    observe(user, change => {
+      if (change.name === 'isLoggedIn' && change.oldValue === false && change.newValue === true) {
+        console.log('user just logged in. redirecting to /releases');
+        browserHistory.push('/releases')
+      }
+    })
+  }
 
   submit = async () => {
     const { username, password } = this.state;
