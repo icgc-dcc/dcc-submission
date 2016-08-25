@@ -91,7 +91,7 @@ class Release extends Component {
                   <td>{file.lastUpdate}</td>
                   <td>{formatFileSize(file.size)}</td>
                   <td>
-                    <Status statusCode={file.fileState} />
+                    <Status statusCode={file.fileState || ''} />
                   </td>
                   <td>
                       { hasAnyReports ? (
