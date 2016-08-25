@@ -48,20 +48,6 @@ public class KVDynamicDictionary implements KVDictionary {
   private final Dictionary dictionary;
 
   @Override
-  public Iterable<KVExperimentalDataType> getExperimentalDataTypes() {
-    return dictionary.getFeatureTypes().stream()
-        .map(featureType -> KVExperimentalDataType.from(featureType))
-        .collect(toImmutableList());
-  }
-
-  @Override
-  public List<KVFileType> getExperimentalFileTypes(KVExperimentalDataType dataType) {
-    return dictionary.getFileTypesReferencedBranch(dataType.getFeatureType()).stream()
-        .map(KVFileType::from)
-        .collect(toImmutableList());
-  }
-
-  @Override
   public KVFileTypeKeysIndices getKeysIndices(KVFileType fileType) {
     val fileSchema = getFileSchema(fileType);
     val schemaFieldNames = fileSchema.fieldNames();

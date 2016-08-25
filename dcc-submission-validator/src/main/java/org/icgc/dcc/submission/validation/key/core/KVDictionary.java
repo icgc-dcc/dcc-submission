@@ -24,10 +24,6 @@ import com.google.common.base.Optional;
 
 public interface KVDictionary {
 
-  Iterable<KVExperimentalDataType> getExperimentalDataTypes();
-
-  List<KVFileType> getExperimentalFileTypes(KVExperimentalDataType dataType);
-
   KVFileTypeKeysIndices getKeysIndices(KVFileType fileType);
 
   List<String> getErrorFieldNames(KVFileType fileType, KVErrorType errorType, Optional<KVFileType> referencedFileType);

@@ -115,7 +115,7 @@ public class KVReporter implements Closeable {
         .params(getErrorParams(fileType, errorType, referencedFileType))
         .type(errorType.getErrorType())
         .lineNumber(lineNumber)
-        .value(keys.getValues())
+        .value(keys.getStringValues())
         .build());
   }
 

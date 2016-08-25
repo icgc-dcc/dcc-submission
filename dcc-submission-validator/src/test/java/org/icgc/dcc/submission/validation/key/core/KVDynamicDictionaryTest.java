@@ -58,18 +58,6 @@ public class KVDynamicDictionaryTest extends AbstractDictionaryTest {
   }
 
   @Test
-  public void testGetExperimentalDataTypes() throws Exception {
-    val dataTypes = kvDictionary.getExperimentalDataTypes();
-    assertThat(dataTypes).containsOnly(KVExperimentalDataType.values());
-  }
-
-  @Test
-  public void testGetExperimentalFileTypes() throws Exception {
-    val methFileTypes = kvDictionary.getExperimentalFileTypes(KVExperimentalDataType.METH_ARRAY);
-    assertThat(methFileTypes).containsExactly(METH_ARRAY_M, METH_ARRAY_PROBES, METH_ARRAY_P);
-  }
-
-  @Test
   public void testGetKeysIndices() throws Exception {
     val ssmKeys = kvDictionary.getKeysIndices(KVFileType.SSM_M);
 

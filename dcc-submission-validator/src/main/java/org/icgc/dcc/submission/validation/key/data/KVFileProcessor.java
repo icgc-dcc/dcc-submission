@@ -34,7 +34,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.common.core.model.SpecialValue;
 import org.icgc.dcc.common.hadoop.parser.FileRecordProcessor;
 import org.icgc.dcc.submission.validation.key.core.KVDictionary;
 import org.icgc.dcc.submission.validation.key.core.KVErrorType;
@@ -202,7 +201,7 @@ public final class KVFileProcessor {
               // DCC-3926: If any of the foreign key values are -888 then skip validation. This is because
               // optionallyReferencedPrimaryKeys.get().hasMatchingReference(fk) would not match anything because -888 is
               // not allowed for a primary key
-                if (hasNotApplicableCode(optionalFk)) {
+                if (optionalFk.hasNotApplicableCode()) {
                   return;
                 }
                 validateForeignKey(context,
@@ -241,17 +240,6 @@ public final class KVFileProcessor {
           throw new IllegalStateException(format("Invalid error type provided: '%s'", errorType));
         }
       }
-    }
-
-    private boolean hasNotApplicableCode(KVKey optionalFk) {
-      for (val value : optionalFk.getValues()) {
-        val present = SpecialValue.NOT_APPLICABLE_CODE.equals(value);
-        if (present) {
-          return true;
-        }
-      }
-
-      return false;
     }
   }
 

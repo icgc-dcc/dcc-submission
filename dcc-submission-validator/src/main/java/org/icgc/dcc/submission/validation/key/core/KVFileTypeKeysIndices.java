@@ -18,12 +18,11 @@
 package org.icgc.dcc.submission.validation.key.core;
 
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.ImmutableList.copyOf;
 import static java.util.Collections.emptyMap;
-import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableMap;
 import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
 
 import java.util.List;
+import java.util.Map;
 
 import lombok.Builder;
 import lombok.Value;
@@ -32,6 +31,7 @@ import lombok.val;
 import org.icgc.dcc.submission.validation.key.data.KVKey;
 import org.icgc.dcc.submission.validation.key.data.KVRow;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 
 /**
@@ -57,24 +57,30 @@ public class KVFileTypeKeysIndices {
     }
 
     if (!fks.isEmpty()) {
-      val rowFks = fks.keySet().stream()
-          .collect(toImmutableMap(fileType -> fileType, fileType -> KVKey.from(row, copyOf(fks.get(fileType)))));
-      builder.fks(rowFks);
+      builder.fks(getRowKeys(row, fks));
     } else {
       builder.fks(emptyMap());
     }
 
     if (optionalFks != null && !optionalFks.isEmpty()) {
-      val rowOptionalFks = optionalFks.keySet().stream()
-          .collect(toImmutableMap(
-              fileType -> fileType,
-              fileType -> KVKey.from(row, copyOf(optionalFks.get(fileType)))));
-      builder.optionalFks(rowOptionalFks);
+      builder.optionalFks(getRowKeys(row, optionalFks));
     } else {
       builder.optionalFks(emptyMap());
     }
 
     return builder.build();
+  }
+
+  private static Map<KVFileType, KVKey> getRowKeys(List<String> row, Multimap<KVFileType, Integer> fks) {
+    val rowFks = ImmutableMap.<KVFileType, KVKey> builder();
+    for (val fileType : fks.keySet()) {
+      // The Multimap is backed by ArrayListMultimap
+      val fileTypeFks = (List<Integer>) fks.get(fileType);
+      val key = KVKey.from(row, fileTypeFks);
+      rowFks.put(fileType, key);
+    }
+
+    return rowFks.build();
   }
 
 }
