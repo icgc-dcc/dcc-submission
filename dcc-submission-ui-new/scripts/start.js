@@ -143,7 +143,14 @@ function openBrowser(port) {
 
 function runDevServer(port) {
   new WebpackDevServer(compiler, {
-    historyApiFallback: true,
+    historyApiFallback: {
+      rewrites: [
+        {
+          from: /^\/releases\/.*$/,
+          to: '/'
+        }
+      ]
+    },
     hot: true,
     publicPath: config.output.publicPath,
     quiet: true,
