@@ -29,7 +29,7 @@ user.isLoggedIn = true;
 ReactDOM.render((
   <Router history={browserHistory}>
     <Route path="/" component={App}>
-      <IndexRoute component={Login}/>
+      <IndexRoute component={user.isLoggedIn ? require('./Releases/Releases.js') : Login}/>
       <Route path="login" component={Login}/>
       <Route path="releases" component={require('./Releases/Releases.js')} onEnter={requireAuth}/>
       <Route path="releases/:releaseName" component={require('./Release/Release.js')} onEnter={requireAuth}/>
