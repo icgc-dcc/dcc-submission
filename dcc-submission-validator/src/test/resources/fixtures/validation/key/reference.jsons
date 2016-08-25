@@ -4,8 +4,8 @@
 "fileName":"sample.02.txt","fieldNames":["specimen_id"],"number":0,"lineNumber":10,"value":["sp-ssm-04.01b"],"type":"RELATION_VALUE_ERROR","params":["SPECIMEN",["specimen_id"]]
 "fileName":"sample.02.txt","fieldNames":["analyzed_sample_id"],"number":0,"lineNumber":11,"value":["sa-ssm-04.01.C02"],"type":"UNIQUE_VALUE_ERROR","params":null
 "fileName":"sample.02.txt","fieldNames":["specimen_id"],"number":0,"lineNumber":11,"value":["sp-ssm-04.01c"],"type":"RELATION_VALUE_ERROR","params":["SPECIMEN",["specimen_id"]]
-"fileName":"specimen.txt","fieldNames":["specimen_id"],"number":0,"lineNumber":-1,"value":["mydanglingspecien"],"type":"RELATION_PARENT_VALUE_ERROR","params":["SAMPLE",["specimen_id"]]
 "fileName":"specimen.txt","fieldNames":["specimen_id"],"number":0,"lineNumber":-1,"value":["sp-cnsm-04.01"],"type":"RELATION_PARENT_VALUE_ERROR","params":["SAMPLE",["specimen_id"]]
+"fileName":"specimen.txt","fieldNames":["specimen_id"],"number":0,"lineNumber":-1,"value":["mydanglingspecien"],"type":"RELATION_PARENT_VALUE_ERROR","params":["SAMPLE",["specimen_id"]]
 "fileName":"cnsm_m.txt","fieldNames":["matched_sample_id"],"number":0,"lineNumber":2,"value":["sa-cnsm-02.01.C01"],"type":"RELATION_VALUE_ERROR","params":["SAMPLE",["analyzed_sample_id"]]
 "fileName":"cnsm_m.txt","fieldNames":["matched_sample_id"],"number":0,"lineNumber":3,"value":["sa-cnsm-03.01.C01"],"type":"RELATION_VALUE_ERROR","params":["SAMPLE",["analyzed_sample_id"]]
 "fileName":"cnsm_m.txt","fieldNames":["analysis_id","analyzed_sample_id"],"number":0,"lineNumber":4,"value":["an-cnsm-03","sa-cnsm-03.01.T01"],"type":"UNIQUE_VALUE_ERROR","params":null
