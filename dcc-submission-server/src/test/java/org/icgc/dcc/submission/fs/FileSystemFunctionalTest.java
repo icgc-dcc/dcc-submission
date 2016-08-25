@@ -33,7 +33,6 @@ import org.icgc.dcc.submission.config.ValidationConfig;
 import org.icgc.dcc.submission.repository.RepositoryConfig;
 import org.icgc.dcc.submission.service.ServiceConfig;
 import org.icgc.dcc.submission.sftp.SftpConfig;
-import org.icgc.dcc.submission.shiro.ShiroConfig;
 import org.icgc.dcc.submission.test.TestConfig;
 import org.junit.After;
 import org.junit.Assert;
@@ -53,7 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { TestConfig.class, FileSystemConfig.class, ShiroConfig.class, PersistenceConfig.class, RepositoryConfig.class, SftpConfig.class, ServiceConfig.class, ValidationConfig.class })
+@SpringBootTest(classes = { TestConfig.class, FileSystemConfig.class, PersistenceConfig.class, RepositoryConfig.class, SftpConfig.class, ServiceConfig.class, ValidationConfig.class })
 public class FileSystemFunctionalTest extends FileSystemTest {
 
   protected DccFileSystem dccFileSystem;

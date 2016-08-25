@@ -15,52 +15,19 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.shiro;
+package org.icgc.dcc.submission.auth;
 
-import java.util.Collection;
+import org.icgc.dcc.submission.config.AbstractConfig;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationProvider;
 
-import javax.inject.Provider;
+@Configuration
+public class AuthConfig extends AbstractConfig {
 
-import org.apache.shiro.authc.credential.PasswordMatcher;
-import org.apache.shiro.realm.Realm;
-import org.icgc.dcc.submission.core.config.SubmissionProperties;
-import org.icgc.dcc.submission.service.ProjectService;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.common.collect.ImmutableSet;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class RealmProvider implements Provider<Collection<Realm>> {
-
-  /**
-   * Dependencies.
-   */
-  private final SubmissionProperties properties;
-  private final ProjectService projectService;
-
-  /**
-   * TODO <code>{@link ShiroPasswordAuthenticator#authenticate()}</code>
-   */
-  @Override
-  public Collection<Realm> get() {
-    String shiroIniFilePath = properties.getShiro().getRealm();
-    log.info("shiroIniFilePath = " + shiroIniFilePath);
-    DccWrappingRealm dccWrappingRealm = buildDccWrappingRealm(shiroIniFilePath);
-
-    return ImmutableSet.<Realm> of(dccWrappingRealm);
+  @Bean
+  public AuthenticationProvider authenticationProvider() {
+    return singleton(SubmissionAuthenticationProvider.class);
   }
 
-  private DccWrappingRealm buildDccWrappingRealm(String shiroIniFilePath) {
-    DccWrappingRealm dccWrappingRealm = new DccWrappingRealm(projectService);
-    dccWrappingRealm.setResourcePath("file:" + shiroIniFilePath);// TODO: existing constant for that?
-    dccWrappingRealm.init();
-    dccWrappingRealm.setCredentialsMatcher(new PasswordMatcher());
-    // TODO investigate caching particulars
-    dccWrappingRealm.setAuthorizationCachingEnabled(false);
-    return dccWrappingRealm;
-  }
 }

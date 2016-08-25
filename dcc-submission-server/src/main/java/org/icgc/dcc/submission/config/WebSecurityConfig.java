@@ -20,26 +20,36 @@ package org.icgc.dcc.submission.config;
 
 import static org.springframework.http.HttpMethod.GET;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
+  
   @Override
   protected void configure(HttpSecurity http) throws Exception {
+    log.info("[security] Configuring HTTP endpoint security...");
     http
         .authorizeRequests()
           .antMatchers(
               GET,
               "/ws/nextRelease/dictionary",
               "/ws/codeLists",
-              "/ws/dictionaries")
+              "/ws/dictionaries/**")
           .permitAll()
           .antMatchers("/ws/**")
             .authenticated()
@@ -48,15 +58,24 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .and()
           .csrf().disable();
   }
+  
 
   @Autowired
-  public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-    auth
-        .inMemoryAuthentication()
-          .withUser("admin")
-          .password("adminspasswd")
-          .roles("ADMIN")
-          .authorities("*");
+  public void configureGlobal(SubmissionProperties properties, AuthenticationManagerBuilder auth) throws Exception {
+    val builder = auth.inMemoryAuthentication();
+    for (val user : properties.getAuth().getUsers()) {
+      log.info("Adding user: {}...", user);
+      val effectiveAuthorities = Stream.concat(
+          user.getRoles().stream().map(role -> "ROLE_" + role.toUpperCase()), 
+          user.getAuthorities().stream())
+          .map(SimpleGrantedAuthority::new)
+          .collect(Collectors.toList());
+     
+      builder
+          .withUser(user.getUsername())
+          .password(user.getPassword())
+          .authorities(effectiveAuthorities);
+    }
   }
 
 }

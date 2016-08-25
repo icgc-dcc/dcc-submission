@@ -60,36 +60,6 @@ public class ReleaseController {
   private final ReleaseService releaseService;
   private final SystemService systemService;
 
-  // TODO: This method seems like it should be removed since it is being exposed just for testing
-  @PutMapping
-  @VisibleForTesting
-  public ResponseEntity<?> initialize(
-      @Valid @RequestBody Release release,
-      Authentication authentication) {
-    log.info("Initializing releases with: {}", release);
-    if (isSuperUser(authentication) == false) {
-      return Responses.unauthorizedResponse();
-    }
-
-    if (release != null) {
-      val empty = releaseService.countOpenReleases() == 0;
-      if (empty) {
-        releaseService.createInitialRelease(release);
-
-        return ResponseEntity
-            .ok(release);
-      } else {
-        return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
-            .body(new ServerErrorResponseMessage(ALREADY_INITIALIZED));
-      }
-    } else {
-      return ResponseEntity
-          .status(HttpStatus.BAD_REQUEST)
-          .body(new ServerErrorResponseMessage(EMPTY_REQUEST));
-    }
-  }
-
   @GetMapping
   @JsonView(Digest.class)
   public ResponseEntity<?> getReleases(Authentication authentication) {
@@ -198,6 +168,36 @@ public class ReleaseController {
 
     val submissionFiles = releaseService.getSubmissionFiles(releaseName, projectKey);
     return ResponseEntity.ok(submissionFiles);
+  }
+
+  // TODO: This method seems like it should be removed since it is being exposed just for testing
+  @PutMapping
+  @VisibleForTesting
+  public ResponseEntity<?> initialize(
+      @Valid @RequestBody Release release,
+      Authentication authentication) {
+    log.info("Initializing releases with: {}", release);
+    if (isSuperUser(authentication) == false) {
+      return Responses.unauthorizedResponse();
+    }
+  
+    if (release != null) {
+      val empty = releaseService.countOpenReleases() == 0;
+      if (empty) {
+        releaseService.createInitialRelease(release);
+  
+        return ResponseEntity
+            .ok(release);
+      } else {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(new ServerErrorResponseMessage(ALREADY_INITIALIZED));
+      }
+    } else {
+      return ResponseEntity
+          .status(HttpStatus.BAD_REQUEST)
+          .body(new ServerErrorResponseMessage(EMPTY_REQUEST));
+    }
   }
 
 }
