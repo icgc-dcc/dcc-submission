@@ -9,13 +9,11 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <div>
-          <Breadcrumbs
-            routes={this.props.routes}
-            params={this.props.params}
-            excludes={['App']}
-          />
-        </div>
+        <Breadcrumbs
+          routes={this.props.routes}
+          params={this.props.params}
+          excludes={['App']}
+        />
         {this.props.children}
       </div>
     );
