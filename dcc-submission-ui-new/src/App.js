@@ -10,7 +10,6 @@ class App extends Component {
     return (
       <div className="App">
         <div>
-          Breadcrumbs:  
           <Breadcrumbs
             routes={this.props.routes}
             params={this.props.params}
