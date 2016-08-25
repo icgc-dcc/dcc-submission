@@ -28,13 +28,21 @@ user.isLoggedIn = true;
 
 ReactDOM.render((
   <Router history={browserHistory}>
-    <Route path="/" component={App}>
+    <Route name="App" path="/" component={App}>
       <IndexRoute component={user.isLoggedIn ? require('./Releases/Releases.js') : Login}/>
-      <Route path="login" component={Login}/>
-      <Route path="releases" component={require('./Releases/Releases.js')} onEnter={requireAuth}/>
-      <Route path="releases/:releaseName" component={require('./Release/Release.js')} onEnter={requireAuth}/>
-      <Route path="releases/:releaseName/submissions/:projectKey" component={require('./Submission/Submission.js')} onEnter={requireAuth}/>
-      <Route path="releases/:releaseName/submissions/:projectKey/report/:fileName" component={require('./Report/Report.js')} onEnter={requireAuth}/>
+      <Route name="Login" path="login" component={Login}/>
+      <Route name="Releases" path="releases" onEnter={requireAuth}>
+        <IndexRoute name="ReleasesIndex" component={require('./Releases/Releases.js')}/>
+        <Route name="Release" path=":releaseName">
+          <IndexRoute name="ReleaseIndex" component={require('./Release/Release.js')}/>
+          <Route name="Submission" path="submissions/:projectKey">
+            <IndexRoute name="ReleaseIndex" component={require('./Submission/Submission.js')}/>
+            <Route name="Report" path="report/:fileName">
+              <IndexRoute name="ReportIndex" component={require('./Report/Report.js')}/>
+            </Route>
+          </Route>
+        </Route>
+      </Route>
     </Route>
   </Router>
   ), document.getElementById('root')
