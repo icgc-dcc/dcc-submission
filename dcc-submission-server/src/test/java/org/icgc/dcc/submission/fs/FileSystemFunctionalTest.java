@@ -26,23 +26,15 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.shiro.util.ThreadContext;
+import org.icgc.dcc.common.hadoop.fs.FileSystems;
 import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
-import org.icgc.dcc.submission.config.PersistenceConfig;
-import org.icgc.dcc.submission.config.ValidationConfig;
-import org.icgc.dcc.submission.repository.RepositoryConfig;
-import org.icgc.dcc.submission.service.ServiceConfig;
-import org.icgc.dcc.submission.sftp.SftpConfig;
-import org.icgc.dcc.submission.test.TestConfig;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
@@ -51,14 +43,11 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { TestConfig.class, FileSystemConfig.class, PersistenceConfig.class, RepositoryConfig.class, SftpConfig.class, ServiceConfig.class, ValidationConfig.class })
 public class FileSystemFunctionalTest extends FileSystemTest {
 
   protected DccFileSystem dccFileSystem;
 
-  @Autowired
-  private FileSystem fileSystem;
+  private FileSystem fileSystem = FileSystems.getDefaultLocalFileSystem();
 
   @Override
   public void setUp() throws IOException {
@@ -100,8 +89,8 @@ public class FileSystemFunctionalTest extends FileSystemTest {
 
     log.info("ls = " + filenameList0);
 
-    val authentication = new UsernamePasswordAuthenticationToken("admin", "adminspasswd");
-    authentication.setAuthenticated(true);
+    val authentication = new UsernamePasswordAuthenticationToken("admin", "adminspasswd", ImmutableList.of(
+        new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("*")));
 
     ReleaseFileSystem myReleaseFilesystem =
         this.dccFileSystem.getReleaseFilesystem(this.mockRelease, authentication);
@@ -159,8 +148,5 @@ public class FileSystemFunctionalTest extends FileSystemTest {
   @After
   public void tearDown() {
     HadoopUtils.rmr(this.fileSystem, this.dccFileSystem.buildReleaseStringPath(this.mockRelease.getName()));
-
-    // Clean-up threads
-    ThreadContext.remove();
   }
 }

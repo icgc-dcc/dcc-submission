@@ -19,20 +19,17 @@ package org.icgc.dcc.submission.sftp;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static com.jcraft.jsch.KeyPair.RSA;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadContext;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.service.MailService;
 import org.icgc.dcc.submission.service.ProjectService;
 import org.icgc.dcc.submission.service.ReleaseService;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,6 +38,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.io.Files;
@@ -78,8 +76,6 @@ public class SftpPublicKeyAuthenticatorTest {
   ReleaseService releaseService;
   @Mock
   MailService mailService;
-  @Mock
-  Subject subject;
 
   @Before
   public void setUp() throws IOException, JSchException {
@@ -87,17 +83,12 @@ public class SftpPublicKeyAuthenticatorTest {
     properties.getSftp().setPath(tmp.newFile().getAbsolutePath());
   }
 
-  @After
-  public void tearDown() {
-    ThreadContext.remove();
-  }
-
   @Test
   @SneakyThrows
   public void testPublicKey() {
-    // Simulate the behavior of SecurityManagerProvider
-    DefaultSecurityManager defaultSecurityManager = new DefaultSecurityManager();
-    SecurityUtils.setSecurityManager(defaultSecurityManager);
+    // Mock authentication
+    val authentication = new UsernamePasswordAuthenticationToken(USERNAME, "", null);
+    when(authenticator.authenticate(any())).thenReturn(authentication);
 
     // Setup public and private keys for test
     val keyStore = tmp.newFolder();
@@ -106,7 +97,7 @@ public class SftpPublicKeyAuthenticatorTest {
     val publicKey = new File(keyStore, keyName + ".pub");
 
     // Create SFTP client
-    JSch jsch = new JSch();
+    val jsch = new JSch();
     createKeyPair(jsch, privateKey, publicKey);
     jsch.addIdentity(privateKey.getAbsolutePath());
 
@@ -114,18 +105,20 @@ public class SftpPublicKeyAuthenticatorTest {
     properties.getSftp().setKey(getPublicKeyValue(publicKey));
 
     // Create class under test
-    SftpServerService service = createService();
-    service.startAsync().awaitRunning();
+    val service = createService();
+    try {
+      service.startAsync().awaitRunning();
 
-    // Connect to server
-    val session = jsch.getSession(USERNAME, SFTP_HOST, SFTP_PORT);
-    session.setConfig("StrictHostKeyChecking", "no");
-    session.connect();
+      // Connect to server
+      val session = jsch.getSession(USERNAME, SFTP_HOST, SFTP_PORT);
+      session.setConfig("StrictHostKeyChecking", "no");
+      session.connect();
 
-    val sftpChannel = session.openChannel("sftp");
-    sftpChannel.connect();
-
-    service.stopAsync().awaitTerminated();
+      val sftpChannel = session.openChannel("sftp");
+      sftpChannel.connect();
+    } finally {
+      service.stopAsync().awaitTerminated();
+    }
   }
 
   @SneakyThrows

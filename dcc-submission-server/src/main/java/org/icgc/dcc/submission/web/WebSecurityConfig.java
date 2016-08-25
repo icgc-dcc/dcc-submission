@@ -16,23 +16,15 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @formatter:off
  */
-package org.icgc.dcc.submission.config;
+package org.icgc.dcc.submission.web;
 
 import static org.springframework.http.HttpMethod.GET;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.icgc.dcc.submission.core.config.SubmissionProperties;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -57,25 +49,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
           .httpBasic()
         .and()
           .csrf().disable();
-  }
-  
-
-  @Autowired
-  public void configureGlobal(SubmissionProperties properties, AuthenticationManagerBuilder auth) throws Exception {
-    val builder = auth.inMemoryAuthentication();
-    for (val user : properties.getAuth().getUsers()) {
-      log.info("Adding user: {}...", user);
-      val effectiveAuthorities = Stream.concat(
-          user.getRoles().stream().map(role -> "ROLE_" + role.toUpperCase()), 
-          user.getAuthorities().stream())
-          .map(SimpleGrantedAuthority::new)
-          .collect(Collectors.toList());
-     
-      builder
-          .withUser(user.getUsername())
-          .password(user.getPassword())
-          .authorities(effectiveAuthorities);
-    }
   }
 
 }

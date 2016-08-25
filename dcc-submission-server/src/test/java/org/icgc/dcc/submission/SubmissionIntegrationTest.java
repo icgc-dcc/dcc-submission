@@ -22,12 +22,8 @@ import static com.google.common.collect.Iterables.toArray;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang.StringUtils.repeat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.common.test.Tests.TEST_FIXTURES_DIR;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.writeDictionary;
@@ -50,7 +46,6 @@ import static org.icgc.dcc.submission.test.Tests.RELEASES_ENDPOINT;
 import static org.icgc.dcc.submission.test.Tests.SEED_CODELIST_ENDPOINT;
 import static org.icgc.dcc.submission.test.Tests.SEED_DICTIONARIES_ENDPOINT;
 import static org.icgc.dcc.submission.test.Tests.SIGNOFF_ENDPOINT;
-import static org.icgc.dcc.submission.test.Tests.TEST_CONFIG_FILE;
 import static org.icgc.dcc.submission.test.Tests.UPDATE_RELEASE_ENDPOINT;
 import static org.icgc.dcc.submission.test.Tests.VALIDATION_ENDPOINT;
 import static org.icgc.dcc.submission.test.Tests.addScript;
@@ -73,21 +68,22 @@ import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.OK;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.Response.Status;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.glassfish.jersey.message.internal.OutboundJaxrsResponse;
 import org.icgc.dcc.common.core.dcc.AppUtils;
 import org.icgc.dcc.common.core.model.FileTypes;
-import org.icgc.dcc.submission.config.PersistenceConfig;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
@@ -96,16 +92,14 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.sftp.Sftp;
 import org.icgc.dcc.submission.test.BaseIntegrationTest;
 import org.icgc.dcc.submission.test.MiniHadoop;
-import org.icgc.dcc.submission.test.TestConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mongodb.morphia.Datastore;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import com.dumbster.smtp.SimpleSmtpServer;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -119,14 +113,12 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { TestConfig.class, PersistenceConfig.class })
 public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   /**
    * Switch that will change environments from "local" if {@code true} and "hadoop" if {@code false}.
    */
-  private static final boolean LOCAL = false;
+  private static final boolean LOCAL = true;
 
   /**
    * Switch that will change environments to "docker" if {@code true} and "embeeded" if {@code false}.
@@ -365,9 +357,6 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     status("init", "Starting SMTP server...");
     smtpServer = SimpleSmtpServer.start(Integer.valueOf(properties.getMail().getSmtpPort()));
-
-    status("init", "Starting submission server...");
-    ServerMain.main("--spring.config.location=" + TEST_CONFIG_FILE.getAbsolutePath());
   }
 
   @After
@@ -376,10 +365,6 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     log.info(repeat("-", 100));
     log.info("Tearing down ...");
     log.info(repeat("-", 100));
-
-    status("shutdown", "Closing REST client...");
-    client.close();
-    status("shutdown", "REST client closed.");
 
     status("shutdown", "Shutting down SMTP server...");
     smtpServer.stop();
@@ -424,13 +409,17 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private void seedSystem() throws IOException {
     status("seed", "Seeding dictionary 1 ({})...", FIRST_DICTIONARY_VERSION);
-    post(client, SEED_DICTIONARIES_ENDPOINT, FIRST_DICTIONARY_ARRAY);
+    assertThat(post(restTemplate, SEED_DICTIONARIES_ENDPOINT, FIRST_DICTIONARY_ARRAY).getStatusCode().is2xxSuccessful())
+        .isTrue();
 
     status("seed", "Seeding dictionary 2 ({} from dcc-resources)...", SECOND_DICTIONARY_VERSION);
-    post(client, SEED_DICTIONARIES_ENDPOINT, SECOND_DICTIONARY_ARRAY);
+    assertThat(
+        post(restTemplate, SEED_DICTIONARIES_ENDPOINT, SECOND_DICTIONARY_ARRAY).getStatusCode().is2xxSuccessful())
+            .isTrue();
 
     status("seed", "Seeding code lists...");
-    post(client, SEED_CODELIST_ENDPOINT, codeListsToString());
+    assertThat(post(restTemplate, SEED_CODELIST_ENDPOINT, codeListsToString()).getStatusCode().is2xxSuccessful())
+        .isTrue();
   }
 
   private void adminCreatesRelease() throws Exception, IOException {
@@ -449,7 +438,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     status("admin", "Updating OPEN dictionary...");
     updateDictionary(
-        FIRST_DICTIONARY, FIRST_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
+        FIRST_DICTIONARY, FIRST_DICTIONARY_VERSION, NO_CONTENT);
   }
 
   @SneakyThrows
@@ -508,7 +497,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private void userValidates() throws Exception {
     // Triggers validations
-    enqueueProjects(PROJECTS_TO_ENQUEUE, NO_CONTENT);
+    enqueueProjects(PROJECTS_TO_ENQUEUE, HttpStatus.NO_CONTENT);
 
     // TODO: Can't do this unless we can support a test method verifying a project is in either INVALID or NOT_VALIDATED
     // states due lack of synchronization with the validation scheduler (i.e. results are unpredictable):
@@ -535,7 +524,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private void adminRevalidates() throws Exception {
     // Re-enqueue them since they have been reset by adding the term
-    enqueueProjects(PROJECTS_TO_ENQUEUE2, NO_CONTENT);
+    enqueueProjects(PROJECTS_TO_ENQUEUE2, HttpStatus.NO_CONTENT);
 
     status("admin", "Checking validated submission 1...");
     checkValidatedSubmission(PROJECT1_KEY, POST_PARTIAL_REVALIDATION_STATES.get(PROJECT1_KEY));
@@ -577,11 +566,11 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private void adminUpdatesDictionary() throws Exception, IOException {
     status("admin", "Updating CLOSED dictionary...");
     updateDictionary(
-        FIRST_DICTIONARY, FIRST_DICTIONARY_VERSION, BAD_REQUEST.getStatusCode());
+        FIRST_DICTIONARY, FIRST_DICTIONARY_VERSION, BAD_REQUEST);
 
     status("admin", "Updating OPENED dictionary...");
     updateDictionary(
-        dictionaryToString(), SECOND_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
+        dictionaryToString(), SECOND_DICTIONARY_VERSION, NO_CONTENT);
 
     status("admin", "Adding Script restriction #1 to OPENED dictionary");
     Dictionary dictionary =
@@ -599,7 +588,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     status("admin", "Updating to new dictionary with script restrictions");
     updateDictionary(
-        dictionaryToString(dictionary), SECOND_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
+        dictionaryToString(dictionary), SECOND_DICTIONARY_VERSION, NO_CONTENT);
   }
 
   private void adminUpdatesRelease() throws Exception {
@@ -612,8 +601,8 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   }
 
   private void createInitialRelease() throws Exception {
-    val response = (OutboundJaxrsResponse) put(client, RELEASES_ENDPOINT, INITIAL_RELEASE);
-    assertEquals(OK.getStatusCode(), response.getStatus());
+    val response = put(restTemplate, RELEASES_ENDPOINT, INITIAL_RELEASE);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
 
     val release = asRelease(response);
     assertEquals(INITITAL_RELEASE_NAME, release.getName());
@@ -621,51 +610,51 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private void addProjects() throws IOException {
     status("admin", "Adding project 1...");
-    val response1 = post(client, PROJECTS_ENDPOINT, PROJECT1);
-    assertEquals(CREATED.getStatusCode(), response1.getStatus());
+    val response1 = post(restTemplate, PROJECTS_ENDPOINT, PROJECT1);
+    assertEquals(CREATED, response1.getStatusCode());
 
     status("admin", "Adding project 2...");
-    val response2 = post(client, PROJECTS_ENDPOINT, PROJECT2);
-    assertEquals(CREATED.getStatusCode(), response2.getStatus());
+    val response2 = post(restTemplate, PROJECTS_ENDPOINT, PROJECT2);
+    assertEquals(CREATED, response2.getStatusCode());
 
     status("admin", "Adding project 3...");
-    val response3 = post(client, PROJECTS_ENDPOINT, PROJECT3);
-    assertEquals(CREATED.getStatusCode(), response3.getStatus());
+    val response3 = post(restTemplate, PROJECTS_ENDPOINT, PROJECT3);
+    assertEquals(CREATED, response3.getStatusCode());
 
     status("admin", "Adding project 4...");
-    val response4 = post(client, PROJECTS_ENDPOINT, PROJECT4);
-    assertEquals(CREATED.getStatusCode(), response4.getStatus());
+    val response4 = post(restTemplate, PROJECTS_ENDPOINT, PROJECT4);
+    assertEquals(CREATED, response4.getStatusCode());
 
     status("admin", "Adding project 5...");
-    val response5 = post(client, PROJECTS_ENDPOINT, PROJECT5);
-    assertEquals(CREATED.getStatusCode(), response5.getStatus());
+    val response5 = post(restTemplate, PROJECTS_ENDPOINT, PROJECT5);
+    assertEquals(CREATED, response5.getStatusCode());
 
     status("admin", "Adding project 6...");
-    val response6 = post(client, PROJECTS_ENDPOINT, PROJECT6);
-    assertEquals(CREATED.getStatusCode(), response6.getStatus());
+    val response6 = post(restTemplate, PROJECTS_ENDPOINT, PROJECT6);
+    assertEquals(CREATED, response6.getStatusCode());
 
     status("admin", "Adding project 7...");
-    val response7 = post(client, PROJECTS_ENDPOINT, PROJECT7);
-    assertEquals(CREATED.getStatusCode(), response7.getStatus());
+    val response7 = post(restTemplate, PROJECTS_ENDPOINT, PROJECT7);
+    assertEquals(CREATED, response7.getStatusCode());
 
     status("admin", "Adding project 8...");
-    val response8 = post(client, PROJECTS_ENDPOINT, PROJECT8);
-    assertEquals(CREATED.getStatusCode(), response8.getStatus());
+    val response8 = post(restTemplate, PROJECTS_ENDPOINT, PROJECT8);
+    assertEquals(CREATED, response8.getStatusCode());
   }
 
-  private void enqueueProjects(String projectsToEnqueue, Status expectedStatus) throws Exception {
+  private void enqueueProjects(String projectsToEnqueue, HttpStatus expectedStatus) throws Exception {
     status("user", "Getting queued projects...");
-    OutboundJaxrsResponse response = (OutboundJaxrsResponse) get(client, QUEUE_ENDPOINT);
+    ResponseEntity<String> response = get(restTemplate, QUEUE_ENDPOINT);
     String queued = asString(response);
     status("user", "Received queued projects: {}", queued);
 
-    assertEquals(OK.getStatusCode(), response.getStatus());
+    assertEquals(OK, response.getStatusCode());
     assertEquals("[]", queued);
 
     status("user", "Enqueuing projects...");
-    response = (OutboundJaxrsResponse) post(client, QUEUE_ENDPOINT, projectsToEnqueue);
-    assertEquals(expectedStatus.getStatusCode(), response.getStatus());
-    if (expectedStatus != NO_CONTENT) {
+    response = post(restTemplate, QUEUE_ENDPOINT, projectsToEnqueue);
+    assertEquals(expectedStatus, response.getStatusCode());
+    if (expectedStatus != HttpStatus.NO_CONTENT) {
       JsonNode expected = $("{code:'" + INVALID_STATE.getFrontEndString() + "',parameters:['" + VALID + "']}");
       JsonNode actual = $(response);
       assertEquals(expected + " != " + actual, expected, actual);
@@ -673,30 +662,31 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   }
 
   @SuppressWarnings("unused")
-  private void cancelValidation(String projectKey, Status expectedStatus) throws Exception {
-    val response = delete(client, VALIDATION_ENDPOINT + "/" + projectKey);
-    assertEquals(expectedStatus.getStatusCode(), response.getStatus());
+  private void cancelValidation(String projectKey, HttpStatus expectedStatus) throws Exception {
+    val response = delete(restTemplate, VALIDATION_ENDPOINT + "/" + projectKey);
+    assertEquals(expectedStatus, response.getStatusCode());
   }
 
   private void addInvalidCodeList() throws IOException {
     // Ensure codelist is present
     status("admin", "Getting code lists...");
-    OutboundJaxrsResponse response = (OutboundJaxrsResponse) get(client, CODELISTS_ENDPOINT);
-    assertEquals(OK.getStatusCode(), response.getStatus());
+    ResponseEntity<String> response = get(restTemplate, CODELISTS_ENDPOINT);
+    assertEquals(OK, response.getStatusCode());
     val codeListName = "appendix_B10";
     assertTrue(asString(response).contains(codeListName));
 
     // Attempt to add it again
     status("admin", "Adding invalid code list...");
     response =
-        (OutboundJaxrsResponse) post(client, CODELISTS_ENDPOINT, "[{name:'someName'},{name:'" + codeListName + "'}]");
-    assertEquals(INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+        post(restTemplate, CODELISTS_ENDPOINT,
+            "[{name:'someName'},{name:'" + codeListName + "'}]");
+    assertEquals(INTERNAL_SERVER_ERROR, response.getStatusCode());
   }
 
   private void addValidCodeLists() throws IOException {
     status("admin", "Adding valid code lists...");
-    val response = post(client, CODELISTS_ENDPOINT, "[{name:'someName'},{name:'someNewName'}]");
-    assertEquals(CREATED.getStatusCode(), response.getStatus());
+    val response = post(restTemplate, CODELISTS_ENDPOINT, "[{name:'someName'},{name:'someNewName'}]");
+    assertEquals(CREATED, response.getStatusCode());
   }
 
   private void addCodeListTerms() throws Exception {
@@ -706,9 +696,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     // TODO: Get codelist dynamically
     status("admin", "Adding code list terms...");
     val codeListName = "GLOBAL.0.platform.v1/terms";
-    val response = post(client, CODELISTS_ENDPOINT + "/" + codeListName,
+    val response = post(restTemplate, CODELISTS_ENDPOINT + "/" + codeListName,
         "[{code:'1000',value:'new value 1'},{code:'10001',value:'new value 2'}]");
-    assertEquals(CREATED.getStatusCode(), response.getStatus());
+    assertEquals(CREATED, response.getStatusCode());
 
     // Only the INVALID ones should have been reset (DCC-851)
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
@@ -718,26 +708,26 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private void releaseInitialRelease() {
     // Attempts releasing (expect failure)
     status("admin", "Releasing attempt 1 (should fail)...");
-    OutboundJaxrsResponse response = (OutboundJaxrsResponse) post(client, NEXT_RELEASE_ENPOINT, NEXT_RELEASE);
-    assertEquals(BAD_REQUEST.getStatusCode(), response.getStatus()); // no signed off projects
+    ResponseEntity<String> response = post(restTemplate, NEXT_RELEASE_ENPOINT, NEXT_RELEASE);
+    assertEquals(BAD_REQUEST, response.getStatusCode()); // no signed off projects
 
     // Sign off
     status("user", "Signing off project {}", PROJECT_TO_SIGN_OFF);
-    response = (OutboundJaxrsResponse) post(client, SIGNOFF_ENDPOINT, PROJECT_TO_SIGN_OFF);
-    assertEquals(OK.getStatusCode(), response.getStatus());
+    response = post(restTemplate, SIGNOFF_ENDPOINT, PROJECT_TO_SIGN_OFF);
+    assertEquals(OK, response.getStatusCode());
 
     // Attempt releasing again
     status("admin", "Releasing attempt 2 (should pass)...");
-    response = (OutboundJaxrsResponse) post(client, NEXT_RELEASE_ENPOINT, NEXT_RELEASE);
-    assertEquals(asString(response), OK.getStatusCode(), response.getStatus());
+    response = post(restTemplate, NEXT_RELEASE_ENPOINT, NEXT_RELEASE);
+    assertEquals(asString(response), OK, response.getStatusCode());
 
     // Attempt releasing one too many times
     status("admin", "Releasing attempt 3 (should fail)...");
-    response = (OutboundJaxrsResponse) post(client, NEXT_RELEASE_ENPOINT, NEXT_RELEASE);
-    assertEquals(BAD_REQUEST.getStatusCode(), response.getStatus());
+    response = post(restTemplate, NEXT_RELEASE_ENPOINT, NEXT_RELEASE);
+    assertEquals(BAD_REQUEST, response.getStatusCode());
   }
 
-  private void updateDictionary(String dictionary, String dictionaryVersion, int expectedStatus)
+  private void updateDictionary(String dictionary, String dictionaryVersion, HttpStatus expectedStatus)
       throws Exception {
     val updatedSecondDictionary = dictionary.replace("Unique identifier for the donor",
         "Unique identifier for the donor (update" + 1 + ")");
@@ -745,13 +735,14 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     status("admin", "Updating dictionary...");
     val response =
-        (OutboundJaxrsResponse) put(client, DICTIONARIES_ENDPOINT + "/" + dictionaryVersion, updatedSecondDictionary);
-    assertEquals(response.getStringHeaders().toString(), expectedStatus, response.getStatus());
+        put(restTemplate, DICTIONARIES_ENDPOINT + "/" + dictionaryVersion,
+            updatedSecondDictionary);
+    assertEquals(response.getHeaders().toString(), expectedStatus, response.getStatusCode());
   }
 
   private void updateRelease(String updatedRelease) throws Exception {
-    val response = (OutboundJaxrsResponse) put(client, UPDATE_RELEASE_ENDPOINT, updatedRelease);
-    assertEquals(OK.getStatusCode(), response.getStatus());
+    val response = put(restTemplate, UPDATE_RELEASE_ENDPOINT, updatedRelease);
+    assertEquals(OK, response.getStatusCode());
 
     val release = asRelease(response);
     assertEquals(NEXT_RELEASE_NAME, release.getName());
@@ -766,8 +757,8 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private void checkRelease(String releaseName, String dictionaryVersion, ReleaseState expectedReleaseState,
       List<SubmissionState> expectedSubmissionStates) {
     status("admin", "Getting release '{}'...", releaseName);
-    val response = (OutboundJaxrsResponse) get(client, RELEASES_ENDPOINT + "/" + releaseName);
-    assertEquals(OK.getStatusCode(), response.getStatus());
+    val response = get(restTemplate, RELEASES_ENDPOINT + "/" + releaseName);
+    assertEquals(OK, response.getStatusCode());
 
     val releaseView = asReleaseView(response);
     assertNotNull(releaseView);
@@ -785,8 +776,8 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private void checkValidations() {
     status("user", "Getting release 1...");
-    val response = get(client, INITIAL_RELEASE_ENDPOINT);
-    assertEquals(OK.getStatusCode(), response.getStatus());
+    val response = get(restTemplate, INITIAL_RELEASE_ENDPOINT);
+    assertEquals(OK, response.getStatusCode());
 
     status("user", "Checking validated submission 1...");
     checkValidatedSubmission(PROJECT1_KEY, POST_VALIDATION_STATES.get(PROJECT1_KEY));
@@ -830,11 +821,11 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       sleepUninterruptibly(2, SECONDS);
 
       status("user", "Polling submission status...");
-      val response = (OutboundJaxrsResponse) get(client, INITIAL_RELEASE_SUBMISSIONS_ENDPOINT + "/" + project);
+      val response = get(restTemplate, INITIAL_RELEASE_SUBMISSIONS_ENDPOINT + "/" + project);
       detailedSubmission = asDetailedSubmission(response);
       status("user", "Received submission status: {}", detailedSubmission);
 
-      assertEquals(OK.getStatusCode(), response.getStatus());
+      assertEquals(OK, response.getStatusCode());
     } while (detailedSubmission.getState() == QUEUED || detailedSubmission.getState() == VALIDATING);
 
     assertEquals(project, expectedSubmissionState, detailedSubmission.getState());
@@ -847,11 +838,11 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       sleepUninterruptibly(2, SECONDS);
 
       status("user", "Polling submission validation status...");
-      val response = (OutboundJaxrsResponse) get(client, INITIAL_RELEASE_SUBMISSIONS_ENDPOINT + "/" + project);
+      val response = get(restTemplate, INITIAL_RELEASE_SUBMISSIONS_ENDPOINT + "/" + project);
       detailedSubmission = asDetailedSubmission(response);
       status("user", "Received submission validation status: {}", detailedSubmission);
 
-      assertEquals(OK.getStatusCode(), response.getStatus());
+      assertEquals(OK, response.getStatusCode());
     } while (detailedSubmission.getState() == QUEUED);
   }
 

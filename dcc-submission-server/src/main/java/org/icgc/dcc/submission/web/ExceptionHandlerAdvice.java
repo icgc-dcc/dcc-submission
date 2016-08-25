@@ -15,22 +15,39 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.security;
+package org.icgc.dcc.submission.web;
 
-import org.apache.shiro.subject.Subject;
+import org.icgc.dcc.submission.release.ReleaseException;
+import org.icgc.dcc.submission.web.model.ServerErrorCode;
+import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-/**
- * Contract for authenticating a user based on username-password tokens.
- */
-public interface UsernamePasswordAuthenticator {
+import lombok.val;
 
-  /**
-   * @return true when authentication succeeds, false otherwise.
-   */
-  Subject authenticate(String username, char[] password, String host);
+@ControllerAdvice
+public class ExceptionHandlerAdvice {
 
-  Subject getSubject();
+  @ExceptionHandler
+  @ResponseBody
+  ResponseEntity<ServerErrorResponseMessage> handle(Exception e) throws Exception {
+    if (e instanceof DuplicateNameException) {
+      return response(HttpStatus.BAD_REQUEST, ServerErrorCode.ALREADY_EXISTS, e);
+    } else if (e instanceof InvalidNameException) {
+      return response(HttpStatus.BAD_REQUEST, ServerErrorCode.INVALID_NAME, e);
+    } else if (e instanceof ReleaseException) {
+      return response(HttpStatus.BAD_REQUEST, ServerErrorCode.RELEASE_EXCEPTION, e);
+    }
 
-  void removeSubject();
+    throw e;
+  }
+
+  public ResponseEntity<ServerErrorResponseMessage> response(HttpStatus status, ServerErrorCode error, Exception e) {
+    val body = new ServerErrorResponseMessage(error, e.getMessage());
+    return ResponseEntity.status(status).body(body);
+  }
 
 }

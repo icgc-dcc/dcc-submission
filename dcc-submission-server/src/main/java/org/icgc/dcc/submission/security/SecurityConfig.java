@@ -15,25 +15,25 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web.mapper;
+package org.icgc.dcc.submission.security;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.ext.ExceptionMapper;
+import org.icgc.dcc.submission.config.AbstractConfig;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
-import org.icgc.dcc.submission.web.DuplicateNameException;
-import org.icgc.dcc.submission.web.model.ServerErrorCode;
-import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
+@Configuration
+public class SecurityConfig extends AbstractConfig {
 
-/**
- * 
- */
-public class DuplicateNameExceptionMapper implements ExceptionMapper<DuplicateNameException> {
+  @Bean
+  public AuthenticationProvider authenticationProvider() {
+    return singleton(SubmissionAuthenticationProvider.class);
+  }
 
-  @Override
-  public Response toResponse(DuplicateNameException exception) {
-    return Response.status(Status.BAD_REQUEST)
-        .entity(new ServerErrorResponseMessage(ServerErrorCode.ALREADY_EXISTS, exception.getMessage())).build();
+  @Bean
+  public UserDetailsService userDetailsService() {
+    return singleton(SubmissionUserDetailsService.class);
   }
 
 }

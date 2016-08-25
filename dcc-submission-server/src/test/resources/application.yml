@@ -81,11 +81,11 @@ auth:
       password: adminspasswd
       authorities: ['*']
       roles: ['ADMIN']
-    - username: ricardo
-      password: ricardospasswd
-      authorities: ['release:view', 'submission:signoff']
-      roles: ['submitter']
     - username: richard
       password: richardspasswd
+      authorities: ['release:view', 'submission:signoff']
+      roles: ['submitter']
+    - username: ricardo
+      password: ricardospasswd
       authorities: ['release:view', 'submission:signoff']
       roles: ['submitter']

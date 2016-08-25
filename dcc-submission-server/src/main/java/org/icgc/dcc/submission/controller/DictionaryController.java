@@ -154,7 +154,7 @@ public class DictionaryController {
   }
 
   @SuperUser
-  @PutMapping("{version}")
+  @PutMapping("{version:.+}")
   public ResponseEntity<?> updateDictionary(
       @PathVariable("version") String version,
       @RequestParam(name = "reset", defaultValue = "true") boolean reset, // Reset by default

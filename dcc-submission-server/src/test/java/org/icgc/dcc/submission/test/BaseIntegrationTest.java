@@ -20,29 +20,51 @@ package org.icgc.dcc.submission.test;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.checkExistence;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.getFileStatus;
 import static org.junit.Assert.assertTrue;
-
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.hadoop.util.HadoopProperties;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import lombok.SneakyThrows;
 
-public class BaseIntegrationTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = DEFINED_PORT)
+public abstract class BaseIntegrationTest {
 
   static {
     HadoopProperties.setHadoopUserNameProperty();
   }
 
-  protected final Client client = ClientBuilder.newClient();
+  @Autowired
+  protected TestRestTemplate restTemplate;
 
   @SneakyThrows
   protected static void assertEmptyFile(FileSystem fileSystem, String dir, String path) {
     Path errorFile = new Path(dir, path);
     assertTrue("Expected file does not exist: " + path, checkExistence(fileSystem, errorFile));
     assertTrue("Expected empty file: " + path, getFileStatus(fileSystem, errorFile).get().getLen() == 0);
+  }
+
+  @Configuration
+  static class Config {
+
+    @Bean
+    public RestTemplateBuilder restTemplateBuilder() {
+      return new RestTemplateBuilder()
+          .requestFactory(SimpleClientHttpRequestFactory.class)
+          .basicAuthorization("admin", "adminspasswd");
+    }
+
   }
 
 }

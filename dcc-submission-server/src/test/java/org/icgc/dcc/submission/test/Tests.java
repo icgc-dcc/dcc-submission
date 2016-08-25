@@ -18,9 +18,7 @@
 package org.icgc.dcc.submission.test;
 
 import static com.google.common.base.Charsets.UTF_8;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.repeat;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.abbreviate;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readResourcesDictionary;
@@ -30,13 +28,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation.Builder;
-import javax.ws.rs.core.Response;
-
-import org.glassfish.jersey.internal.util.Base64;
-import org.glassfish.jersey.message.internal.OutboundJaxrsResponse;
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
@@ -49,13 +40,18 @@ import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseView;
 import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.io.Resources;
-import com.google.common.net.HttpHeaders;
 import com.mongodb.BasicDBObject;
 
 import lombok.NoArgsConstructor;
@@ -80,29 +76,18 @@ public final class Tests {
   /**
    * Endpoint path constants.
    */
-  public static final String SEED_ENDPOINT = "/seed";
+  public static final String SEED_ENDPOINT = "/ws/seed";
   public static final String SEED_CODELIST_ENDPOINT = SEED_ENDPOINT + "/codelists";
   public static final String SEED_DICTIONARIES_ENDPOINT = SEED_ENDPOINT + "/dictionaries";
-  public static final String DICTIONARIES_ENDPOINT = "/dictionaries";
-  public static final String CODELISTS_ENDPOINT = "/codeLists";
-  public static final String PROJECTS_ENDPOINT = "/projects";
-  public static final String RELEASES_ENDPOINT = "/releases";
-  public static final String NEXT_RELEASE_ENPOINT = "/nextRelease";
+  public static final String DICTIONARIES_ENDPOINT = "/ws/dictionaries";
+  public static final String CODELISTS_ENDPOINT = "/ws/codeLists";
+  public static final String PROJECTS_ENDPOINT = "/ws/projects";
+  public static final String RELEASES_ENDPOINT = "/ws/releases";
+  public static final String NEXT_RELEASE_ENPOINT = "/ws/nextRelease";
   public static final String UPDATE_RELEASE_ENDPOINT = NEXT_RELEASE_ENPOINT + "/update";
   public static final String SIGNOFF_ENDPOINT = NEXT_RELEASE_ENPOINT + "/signed";
   public static final String QUEUE_ENDPOINT = NEXT_RELEASE_ENPOINT + "/queue";
   public static final String VALIDATION_ENDPOINT = NEXT_RELEASE_ENPOINT + "/validation";
-
-  /**
-   * URL constants.
-   */
-  public static final String BASEURI = "http://localhost:5380/ws";
-  public static final String AUTHORIZATION_HEADER_VALUE = "X-DCC-Auth " + Base64.encodeAsString("admin:adminspasswd");
-
-  /**
-   * Test configuration constants.
-   */
-  public static final File TEST_CONFIG_FILE = new File("src/test/resources/application.yml");
 
   @SneakyThrows
   private static SubmissionProperties readConfig(File configFile) {
@@ -206,63 +191,67 @@ public final class Tests {
             "\"version\": \"" + newVersion + "\"");
   }
 
-  public static Builder build(Client client, String path) {
-    return client
-        .target(BASEURI)
-        .path(path)
-        .request(APPLICATION_JSON)
-        .header(HttpHeaders.AUTHORIZATION, AUTHORIZATION_HEADER_VALUE);
-  }
-
   @SneakyThrows
-  public static Response get(Client client, String endPoint) {
+  public static ResponseEntity<String> get(TestRestTemplate restTemplate, String endPoint) {
     banner();
     log.info("GET {}", endPoint);
     banner();
-    return logPotentialErrors(build(client, endPoint).get());
+    return logPotentialErrors(restTemplate.getForEntity(endPoint, String.class));
   }
 
   /**
    * TODO: ensure payload is valid json and fail fast (also for other VERBS)
    */
-  public static Response post(Client client, String endPoint, String payload) {
+  public static ResponseEntity<String> post(TestRestTemplate restTemplate, String endPoint, String payload) {
     payload = normalize(payload);
 
     banner();
     log.info("POST {} {}", endPoint, abbreviate(payload, 1000));
     banner();
-    return logPotentialErrors(build(client, endPoint).post(Entity.entity(payload, APPLICATION_JSON)));
+
+    val headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+
+    val entity = new HttpEntity<String>(payload, headers);
+
+    return logPotentialErrors(
+        restTemplate.exchange(endPoint, HttpMethod.POST, entity, String.class));
   }
 
-  public static Response put(Client client, String endPoint, String payload) {
+  public static ResponseEntity<String> put(TestRestTemplate restTemplate, String endPoint, String payload) {
     payload = normalize(payload);
 
     banner();
     log.info("PUT {} {}", endPoint, abbreviate(payload, 1000));
     banner();
-    return logPotentialErrors(build(client, endPoint).put(Entity.entity(payload, APPLICATION_JSON)));
+
+    val headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+
+    val entity = new HttpEntity<String>(payload, headers);
+
+    return logPotentialErrors(
+        restTemplate.exchange(endPoint, HttpMethod.PUT, entity, String.class));
   }
 
-  public static Response delete(Client client, String endPoint) {
+  public static ResponseEntity<String> delete(TestRestTemplate restTemplate, String endPoint) {
     banner();
     log.info("DELETE {}", endPoint);
     banner();
-    return logPotentialErrors(build(client, endPoint).delete());
+
+    return logPotentialErrors(restTemplate.exchange(endPoint, HttpMethod.DELETE, null, String.class));
   }
 
-  private static Response logPotentialErrors(Response r) {
-    val response = (OutboundJaxrsResponse) r;
-    int status = response.getStatus();
-    if (status < 200 || status >= 300) { // TODO: use Response.fromStatusCode(code).getFamily() rather
-      boolean buffered = response.bufferEntity();
-      checkState(buffered);
-      log.warn("There was an erroneous reponse: '{}', '{}'", status, asString(response));
+  private static ResponseEntity<String> logPotentialErrors(ResponseEntity<String> response) {
+    int status = response.getStatusCode().value();
+    if (status < 200 || status >= 300) {
+      log.warn("There was an erroneous reponse: '{}', '{}'", status, response.getBody());
     }
     return response;
   }
 
-  public static String asString(OutboundJaxrsResponse response) {
-    return response.readEntity(String.class);
+  public static String asString(ResponseEntity<String> response) {
+    return response.getBody();
   }
 
   @SneakyThrows
@@ -271,22 +260,22 @@ public final class Tests {
   }
 
   @SneakyThrows
-  public static JsonNode $(OutboundJaxrsResponse response) {
+  public static JsonNode $(ResponseEntity<String> response) {
     return $(asString(response));
   }
 
   @SneakyThrows
-  public static Release asRelease(OutboundJaxrsResponse response) {
+  public static Release asRelease(ResponseEntity<String> response) {
     return MAPPER.readValue(asString(response), Release.class);
   }
 
   @SneakyThrows
-  public static ReleaseView asReleaseView(OutboundJaxrsResponse response) {
+  public static ReleaseView asReleaseView(ResponseEntity<String> response) {
     return MAPPER.readValue(asString(response), ReleaseView.class);
   }
 
   @SneakyThrows
-  public static DetailedSubmission asDetailedSubmission(OutboundJaxrsResponse response) {
+  public static DetailedSubmission asDetailedSubmission(ResponseEntity<String> response) {
     return MAPPER.readValue(asString(response), DetailedSubmission.class);
   }
 

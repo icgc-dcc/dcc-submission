@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.sftp;
 
+import static com.google.common.io.BaseEncoding.base64;
 import static org.icgc.dcc.submission.sftp.SftpSessions.setAuthentication;
 
 import java.io.ByteArrayOutputStream;
@@ -25,13 +26,14 @@ import java.io.OutputStream;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 
-import org.apache.shiro.codec.Base64;
 import org.apache.sshd.common.Session;
 import org.apache.sshd.server.PublickeyAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -78,9 +80,8 @@ public class SftpPublicKeyAuthenticator implements PublickeyAuthenticator {
   @SneakyThrows
   private void login(String username, Session session) {
     try {
-      // TODO: Apply authorities!!!
-      val authentication = new UsernamePasswordAuthenticationToken(username, "");
-      authentication.setAuthenticated(true);
+      val authentication = new UsernamePasswordAuthenticationToken(username, "", ImmutableList.of(
+          new SimpleGrantedAuthority("ROLE_ADMIN")));
 
       setAuthentication(session, authentication);
     } catch (Throwable t) {
@@ -91,7 +92,7 @@ public class SftpPublicKeyAuthenticator implements PublickeyAuthenticator {
 
   private boolean isMatch(RSAPublicKey rsaKey) {
     String actual = new String(encode(rsaKey));
-    String expected = new String(decode(knownKey));
+    String expected = new String(decode(knownKey.trim()));
     val match = actual.equals(expected);
 
     return match;
@@ -121,7 +122,7 @@ public class SftpPublicKeyAuthenticator implements PublickeyAuthenticator {
    * Decodes the known key.
    */
   private static byte[] decode(String knownKey) {
-    return Base64.decode(knownKey.getBytes());
+    return base64().decode(knownKey);
   }
 
   private static void write(byte[] text, OutputStream outputStream) throws IOException {

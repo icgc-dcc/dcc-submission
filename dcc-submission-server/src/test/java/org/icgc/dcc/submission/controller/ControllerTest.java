@@ -17,21 +17,22 @@
  */
 package org.icgc.dcc.submission.controller;
 
-import static org.mockito.Mockito.mock;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
-import org.icgc.dcc.submission.config.AbstractConfig;
-import org.icgc.dcc.submission.config.WebSecurityConfig;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.core.model.User;
+import org.icgc.dcc.submission.security.SecurityConfig;
+import org.icgc.dcc.submission.service.ProjectService;
 import org.icgc.dcc.submission.service.UserService;
+import org.icgc.dcc.submission.test.TestConfig;
+import org.icgc.dcc.submission.web.WebSecurityConfig;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -43,14 +44,36 @@ import com.google.common.base.Optional;
 import lombok.val;
 
 @RunWith(SpringRunner.class)
-@Import(WebSecurityConfig.class)
-public class ControllerTest {
+@Import({ TestConfig.class, SecurityConfig.class, WebSecurityConfig.class })
+public abstract class ControllerTest {
 
   /**
-   * Test utilities.
+   * Test dependencies.
    */
   @Autowired
   protected MockMvc mvc;
+  @Autowired
+  protected SubmissionProperties properties;
+
+  /**
+   * Test collaborators.
+   */
+  @MockBean
+  protected ProjectService projectService;
+  @MockBean
+  protected UserService userService;
+
+  @Before
+  public final void init() {
+    for (val user : properties.getAuth().getUsers()) {
+      val value = new User();
+      value.setUsername(user.getUsername());
+
+      when(userService.getUserByUsername(user.getUsername())).thenReturn(Optional.of(value));
+    }
+
+    when(userService.getUserByUsername(any(String.class))).thenReturn(Optional.absent());
+  }
 
   protected RequestPostProcessor admin() {
     return user("admin");
@@ -72,32 +95,8 @@ public class ControllerTest {
     return httpBasic(username, password(username));
   }
 
-  public ResultMatcher emptyContent() {
+  protected ResultMatcher contentEmpty() {
     return content().string("");
-  }
-
-  @Configuration
-  static class Config extends AbstractConfig {
-
-    @Bean
-    @ConfigurationProperties
-    public SubmissionProperties submissionProperties() {
-      return new SubmissionProperties();
-    }
-
-    @Bean
-    public UserService userService(SubmissionProperties properties) {
-      val userService = mock(UserService.class);
-      for (val user : properties.getAuth().getUsers()) {
-        val value = new User();
-        value.setUsername(user.getUsername());
-
-        when(userService.getUserByUsername(user.getUsername())).thenReturn(Optional.of(value));
-      }
-
-      return userService;
-    }
-
   }
 
   public static String password(String username) {

@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.core.auth;
 
-import org.apache.shiro.subject.PrincipalCollection;
 import org.icgc.dcc.submission.core.util.Constants;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;

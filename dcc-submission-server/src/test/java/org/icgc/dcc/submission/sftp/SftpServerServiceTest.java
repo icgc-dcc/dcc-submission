@@ -42,7 +42,6 @@ import java.util.concurrent.ExecutorService;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.shiro.util.ThreadContext;
 import org.apache.sshd.SshServer;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.core.model.Project;
@@ -68,7 +67,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import com.google.common.base.Optional;
 import com.google.common.eventbus.EventBus;
@@ -100,8 +99,6 @@ public class SftpServerServiceTest {
 
   SubmissionProperties properties = new SubmissionProperties();
 
-  @Mock
-  Authentication authentication;
   @Mock
   AuthenticationManager authenticator;
   @Mock
@@ -141,7 +138,7 @@ public class SftpServerServiceTest {
     properties.getSftp().setNioWorkers(NIO_WORKERS);
 
     // Mock authentication
-    when(authentication.getName()).thenReturn("test-user");
+    val authentication = new UsernamePasswordAuthenticationToken(USERNAME, PASSWORD, null);
     when(authenticator.authenticate(any())).thenReturn(authentication);
 
     // Mock release / project
@@ -178,9 +175,6 @@ public class SftpServerServiceTest {
   public void tearDown() {
     service.stopAsync().awaitTerminated();
     sftp.disconnect();
-
-    // Clean-up threads
-    ThreadContext.remove();
   }
 
   @Test
