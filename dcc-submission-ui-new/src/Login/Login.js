@@ -46,7 +46,7 @@ class Login extends Component {
             onChange={e => this.setState({password: e.target.value})}
           />
         </label>
-        <button onClick={this.submit}/>
+        <button onClick={this.submit}>Login</button>
         <pre>
         {JSON.stringify(user, null, '  ')}
         </pre>
