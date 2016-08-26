@@ -2,7 +2,10 @@ import React, { Component } from 'react';
 import {Link} from 'react-router';
 import {observable, action, runInAction} from 'mobx';
 import {observer} from 'mobx-react';
+import BootstrapTable from 'reactjs-bootstrap-table';
 import { fetchHeaders } from '~/utils';
+// import ActionButton from '~/common/components/ActionButton/ActionButton';
+import user from '~/user';
 
 const releases = observable({
   isLoading: false,
@@ -18,16 +21,10 @@ releases.fetch = action('fetch releases', async function () {
   runInAction('update loading status', () => { this.isLoading = false });
 
   const items = await response.json();
-
   runInAction('update releases', () => {
     this.items = items;
   });
 });
-
-function Actions ({ state }) {
-  // TODO: see submissions_table_view.coffee#158-228
-  return <div>actions for {state}</div>
-}
 
 export default @observer
 class Releases extends Component {
@@ -38,17 +35,35 @@ class Releases extends Component {
   render () {
     return <div>
       Releases!
-      {releases.items.map( release => (
-        <div key={release.name}>
-          <Link to={`/releases/${release.name}`}>
-            Name: {release.name}
-          </Link> |
-            State: {release.state} |
-            Release Date: {release.releaseDate || 'Unreleased'} |
-            Projects: {release.submissions.length} |
-            Actions: <Actions state={release.state} />
-        </div>
-      ))}
+      <BootstrapTable
+        data={releases.items}
+        headers={true}
+        columns={[
+          {
+            name: 'name',
+            display: 'Name',
+            sort: true,
+            renderer: release => (
+              <Link to={`/releases/${release.name}`}>
+                {release.name}
+              </Link>
+            ),
+          },
+          { name: 'state', display: 'State' },
+          { name: 'releaseDate', display: 'Release Date', renderer: release => release.releaseDate || 'Unreleased'},
+          { name: 'projects', display: 'Projects', renderer: release => release.submissions.length},
+
+          // only admin users have actions, if not admin then hide column
+          ...[user.isAdmin && { name: 'actions', display: 'Actions', renderer: release => (
+            <div
+              onClick={() => console.log('release')}
+              className="m-btn green-stripe mini"
+            >
+              Release Now
+            </div>
+          )}]
+        ]}
+      />
     </div>
   }
 }
