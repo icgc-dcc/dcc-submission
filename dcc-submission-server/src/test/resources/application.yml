@@ -8,18 +8,15 @@
 # See:
 #   http://wrapper.tanukisoftware.com/doc/english/prop-working-dir.html
 
-
 server:
   port: 5380
   
 mongo:
   uri: "mongodb://localhost/icgc-local"
 
-shiro:
-  realm: "src/main/conf/realm.ini"
-
 # Root directory of DCC filesystem
 fsRoot: "/tmp/submission"
+
 # FileSystem Scheme. This sets hadoop's fs.defaultFS
 fsUrl: "file:///"
 
@@ -78,15 +75,12 @@ mail:
 # A/A
 auth:
   users:
-    - username: admin
-      password: adminspasswd
-      authorities: ['*']
-      roles: ['ADMIN']
-    - username: richard
-      password: richardspasswd
-      authorities: ['release:view', 'submission:signoff']
-      roles: ['submitter']
-    - username: ricardo
-      password: ricardospasswd
-      authorities: ['release:view', 'submission:signoff']
-      roles: ['submitter']
+    # Admin
+    - {username: 'admin', password: 'adminspasswd', authorities: ['*'], roles: ['ADMIN']}
+    
+    # Submitters
+    - {username: 'richard', password: 'richardspasswd', authorities: ['release:view', 'submission:signoff']}
+    - {username: 'ricardo', password: 'ricardospasswd', authorities: ['release:view', 'submission:signoff']}
+
+# Banner
+spring.main.banner-mode: log

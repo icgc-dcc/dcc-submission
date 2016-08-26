@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.core;
 
-import org.icgc.dcc.submission.web.model.ServerErrorCode;
+import org.icgc.dcc.submission.web.ServerErrorCode;
 
 /**
  * When an operation is attempted on the system when its states does not allow it.

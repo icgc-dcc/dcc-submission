@@ -36,7 +36,7 @@ import static org.apache.sshd.common.file.SshFile.Permission.OthersWrite;
 import static org.apache.sshd.common.file.SshFile.Permission.UserExecute;
 import static org.apache.sshd.common.file.SshFile.Permission.UserRead;
 import static org.apache.sshd.common.file.SshFile.Permission.UserWrite;
-import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
+import static org.icgc.dcc.submission.fs.SubmissionFileSystem.VALIDATION_DIRNAME;
 import static org.icgc.dcc.submission.sftp.fs.HdfsFileUtils.handleException;
 
 import java.io.IOException;

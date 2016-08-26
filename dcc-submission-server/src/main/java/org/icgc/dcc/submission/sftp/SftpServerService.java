@@ -28,9 +28,9 @@ import java.util.Map;
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.io.IoSession;
 import org.apache.sshd.common.session.AbstractSession;
-import org.icgc.dcc.submission.core.auth.Authorizations;
 import org.icgc.dcc.submission.core.model.Status;
 import org.icgc.dcc.submission.core.model.UserSession;
+import org.icgc.dcc.submission.core.security.Authorizations;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Maps;

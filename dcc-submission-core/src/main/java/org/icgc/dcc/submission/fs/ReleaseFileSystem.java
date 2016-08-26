@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.fs;
 
-import static org.icgc.dcc.submission.core.auth.Authorizations.hasSpecificProjectPrivilege;
+import static org.icgc.dcc.submission.core.security.Authorizations.hasSpecificProjectPrivilege;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -45,19 +45,20 @@ public class ReleaseFileSystem {
    * Dependencies.
    */
   @NonNull
-  private final DccFileSystem dccFileSystem;
+  private final SubmissionFileSystem submissionFileSystem;
   @NonNull
   private final Release release;
   private final Authentication authentication;
 
-  public ReleaseFileSystem(DccFileSystem dccFilesystem, Release release) {
-    this(dccFilesystem, release, null);
+  public ReleaseFileSystem(SubmissionFileSystem submissionFileSystem, Release release) {
+    this(submissionFileSystem, release, null);
   }
 
   public SubmissionDirectory getSubmissionDirectory(@NonNull String projectKey) {
     val allowed = hasPrivileges(projectKey);
     if (!allowed) {
-      throw new DccFileSystemException("User '%s' with principal '%s' does not have permission to access project '%s'",
+      throw new SubmissionFileSystemException(
+          "User '%s' with principal '%s' does not have permission to access project '%s'",
           authentication, authentication == null ? null : authentication.getName(), projectKey);
     }
 
@@ -68,7 +69,7 @@ public class ReleaseFileSystem {
     }
 
     val submission = optional.get();
-    return new SubmissionDirectory(dccFileSystem, this, release, projectKey, submission);
+    return new SubmissionDirectory(submissionFileSystem, this, release, projectKey, submission);
   }
 
   public void setUpNewReleaseFileSystem(
@@ -78,10 +79,10 @@ public class ReleaseFileSystem {
     log.info("Setting up new release file system for: '{}'", newReleaseName);
 
     // Shorthands
-    val fileSystem = dccFileSystem.getFileSystem();
+    val fileSystem = submissionFileSystem.getFileSystem();
     val next = this;
 
-    dccFileSystem.createReleaseDirectory(newReleaseName);
+    submissionFileSystem.createReleaseDirectory(newReleaseName);
 
     for (val projectKey : projectKeys) {
       // Copy "release_(n-1)/projectKey/" to "release_(n)/projectKey/"
@@ -93,9 +94,9 @@ public class ReleaseFileSystem {
   }
 
   public void resetValidationFolder(@NonNull String projectKey) {
-    val validationStringPath = dccFileSystem.buildValidationDirStringPath(release.getName(), projectKey);
-    dccFileSystem.removeDirIfExist(validationStringPath);
-    dccFileSystem.createDirIfDoesNotExist(validationStringPath);
+    val validationStringPath = submissionFileSystem.buildValidationDirStringPath(release.getName(), projectKey);
+    submissionFileSystem.removeDirIfExist(validationStringPath);
+    submissionFileSystem.createDirIfDoesNotExist(validationStringPath);
     log.info("Emptied directory '{}' for project '{}'", validationStringPath, projectKey);
   }
 
@@ -103,8 +104,8 @@ public class ReleaseFileSystem {
     return ReleaseState.COMPLETED == release.getState();
   }
 
-  public DccFileSystem getDccFileSystem() {
-    return dccFileSystem;
+  public SubmissionFileSystem getSubmissionFileSystem() {
+    return submissionFileSystem;
   }
 
   public Release getRelease() {
@@ -112,7 +113,7 @@ public class ReleaseFileSystem {
   }
 
   public Path getReleaseDirectory() {
-    return new Path(this.dccFileSystem.getRootStringPath(), this.release.getName());
+    return new Path(this.submissionFileSystem.getRootStringPath(), this.release.getName());
   }
 
   protected Path getSystemDirPath() {

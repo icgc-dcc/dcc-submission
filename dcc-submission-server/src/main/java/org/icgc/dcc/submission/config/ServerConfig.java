@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.config;
 import java.util.Set;
 import java.util.logging.LogManager;
 
-import org.icgc.dcc.submission.core.DccRuntime;
+import org.icgc.dcc.submission.core.SubmissionRuntime;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -46,8 +46,8 @@ public class ServerConfig extends AbstractConfig {
   }
 
   @Bean
-  public DccRuntime dccRuntime(Set<Service> services) {
-    return new DccRuntime(services);
+  public SubmissionRuntime submissionRuntime(Set<Service> services) {
+    return new SubmissionRuntime(services);
   }
 
 }

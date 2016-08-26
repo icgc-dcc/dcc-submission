@@ -32,9 +32,9 @@ import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.util.Dictionaries;
-import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.core.AbstractValidationContext;
@@ -83,9 +83,9 @@ public class KeyValidationContext extends AbstractValidationContext {
   @Getter(lazy = true)
   private final FileSystem fileSystem = createFileSystem();
   @Getter(lazy = true)
-  private final DccFileSystem dccFileSystem = new DccFileSystem(getProperties(), getFileSystem());
+  private final SubmissionFileSystem submissionFileSystem = new SubmissionFileSystem(getProperties(), getFileSystem());
   @Getter(lazy = true)
-  private final ReleaseFileSystem releaseFileSystem = new ReleaseFileSystem(getDccFileSystem(), getRelease());
+  private final ReleaseFileSystem releaseFileSystem = new ReleaseFileSystem(getSubmissionFileSystem(), getRelease());
   @Getter(lazy = true)
   private final SubmissionPlatformStrategy platformStrategy = createPlatformStrategy();
 
@@ -136,7 +136,7 @@ public class KeyValidationContext extends AbstractValidationContext {
 
   private SubmissionDirectory createSubmissionDirectory() {
     return new SubmissionDirectory(
-        getDccFileSystem(),
+        getSubmissionFileSystem(),
         getReleaseFileSystem(),
         getRelease(),
         getProjectKey(),

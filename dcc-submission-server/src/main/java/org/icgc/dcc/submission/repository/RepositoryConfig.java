@@ -35,18 +35,8 @@ public class RepositoryConfig extends AbstractConfig {
   }
 
   @Bean
-  public ProjectDataTypeReportRepository projectDataTypeReportRepository() {
-    return singleton(ProjectDataTypeReportRepository.class);
-  }
-
-  @Bean
   public ProjectRepository projectRepository() {
     return singleton(ProjectRepository.class);
-  }
-
-  @Bean
-  public ProjectSequencingStrategyReportRepository projectSequencingStrategyReportRepository() {
-    return singleton(ProjectSequencingStrategyReportRepository.class);
   }
 
   @Bean

@@ -35,7 +35,7 @@ import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.util.Dictionaries;
-import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
@@ -92,7 +92,7 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
   private final FileSystem fileSystem;
   @Getter
   @NonNull
-  private final DccFileSystem dccFileSystem;
+  private final SubmissionFileSystem submissionFileSystem;
   @Getter
   @NonNull
   private final ReleaseFileSystem releaseFileSystem;
@@ -111,10 +111,10 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
     this.submission = new Submission(projectKey, projectKey, getFakeInputReleaseName());
 
     this.fileSystem = FileSystems.getFileSystem(fsUrl);
-    this.dccFileSystem = new DccFileSystem(param.getProperties(), fileSystem);
-    this.releaseFileSystem = new ReleaseFileSystem(dccFileSystem, release);
+    this.submissionFileSystem = new SubmissionFileSystem(param.getProperties(), fileSystem);
+    this.releaseFileSystem = new ReleaseFileSystem(submissionFileSystem, release);
     this.submissionDirectory = new SubmissionDirectory(
-        dccFileSystem, releaseFileSystem, release, projectKey, submission);
+        submissionFileSystem, releaseFileSystem, release, projectKey, submission);
   }
 
   @Override

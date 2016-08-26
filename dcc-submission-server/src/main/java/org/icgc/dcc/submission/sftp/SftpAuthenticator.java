@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.sftp;
 
-import static org.icgc.dcc.submission.core.auth.Authorizations.isSuperUser;
+import static org.icgc.dcc.submission.core.security.Authorizations.isSuperUser;
 import static org.icgc.dcc.submission.sftp.SftpSessions.setAuthentication;
 
 import java.io.IOException;

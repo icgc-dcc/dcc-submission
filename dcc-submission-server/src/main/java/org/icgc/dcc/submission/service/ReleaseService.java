@@ -22,17 +22,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.lsFile;
-import static org.icgc.dcc.submission.core.auth.Authorizations.getUsername;
-import static org.icgc.dcc.submission.core.auth.Authorizations.hasSpecificProjectPrivilege;
+import static org.icgc.dcc.submission.core.security.Authorizations.getUsername;
+import static org.icgc.dcc.submission.core.security.Authorizations.hasSpecificProjectPrivilege;
 import static org.icgc.dcc.submission.core.util.NameValidator.validateEntityName;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
-import static org.icgc.dcc.submission.web.model.ServerErrorCode.DUPLICATE_RELEASE_NAME;
-import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
-import static org.icgc.dcc.submission.web.model.ServerErrorCode.QUEUE_NOT_EMPTY;
-import static org.icgc.dcc.submission.web.model.ServerErrorCode.RELEASE_MISSING_DICTIONARY;
-import static org.icgc.dcc.submission.web.model.ServerErrorCode.SIGNED_OFF_SUBMISSION_REQUIRED;
+import static org.icgc.dcc.submission.web.ServerErrorCode.DUPLICATE_RELEASE_NAME;
+import static org.icgc.dcc.submission.web.ServerErrorCode.INVALID_STATE;
+import static org.icgc.dcc.submission.web.ServerErrorCode.QUEUE_NOT_EMPTY;
+import static org.icgc.dcc.submission.web.ServerErrorCode.RELEASE_MISSING_DICTIONARY;
+import static org.icgc.dcc.submission.web.ServerErrorCode.SIGNED_OFF_SUBMISSION_REQUIRED;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.core.util.NameValidator;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 import org.icgc.dcc.submission.release.ReleaseException;
@@ -87,7 +87,7 @@ public class ReleaseService extends AbstractService {
   /**
    * Dependencies.
    */
-  private final DccFileSystem dccFileSystem;
+  private final SubmissionFileSystem submissionFileSystem;
   private final ReleaseRepository releaseRepository;
   private final DictionaryRepository dictionaryRepository;
   private final ProjectRepository projectRepository;
@@ -95,12 +95,12 @@ public class ReleaseService extends AbstractService {
   @Autowired
   public ReleaseService(
       @NonNull final MailService mailService,
-      @NonNull final DccFileSystem dccFileSystem,
+      @NonNull final SubmissionFileSystem submissionFileSystem,
       @NonNull final ReleaseRepository releaseRepository,
       @NonNull final DictionaryRepository dictionaryRepository,
       @NonNull final ProjectRepository projectRepository) {
     super(mailService);
-    this.dccFileSystem = dccFileSystem;
+    this.submissionFileSystem = submissionFileSystem;
     this.releaseRepository = releaseRepository;
     this.dictionaryRepository = dictionaryRepository;
     this.projectRepository = projectRepository;
@@ -242,7 +242,7 @@ public class ReleaseService extends AbstractService {
 
     // After initial release, create initial file system
     val projects = Sets.<String> newHashSet();
-    dccFileSystem.createInitialReleaseFilesystem(nextRelease, projects);
+    submissionFileSystem.createInitialReleaseFilesystem(nextRelease, projects);
   }
 
   @Synchronized
@@ -322,7 +322,7 @@ public class ReleaseService extends AbstractService {
     releaseRepository.updateRelease(releaseName, release);
 
     // Remove validation files in the ".validation" folder (leave normalization files untouched)
-    val releaseFs = dccFileSystem.getReleaseFilesystem(release);
+    val releaseFs = submissionFileSystem.getReleaseFilesystem(release);
     val projects = projectRepository.findProjects(projectKeys);
     for (val project : projects) {
       releaseFs.getSubmissionDirectory(project.getKey()).removeValidationFiles();
@@ -405,7 +405,7 @@ public class ReleaseService extends AbstractService {
   public void addSubmission(String projectKey, String projectName) {
     log.info("Creating Submission for Project '{}' in current open Release", projectKey);
     val release = releaseRepository.findOpenRelease();
-    val submissionPath = dccFileSystem.createNewProjectDirectoryStructure(release.getName(), projectKey);
+    val submissionPath = submissionFileSystem.createNewProjectDirectoryStructure(release.getName(), projectKey);
     val submissionFiles = getSubmissionFiles(release.getName(), release.getDictionaryVersion(), projectKey);
     val submission = new Submission(projectKey, projectName, release.getName(), NOT_VALIDATED);
 
@@ -465,9 +465,9 @@ public class ReleaseService extends AbstractService {
   private List<SubmissionFile> getSubmissionFiles(
       @NonNull String releaseName, @NonNull String projectKey, @NonNull Map<String, FileType> filePatternToTypeMap) {
     val submissionFiles = new ArrayList<SubmissionFile>();
-    val projectStringPath = new Path(dccFileSystem.buildProjectStringPath(releaseName, projectKey));
+    val projectStringPath = new Path(submissionFileSystem.buildProjectStringPath(releaseName, projectKey));
 
-    for (val path : lsFile(dccFileSystem.getFileSystem(), projectStringPath)) {
+    for (val path : lsFile(submissionFileSystem.getFileSystem(), projectStringPath)) {
       try {
         submissionFiles.add(getSubmissionFile(filePatternToTypeMap, path));
       } catch (Exception e) {
@@ -723,10 +723,10 @@ public class ReleaseService extends AbstractService {
   }
 
   private void setUpNewReleaseFileSystem(@NonNull Release oldRelease, @NonNull Release nextRelease) {
-    val oldReleaseFileSystem = dccFileSystem.getReleaseFilesystem(oldRelease);
+    val oldReleaseFileSystem = submissionFileSystem.getReleaseFilesystem(oldRelease);
 
     // Copy all files from the old to the new release
-    dccFileSystem.getReleaseFilesystem(nextRelease)
+    submissionFileSystem.getReleaseFilesystem(nextRelease)
         .setUpNewReleaseFileSystem(
             nextRelease.getName(),
             oldReleaseFileSystem,
@@ -741,7 +741,7 @@ public class ReleaseService extends AbstractService {
    */
   private void resetValidationFolder(@NonNull String projectKey, @NonNull Release release) {
     log.info("Resetting validation folder for '{}' in release '{}'", projectKey, release.getName());
-    dccFileSystem.getReleaseFilesystem(release).resetValidationFolder(projectKey);
+    submissionFileSystem.getReleaseFilesystem(release).resetValidationFolder(projectKey);
   }
 
   private Submission resetSubmission(
@@ -784,7 +784,7 @@ public class ReleaseService extends AbstractService {
   private SubmissionFile getSubmissionFile(Map<String, FileType> filePatternToTypeMap, Path filePath)
       throws IOException {
     val fileName = filePath.getName();
-    val fileStatus = HadoopUtils.getFileStatus(dccFileSystem.getFileSystem(), filePath).get();
+    val fileStatus = HadoopUtils.getFileStatus(submissionFileSystem.getFileSystem(), filePath).get();
     val fileLastUpdate = new Date(fileStatus.getModificationTime());
     val fileSize = fileStatus.getLen();
     val fileType = getFileType(filePatternToTypeMap, fileName).orNull();

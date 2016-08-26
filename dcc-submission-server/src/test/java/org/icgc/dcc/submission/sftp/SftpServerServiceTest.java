@@ -25,7 +25,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.DONOR_TYPE;
-import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
+import static org.icgc.dcc.submission.fs.SubmissionFileSystem.VALIDATION_DIRNAME;
 import static org.junit.Assert.fail;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.Matchers.any;
@@ -49,7 +49,7 @@ import org.icgc.dcc.submission.core.model.Status;
 import org.icgc.dcc.submission.core.model.UserSession;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
@@ -112,7 +112,7 @@ public class SftpServerServiceTest {
   @Mock
   Project project;
   @Mock
-  DccFileSystem fs;
+  SubmissionFileSystem fs;
   @Mock
   SubmissionDirectory submissionDirectory;
   @Mock
@@ -156,7 +156,7 @@ public class SftpServerServiceTest {
     when(fs.buildReleaseStringPath(release.getName())).thenReturn(root.getAbsolutePath());
     when(fs.getReleaseFilesystem(release, authentication)).thenReturn(releaseFileSystem);
     when(fs.getFileSystem()).thenReturn(fileSystem());
-    when(releaseFileSystem.getDccFileSystem()).thenReturn(fs);
+    when(releaseFileSystem.getSubmissionFileSystem()).thenReturn(fs);
     when(releaseFileSystem.getRelease()).thenReturn(release);
     when(releaseFileSystem.getSubmissionDirectory(PROJECT_KEY)).thenReturn(submissionDirectory);
     when(submissionDirectory.isReadOnly()).thenReturn(false);

@@ -62,7 +62,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SubmissionDirectory {
 
   @NonNull
-  private final DccFileSystem dccFileSystem;
+  private final SubmissionFileSystem submissionFileSystem;
   @NonNull
   private final ReleaseFileSystem releaseFileSystem;
   @NonNull
@@ -77,7 +77,7 @@ public class SubmissionDirectory {
    */
   public Iterable<String> listFile(Pattern pattern) {
     List<Path> pathList = lsFile(
-        this.dccFileSystem.getFileSystem(),
+        this.submissionFileSystem.getFileSystem(),
         new Path(getSubmissionDirPath()), pattern);
     return HadoopUtils.toFilenameList(pathList);
   }
@@ -105,14 +105,14 @@ public class SubmissionDirectory {
   }
 
   public String addFile(String filename, InputStream data) {
-    String filepath = this.dccFileSystem.buildFileStringPath(this.release.getName(), this.projectKey, filename);
-    HadoopUtils.touch(this.dccFileSystem.getFileSystem(), filepath, data);
+    String filepath = this.submissionFileSystem.buildFileStringPath(this.release.getName(), this.projectKey, filename);
+    HadoopUtils.touch(this.submissionFileSystem.getFileSystem(), filepath, data);
     return filepath;
   }
 
   public String deleteFile(String filename) {
-    String filepath = this.dccFileSystem.buildFileStringPath(this.release.getName(), this.projectKey, filename);
-    HadoopUtils.rm(this.dccFileSystem.getFileSystem(), filepath);
+    String filepath = this.submissionFileSystem.buildFileStringPath(this.release.getName(), this.projectKey, filename);
+    HadoopUtils.rm(this.submissionFileSystem.getFileSystem(), filepath);
     return filepath;
   }
 
@@ -127,7 +127,7 @@ public class SubmissionDirectory {
   }
 
   public String getSubmissionDirPath() {
-    return dccFileSystem.buildProjectStringPath(release.getName(), projectKey);
+    return submissionFileSystem.buildProjectStringPath(release.getName(), projectKey);
   }
 
   /**
@@ -139,11 +139,11 @@ public class SubmissionDirectory {
   }
 
   public String getValidationDirPath() {
-    return dccFileSystem.buildValidationDirStringPath(release.getName(), projectKey);
+    return submissionFileSystem.buildValidationDirStringPath(release.getName(), projectKey);
   }
 
   public String getDataFilePath(String filename) {
-    return dccFileSystem.buildFileStringPath(release.getName(), projectKey, filename);
+    return submissionFileSystem.buildFileStringPath(release.getName(), projectKey, filename);
   }
 
   public Submission getSubmission() {
@@ -156,17 +156,17 @@ public class SubmissionDirectory {
   }
 
   /**
-   * TODO: port logic in here rather than in {@link DccFileSystem}
+   * TODO: port logic in here rather than in {@link SubmissionFileSystem}
    */
   public void removeValidationDir() {
-    dccFileSystem.removeDirIfExist(getValidationDirPath());
+    submissionFileSystem.removeDirIfExist(getValidationDirPath());
   }
 
   /**
    * Removes all files pertaining to validation (not including normalization), leaving nested directories untouched.
    */
   public void removeValidationFiles() {
-    val fs = dccFileSystem.getFileSystem();
+    val fs = submissionFileSystem.getFileSystem();
     for (val file : lsFile(fs, new Path(getValidationDirPath()))) {
       checkState(isFile(fs, file), "Expecting file, not a directory: '%s'", file);
       log.info("Deleting file '{}'", file);
@@ -175,10 +175,10 @@ public class SubmissionDirectory {
   }
 
   /**
-   * TODO: port logic in here rather than in {@link DccFileSystem}
+   * TODO: port logic in here rather than in {@link SubmissionFileSystem}
    */
   public void createEmptyValidationDir() {
-    dccFileSystem.createDirIfDoesNotExist(getValidationDirPath());
+    submissionFileSystem.createDirIfDoesNotExist(getValidationDirPath());
   }
 
   public List<SubmissionDirectoryFile> getSubmissionFiles() {
@@ -190,7 +190,7 @@ public class SubmissionDirectory {
    */
   @SneakyThrows
   public DataInputStream open(@NonNull String fileName) {
-    return dccFileSystem.getFileSystem()
+    return submissionFileSystem.getFileSystem()
         .open(new Path(getDataFilePath(fileName)));
   }
 
@@ -201,7 +201,7 @@ public class SubmissionDirectory {
   @SneakyThrows
   public InputStream getDecompressingInputStream(String fileName) {
     val in = open(fileName);
-    val codec = new CompressionCodecFactory(dccFileSystem.getFileSystemConfiguration())
+    val codec = new CompressionCodecFactory(submissionFileSystem.getFileSystemConfiguration())
         .getCodec(new Path(getDataFilePath(fileName)));
     return codec == null ?
         in : // This is assumed to be PLAIN_TEXT

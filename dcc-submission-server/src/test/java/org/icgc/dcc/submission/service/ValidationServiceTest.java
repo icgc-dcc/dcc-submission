@@ -37,7 +37,7 @@ import org.icgc.dcc.submission.core.model.Outcome;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
@@ -89,7 +89,7 @@ public class ValidationServiceTest {
   @Mock
   MailService mailService;
   @Mock
-  DccFileSystem dccFileSystem;
+  SubmissionFileSystem submissionFileSystem;
   @Mock
   SubmissionPlatformStrategyFactory platformStrategyFactory;
   @Spy

@@ -40,8 +40,8 @@ public class FileSystemConfig extends AbstractConfig {
   }
 
   @Bean
-  public DccFileSystem dccFileSystem() {
-    return singleton(DccFileSystem.class);
+  public SubmissionFileSystem submissionFileSystem() {
+    return singleton(SubmissionFileSystem.class);
   }
 
 }

@@ -23,7 +23,7 @@ import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUB
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATION_TYPE;
 import static org.icgc.dcc.common.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_P_TYPE;
-import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
+import static org.icgc.dcc.submission.fs.SubmissionFileSystem.VALIDATION_DIRNAME;
 import static org.icgc.dcc.submission.validation.ValidationTests.getTestFieldNames;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

@@ -34,7 +34,7 @@ import org.icgc.dcc.submission.core.InvalidStateException;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
@@ -76,7 +76,7 @@ public class ReleaseServiceTest {
   private Release release;
 
   @Mock
-  private DccFileSystem dccFileSystem;
+  private SubmissionFileSystem submissionFileSystem;
   @Mock
   private MailService mailService;
 
@@ -126,7 +126,7 @@ public class ReleaseServiceTest {
       val codeListRepository = spy(new CodeListRepository(morphia, datastore));
       val projectRepository = spy(new ProjectRepository(morphia, datastore));
 
-      releaseService = new ReleaseService(mailService, dccFileSystem,
+      releaseService = new ReleaseService(mailService, submissionFileSystem,
           releaseRepository, dictionaryRepository, projectRepository);
 
       dictionaryService = new DictionaryService(releaseService, dictionaryRepository, codeListRepository);
@@ -177,7 +177,7 @@ public class ReleaseServiceTest {
     projectKeys.add("p1");
     projectKeys.add("p2");
     projectKeys.add("p3");
-    verify(this.dccFileSystem).createInitialReleaseFilesystem(release, projectKeys);
+    verify(this.submissionFileSystem).createInitialReleaseFilesystem(release, projectKeys);
   }
 
   // @Test; cannot test release() anymore since we can't mock this: new MorphiaQuery<Project>(morphia, datastore,

@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.security;
 
+import static org.icgc.dcc.submission.core.security.Authorizations.getUsername;
+
 import org.icgc.dcc.submission.core.model.User;
 import org.icgc.dcc.submission.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +47,7 @@ public class SubmissionAuthenticationProvider extends DaoAuthenticationProvider 
 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-    val username = authentication.getName();
+    val username = getUsername(authentication);
     val optionalUser = userService.getUserByUsername(username);
     boolean newUser = optionalUser.isPresent() == false;
     User user;

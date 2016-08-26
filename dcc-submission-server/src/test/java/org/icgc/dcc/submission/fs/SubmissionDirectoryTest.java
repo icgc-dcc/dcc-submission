@@ -27,11 +27,10 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.google.common.io.ByteStreams;
-
-import org.junit.Assert;
 
 public class SubmissionDirectoryTest extends FileSystemTest {
 
@@ -39,7 +38,7 @@ public class SubmissionDirectoryTest extends FileSystemTest {
 
   private FileSystem mockFileSystem;
 
-  private DccFileSystem mockDccFileSystem;
+  private SubmissionFileSystem mockSubmissionFileSystem;
 
   private ReleaseFileSystem mockReleaseFileSystem;
 
@@ -51,20 +50,22 @@ public class SubmissionDirectoryTest extends FileSystemTest {
 
     this.mockFSDataOutputStream = mock(FSDataOutputStream.class);
     this.mockFileSystem = mock(FileSystem.class);
-    this.mockDccFileSystem = mock(DccFileSystem.class);
+    this.mockSubmissionFileSystem = mock(SubmissionFileSystem.class);
     this.mockReleaseFileSystem = mock(ReleaseFileSystem.class);
 
     when(this.mockFileSystem.mkdirs(any(Path.class))).thenReturn(true);
     when(this.mockFileSystem.listStatus(any(Path.class))).thenReturn(new FileStatus[] {});
     when(this.mockFileSystem.create(any(Path.class))).thenReturn(this.mockFSDataOutputStream);
 
-    when(this.mockDccFileSystem.buildProjectStringPath(this.mockRelease.getName(), PROJECT_KEY)).thenReturn(ROOT_DIR);
-    when(this.mockDccFileSystem.buildFileStringPath(this.mockRelease.getName(), PROJECT_KEY, FILENAME_1)).thenReturn(
-        FILEPATH_1);
-    when(this.mockDccFileSystem.getFileSystem()).thenReturn(this.mockFileSystem);
+    when(this.mockSubmissionFileSystem.buildProjectStringPath(this.mockRelease.getName(), PROJECT_KEY))
+        .thenReturn(ROOT_DIR);
+    when(this.mockSubmissionFileSystem.buildFileStringPath(this.mockRelease.getName(), PROJECT_KEY, FILENAME_1))
+        .thenReturn(
+            FILEPATH_1);
+    when(this.mockSubmissionFileSystem.getFileSystem()).thenReturn(this.mockFileSystem);
 
     this.submissionDirectory = new SubmissionDirectory(
-        this.mockDccFileSystem, this.mockReleaseFileSystem, this.mockRelease, PROJECT_KEY, this.mockSubmission);
+        this.mockSubmissionFileSystem, this.mockReleaseFileSystem, this.mockRelease, PROJECT_KEY, this.mockSubmission);
   }
 
   @Test

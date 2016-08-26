@@ -173,7 +173,7 @@ public class ValidationConfig extends AbstractConfig {
    * TODO: address hard-codings
    */
   @Bean
-  public DccFileSystem2 dccFileSystem2(SubmissionProperties properties, FileSystem fileSystem) {
+  public DccFileSystem2 submissionFileSystem2(SubmissionProperties properties, FileSystem fileSystem) {
     val rootDir = properties.getFsRoot();
     val hdfs = properties.getFsUrl().startsWith("hdfs");
 
@@ -181,7 +181,7 @@ public class ValidationConfig extends AbstractConfig {
   }
 
   @Bean
-  public Set<Validator> validators(SubmissionProperties properties, DccFileSystem2 dccFileSystem2, Planner planner) {
+  public Set<Validator> validators(SubmissionProperties properties, DccFileSystem2 submissionFileSystem2, Planner planner) {
     // Bind common components
 
     // Set binder will preserve bind order as iteration order for injectees
@@ -207,7 +207,7 @@ public class ValidationConfig extends AbstractConfig {
         } else if (value.equals(SAMPLE_TYPE_VALIDATOR_CONFIG_VALUE)) {
           validators.add(sampleTypeValidator());
         } else if (value.equals(NORMALIZATION_VALIDATOR_CONFIG_VALUE)) {
-          validators.add(normalizationValidator(properties, dccFileSystem2));
+          validators.add(normalizationValidator(properties, submissionFileSystem2));
         } else {
           checkState(false, "Invalid validator specification '%s'", value);
         }
@@ -220,7 +220,7 @@ public class ValidationConfig extends AbstractConfig {
       validators.add(pcawgValidator(properties));
       validators.add(referenceGenomeValidator(properties));
       validators.add(sampleTypeValidator());
-      validators.add(normalizationValidator(properties, dccFileSystem2));
+      validators.add(normalizationValidator(properties, submissionFileSystem2));
     }
 
     return validators;
@@ -261,8 +261,8 @@ public class ValidationConfig extends AbstractConfig {
     return new SampleTypeValidator();
   }
 
-  private static Validator normalizationValidator(SubmissionProperties properties, DccFileSystem2 dccFileSystem2) {
-    return NormalizationValidator.getDefaultInstance(dccFileSystem2, properties.getNormalizer());
+  private static Validator normalizationValidator(SubmissionProperties properties, DccFileSystem2 submissionFileSystem2) {
+    return NormalizationValidator.getDefaultInstance(submissionFileSystem2, properties.getNormalizer());
   }
 
 }

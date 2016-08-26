@@ -80,6 +80,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
         <scope>test</scope>
       </dependency>
 
+      <!-- Mongo -->
       <dependency>
         <groupId>org.mongodb.morphia</groupId>
         <artifactId>morphia</artifactId>
@@ -94,45 +95,21 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
         <groupId>com.mysema.querydsl</groupId>
         <artifactId>querydsl-apt</artifactId>
         <version>${querydsl.version}</version>
-        <exclusions>
-          <exclusion>
-            <artifactId>slf4j-api</artifactId>
-            <groupId>org.slf4j</groupId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>com.mysema.querydsl</groupId>
         <artifactId>querydsl-core</artifactId>
         <version>${querydsl.version}</version>
-        <exclusions>
-          <exclusion>
-            <artifactId>slf4j-api</artifactId>
-            <groupId>org.slf4j</groupId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>com.mysema.querydsl</groupId>
         <artifactId>querydsl-mongodb</artifactId>
         <version>${querydsl.version}</version>
-        <exclusions>
-          <exclusion>
-            <artifactId>slf4j-api</artifactId>
-            <groupId>org.slf4j</groupId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>com.mysema.commons</groupId>
         <artifactId>mysema-commons-lang</artifactId>
         <version>0.2.4</version>
-        <exclusions>
-          <exclusion>
-            <artifactId>slf4j-api</artifactId>
-            <groupId>org.slf4j</groupId>
-          </exclusion>
-        </exclusions>
       </dependency>
 
       <!-- OrientDB -->
@@ -182,7 +159,14 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
         <version>${spring.version}</version>
       </dependency>
 
-      <!-- Postgresql -->
+      <!-- Postgres -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+
+      <!-- Postgres -->
       <dependency>
         <groupId>ru.yandex.qatools.embed</groupId>
         <artifactId>postgresql-embedded</artifactId>
@@ -203,6 +187,12 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!-- Ignore for Spring Boot binding in tests -->
+          <systemPropertyVariables>
+            <spring.getenv.ignore>true</spring.getenv.ignore>
+          </systemPropertyVariables>
+        </configuration>
       </plugin>
 
       <!-- Verify -->
@@ -223,16 +213,20 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
     <!-- Spring -->
     <spring.version>4.3.2.RELEASE</spring.version>
+    <!-- Spring Security -->
+    <spring-security.version>4.1.1.RELEASE</spring-security.version>
     <!-- Spring Boot -->
     <spring-boot.version>1.4.0.RELEASE</spring-boot.version>
+    <!-- Spring Boot - Maven -->
+    <spring-boot-maven-plugin.version>${spring-boot.version}</spring-boot-maven-plugin.version>
     <!-- Spring Boot - Logging -->
     <logback.version>1.1.7</logback.version>
     <!-- Spring Boot - H2 -->
     <h2.version>1.4.192</h2.version>
     <!-- Spring Boot - Jackson -->
-    <jackson.version>2.7.5</jackson.version>    
-    
-    <jackson-yaml.version>${jackson.version}</jackson-yaml.version>
+    <jackson.version>2.7.5</jackson.version>
+    <!-- Spring Boot - Slf4j -->
+    <slf4j.version>1.7.5</slf4j.version>
     
     <!-- Versions - Database -->
     <orientdb.version>2.1.9</orientdb.version>
@@ -242,9 +236,13 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
     <jgrapht.version>0.9.1</jgrapht.version>
 
+    
+    <!-- Spring Boot - Test -->
+    <mockito.version>1.10.19</mockito.version>
+    <powermock.version>1.6.5</powermock.version>
+        
     <!-- Versions - Test -->
     <junit.version>4.12</junit.version>
-    <powermock.version>1.6.1</powermock.version>
     <embedded-postgres.version>1.8</embedded-postgres.version>
   </properties>
 

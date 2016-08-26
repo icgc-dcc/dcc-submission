@@ -64,7 +64,7 @@ import static org.icgc.dcc.submission.test.Tests.post;
 import static org.icgc.dcc.submission.test.Tests.put;
 import static org.icgc.dcc.submission.test.Tests.replaceDictionaryVersion;
 import static org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy.REPORT_FILES_INFO_SEPARATOR;
-import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
+import static org.icgc.dcc.submission.web.ServerErrorCode.INVALID_STATE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

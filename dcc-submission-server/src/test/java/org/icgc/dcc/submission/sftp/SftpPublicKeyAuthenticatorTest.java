@@ -26,7 +26,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
-import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.service.MailService;
 import org.icgc.dcc.submission.service.ProjectService;
 import org.icgc.dcc.submission.service.ReleaseService;
@@ -69,7 +69,7 @@ public class SftpPublicKeyAuthenticatorTest {
   @Mock
   SftpAuthenticator sftpAuthenticator;
   @Mock
-  DccFileSystem fs;
+  SubmissionFileSystem fs;
   @Mock
   ProjectService projectService;
   @Mock

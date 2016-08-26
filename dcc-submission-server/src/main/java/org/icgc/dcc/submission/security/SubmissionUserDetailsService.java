@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.security;
 import static com.google.common.collect.Maps.newConcurrentMap;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
-import static org.icgc.dcc.submission.core.auth.AuthorizationPrivileges.projectViewPrivilege;
+import static org.icgc.dcc.submission.core.security.Authority.projectViewPrivilege;
 
 import java.util.Map;
 

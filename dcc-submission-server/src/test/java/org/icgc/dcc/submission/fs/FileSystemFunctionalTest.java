@@ -45,7 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FileSystemFunctionalTest extends FileSystemTest {
 
-  protected DccFileSystem dccFileSystem;
+  protected SubmissionFileSystem submissionFileSystem;
 
   private FileSystem fileSystem = FileSystems.getDefaultLocalFileSystem();
 
@@ -53,33 +53,33 @@ public class FileSystemFunctionalTest extends FileSystemTest {
   public void setUp() throws IOException {
     super.setUp();
 
-    this.dccFileSystem = new DccFileSystem(this.properties, this.fileSystem);
+    this.submissionFileSystem = new SubmissionFileSystem(this.properties, this.fileSystem);
   }
 
   @Test
   public void test_fileSystem_typicalWorkflow() throws IOException { // TODO: split?
 
-    FileSystem fileSystem = this.dccFileSystem.getFileSystem();
+    FileSystem fileSystem = this.submissionFileSystem.getFileSystem();
 
     Iterable<String> filenameList0 =
-        HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, new Path(this.dccFileSystem.getRootStringPath())));
+        HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, new Path(this.submissionFileSystem.getRootStringPath())));
     Assert.assertNotNull(filenameList0);
     Assert.assertEquals(//
         "[]", //
         filenameList0.toString());
     log.info("ls0 = " + filenameList0);
 
-    this.dccFileSystem.createInitialReleaseFilesystem(this.mockRelease, Sets.newHashSet(this.mockProject.getKey()));
+    this.submissionFileSystem.createInitialReleaseFilesystem(this.mockRelease, Sets.newHashSet(this.mockProject.getKey()));
 
     Iterable<String> filenameList1 =
-        HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, new Path(this.dccFileSystem.getRootStringPath())));
+        HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, new Path(this.submissionFileSystem.getRootStringPath())));
     Assert.assertNotNull(filenameList1);
     Assert.assertEquals(//
         "[ICGC4]", //
         filenameList1.toString());
     log.info("ls1 = " + filenameList1);
 
-    String releaseStringPath = this.dccFileSystem.buildReleaseStringPath(this.mockRelease.getName());
+    String releaseStringPath = this.submissionFileSystem.buildReleaseStringPath(this.mockRelease.getName());
     log.info("releaseStringPath = " + releaseStringPath);
 
     Iterable<String> filenameList2 =
@@ -93,7 +93,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
         new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("*")));
 
     ReleaseFileSystem myReleaseFilesystem =
-        this.dccFileSystem.getReleaseFilesystem(this.mockRelease, authentication);
+        this.submissionFileSystem.getReleaseFilesystem(this.mockRelease, authentication);
     Assert.assertNotNull(myReleaseFilesystem);
     log.info("release file system = " + myReleaseFilesystem);
 
@@ -147,6 +147,6 @@ public class FileSystemFunctionalTest extends FileSystemTest {
 
   @After
   public void tearDown() {
-    HadoopUtils.rmr(this.fileSystem, this.dccFileSystem.buildReleaseStringPath(this.mockRelease.getName()));
+    HadoopUtils.rmr(this.fileSystem, this.submissionFileSystem.buildReleaseStringPath(this.mockRelease.getName()));
   }
 }

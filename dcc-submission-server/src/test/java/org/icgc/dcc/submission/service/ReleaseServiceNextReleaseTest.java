@@ -34,7 +34,7 @@ import org.icgc.dcc.submission.core.InvalidStateException;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.DictionaryState;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.Release;
@@ -73,7 +73,7 @@ public class ReleaseServiceNextReleaseTest {
   Dictionary dictionary;
 
   @Mock
-  DccFileSystem dccFileSystem;
+  SubmissionFileSystem submissionFileSystem;
   @Mock
   ReleaseFileSystem releaseFileSystem;
   @Mock
@@ -97,9 +97,9 @@ public class ReleaseServiceNextReleaseTest {
 
   @Before
   public void setUp() throws IOException {
-    when(dccFileSystem.getFileSystem()).thenReturn(FileSystem.getLocal(new Configuration()));
-    when(dccFileSystem.getReleaseFilesystem(any(Release.class))).thenReturn(releaseFileSystem);
-    when(dccFileSystem.buildProjectStringPath(anyString(), anyString())).thenReturn("/");
+    when(submissionFileSystem.getFileSystem()).thenReturn(FileSystem.getLocal(new Configuration()));
+    when(submissionFileSystem.getReleaseFilesystem(any(Release.class))).thenReturn(releaseFileSystem);
+    when(submissionFileSystem.buildProjectStringPath(anyString(), anyString())).thenReturn("/");
 
     when(release.getName()).thenReturn(FIRST_RELEASE_NAME);
     when(release.getState()).thenReturn(ReleaseState.OPENED);

@@ -30,9 +30,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
-import org.icgc.dcc.submission.core.auth.Authorizations;
+import org.icgc.dcc.submission.core.security.Authorizations;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.fs.SubmissionFile;
@@ -72,7 +72,7 @@ public class SftpContext {
    * Encapsulated context.
    */
   @NonNull
-  private final DccFileSystem fs;
+  private final SubmissionFileSystem fs;
   @NonNull
   private final ReleaseService releaseService;
   @NonNull

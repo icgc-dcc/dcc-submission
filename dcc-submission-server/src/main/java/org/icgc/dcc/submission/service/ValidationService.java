@@ -37,7 +37,7 @@ import java.util.Set;
 import org.icgc.dcc.common.core.model.Identifiable.Identifiables;
 import org.icgc.dcc.submission.core.InvalidStateException;
 import org.icgc.dcc.submission.core.report.Report;
-import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.repository.CodeListRepository;
@@ -89,7 +89,7 @@ public class ValidationService extends AbstractScheduledService {
   @NonNull
   private final MailService mailService;
   @NonNull
-  private final DccFileSystem dccFileSystem;
+  private final SubmissionFileSystem submissionFileSystem;
   @NonNull
   private final SubmissionPlatformStrategyFactory platformStrategyFactory;
   @NonNull
@@ -301,7 +301,7 @@ public class ValidationService extends AbstractScheduledService {
         release,
         dictionary,
         codeLists,
-        dccFileSystem,
+        submissionFileSystem,
         platformStrategyFactory);
 
     return context;
