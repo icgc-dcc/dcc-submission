@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import {Link} from 'react-router';
 import {observable, action, runInAction} from 'mobx';
 import {observer} from 'mobx-react';
+import BootstrapTable from 'reactjs-bootstrap-table';
 import { fetchHeaders } from '~/utils';
+import Status from '~/common/components/Status';
 
 const release = observable({
   isLoading: false,
@@ -53,29 +55,26 @@ class Release extends Component {
 
       <div>
         <h2>Projects included in the {release.name} release</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Project Key</th>
-              <th>Project Name</th>
-              <th>Files</th>
-              <th>State</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            { /* TODO: see submission_table_view.coffee for all the logic involved */
-              release.submissions.map(project => (
-              <tr key={project.projectKey}>
-                <td><Link to={`/releases/${release.name}/submissions/${project.projectKey}`}>{project.projectName}</Link></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <BootstrapTable
+          data={release.submissions}
+          headers={true}
+          columns={[
+            {
+              name: 'projectKey',
+              display: 'Project Key',
+              sortable: true,
+              renderer: project => (
+                <Link to={`/releases/${release.name}/submissions/${project.projectKey}`}>{project.key}</Link>
+              )
+            },
+            { name: 'projectName', display: 'Project Name' },
+            { name: 'files', display: 'Files' },
+            { name: 'state', display: 'State', renderer: project => (
+              <Status statusCode={project.state}/>
+            )},
+            { name: 'actions', display: 'Actions' },
+          ]}
+        />
       </div>
       <pre>
       {JSON.stringify(release, null, '  ')}
