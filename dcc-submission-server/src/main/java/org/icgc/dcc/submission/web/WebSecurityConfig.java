@@ -41,12 +41,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
               GET,
               "/ws/nextRelease/dictionary",
               "/ws/codeLists",
-              "/ws/dictionaries/**")
-          .permitAll()
+              "/ws/dictionaries/**",
+              "/releases/**",
+              "/login")
+            .permitAll()
           .antMatchers("/ws/**")
             .authenticated()
         .and()
           .httpBasic()
+        .and()
+          .formLogin()
+          .loginPage("/")          
         .and()
           .csrf().disable();
   }

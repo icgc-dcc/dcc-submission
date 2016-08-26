@@ -43,15 +43,13 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
   </appender>
 
   <logger name="org.icgc.dcc.submission.service.UserService" level="OFF" additivity="false"/>
-  <logger name="org.icgc.dcc.submission.shiro.ShiroPasswordAuthenticator" level="OFF" additivity="false"/>
-  <logger name="org.icgc.dcc.submission.http.jersey.BasicHttpAuthenticationRequestFilter" level="OFF" additivity="false"/>
   <logger name="org.apache.sshd.server.session.ServerSession" level="OFF" additivity="false"/>
 
   <logger name="de.flapdoodle.embed" level="WARN" />
-  <logger name="org.glassfish.jersey" level="WARN" />
   <logger name="org.hibernate.validator" level="WARN" />
+  
   <logger name="org.springframework.security" level="WARN" />
-  <logger name="org.springframework.web" level="INFO" />
+  <logger name="org.springframework.web" level="WARN" />
 
   <root level="info">
     <appender-ref ref="STDOUT" />

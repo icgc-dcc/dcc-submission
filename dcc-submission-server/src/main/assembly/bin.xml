@@ -55,15 +55,15 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     </file>
     <file>
       <source>src/main/conf/wrapper.conf</source>
-      <outputDirectory>/conf</outputDirectory>
+      <outputDirectory>conf</outputDirectory>
     </file>
     <file>
       <source>src/main/conf/logback.xml</source>
-      <outputDirectory>/conf</outputDirectory>
+      <outputDirectory>conf</outputDirectory>
     </file>
     <file>
       <source>src/test/resources/application.yml</source>
-      <outputDirectory>/conf</outputDirectory>
+      <outputDirectory>conf</outputDirectory>
     </file>
   </files>
 </assembly>

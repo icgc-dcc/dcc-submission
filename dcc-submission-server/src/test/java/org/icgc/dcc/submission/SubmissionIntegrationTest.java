@@ -370,10 +370,6 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     smtpServer.stop();
     status("shutdown", "SMTP server shut down.");
 
-    status("shutdown", "Shutting down submission server...");
-    ServerMain.stop();
-    status("shutdown", "Submission server shut down.");
-
     if (hadoop != null) {
       status("shutdown", "Shutting down hadoop...");
       hadoop.close();

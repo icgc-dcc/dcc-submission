@@ -130,7 +130,7 @@ public class ReleaseResolver {
       {
         val auth = username + COLON + password;
         val encodedAuth = BaseEncoding.base64().encode(auth.getBytes(US_ASCII));
-        val authHeader = "X-DCC-Auth " + encodedAuth;
+        val authHeader = "Basic " + encodedAuth;
         set(HttpHeaders.AUTHORIZATION, authHeader);
         set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
       }

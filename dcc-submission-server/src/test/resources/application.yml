@@ -48,9 +48,10 @@ normalizer:
     masks.enabled: true
     duplicates.enabled: true
 
-pcawg:
-  dictionaryUrl: "file:../dcc-submission-validator/src/main/resources/pcawg-dictionary.json"
-  sampleSheetUrl: "file:../dcc-submission-validator/src/main/resources/pcawg-sample-sheet.json"
+# If this isn't set, will pick up from the classpath by default
+# pcawg:
+  # dictionaryUrl: "file:../dcc-submission-validator/src/main/resources/pcawg-dictionary.json"
+  # sampleSheetUrl: "file:../dcc-submission-validator/src/main/resources/pcawg-sample-sheet.json"
 
 reference:
   # The reference genome assembly. Assumes the existence of a .fasta.fai file in the same directory. 
