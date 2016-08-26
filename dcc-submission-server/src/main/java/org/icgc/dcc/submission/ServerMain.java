@@ -20,12 +20,13 @@ package org.icgc.dcc.submission;
 import static org.springframework.boot.SpringApplication.run;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration;
 
 /**
  * Application entry point.
  */
-@SpringBootApplication(exclude = EmbeddedMongoAutoConfiguration.class)
+@SpringBootApplication(exclude = { EmbeddedMongoAutoConfiguration.class, MongoAutoConfiguration.class })
 public class ServerMain {
 
   public static void main(String... args) {

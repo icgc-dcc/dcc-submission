@@ -35,7 +35,7 @@ public class PersistenceConfig {
   @Bean
   public Mongo mongo(SubmissionProperties properties) throws UnknownHostException {
     val uri = new MongoClientURI(properties.getMongo().getUri());
-    log.info("mongo URI: {}", uri);
+    log.info("Creating mongo with URI: {}", uri);
 
     return new MongoClient(uri);
   }
@@ -43,7 +43,7 @@ public class PersistenceConfig {
   @Bean
   public Datastore datastore(SubmissionProperties properties, Mongo mongo, Morphia morphia) {
     val uri = new MongoClientURI(properties.getMongo().getUri());
-    log.info("mongo URI: {}", uri);
+    log.info("Creating datastore with mongo URI: {}", uri);
 
     val datastore = morphia.createDatastore(mongo, uri.getDatabase());
     datastore.ensureIndexes();
