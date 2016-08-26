@@ -10,6 +10,10 @@ const user = observable({
   roles: [],
   isLoggedIn: false,
   isLoggingIn: false,
+
+  isAdmin: function () {
+    return this.roles.indexOf('admin') >= 0;
+  },
 });
 
 user.login = action('login', async function (username, password) {
