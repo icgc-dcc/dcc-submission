@@ -18,7 +18,7 @@ export function formatFileSize(fs) {
   }
   while (bytes >= 1024) {
     posttxt++;
-    bytes = bytes / 1024;
+    bytes /= 1024;
   }
   return Number(bytes).toFixed(precision) + " " + sizes[posttxt];
 }

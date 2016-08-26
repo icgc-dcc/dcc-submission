@@ -4,8 +4,8 @@ import {observable, action, runInAction } from 'mobx';
 import {observer} from 'mobx-react';
 import { fetchHeaders } from '~/utils';
 
-import ErrorTable from './ReportErrorTable';
-import errorMap from './errorMap.coffee';
+// import ErrorTable from './ReportErrorTable';
+// import errorMap from './errorMap.coffee';
 
 const report = observable({
   isLoading: false,
