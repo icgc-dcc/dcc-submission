@@ -25,6 +25,7 @@ user.name = 'admin';
 user.token = 'YWRtaW46YWRtaW5zcGFzc3dk';
 user.roles = ['admin'];
 user.isLoggedIn = true;
+window.user = user;
 
 ReactDOM.render((
   <Router history={browserHistory}>
