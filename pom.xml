@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
- 
+
 This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
 You should have received a copy of the GNU General Public License along with
 this program. If not, see <http://www.gnu.org/licenses/>.
@@ -203,6 +203,12 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!-- Ignore for Spring Boot binding in tests -->
+          <systemPropertyVariables>
+            <spring.getenv.ignore>true</spring.getenv.ignore>
+          </systemPropertyVariables>
+        </configuration>
       </plugin>
 
       <!-- Verify -->
@@ -230,10 +236,10 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <!-- Spring Boot - H2 -->
     <h2.version>1.4.192</h2.version>
     <!-- Spring Boot - Jackson -->
-    <jackson.version>2.7.5</jackson.version>    
-    
+    <jackson.version>2.7.5</jackson.version>
+
     <jackson-yaml.version>${jackson.version}</jackson-yaml.version>
-    
+
     <!-- Versions - Database -->
     <orientdb.version>2.1.9</orientdb.version>
     <jdbi.version>2.55</jdbi.version>
