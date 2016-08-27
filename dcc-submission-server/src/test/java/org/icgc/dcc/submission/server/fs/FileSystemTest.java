@@ -71,7 +71,7 @@ public class FileSystemTest {
     this.mockProject = mock(Project.class);
     this.mockSubmission = mock(Submission.class);
 
-    properties.setFsRoot(ROOT_DIR);
+    properties.getFs().setRoot(ROOT_DIR);
 
     when(this.mockRelease.getName()).thenReturn(RELEASE_NAME);
 

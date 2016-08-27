@@ -174,8 +174,8 @@ public class ValidationConfig extends AbstractConfig {
    */
   @Bean
   public DccFileSystem2 submissionFileSystem2(SubmissionProperties properties, FileSystem fileSystem) {
-    val rootDir = properties.getFsRoot();
-    val hdfs = properties.getFsUrl().startsWith("hdfs");
+    val rootDir = properties.getFs().getRoot();
+    val hdfs = properties.getFs().getUrl().startsWith("hdfs");
 
     return new DccFileSystem2(fileSystem, rootDir, hdfs);
   }

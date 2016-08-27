@@ -107,7 +107,7 @@ public class KeyValidationContext extends AbstractValidationContext {
 
   @SneakyThrows
   private FileSystem createFileSystem() {
-    val fsUrl = getProperties().getFsUrl();
+    val fsUrl = getProperties().getFs().getUrl();
     val configuration = new Configuration();
     configuration.set(FS_DEFAULT_NAME_KEY, fsUrl);
 
@@ -116,8 +116,8 @@ public class KeyValidationContext extends AbstractValidationContext {
 
   private SubmissionProperties createProperties() {
     val properties = new SubmissionProperties();
-    properties.setFsRoot(fsRoot);
-    properties.setFsUrl(fsUrl);
+    properties.getFs().setRoot(fsRoot);
+    properties.getFs().setUrl(fsUrl);
     properties.getHadoop().getProperties().put("mapred.job.tracker", jobTracker);
     properties.getHadoop().getProperties().put("fs.defaultFS", fsUrl);
 

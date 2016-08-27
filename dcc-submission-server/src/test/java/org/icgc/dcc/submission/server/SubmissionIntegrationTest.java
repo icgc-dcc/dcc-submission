@@ -320,7 +320,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
       fileSystem = FileSystem.get(config);
 
       status("init", "Deleting local root filesystem...");
-      fileSystem.delete(new Path(properties.getFsRoot()), true);
+      fileSystem.delete(new Path(properties.getFs().getRoot()), true);
     } else {
       if (!DOCKER) {
         // Setup Embedded Hadoop infrastructure
@@ -343,7 +343,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
         fileSystem = FileSystem.get(config);
 
         status("init", "Deleting root filesystem...");
-        fileSystem.delete(new Path(properties.getFsRoot()), true);
+        fileSystem.delete(new Path(properties.getFs().getRoot()), true);
 
         // Config overrides for {@code SubmissionMain} consumption
         System.setProperty("fsUrl", fsUrl);
@@ -440,7 +440,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   @SneakyThrows
   private void userSubmitsFiles() throws IOException {
     val source = new Path(FS_DIR);
-    val destination = new Path(properties.getFsRoot());
+    val destination = new Path(properties.getFs().getRoot());
     status("user", "SFTP transferring files from '{}' to '{}'...", source, destination);
 
     boolean manipulatedFiles = false;
@@ -803,10 +803,10 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
     // Project 1
     assertEmptyFile(fileSystem,
-        properties.getFsRoot(),
+        properties.getFs().getRoot(),
         PROJECT1_VALIDATION_DIR + "/donor.txt.bz2.internal" + REPORT_FILES_INFO_SEPARATOR + "errors.json");
     assertEmptyFile(fileSystem,
-        properties.getFsRoot(),
+        properties.getFs().getRoot(),
         PROJECT1_VALIDATION_DIR + "/specimen.txt.gz.internal" + REPORT_FILES_INFO_SEPARATOR + "errors.json");
   }
 

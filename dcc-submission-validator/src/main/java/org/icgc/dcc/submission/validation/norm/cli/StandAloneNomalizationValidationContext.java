@@ -35,9 +35,9 @@ import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.util.Dictionaries;
-import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.core.AbstractValidationContext;
@@ -63,8 +63,8 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
 
     private final SubmissionProperties getProperties() {
       val properties = new SubmissionProperties();
-      properties.setFsRoot(fsRoot);
-      properties.setFsUrl(fsUrl);
+      properties.getFs().setRoot(fsRoot);
+      properties.getFs().setUrl(fsUrl);
       properties.getHadoop().getProperties().put("mapred.job.tracker", jobTracker);
       properties.getHadoop().getProperties().put("fs.defaultFS", fsUrl);
 

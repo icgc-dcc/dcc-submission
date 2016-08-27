@@ -35,9 +35,7 @@ public class SubmissionProperties {
    */
   private static final int DEFAULT_MAX_VALIDATING = 1;
 
-  String fsRoot;
-  String fsUrl;
-
+  FileSystemProperties fs = new FileSystemProperties();
   AuthProperties auth = new AuthProperties();
   HttpProperties http = new HttpProperties();
   SftpProperties sftp = new SftpProperties();
@@ -51,6 +49,14 @@ public class SubmissionProperties {
 
   ValidatorProperties validator = new ValidatorProperties();
   List<String> validators = newArrayList();
+
+  @Data
+  public static class FileSystemProperties {
+
+    String root;
+    String url;
+
+  }
 
   @Data
   public static class HadoopProperties {

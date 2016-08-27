@@ -57,7 +57,7 @@ public class SubmissionFileSystem {
     this.fileSystem = fileSystem;
 
     // grab root directory
-    this.rootStringPath = properties.getFsRoot();
+    this.rootStringPath = properties.getFs().getRoot();
     checkState(this.rootStringPath != null);
 
     log.info("fileSystem = " + this.fileSystem.getClass().getSimpleName());

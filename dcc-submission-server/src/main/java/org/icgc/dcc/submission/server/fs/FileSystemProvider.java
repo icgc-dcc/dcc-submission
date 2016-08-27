@@ -43,7 +43,7 @@ public class FileSystemProvider implements Provider<FileSystem> {
 
   @Override
   public FileSystem get() {
-    val fs = getFileSystem(addFsDefault(configuration, properties.getFsUrl()));
+    val fs = getFileSystem(addFsDefault(configuration, properties.getFs().getUrl()));
     log.info("Hadoop configuration: '{}'", fs);
 
     return fs;
