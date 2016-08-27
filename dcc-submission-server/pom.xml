@@ -242,11 +242,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <manifestEntries>
                     <Main-Class>${main.class}</Main-Class>
-                    <Build-Id>${env.BUILD_ID}</Build-Id>
-                    <Build-Number>${env.BUILD_NUMBER}</Build-Number>
-                    <Build-Branch>${env.GIT_BRANCH}</Build-Branch>
-                    <Build-Commit>${env.GIT_COMMIT}</Build-Commit>
-                    <Build-Url>${env.BUILD_URL}</Build-Url>
                     <Compile-Timestamp>${maven.build.timestamp}</Compile-Timestamp>
                     <Compile-User>${user.name}</Compile-User>
                     <Implementation-Title>${project.name}</Implementation-Title>
@@ -314,7 +309,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
   <properties>
     <!-- Entry point -->
-    <main.class>org.icgc.dcc.submission.ServerMain</main.class>
+    <main.class>org.icgc.dcc.submission.server.ServerMain</main.class>
 
     <hibernate-validator.version>4.3.1.Final</hibernate-validator.version>
     <mina.version>0.14.0</mina.version>

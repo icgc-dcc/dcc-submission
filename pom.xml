@@ -35,12 +35,11 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
   <modules>
     <module>dcc-submission-ui</module>
     <module>dcc-submission-core</module>
-    <module>dcc-submission-generator</module>
     <module>dcc-submission-validator</module>
     <module>dcc-submission-server</module>
-    <module>dcc-submission-resources</module>
-
     <module>dcc-submission-loader</module>
+    <module>dcc-submission-generator</module>
+    <module>dcc-submission-resources</module>
   </modules>
 
   <repositories>
@@ -112,30 +111,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
         <version>0.2.4</version>
       </dependency>
 
-      <!-- OrientDB -->
-      <dependency>
-        <groupId>com.orientechnologies</groupId>
-        <artifactId>orientdb-core</artifactId>
-        <version>${orientdb.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.orientechnologies</groupId>
-        <artifactId>orientdb-client</artifactId>
-        <version>${orientdb.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.orientechnologies</groupId>
-        <artifactId>orientdb-enterprise</artifactId>
-        <version>${orientdb.version}</version>
-      </dependency>
-
-      <!-- Graph -->
-      <dependency>
-        <groupId>org.jgrapht</groupId>
-        <artifactId>jgrapht-core</artifactId>
-        <version>${jgrapht.version}</version>
-      </dependency>
-
       <!-- Spring -->
       <dependency>
         <groupId>org.springframework</groupId>
@@ -159,7 +134,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
         <version>${spring.version}</version>
       </dependency>
 
-      <!-- Postgres -->
+      <!-- Logging -->
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
@@ -178,6 +153,32 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
         <artifactId>jdbi</artifactId>
         <version>${jdbi.version}</version>
       </dependency>
+      
+
+      <!-- OrientDB -->
+      <dependency>
+        <groupId>com.orientechnologies</groupId>
+        <artifactId>orientdb-core</artifactId>
+        <version>${orientdb.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.orientechnologies</groupId>
+        <artifactId>orientdb-client</artifactId>
+        <version>${orientdb.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.orientechnologies</groupId>
+        <artifactId>orientdb-enterprise</artifactId>
+        <version>${orientdb.version}</version>
+      </dependency>
+
+      <!-- Graph -->
+      <dependency>
+        <groupId>org.jgrapht</groupId>
+        <artifactId>jgrapht-core</artifactId>
+        <version>${jgrapht.version}</version>
+      </dependency>
+            
     </dependencies>
   </dependencyManagement>
 
@@ -211,33 +212,34 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <!-- Versions - DCC -->
     <dcc-common.version>4.2.7</dcc-common.version>
 
-    <!-- Spring -->
+    <!-- Versions - Spring -->
     <spring.version>4.3.2.RELEASE</spring.version>
-    <!-- Spring Security -->
+    <!-- Versions - Spring Security -->
     <spring-security.version>4.1.1.RELEASE</spring-security.version>
-    <!-- Spring Boot -->
+    <!-- Versions - Spring Boot -->
     <spring-boot.version>1.4.0.RELEASE</spring-boot.version>
-    <!-- Spring Boot - Maven -->
+    <!-- Versions - Spring Boot - Maven -->
     <spring-boot-maven-plugin.version>${spring-boot.version}</spring-boot-maven-plugin.version>
-    <!-- Spring Boot - Logging -->
+    <!-- Versions - Spring Boot - Logging -->
     <logback.version>1.1.7</logback.version>
-    <!-- Spring Boot - H2 -->
+    <!-- Versions - Spring Boot - H2 -->
     <h2.version>1.4.192</h2.version>
-    <!-- Spring Boot - Jackson -->
+    <!-- Versions - Spring Boot - Jackson -->
     <jackson.version>2.7.5</jackson.version>
-    <!-- Spring Boot - Slf4j -->
+    <!-- Versions - Spring Boot - Slf4j -->
     <slf4j.version>1.7.5</slf4j.version>
     
     <!-- Versions - Database -->
-    <orientdb.version>2.1.9</orientdb.version>
-    <jdbi.version>2.55</jdbi.version>
     <morphia.version>0.105</morphia.version>
     <querydsl.version>3.3.2</querydsl.version>
+    <jdbi.version>2.55</jdbi.version>
+    <orientdb.version>2.1.9</orientdb.version>
 
+    <!-- Versions - Utilities -->
     <jgrapht.version>0.9.1</jgrapht.version>
-
+    <hibernate-validator.version>4.3.1.Final</hibernate-validator.version>
     
-    <!-- Spring Boot - Test -->
+    <!-- Versions - Test - Spring Boot -->
     <mockito.version>1.10.19</mockito.version>
     <powermock.version>1.6.5</powermock.version>
         

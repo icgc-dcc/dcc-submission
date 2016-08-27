@@ -117,6 +117,8 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
   <properties>
     <!-- Entry point -->
     <main.class>org.icgc.dcc.submission.generator.Main</main.class>
+    
+    <!-- Versions -->
     <commons.lang.version>2.3</commons.lang.version>
     <jackson-yaml.version>${jackson.version}</jackson-yaml.version>
   </properties>

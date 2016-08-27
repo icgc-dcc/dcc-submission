@@ -67,22 +67,12 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
     <!-- Mongo -->
     <dependency>
-      <groupId>org.mongodb</groupId>
-      <artifactId>mongo-hadoop-core</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.mongodb.morphia</groupId>
       <artifactId>morphia</artifactId>
     </dependency>
     <dependency>
       <groupId>org.mongodb.morphia</groupId>
       <artifactId>morphia-logging-slf4j</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.mysema.querydsl</groupId>
@@ -95,41 +85,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <dependency>
       <groupId>com.mysema.querydsl</groupId>
       <artifactId>querydsl-mongodb</artifactId>
-    </dependency>
-
-    <!-- Hadoop -->
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-common</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>com.sun.jersey</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-annotations</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-hdfs</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>com.sun.jersey</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-      <scope>runtime</scope>
     </dependency>
 
     <!-- Utilities -->
@@ -149,7 +104,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
         <artifactId>build-helper-maven-plugin</artifactId>
       </plugin>
 
-      <!-- Generate sources - Generate Morpia bindings -->
+      <!-- Generate sources - Generate Morphia bindings -->
       <plugin>
         <groupId>com.mysema.maven</groupId>
         <artifactId>apt-maven-plugin</artifactId>
@@ -170,8 +125,4 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     </plugins>
   </build>
 
-  <properties>
-    <!-- Versions -->
-    <hibernate-validator.version>4.3.1.Final</hibernate-validator.version>
-  </properties>
 </project>

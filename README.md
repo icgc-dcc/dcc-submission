@@ -21,7 +21,6 @@ The following modules comprise the backend of the system:
 - [Submission Core](dcc-submission-core/README.md)
 - [Submission Server](dcc-submission-server/README.md)
 - [Submission Validator](dcc-submission-validator/README.md)
-- [Submission Loader](dcc-submission-loader/README.md)
 
 The following module is the user interface to the system:
 
@@ -33,6 +32,7 @@ The following are static files for use in any project:
 
 The following are utility modules related to submissions:
 
+- [Submission Loader](dcc-submission-loader/README.md)
 - [Submission Generator](dcc-submission-generator/README.md)
 
 For detailed information on each module, please consult the above `README.md`s.
