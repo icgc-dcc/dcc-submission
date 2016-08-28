@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
- 
+
 This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
 You should have received a copy of the GNU General Public License along with
 this program. If not, see <http://www.gnu.org/licenses/>.
@@ -153,7 +153,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
         <artifactId>jdbi</artifactId>
         <version>${jdbi.version}</version>
       </dependency>
-      
 
       <!-- OrientDB -->
       <dependency>
@@ -178,7 +177,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
         <artifactId>jgrapht-core</artifactId>
         <version>${jgrapht.version}</version>
       </dependency>
-            
+
     </dependencies>
   </dependencyManagement>
 
@@ -228,7 +227,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <jackson.version>2.7.5</jackson.version>
     <!-- Versions - Spring Boot - Slf4j -->
     <slf4j.version>1.7.5</slf4j.version>
-    
     <!-- Versions - Database -->
     <morphia.version>0.105</morphia.version>
     <querydsl.version>3.3.2</querydsl.version>
@@ -238,11 +236,11 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <!-- Versions - Utilities -->
     <jgrapht.version>0.9.1</jgrapht.version>
     <hibernate-validator.version>4.3.1.Final</hibernate-validator.version>
-    
+
     <!-- Versions - Test - Spring Boot -->
     <mockito.version>1.10.19</mockito.version>
     <powermock.version>1.6.5</powermock.version>
-        
+
     <!-- Versions - Test -->
     <junit.version>4.12</junit.version>
     <embedded-postgres.version>1.8</embedded-postgres.version>
