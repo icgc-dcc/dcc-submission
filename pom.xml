@@ -227,6 +227,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <jackson.version>2.7.5</jackson.version>
     <!-- Versions - Spring Boot - Slf4j -->
     <slf4j.version>1.7.5</slf4j.version>
+
     <!-- Versions - Database -->
     <morphia.version>0.105</morphia.version>
     <querydsl.version>3.3.2</querydsl.version>
