@@ -13,6 +13,7 @@ module.exports = {
     'babel-plugin-add-module-exports',
     'babel-plugin-transform-async-to-generator',
     'babel-plugin-transform-decorators-legacy',
+    'react-hot-loader/babel',
   ].map(require.resolve).concat([
     [require.resolve('babel-plugin-transform-runtime'), {
       helpers: false,

@@ -1,23 +1,13 @@
 import React from 'react';
-import { Router, Route, browserHistory, IndexRoute } from 'react-router'
 import ReactDOM from 'react-dom';
+import { AppContainer } from 'react-hot-loader';
 import 'whatwg-fetch';
 
-import App from './App';
 import './index.css';
 
-import Login from './Login/Login.js';
+import user from '~/user';
 
-import user from '~/user.js';
-
-function requireAuth(nextState, replace) {
-  if (!user.isLoggedIn) {
-    replace({
-      pathname: '/login',
-      state: { nextPathname: nextState.location.pathname }
-    })
-  }
-}
+import routes from './routes';
 
 // hardcode user to be logged in
 
@@ -27,24 +17,25 @@ user.roles = ['admin'];
 user.isLoggedIn = true;
 window.user = user;
 
+const rootEl = document.getElementById('root');
+
 ReactDOM.render((
-  <Router history={browserHistory}>
-    <Route name="App" path="/" component={App}>
-      <IndexRoute component={user.isLoggedIn ? require('./Releases/Releases.js') : Login}/>
-      <Route name="Login" path="login" component={Login}/>
-      <Route name="Releases" path="releases" onEnter={requireAuth}>
-        <IndexRoute name="ReleasesIndex" component={require('./Releases/Releases.js')}/>
-        <Route name="Release" path=":releaseName">
-          <IndexRoute name="ReleaseIndex" component={require('./Release/Release.js')}/>
-          <Route name="Submission" path="submissions/:projectKey">
-            <IndexRoute name="ReleaseIndex" component={require('./Submission/Submission.js')}/>
-            <Route name="Report" path="report/:fileName">
-              <IndexRoute name="ReportIndex" component={require('./Report/Report.js')}/>
-            </Route>
-          </Route>
-        </Route>
-      </Route>
-    </Route>
-  </Router>
-  ), document.getElementById('root')
+  <AppContainer>
+    {routes}
+  </AppContainer>
+  ), rootEl
 );
+
+if (module.hot) {
+  module.hot.accept('./routes', () => {
+    // If you use Webpack 2 in ES modules mode, you can
+    // use <App /> here rather than require() a <NextApp />.
+    const nextRoutes = require('./routes');
+    ReactDOM.render(
+      <AppContainer>
+         {nextRoutes}
+      </AppContainer>,
+      rootEl
+    );
+  });
+}

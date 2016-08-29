@@ -9,6 +9,7 @@ module.exports = {
   entry: [
     require.resolve('webpack-dev-server/client') + '?/',
     require.resolve('webpack/hot/only-dev-server'),
+    'react-hot-loader/patch',
     require.resolve('./polyfills'),
     path.join(paths.appSrc, 'index')
   ],
@@ -49,7 +50,7 @@ module.exports = {
       {
         test: /\.js$/,
         include: paths.appSrc,
-        loaders: ['react-hot', 'babel?' + JSON.stringify(require('./babel.dev'))],
+        loaders: ['babel?' + JSON.stringify(require('./babel.dev'))],
       },
       {
         test: /\.coffee$/,
