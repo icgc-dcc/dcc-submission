@@ -7,13 +7,14 @@ module.exports = {
     'babel-preset-react'
   ].map(require.resolve),
   plugins: [
+    'react-hot-loader/babel',
+    'babel-plugin-transform-decorators-legacy',
+    'babel-plugin-transform-decorators',
     'babel-plugin-syntax-trailing-function-commas',
     'babel-plugin-transform-class-properties',
     'babel-plugin-transform-object-rest-spread',
     'babel-plugin-add-module-exports',
     'babel-plugin-transform-async-to-generator',
-    'babel-plugin-transform-decorators-legacy',
-    'react-hot-loader/babel',
   ].map(require.resolve).concat([
     [require.resolve('babel-plugin-transform-runtime'), {
       helpers: false,
