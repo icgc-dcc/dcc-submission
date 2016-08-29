@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 import {Link} from 'react-router';
 import {observable, action, runInAction} from 'mobx';
 import {observer} from 'mobx-react';
-import BootstrapTable from 'reactjs-bootstrap-table';
-import { fetchHeaders } from '~/utils';
+import { fetchHeaders, formatFileSize } from '~/utils';
 import Status from '~/common/components/Status';
+import DataTable from '~/common/components/DataTable/DataTable';
+
+import SubmissionActionButtons from './SubmissionActionButtons';
 
 const release = observable({
   isLoading: false,
@@ -21,8 +23,8 @@ const release = observable({
 release.fetch = action('fetch single release', async function (releaseName) {
   this.isLoading = true;
   const response = await fetch(`/ws/releases/${releaseName}`, {
-      headers: fetchHeaders.get()
-    });
+    headers: fetchHeaders.get()
+  });
 
   runInAction('update loading status', () => { this.isLoading = false });
 
@@ -55,7 +57,7 @@ class Release extends Component {
 
       <div>
         <h2>Projects included in the {release.name} release</h2>
-        <BootstrapTable
+        <DataTable
           data={release.submissions}
           headers={true}
           columns={[
@@ -63,17 +65,32 @@ class Release extends Component {
               name: 'projectKey',
               display: 'Project Key',
               sortable: true,
-              renderer: project => (
-                <Link to={`/releases/${release.name}/submissions/${project.projectKey}`}>{project.key}</Link>
+              renderer: submission => (
+                <Link to={`/releases/${release.name}/submissions/${submission.projectKey}`}>{submission.projectKey}</Link>
               )
             },
             { name: 'projectName', display: 'Project Name' },
-            { name: 'files', display: 'Files' },
-            { name: 'state', display: 'State', renderer: project => (
-              <Status statusCode={project.state}/>
+            {
+              name: 'files',
+              display: 'Files',
+              renderer: submission => {
+                const fileSize = formatFileSize(submission.submissionFiles
+                  .map(x => x.size)
+                  .reduce((a, b) => a + b));
+                const fileCount = submission.submissionFiles.length;
+                return `${fileCount} (${fileSize})`;
+              },
+            },
+            { name: 'state', display: 'State', renderer: submission => (
+              <Status statusCode={submission.state}/>
             )},
-            { name: 'actions', display: 'Actions' },
+            {
+              name: 'actions',
+              display: 'Actions',
+              renderer: submission => <SubmissionActionButtons submission={submission}/>
+            },
           ]}
+          fieldsToSearch={['projectKey', 'projectName']}
         />
       </div>
       <pre>
