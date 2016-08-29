@@ -224,6 +224,10 @@ a {
   position: relative;
 }
 
+.code-container .fa {
+  pointer-events: none;
+}
+
 .code-zoom-indicator {
   position: absolute;
   bottom: 5px;
