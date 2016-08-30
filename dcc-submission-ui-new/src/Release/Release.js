@@ -48,7 +48,7 @@ class Release extends Component {
     window.debugLoad = () => release.fetch(releaseName);
     const items = release.submissions;
     const tableOptions = {
-      paginationSize: 10,
+      sizePerPage: 3,
       paginationShowsTotal: true,
     };
 
@@ -69,7 +69,7 @@ class Release extends Component {
           striped={true}
           pagination={true}
           ignoreSinglePage={true}
-          search={items > tableOptions.paginationSize}
+          search={items.length > tableOptions.sizePerPage}
           options={tableOptions}
 
           columns={[

@@ -35,7 +35,7 @@ class Releases extends Component {
 
   render () {
     const tableOptions = {
-      paginationSize: 10,
+      sizePerPage: 10,
       paginationShowsTotal: true,
     }
     const items = releases.items;
@@ -48,7 +48,7 @@ class Releases extends Component {
         striped={true}
         pagination={true}
         ignoreSinglePage={true}
-        search={items > tableOptions.paginationSize}
+        search={items.length > tableOptions.sizePerPage}
         options={tableOptions}
       >
         <TableHeaderColumn
