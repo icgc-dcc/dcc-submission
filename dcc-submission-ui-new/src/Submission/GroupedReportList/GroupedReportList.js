@@ -32,9 +32,6 @@ export default function GroupedReportList(props) {
         <TableHeaderColumn
           dataField='name'
           dataSort={true}
-          dataFormat={ fileName => (
-            <Link to={`/releases/${releaseName}/submissions/${projectKey}/report/${fileName}`}>{fileName}</Link>
-          )}
         >File</TableHeaderColumn>
 
         <TableHeaderColumn
