@@ -68,41 +68,10 @@ class Release extends Component {
           keyField='projectKey'
           striped={true}
           pagination={true}
+          hideSizePerPage={true}
           ignoreSinglePage={true}
           search={items.length > tableOptions.sizePerPage}
           options={tableOptions}
-
-          columns={[
-            {
-              name: 'projectKey',
-              display: 'Project Key',
-              sortable: true,
-              renderer: submission => (
-                <Link to={`/releases/${release.name}/submissions/${submission.projectKey}`}>{submission.projectKey}</Link>
-              )
-            },
-            { name: 'projectName', display: 'Project Name' },
-            {
-              name: 'files',
-              display: 'Files',
-              renderer: submission => {
-                const fileSize = formatFileSize(submission.submissionFiles
-                  .map(x => x.size)
-                  .reduce((a, b) => a + b));
-                const fileCount = submission.submissionFiles.length;
-                return `${fileCount} (${fileSize})`;
-              },
-            },
-            { name: 'state', display: 'State', renderer: submission => (
-              <Status statusCode={submission.state}/>
-            )},
-            {
-              name: 'actions',
-              display: 'Actions',
-              renderer: submission => <SubmissionActionButtons submission={submission}/>
-            },
-          ]}
-          fieldsToSearch={['projectKey', 'projectName']}
         >
           <TableHeaderColumn
             dataField='projectKey'

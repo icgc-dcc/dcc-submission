@@ -48,6 +48,7 @@ class Releases extends Component {
         striped={true}
         pagination={true}
         ignoreSinglePage={true}
+        hideSizePerPage={true}
         search={items.length > tableOptions.sizePerPage}
         options={tableOptions}
       >
