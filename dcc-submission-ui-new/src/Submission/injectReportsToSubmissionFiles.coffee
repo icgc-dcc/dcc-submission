@@ -6,4 +6,5 @@ module.exports = (submissionFiles, report) ->
         for fileReport in fileTypeReport.fileReports
           if fileReport.fileName == file.name
             Object.assign(file, fileReport)
+            file.dataType = dataTypeReport.dataType
             break

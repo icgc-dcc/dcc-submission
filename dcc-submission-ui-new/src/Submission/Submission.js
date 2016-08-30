@@ -1,15 +1,16 @@
 import React, { Component } from 'react';
-import {Link} from 'react-router';
 import {observable, action, runInAction, computed} from 'mobx';
 import {observer} from 'mobx-react';
+import { includes, groupBy, map } from 'lodash';
 import { fetchHeaders, formatFileSize } from '~/utils';
-
-import Status from '~/common/components/Status';
-import SubmissionActionButtons from '~/common/components/SubmissionActionButtons/SubmissionActionButtons';
-import DataTable from '~/common/components/DataTable/DataTable';
 
 import injectReportsToSubmissionFiles from './injectReportsToSubmissionFiles.coffee';
 import getValidFileCount from './getValidFileCount.coffee';
+import SubmissionActionButtons from '~/common/components/SubmissionActionButtons/SubmissionActionButtons';
+
+import GroupedReportList from './GroupedReportList/GroupedReportList';
+
+const CLINICAL_DATA_TYPES = ['CLINICAL_SUPPLEMENTAL_TYPE', 'CLINICAL_CORE_TYPE'];
 
 const submission = observable({
   isLoading: false,
@@ -24,7 +25,17 @@ const submission = observable({
     dataTypeReports: []
   },
   state: undefined,
-  submissionFiles: []
+  submissionFiles: [],
+
+  groupedSubmissionFiles: function () {
+    return groupBy(submission.submissionFiles, file => (
+      includes(CLINICAL_DATA_TYPES, file.dataType)
+        ? 'CLINICAL'
+        : !!file.dataType
+          ? 'EXPERIMENTAL'
+          : 'UNRECOGNIZED'
+    ));
+  },
 });
 
 submission.fetch = action('fetch single submission/project', async function (releaseName, projectKey) {
@@ -46,6 +57,8 @@ submission.fetch = action('fetch single submission/project', async function (rel
 submission.totalFileSizeInBytes = computed(function () {
   return submission.submissionFiles.reduce((acc, file) => acc + file.size, 0);
 })
+
+window.submission = submission;
 
 export default @observer
 class Release extends Component {
@@ -74,85 +87,70 @@ class Release extends Component {
 
       <div>
         <h2>Projects included in the {submission.name} release</h2>
-        <DataTable
-          data={submission.submissionFiles}
-          headers={true}
-          columns={[
-            {
-              name: 'name',
-              display: 'Name',
-              sortable: true,
-              renderer: file => (
-                <Link to={`/releases/${releaseName}/submissions/${submission.projectKey}/report/${file.name}`}>{file.name}</Link>
-              ),
-            },
-            {
-              name: 'lastUpdate',
-              display: 'lastUpdated',
-              sortable: true,
-              render: file => (
-                <div>{file.lastUpdate}</div>
-              ),
-            },
-            {
-              name: 'size',
-              display: 'Size',
-              sortable: true,
-              render: file => (
-                <div>{formatFileSize(file.size)}</div>
-              )
-            },
-            {
-              name: 'status',
-              display: 'Status',
-              render: file => (
-                <Status statusCode={file.fileState || ''}/>
-              ),
-            },
-            // ...[ hasAnyReports ? {
-            //   name: 'report',
-            //   display: 'Report',
-            //   renderer: file => (
-            //     <Link to={`/releases/${releaseName}/submissions/${projectKey}/report/${file.name}`}>view report</Link>
-            //   ),
-            // } : null]
-          ]}
-          fieldsToSearch={['name']}
-        />
-        <table>
-          <thead>
-            <tr>
-              <th></th>
-              <th></th>
-              <th></th>
-              <th></th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            { submission.submissionFiles.map( file => {
-              const hasAnyReports = [].concat(file.errorReports, file.fieldReports, file.summaryReports).filter(Boolean).length > 0;
-              return (
-                <tr key={file.name}>
-                  <td>{file.name}</td>
-                  <td>{file.lastUpdate}</td>
-                  <td>{formatFileSize(file.size)}</td>
-                  <td>
-                    <Status statusCode={file.fileState || ''} />
-                  </td>
-                  <td>
-                      { hasAnyReports ? (
-                        <Link to={`/releases/${releaseName}/submissions/${projectKey}/report/${file.name}`}>view report</Link>
-                      ) : null }
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+
+
+        {
+          submission.groupedSubmissionFiles.CLINICAL && (
+            <div>
+              <h1>Clinical Report</h1>
+              {map(groupBy(submission.groupedSubmissionFiles.CLINICAL, 'dataType'), (files, dataType) => (
+                <GroupedReportList
+                  key={dataType}
+                  dataType={dataType}
+                  items={files}
+                  releaseName={releaseName}
+                  projectKey={projectKey}
+                  isLoading={submission.isLoading}
+                />
+              ))}
+            </div>
+          )
+        }
+        
+        {
+          submission.groupedSubmissionFiles.EXPERIMENTAL && (
+            <div>
+              <h1>Experimental Report</h1>
+              {map(groupBy(submission.groupedSubmissionFiles.EXPERIMENTAL, 'dataType'), (files, dataType) => (
+                <GroupedReportList
+                  key={dataType}                
+                  dataType={dataType}
+                  items={files}
+                  releaseName={releaseName}
+                  projectKey={projectKey}
+                  isLoading={submission.isLoading}
+                />
+              ))}
+            </div>
+          )
+        }
+
+        {
+          submission.groupedSubmissionFiles.UNRECOGNIZED && (
+            <div>
+              <h1>Unrecognized</h1>
+              {map(groupBy(submission.groupedSubmissionFiles.UNRECOGNIZED, 'dataType'), (files, dataType) => (
+                <GroupedReportList
+                  key={dataType}
+                  dataType={dataType}
+                  items={files}
+                  releaseName={releaseName}
+                  projectKey={projectKey}
+                  isLoading={submission.isLoading}
+                />
+              ))}
+            </div>
+          )
+        }
+        
       </div>
       <pre>
-      {JSON.stringify(submission, null, '  ')}
+      {
+        JSON.stringify(submission, null, '  ')
+        // JSON.stringify(submission.submissionFiles.map(
+        //   x => x.dataType
+        // ), null, '  ')
+      }
       </pre>
     </div>
   }
