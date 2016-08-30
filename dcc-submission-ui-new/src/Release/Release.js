@@ -6,6 +6,7 @@ import { fetchHeaders, formatFileSize } from '~/utils';
 import Status from '~/common/components/Status';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 
+import tableOptions from '~/common/defaultTableOptions';
 import SubmissionActionButtons from '~/common/components/SubmissionActionButtons/SubmissionActionButtons';
 
 const release = observable({
@@ -47,10 +48,6 @@ class Release extends Component {
     const releaseName = this.props.params.releaseName;
     window.debugLoad = () => release.fetch(releaseName);
     const items = release.submissions;
-    const tableOptions = {
-      sizePerPage: 20,
-      paginationShowsTotal: true,
-    };
 
     return <div>
       <h1>Release Summary</h1>
@@ -68,7 +65,6 @@ class Release extends Component {
           keyField='projectKey'
           striped={true}
           pagination={true}
-          hideSizePerPage={true}
           ignoreSinglePage={true}
           search={items.length > tableOptions.sizePerPage}
           options={tableOptions}

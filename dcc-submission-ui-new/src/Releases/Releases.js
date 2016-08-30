@@ -4,6 +4,7 @@ import {observable, action, runInAction} from 'mobx';
 import {observer} from 'mobx-react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 
+import tableOptions from '~/common/defaultTableOptions';
 import { fetchHeaders } from '~/utils';
 // import ActionButton from '~/common/components/ActionButton/ActionButton';
 import user from '~/user';
@@ -34,10 +35,6 @@ class Releases extends Component {
   }
 
   render () {
-    const tableOptions = {
-      sizePerPage: 20,
-      paginationShowsTotal: true,
-    };
     const items = releases.items;
 
     return <div>
@@ -48,7 +45,6 @@ class Releases extends Component {
         striped={true}
         pagination={true}
         ignoreSinglePage={true}
-        hideSizePerPage={true}
         search={items.length > tableOptions.sizePerPage}
         options={tableOptions}
       >
