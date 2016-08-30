@@ -11,7 +11,7 @@ import Status from '~/common/components/Status';
 import dataTypeDict from '~/common/dataTypeDict';
 
 export default function GroupedReportList(props) {
-  const { isLoading, items, releaseName, projectKey, dataType } = props;
+  const { isLoading, items, releaseName, projectKey, dataType, dataTypeReport } = props;
   const tableOptions = {
       ...defaultTableOptions,
       noDataText: isLoading ? 'Loading...' : 'There is no data to display',
@@ -19,7 +19,13 @@ export default function GroupedReportList(props) {
     };
   return (
     <div>
-      {dataType !== 'undefined' && <h2>{dataTypeDict[dataType] || dataType}</h2>}
+      {dataType !== 'undefined' && (
+        <div>
+          {dataTypeDict[dataType] || dataType}
+          -
+          <Status statusCode={dataTypeReport.dataTypeState || ''}/>
+        </div>
+      )}
       <BootstrapTable
         data={items}
         keyField='name'
