@@ -5,6 +5,8 @@ import {observer} from 'mobx-react';
 import { fetchHeaders, formatFileSize } from '~/utils';
 
 import Status from '~/common/components/Status';
+import SubmissionActionButtons from '~/common/components/SubmissionActionButtons/SubmissionActionButtons';
+import DataTable from '~/common/components/DataTable/DataTable';
 
 import injectReportsToSubmissionFiles from './injectReportsToSubmissionFiles.coffee';
 import getValidFileCount from './getValidFileCount.coffee';
@@ -67,11 +69,56 @@ class Release extends Component {
         <li>Number of valid files: {getValidFileCount(submission.report)}</li>
         <li>Size of submission data: {formatFileSize(submission.totalFileSizeInBytes.get())}</li>
         <li>State {submission.state}</li>
-        <li>Actions: TODO</li>
+        <li>Actions: <SubmissionActionButtons submission={submission}/></li>
       </ul>
 
       <div>
         <h2>Projects included in the {submission.name} release</h2>
+        <DataTable
+          data={submission.submissionFiles}
+          headers={true}
+          columns={[
+            {
+              name: 'name',
+              display: 'Name',
+              sortable: true,
+              renderer: file => (
+                <Link to={`/releases/${releaseName}/submissions/${submission.projectKey}/report/${file.name}`}>{file.name}</Link>
+              ),
+            },
+            {
+              name: 'lastUpdate',
+              display: 'lastUpdated',
+              sortable: true,
+              render: file => (
+                <div>{file.lastUpdate}</div>
+              ),
+            },
+            {
+              name: 'size',
+              display: 'Size',
+              sortable: true,
+              render: file => (
+                <div>{formatFileSize(file.size)}</div>
+              )
+            },
+            {
+              name: 'status',
+              display: 'Status',
+              render: file => (
+                <Status statusCode={file.fileState || ''}/>
+              ),
+            },
+            // ...[ hasAnyReports ? {
+            //   name: 'report',
+            //   display: 'Report',
+            //   renderer: file => (
+            //     <Link to={`/releases/${releaseName}/submissions/${projectKey}/report/${file.name}`}>view report</Link>
+            //   ),
+            // } : null]
+          ]}
+          fieldsToSearch={['name']}
+        />
         <table>
           <thead>
             <tr>

@@ -5,20 +5,24 @@ export default function SubmissionActionButtons ({submission}) {
 
   switch (submissionState) {
     case 'INVALID':
-      return <div>Validate</div>;
+      return <button>Validate</button>;
     case 'QUEUED':
     case 'VALIDATING':
-      return <div>Cancel Validation</div>
+      return <button>Cancel Validation</button>
     case 'VALID':
       return (
         <div>
-          Sign off,
-          Validate
+          <button>
+            Sign off
+          </button>
+          <button>
+            Validate
+          </button>
         </div>
       );
     case 'NOT_VALIDATED':
       return (submission.submissionFiles.length && submission.submissionFiles.map(x => x.schemaName).filter(Boolean).length)
-        ? <div>Validate</div>
+        ? <button>Validate</button>
         : <em>Upload Files</em>
     case 'ERROR':
     default:

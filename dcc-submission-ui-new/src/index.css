@@ -1,3 +1,6 @@
+@import '../node_modules/react-bootstrap-table/css/react-bootstrap-table.css';
+@import './common/bootstrap-overrides.css';
+
 body {
   margin: 0;
   padding: 0;

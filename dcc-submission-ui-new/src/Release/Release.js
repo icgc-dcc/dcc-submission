@@ -4,9 +4,9 @@ import {observable, action, runInAction} from 'mobx';
 import {observer} from 'mobx-react';
 import { fetchHeaders, formatFileSize } from '~/utils';
 import Status from '~/common/components/Status';
-import DataTable from '~/common/components/DataTable/DataTable';
+import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 
-import SubmissionActionButtons from './SubmissionActionButtons';
+import SubmissionActionButtons from '~/common/components/SubmissionActionButtons/SubmissionActionButtons';
 
 const release = observable({
   isLoading: false,
@@ -46,6 +46,12 @@ class Release extends Component {
   render () {
     const releaseName = this.props.params.releaseName;
     window.debugLoad = () => release.fetch(releaseName);
+    const items = release.submissions;
+    const tableOptions = {
+      paginationSize: 10,
+      paginationShowsTotal: true,
+    };
+
     return <div>
       <h1>Release Summary</h1>
       <ul>
@@ -57,9 +63,15 @@ class Release extends Component {
 
       <div>
         <h2>Projects included in the {release.name} release</h2>
-        <DataTable
-          data={release.submissions}
-          headers={true}
+        <BootstrapTable
+          data={items}
+          keyField='projectKey'
+          striped={true}
+          pagination={true}
+          ignoreSinglePage={true}
+          search={items > tableOptions.paginationSize}
+          options={tableOptions}
+
           columns={[
             {
               name: 'projectKey',
@@ -91,7 +103,47 @@ class Release extends Component {
             },
           ]}
           fieldsToSearch={['projectKey', 'projectName']}
-        />
+        >
+          <TableHeaderColumn
+            dataField='projectKey'
+            dataSort={true}
+            dataFormat={ projectKey => (
+              <Link to={`/releases/${release.name}/submissions/${projectKey}`}>{projectKey}</Link>
+            )}
+          >Project Key</TableHeaderColumn>
+          
+          <TableHeaderColumn
+            dataField='projectName'
+            dataSort={true}
+          >Project Name</TableHeaderColumn>
+          
+          <TableHeaderColumn
+            dataField='submissionFiles'
+            dataSort={true}
+            sortFunc={(a, b, order) => order === 'desc' ? a.submissionFiles.length - b.submissionFiles.length : b.submissionFiles.length - a.submissionFiles.length}
+            dataFormat={ files => {
+              const fileSize = formatFileSize(files
+                  .map(x => x.size)
+                  .reduce((a, b) => a + b));
+              const fileCount = files.length;
+              return `${fileCount} (${fileSize})`;
+            }}
+          >Files</TableHeaderColumn>
+
+          <TableHeaderColumn
+            dataField='state'
+            dataSort={true}
+            dataFormat={ state => (
+              <Status statusCode={state}/>
+            )}
+          >State</TableHeaderColumn>
+
+          <TableHeaderColumn
+            dataFormat={ (cell, submission) => (
+              <SubmissionActionButtons submission={submission}/>
+            )}
+          >Actions</TableHeaderColumn>
+        </BootstrapTable>
       </div>
       <pre>
       {JSON.stringify(release, null, '  ')}

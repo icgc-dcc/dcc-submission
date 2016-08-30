@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import {Link} from 'react-router';
 import {observable, action, runInAction} from 'mobx';
 import {observer} from 'mobx-react';
-import BootstrapTable from 'reactjs-bootstrap-table';
+import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
+
 import { fetchHeaders } from '~/utils';
 // import ActionButton from '~/common/components/ActionButton/ActionButton';
 import user from '~/user';
@@ -33,37 +34,53 @@ class Releases extends Component {
   }
 
   render () {
+    const tableOptions = {
+      paginationSize: 10,
+      paginationShowsTotal: true,
+    }
+    const items = releases.items;
+
     return <div>
       Releases!
       <BootstrapTable
-        data={releases.items}
-        headers={true}
-        columns={[
-          {
-            name: 'name',
-            display: 'Name',
-            sort: true,
-            renderer: release => (
-              <Link to={`/releases/${release.name}`}>
-                {release.name}
-              </Link>
-            ),
-          },
-          { name: 'state', display: 'State' },
-          { name: 'releaseDate', display: 'Release Date', renderer: release => release.releaseDate || 'Unreleased'},
-          { name: 'projects', display: 'Projects', renderer: release => release.submissions.length},
-
-          // only admin users have actions, if not admin then hide column
-          ...[user.isAdmin && { name: 'actions', display: 'Actions', renderer: release => (
+        data={items}
+        keyField='name'
+        striped={true}
+        pagination={true}
+        ignoreSinglePage={true}
+        search={items > tableOptions.paginationSize}
+        options={tableOptions}
+      >
+        <TableHeaderColumn
+          dataField='name'
+          dataSort={true}
+          dataFormat={ releaseName => (
+            <Link to={`/releases/${releaseName}`}>
+              {releaseName}
+            </Link>
+          )}
+        >Name</TableHeaderColumn>
+        <TableHeaderColumn
+          dataField='state'
+          dataSort={true}
+        >State</TableHeaderColumn>
+        <TableHeaderColumn
+          dataField='releaseDate'
+          dataSort={true}
+          dataFormat={(releaseDate) => releaseDate || 'Unreleased'}
+        >State</TableHeaderColumn>
+        <TableHeaderColumn
+          hidden={!user.isAdmin}
+          dataFormat={(cell, release) => (
             <div
               onClick={() => console.log('release')}
               className="m-btn green-stripe mini"
             >
               Release Now
             </div>
-          )}]
-        ]}
-      />
+          )}
+        >Actions</TableHeaderColumn>
+      </BootstrapTable>
     </div>
   }
 }
