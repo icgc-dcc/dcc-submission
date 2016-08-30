@@ -39,7 +39,8 @@ class Releases extends Component {
 
     const tableOptions = {
       ...defaultTableOptions,
-      noDataText: release.isLoading ? 'Loading...' : 'There is no data to display'
+      noDataText: release.isLoading ? 'Loading...' : 'There is no data to display',
+      defaultSortName: 'name',
     };
 
     return <div>
