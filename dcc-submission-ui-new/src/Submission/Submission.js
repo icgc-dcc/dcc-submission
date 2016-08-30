@@ -3,7 +3,10 @@ import {observable, action, runInAction, computed} from 'mobx';
 import {observer} from 'mobx-react';
 import { includes, groupBy, map } from 'lodash';
 import { fetchHeaders, formatFileSize } from '~/utils';
+import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 
+import dataTypeDict from '~/common/dataTypeDict';
+import Status from '~/common/components/Status';
 import injectReportsToSubmissionFiles from './injectReportsToSubmissionFiles.coffee';
 import getValidFileCount from './getValidFileCount.coffee';
 import SubmissionActionButtons from '~/common/components/SubmissionActionButtons/SubmissionActionButtons';
@@ -27,7 +30,7 @@ const submission = observable({
   state: undefined,
   submissionFiles: [],
 
-  groupedSubmissionFiles: function () {
+  abstractlyGroupedSubmissionFiles: function () {
     return groupBy(submission.submissionFiles, file => (
       includes(CLINICAL_DATA_TYPES, file.dataType)
         ? 'CLINICAL'
@@ -85,15 +88,29 @@ class Release extends Component {
         <li>Actions: <SubmissionActionButtons submission={submission}/></li>
       </ul>
 
+      <BootstrapTable
+        data={submission.report.dataTypeReports}
+        keyField='dataType'
+        striped={true}
+        pagination={false}
+        search={false}
+      >
+        <TableHeaderColumn
+          dataField='dataType'
+          dataFormat={ dataType => ( dataTypeDict[dataType] || dataType )}
+        >Data Type</TableHeaderColumn>
+        <TableHeaderColumn
+          dataField='dataTypeState'
+          dataFormat={ state => <Status statusCode={state || ''}/>}
+        >State</TableHeaderColumn>
+      </BootstrapTable>
+
       <div>
-        <h2>Projects included in the {submission.name} release</h2>
-
-
         {
-          submission.groupedSubmissionFiles.CLINICAL && (
+          submission.abstractlyGroupedSubmissionFiles.CLINICAL && (
             <div>
               <h1>Clinical Report</h1>
-              {map(groupBy(submission.groupedSubmissionFiles.CLINICAL, 'dataType'), (files, dataType) => (
+              {map(groupBy(submission.abstractlyGroupedSubmissionFiles.CLINICAL, 'dataType'), (files, dataType) => (
                 <GroupedReportList
                   key={dataType}
                   dataType={dataType}
@@ -108,10 +125,10 @@ class Release extends Component {
         }
         
         {
-          submission.groupedSubmissionFiles.EXPERIMENTAL && (
+          submission.abstractlyGroupedSubmissionFiles.EXPERIMENTAL && (
             <div>
               <h1>Experimental Report</h1>
-              {map(groupBy(submission.groupedSubmissionFiles.EXPERIMENTAL, 'dataType'), (files, dataType) => (
+              {map(groupBy(submission.abstractlyGroupedSubmissionFiles.EXPERIMENTAL, 'dataType'), (files, dataType) => (
                 <GroupedReportList
                   key={dataType}                
                   dataType={dataType}
@@ -126,10 +143,10 @@ class Release extends Component {
         }
 
         {
-          submission.groupedSubmissionFiles.UNRECOGNIZED && (
+          submission.abstractlyGroupedSubmissionFiles.UNRECOGNIZED && (
             <div>
               <h1>Unrecognized</h1>
-              {map(groupBy(submission.groupedSubmissionFiles.UNRECOGNIZED, 'dataType'), (files, dataType) => (
+              {map(groupBy(submission.abstractlyGroupedSubmissionFiles.UNRECOGNIZED, 'dataType'), (files, dataType) => (
                 <GroupedReportList
                   key={dataType}
                   dataType={dataType}

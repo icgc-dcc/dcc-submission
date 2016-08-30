@@ -8,7 +8,7 @@ import { formatFileSize } from '~/utils';
 import defaultTableOptions from '~/common/defaultTableOptions';
 import Status from '~/common/components/Status';
 
-import dataTypeDict from './dataTypeDict';
+import dataTypeDict from '~/common/dataTypeDict';
 
 export default function GroupedReportList(props) {
   const { isLoading, items, releaseName, projectKey, dataType } = props;
