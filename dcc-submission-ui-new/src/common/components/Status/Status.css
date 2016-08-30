@@ -1,0 +1,28 @@
+.not_validated {
+	color: #333;
+}
+
+.signed,
+.signed_off,
+.valid,
+.opened {
+	color: #468847;
+}
+
+.invalid,
+.error {
+	color: #b94a48;
+}
+
+.queued {
+	color: #c09853;
+}
+
+.validating {
+	color: #d0763e;
+}
+
+.label-validating {
+	color: #fff;
+	background: #d0763e;
+}

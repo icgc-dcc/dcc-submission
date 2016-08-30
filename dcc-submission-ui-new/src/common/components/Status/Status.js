@@ -1,5 +1,7 @@
 import React, {PropTypes} from 'react';
 
+import './Status.css';
+
 const STATUS_MAP = {
   NOT_VALIDATED: {
     wrapperClass: '',
@@ -39,7 +41,7 @@ function Status ({statusCode}) {
   const { wrapperClass, iconClass } = STATUS_MAP[statusCode] || STATUS_MAP._DEFAULT;
   return (
     <span className={wrapperClass}>
-      <i className={iconClass}/>
+      <i className={iconClass}/>&nbsp;
       {(statusCode || 'SKIPPED').replace(/_/g, ' ')}
     </span>
   );
