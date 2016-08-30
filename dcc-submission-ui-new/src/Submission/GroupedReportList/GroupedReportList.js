@@ -11,21 +11,38 @@ import Status from '~/common/components/Status';
 import dataTypeDict from '~/common/dataTypeDict';
 
 export default function GroupedReportList(props) {
-  const { isLoading, items, releaseName, projectKey, dataType, dataTypeReport } = props;
+  const { isLoading, items, releaseName, projectKey, dataType, dataTypeReport, submissionState } = props;
   const tableOptions = {
       ...defaultTableOptions,
       noDataText: isLoading ? 'Loading...' : 'There is no data to display',
       defaultSortName: 'name',
     };
+
+  const title = dataTypeDict[dataType] || dataType;
+  const submissionStateCanBeChanged = !includes(['QUEUED', 'VALIDATING', 'ERROR'], submissionState);
+  const groupCanBeSubmittedForValidation = submissionStateCanBeChanged && dataTypeReport && includes(['VALID', 'INVALID', 'NOT_VALIDATED'], dataTypeReport.dataTypeState)
+
   return (
     <div>
       {dataType !== 'undefined' && (
         <div>
-          {dataTypeDict[dataType] || dataType}
+          {title}
           -
           <Status statusCode={dataTypeReport.dataTypeState || ''}/>
         </div>
       )}
+      {
+        // TODO: make this button do something
+        groupCanBeSubmittedForValidation && (
+          <a data-toggle="modal"
+            className="m-btn mini blue"
+            href="#validate-submission-popup"
+            id="validate-submission-popup-button">
+          Validate {title}
+          </a>
+        )
+      }
+      
       <BootstrapTable
         data={items}
         keyField='name'

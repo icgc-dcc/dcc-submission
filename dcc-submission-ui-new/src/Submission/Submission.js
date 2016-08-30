@@ -112,6 +112,7 @@ class Release extends Component {
               <h1>Clinical Report</h1>
               {map(groupBy(submission.abstractlyGroupedSubmissionFiles.CLINICAL, 'dataType'), (files, dataType) => (
                 <GroupedReportList
+                  submissionState={submission.state}
                   dataTypeReport={submission.report.dataTypeReports.find( report => report.dataType === dataType)}
                   key={dataType}
                   dataType={dataType}
@@ -131,6 +132,7 @@ class Release extends Component {
               <h1>Experimental Report</h1>
               {map(groupBy(submission.abstractlyGroupedSubmissionFiles.EXPERIMENTAL, 'dataType'), (files, dataType) => (
                 <GroupedReportList
+                  submissionState={submission.state}
                   dataTypeReport={submission.report.dataTypeReports.find( report => report.dataType === dataType)}
                   key={dataType}
                   dataType={dataType}
@@ -150,6 +152,7 @@ class Release extends Component {
               <h1>Unrecognized</h1>
               {map(groupBy(submission.abstractlyGroupedSubmissionFiles.UNRECOGNIZED, 'dataType'), (files, dataType) => (
                 <GroupedReportList
+                  submissionState={submission.state}
                   dataTypeReport={submission.report.dataTypeReports.find( report => report.dataType === dataType)}
                   key={dataType}
                   dataType={dataType}
