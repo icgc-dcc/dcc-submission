@@ -6,7 +6,7 @@ import { fetchHeaders, formatFileSize } from '~/utils';
 import Status from '~/common/components/Status';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 
-import tableOptions from '~/common/defaultTableOptions';
+import defaultTableOptions from '~/common/defaultTableOptions';
 import SubmissionActionButtons from '~/common/components/SubmissionActionButtons/SubmissionActionButtons';
 
 const release = observable({
@@ -48,6 +48,11 @@ class Release extends Component {
     const releaseName = this.props.params.releaseName;
     window.debugLoad = () => release.fetch(releaseName);
     const items = release.submissions;
+
+    const tableOptions = {
+      ...defaultTableOptions,
+      noDataText: release.isLoading ? 'Loading...' : 'There is no data to display'
+    };
 
     return <div>
       <h1>Release Summary</h1>

@@ -4,7 +4,7 @@ import {observable, action, runInAction} from 'mobx';
 import {observer} from 'mobx-react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 
-import tableOptions from '~/common/defaultTableOptions';
+import defaultTableOptions from '~/common/defaultTableOptions';
 import { fetchHeaders } from '~/utils';
 // import ActionButton from '~/common/components/ActionButton/ActionButton';
 import user from '~/user';
@@ -36,6 +36,11 @@ class Releases extends Component {
 
   render () {
     const items = releases.items;
+
+    const tableOptions = {
+      ...defaultTableOptions,
+      noDataText: release.isLoading ? 'Loading...' : 'There is no data to display'
+    };
 
     return <div>
       Releases!
