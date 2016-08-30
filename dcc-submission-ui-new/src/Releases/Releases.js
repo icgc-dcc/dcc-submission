@@ -35,9 +35,9 @@ class Releases extends Component {
 
   render () {
     const tableOptions = {
-      sizePerPage: 10,
+      sizePerPage: 20,
       paginationShowsTotal: true,
-    }
+    };
     const items = releases.items;
 
     return <div>

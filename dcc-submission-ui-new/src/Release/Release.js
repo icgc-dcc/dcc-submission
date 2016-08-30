@@ -48,7 +48,7 @@ class Release extends Component {
     window.debugLoad = () => release.fetch(releaseName);
     const items = release.submissions;
     const tableOptions = {
-      sizePerPage: 3,
+      sizePerPage: 20,
       paginationShowsTotal: true,
     };
 
