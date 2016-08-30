@@ -89,14 +89,16 @@ module.exports = {
     configFile: path.join(__dirname, 'eslint.js'),
     useEslintrc: false
   },
-  postcss: function() {
+  postcss: function(bundler) {
     return [
       // Unwrap nested rules like how Sass does it
       // https://github.com/postcss/postcss-nested
       require('postcss-nested'),
       // Transfer @import rule by inlining content, e.g. @import 'normalize.css'
       // https://github.com/postcss/postcss-import
-      require('postcss-import'),
+      require('postcss-import')({
+        addDependencyTo: bundler
+      }),
       // W3C CSS Custom Media Queries, e.g. @custom-media --small-viewport (max-width: 30em);
       // https://github.com/postcss/postcss-custom-media
       require('postcss-custom-properties'),
