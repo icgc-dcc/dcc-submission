@@ -23,7 +23,7 @@ class DataTable extends Component {
 
   constructor (props, context) {
     super(props, context);
-    this.totalItems = props.data;
+    this.totalItems = props.data || [];
   }
 
   componentWillReceiveProps(nextProps) {
@@ -32,7 +32,7 @@ class DataTable extends Component {
 
   @computed get currentPageItems() {
     const pages = chunk(this.filteredItems, this.props.pageSize);
-    return pages[this.currentPage] || pages.slice(-1)[0];
+    return pages[this.currentPage] || pages.slice(-1)[0] || [];
   }
 
   @computed get pageCount() {
@@ -75,6 +75,8 @@ class DataTable extends Component {
           {...props}
           data={this.currentPageItems}
         />
+
+        {!this.currentPageItems.length && ( <div className="NoResults">No matching records found</div> )}
         
         {this.pageCount > 1 && (
           <div>
