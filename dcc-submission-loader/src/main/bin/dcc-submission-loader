@@ -53,7 +53,7 @@ done
 
 java -Dlogback.configurationFile=$confdir/logback.xml \
 	-cp $JAR \
-	org.icgc.dcc.submission.loader.ClientMain \
+	org.springframework.boot.loader.JarLauncher \
 	--hdfs-url $HDFS_URL \
 	--db-host $DB_HOST \
 	--db-port 5432 \
