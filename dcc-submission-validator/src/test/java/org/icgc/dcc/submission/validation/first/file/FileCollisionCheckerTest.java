@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.first.io.FPVFileSystem;
 import org.junit.Before;
@@ -53,7 +53,7 @@ public class FileCollisionCheckerTest {
    * Collaborators.
    */
   @Mock
-  DccFileSystem dccFileSystem;
+  SubmissionFileSystem submissionFileSystem;
   @Mock
   Dictionary dictionary;
   @Mock
@@ -70,7 +70,7 @@ public class FileCollisionCheckerTest {
     when(dictionary.getFileSchemaByName(anyString())).thenReturn(Optional.of(fileSchema));
     when(dictionary.getFileSchemaByFileName(anyString())).thenReturn(Optional.of(fileSchema));
 
-    when(context.getDccFileSystem()).thenReturn(dccFileSystem);
+    when(context.getSubmissionFileSystem()).thenReturn(submissionFileSystem);
     when(context.getDictionary()).thenReturn(dictionary);
 
     checker = new FileCollisionChecker(new FileNoOpChecker(context, fs));

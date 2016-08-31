@@ -93,7 +93,7 @@ public class Main {
   }
 
   private static DccFileSystem2 getDccFileSystem2(ValidationContext context) {
-    val rootDir = context.getDccFileSystem().getRootStringPath();
+    val rootDir = context.getSubmissionFileSystem().getRootStringPath();
     val hdfs = context.getFileSystem().getScheme().equals("hdfs");
 
     return new DccFileSystem2(context.getFileSystem(), rootDir, hdfs);

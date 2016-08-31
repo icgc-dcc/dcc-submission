@@ -41,6 +41,9 @@ mem.lock.db
 mem.trace.db
 logs/
 
+# Spring (sensitive)
+application-production.yml
+
 # *nix temporary files
 *~
 *.swp

@@ -8,41 +8,40 @@
 # See:
 #   http://wrapper.tanukisoftware.com/doc/english/prop-working-dir.html
 
-http:
-  listen: "0.0.0.0"
+#Server
+server:
   port: 5380
-  ssl: false
-  path: "/ws"
-
-  resources:
-    - "../dcc-submission-ui/public/"
-
+  
+# Mongo
 mongo:
   uri: "mongodb://localhost/icgc-local"
 
-shiro:
-  realm: "src/main/conf/realm.ini"
+# File System
+fs:
+  # Root directory of DCC filesystem
+  root: "/tmp/submission"
 
-# Root directory of DCC filesystem
-fsRoot: "/tmp/submission"
-# FileSystem Scheme. This sets hadoop's fs.defaultFS
-fsUrl: "file:///"
+  # FileSystem Scheme. This sets hadoop's fs.defaultFS
+  url: "file:///"
 
+# SFTP
 sftp:
   port : 5322
   path : "/tmp/sshd.pem"
   nioWorkers : 20
   # key: "<Fill in public key here, without algorithm prefix>"
 
+# Hadoop
 hadoop: 
   # Everything set below this node ends up in the JobConf
   properties:
-    "fs.defaultFS": ${fsUrl}
+    "fs.defaultFS": ${fs.url}
 
     # Configure the job tracker
     "mapred.job.tracker": localhost
     "mapred.job.shuffle.input.buffer.percent": 0.5
 
+# Validation
 validator:
   maxSimultaneous: 2
 
@@ -53,15 +52,17 @@ normalizer:
     masks.enabled: true
     duplicates.enabled: true
 
-pcawg:
-  dictionaryUrl: "file:../dcc-submission-validator/src/main/resources/pcawg-dictionary.json"
-  sampleSheetUrl: "file:../dcc-submission-validator/src/main/resources/pcawg-sample-sheet.json"
+# If this isn't set, will pick up from the classpath by default
+# pcawg:
+  # dictionaryUrl: "file:../dcc-submission-validator/src/main/resources/pcawg-dictionary.json"
+  # sampleSheetUrl: "file:../dcc-submission-validator/src/main/resources/pcawg-sample-sheet.json"
 
 reference:
   # The reference genome assembly. Assumes the existence of a .fasta.fai file in the same directory. 
   # The filename is what will be reported to users as the assembly version.
   fasta: "/tmp/GRCh37.fasta"
 
+# Mail
 mail:
   enabled: true
   smtpHost: localhost
@@ -78,3 +79,16 @@ mail:
   invalidBody: "Dear ICGC member\n\nWe have processed your submission for the project %s and the state is: %s.\n\nThis mean that there are errors in your data and you should now examine the error reports on our submission site, fix the errors in your local submission files, re-upload these files, and try your validation again. You can find the detailed error reports at: https://submissions.dcc.icgc.org/releases/%s/submissions/%s. \n\nThe DCC team\n\nNote: this email is not monitored, for help with your submission please email support@example.org"
   validBody: "Dear ICGC member\n\nWe have processed your submission for the project %s and the state is: %s.\n\nSince your submission is valid it is compliant with the current ICGC data format specification. At this point you can see the summary reports at https://submissions.dcc.icgc.org/releases/%s/submissions/%s and, when ready, you can click 'signoff' on the submission portal to indicate your submission is ready for inclusion in the ICGC DCC release. If you need to make modifications to your current submission please re-upload your data and trigger the validation process again. \n\nThe DCC team\n\nNote: this email is not monitored, for help with your submission please email support@example.org"
   signoffBody: "Dear DCC administrator,\n\nUser %s has just signed off the submission for the project %s. This submission is ready for inclusion in the %s Data Portal release.\n\nThis message is sent out by the data validator application."
+  
+# A/A
+auth:
+  users:
+    # Admin
+    - {username: 'admin', password: 'adminspasswd', authorities: ['*'], roles: ['ADMIN']}
+    
+    # Submitters
+    - {username: 'richard', password: 'richardspasswd', authorities: ['release:view', 'submission:signoff']}
+    - {username: 'ricardo', password: 'ricardospasswd', authorities: ['release:view', 'submission:signoff']}
+
+# Banner
+spring.main.banner-mode: log

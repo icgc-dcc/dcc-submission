@@ -27,7 +27,7 @@ import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
@@ -91,7 +91,7 @@ public interface ValidationContext extends ReportContext {
   /**
    * Gets the root DCC file system.
    */
-  DccFileSystem getDccFileSystem();
+  SubmissionFileSystem getSubmissionFileSystem();
 
   /**
    * Gets the platform abstracted file system.

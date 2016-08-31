@@ -39,6 +39,11 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-common-hadoop</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>dcc-submission-core</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -56,34 +61,14 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <!-- Spring -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter</artifactId>
+      <artifactId>spring-boot-starter-web</artifactId>
       <version>${spring-boot.version}</version>
     </dependency>
-
-    <!-- REST -->
     <dependency>
-      <groupId>org.glassfish.jersey.containers</groupId>
-      <artifactId>jersey-container-grizzly2-http</artifactId>
-      <version>${jersey.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>guava-osgi</artifactId>
-          <groupId>com.googlecode.guava-osgi</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.jaxrs</groupId>
-      <artifactId>jackson-jaxrs-json-provider</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-
-    <!-- Security -->
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-core</artifactId>
-      <version>${shiro.version}</version>
-    </dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+      <version>${spring-boot.version}</version>
+    </dependency>    
 
     <!-- Validation -->
     <dependency>
@@ -98,12 +83,18 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <artifactId>sshd-core</artifactId>
       <version>${mina.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk15on</artifactId>
+      <version>1.52</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk15on</artifactId>
+      <version>1.52</version>
+    </dependency>
 
     <!-- Mongo -->
-    <dependency>
-      <groupId>org.mongodb</groupId>
-      <artifactId>mongo-hadoop-core</artifactId>
-    </dependency>
     <dependency>
       <groupId>org.mongodb.morphia</groupId>
       <artifactId>morphia</artifactId>
@@ -129,35 +120,10 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <artifactId>mysema-commons-lang</artifactId>
     </dependency>
 
-    <!-- Hadoop -->
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-hdfs</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-
-    <!-- Cryptography -->
-    <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk15on</artifactId>
-      <version>1.52</version>
-    </dependency>
-    <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcpkix-jdk15on</artifactId>
-      <version>1.52</version>
-    </dependency>
-
     <!-- Mail -->
     <dependency>
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
-    </dependency>
-
-    <!-- YAML -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.dataformat</groupId>
-      <artifactId>jackson-dataformat-yaml</artifactId>
     </dependency>
 
     <!-- Utilities -->
@@ -169,32 +135,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
-    </dependency>
-
-    <!-- Testing - REST -->
-    <dependency>
-      <groupId>org.glassfish.jersey.test-framework</groupId>
-      <artifactId>jersey-test-framework-core</artifactId>
-      <version>${jersey.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.test-framework.providers</groupId>
-      <artifactId>jersey-test-framework-provider-inmemory</artifactId>
-      <version>${jersey.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-client</artifactId>
-      <version>${jersey.version}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>guava-osgi</artifactId>
-          <groupId>com.googlecode.guava-osgi</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <!-- Testing - DCC -->
@@ -211,6 +151,12 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <version>${spring-boot.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
+      <version>${spring-security.version}</version>
+      <scope>test</scope>
+    </dependency>    
 
     <!-- Testing - SFTP -->
     <dependency>
@@ -236,6 +182,16 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-minicluster</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-json</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- Testing - Mail -->
@@ -255,42 +211,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
   <build>
     <plugins>
-      <!-- Test -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>default-test</id>
-            <phase>test</phase>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <configuration>
-              <!-- Run in separate JVM -->
-              <reuseForks>false</reuseForks>
-              <includes>
-                <include>**/SubmissionIntegrationTest.java</include>
-              </includes>
-            </configuration>
-          </execution>
-          <execution>
-            <id>unit-test</id>
-            <phase>test</phase>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <configuration>
-              <!-- Run in a shared JVM -->
-              <reuseForks>true</reuseForks>
-              <excludes>
-                <exclude>**/SubmissionIntegrationTest.java</exclude>
-              </excludes>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
       <!-- Package -->
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
@@ -308,12 +228,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
               <goal>shade</goal>
             </goals>
             <configuration>
-              <artifactSet>
-                <excludes>
-                  <exclude>${project.groupId}:dcc-submission-ui</exclude>
-                  <exclude>com.sun.jersey:*</exclude>
-                </excludes>
-              </artifactSet>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/spring.handlers</resource>
@@ -325,6 +239,18 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
                   <resource>META-INF/spring.schemas</resource>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <manifestEntries>
+                    <Main-Class>${main.class}</Main-Class>
+                    <Compile-Timestamp>${maven.build.timestamp}</Compile-Timestamp>
+                    <Compile-User>${user.name}</Compile-User>
+                    <Implementation-Title>${project.name}</Implementation-Title>
+                    <Implementation-Version>${project.version}</Implementation-Version>
+                    <Implementation-Vendor-Id>${project.groupId}</Implementation-Vendor-Id>
+                    <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
+                    <Specification-Version>${maven.build.timestamp}</Specification-Version>
+                  </manifestEntries>
+                </transformer>
               </transformers>
             </configuration>
           </execution>
@@ -374,7 +300,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
           </systemProperties>
           <arguments>
             <argument>--spring.config.location</argument>
-            <argument>src/test/application/application.yml</argument>
+            <argument>src/test/resources/application.yml</argument>
           </arguments>
         </configuration>
       </plugin>
@@ -383,12 +309,9 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
   <properties>
     <!-- Entry point -->
-    <main.class>org.icgc.dcc.submission.ServerMain</main.class>
+    <main.class>org.icgc.dcc.submission.server.ServerMain</main.class>
 
-    <!-- Versions -->
-    <jersey.version>2.0-m10</jersey.version>
     <hibernate-validator.version>4.3.1.Final</hibernate-validator.version>
     <mina.version>0.14.0</mina.version>
-    <shiro.version>1.2.0</shiro.version>
   </properties>
 </project>

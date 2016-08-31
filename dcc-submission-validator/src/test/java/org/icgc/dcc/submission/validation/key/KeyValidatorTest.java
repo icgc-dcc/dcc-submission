@@ -26,7 +26,7 @@ import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.lsRecursive;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.readSmallTextFile;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readResourcesDictionary;
-import static org.icgc.dcc.submission.fs.DccFileSystem.VALIDATION_DIRNAME;
+import static org.icgc.dcc.submission.fs.SubmissionFileSystem.VALIDATION_DIRNAME;
 import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.FS_DIR;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.REFERENCE_FILE_NAME;

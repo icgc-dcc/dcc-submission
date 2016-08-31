@@ -4,12 +4,10 @@ Web, REST and SFTP server for the data submission sub-system.
 
 ## Libraries
 
-The submission server is comprised of the following components:
+The submission server is comprised of the following frameworks:
 
-- [Jersey 2](https://jersey.java.net)
-- [Jetty](https://eclipse.org/jetty/)
-- [Apache Shiro](http://shiro.apache.org/)
-- [Guice](https://github.com/google/guice)
+- [Spring Boot](http://projects.spring.io/spring-boot/)
+- [Spring Security](http://projects.spring.io/spring-security/)
 
 The SFTP interface is implemented using [Apache MINA SSHD](https://mina.apache.org/sshd-project/index.html) using a custom [HDFS](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HdfsUserGuide.html) based virtual file system.
 
