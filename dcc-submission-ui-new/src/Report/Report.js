@@ -3,9 +3,10 @@ import React, { Component } from 'react';
 import {observable, action, runInAction } from 'mobx';
 import {observer} from 'mobx-react';
 import { fetchHeaders } from '~/utils';
+import Status from '~/common/components/Status';
 
-// import ErrorTable from './ReportErrorTable';
-// import errorMap from './errorMap.coffee';
+import DetailedReport from './DetailedReport/DetailedReport';
+import ErrorReport from './ErrorReport/ErrorReport';
 
 const report = observable({
   isLoading: false,
@@ -17,74 +18,9 @@ const report = observable({
   fileType: undefined,
 });
 
-/*
-format of errorReports:
-
-   "errorReports":[  
-      {  
-         "errorType":"FILE_HEADER_ERROR",
-         "number":0,
-         "description":"File header error: %s",
-         "fieldErrorReports":[  
-            {  
-               "fieldNames":null,
-               "parameters":{  
-                  "VALUE":[  
-                     "analyzed_sample_id",
-                     "specimen_id",
-                     "analyzed_sample_type",
-                     "analyzed_sample_type_other",
-                     "analyzed_sample_interval",
-                     "percentage_cellularity",
-                     "level_of_cellularity",
-                     "analyzed_sample_notes"
-                  ],
-                  "EXPECTED":[  
-                     "analyzed_sample_id",
-                     "specimen_id",
-                     "analyzed_sample_interval",
-                     "percentage_cellularity",
-                     "level_of_cellularity",
-                     "analyzed_sample_notes",
-                     "study"
-                  ]
-               },
-               "count":1,
-               "lineNumbers":[  
-                  -1
-               ],
-               "values":[  
-                  null
-               ]
-            }
-         ],
-         "converted":false
-      }
-   ]
-
- */
-
-/*
-Format of fieldReports
-{  
-    "name":"specimen_interval",
-    "type":"AVERAGE",
-    "nulls":0,
-    "missing":0,
-    "populated":2,
-    "completeness":100.0,
-    "summary":{  
-      "min":20.0,
-      "max":20.0,
-      "avg":20.0,
-      "stddev":0.0
-    }
-}
- */
-
 report.fetch = action('fetch single report', async function (releaseName, projectKey, reportName) {
   this.isLoading = true;
-  const response = await fetch(`/ws/releases/${releaseName}/submissions/${projectKey}/report/${reportName}`, {
+  const response = await fetch(`/ws/releases/${releaseName}/submissions/${projectKey}/report/${reportName}/`, {
       headers: fetchHeaders.get()
     });
 
@@ -96,6 +32,8 @@ report.fetch = action('fetch single report', async function (releaseName, projec
     Object.assign(this, responseData);
   });
 });
+
+window.report = report;
 
 export default @observer
 class Report extends Component {
@@ -112,43 +50,31 @@ class Report extends Component {
     const hasErrors = report.errorReports.length
     const pageTitle = hasErrors ? 'Error Report' : 'Detailed Report';
 
-    return <div>
-      <h1>File Summary</h1>
-      <ul>
-        <li>File name: {report.fileName}</li>
-        <li>State: {report.fileState}</li>
-      </ul>
+    const ReportDetails = hasErrors ? ErrorReport : DetailedReport;
+    const reportItems = hasErrors ? report.errorReports : report.fieldReports;
 
-      { /* report.summaryReports.length && */ (
-        <table width="100%" id="schema-summary-container" className="table table-striped table-bordered alert-info">
-          TODO: figure out what goes inside schema-summary-container
-        </table>
-      )}
-
+    return (
       <div>
-        <h2>{ pageTitle }</h2>
-        <table>
-          <thead>
-            <tr>
-              <th></th>
-              <th></th>
-              <th></th>
-              <th></th>
-              <th></th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            { /* display error table if  */}
-            <tr>
-              
-            </tr>
-          </tbody>
-        </table>
+        <h1>File Summary</h1>
+        <ul>
+          <li>{report.fileName}</li>
+          <li>
+            <Status
+              statusCode={report.fileState || ''}
+            />
+          </li>
+        </ul>
+        <div>
+          <h2>{ pageTitle }</h2>
+          <ReportDetails
+            items={reportItems.slice()}
+            isLoading={report.isLoading}
+          />
+        </div>
+        <pre>
+        {JSON.stringify(report, null, '  ')}
+        </pre>
       </div>
-      <pre>
-      {JSON.stringify(report, null, '  ')}
-      </pre>
-    </div>
+    );
   }
 }
