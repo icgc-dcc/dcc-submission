@@ -24,6 +24,7 @@ import javax.inject.Provider;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.common.hadoop.util.HadoopProperties;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -43,6 +44,7 @@ public class FileSystemProvider implements Provider<FileSystem> {
 
   @Override
   public FileSystem get() {
+    HadoopProperties.setHadoopUserNameProperty();
     val fs = getFileSystem(addFsDefault(configuration, properties.getFs().getUrl()));
     log.info("Hadoop configuration: '{}'", fs);
 
