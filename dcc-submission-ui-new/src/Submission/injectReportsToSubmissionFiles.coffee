@@ -1,3 +1,5 @@
+# from submission.coffee L57-65
+
 module.exports = (submissionFiles, report) ->
   return if not report
   for file in submissionFiles

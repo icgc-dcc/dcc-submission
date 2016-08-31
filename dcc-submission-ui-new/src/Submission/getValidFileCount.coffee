@@ -1,3 +1,5 @@
+# from submission.coffee L49-54
+
 module.exports = (report) =>
   validFileCount = 0
   report.dataTypeReports.forEach (dataType)->

@@ -1,3 +1,5 @@
+# from schema_report_error_table_view.coffee L42-313
+
 hljs = require('highlight.js');
 js_beautify = require('js-beautify').js_beautify;
 
