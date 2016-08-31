@@ -10,8 +10,15 @@ import Status from '~/common/components/Status';
 
 import dataTypeDict from '~/common/dataTypeDict';
 
-export default function GroupedReportList(props) {
-  const { isLoading, items, releaseName, projectKey, dataType, dataTypeReport, submissionState } = props;
+export default function GroupedReportList({
+    isLoading,
+    items,
+    releaseName,
+    projectKey,
+    dataType,
+    dataTypeReport,
+    submissionState,
+  }) {
   const tableOptions = {
       ...defaultTableOptions,
       noDataText: isLoading ? 'Loading...' : 'There is no data to display',
