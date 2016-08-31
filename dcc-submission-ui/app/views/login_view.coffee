@@ -58,12 +58,14 @@ module.exports = class LoginView extends PageView
 
     @getUserData loginDetails
 
-  errors: (errorThrown) ->
-    switch errorThrown
-      when 'Unauthorized'
+  errors: (status) ->
+    switch status
+      when 400
+        "Invalid format for input."
+      when 401
         "The email address or password you provided does not match our records."
-      when "Internal Server Error"
-        "Server down. Please try agin later."
+      when 500
+        "Server down. Please try again later."
 
   getUserData: (loginDetails) ->
     #console.debug 'DCCServiceProvider#ajax', type, url, data
@@ -89,15 +91,16 @@ module.exports = class LoginView extends PageView
         commitId = xhr.getResponseHeader "x-icgc-submission-commitid"
         Chaplin.mediator.publish 'releaseInfo', releaseName, commitId
 
-      error: (jqXHR, textStatus, errorThrown) =>
+      error: (jqXHR) =>
         alert = @.$('#login-error')
+        error = errors(jqXHR.status)
 
         if alert.length
-          alert.text(errors(errorThrown))
+          alert.text(error)
         else
           @.$('form')
             .before("<div id='login-error' class='alert alert-error'>
-              #{errors(errorThrown)}</div>")
+              #{error}</div>")
     }
 
   afterRender: ->
