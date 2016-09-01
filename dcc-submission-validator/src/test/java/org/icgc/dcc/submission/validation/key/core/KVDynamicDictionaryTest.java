@@ -17,18 +17,30 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.OPTIONAL_RELATION;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.SURJECTION;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.UNIQUENESS;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.BIOMARKER;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.CNSM_M;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.DONOR;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_ARRAY_M;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_ARRAY_P;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_ARRAY_PROBES;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.SAMPLE;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.SPECIMEN;
 import static org.icgc.dcc.submission.validation.key.core.KVFileType.SSM_M;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.SURGERY;
+import static org.icgc.dcc.submission.validation.key.core.KVKeyType.CONDITIONAL_FK;
+import static org.icgc.dcc.submission.validation.key.core.KVKeyType.FK;
+import static org.icgc.dcc.submission.validation.key.core.KVKeyType.OPTIONAL_FK;
+import static org.icgc.dcc.submission.validation.key.core.KVKeyType.PK;
+
+import java.util.List;
+import java.util.Map;
+
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +53,8 @@ import org.junit.Test;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multimap;
 
 @Slf4j
 public class KVDynamicDictionaryTest extends AbstractDictionaryTest {
@@ -59,48 +73,42 @@ public class KVDynamicDictionaryTest extends AbstractDictionaryTest {
 
   @Test
   public void testGetKeysIndices() throws Exception {
-    val ssmKeys = kvDictionary.getKeysIndices(KVFileType.SSM_M);
+    val indices = kvDictionary.getKeysIndices(SSM_M);
+    log.info("{}", indices);
+    val keys = indices.getKeys();
+    assertThat(keys).hasSize(4);
+    assertKey(keys, PK, ImmutableMap.of(SSM_M, ImmutableList.of(0, 1)));
+    assertKey(keys, FK, ImmutableMap.of(SAMPLE, ImmutableList.of(1)));
+    assertKey(keys, OPTIONAL_FK, ImmutableMap.of(SAMPLE, ImmutableList.of(2)));
+    assertKey(keys, CONDITIONAL_FK, ImmutableMap.of(SAMPLE, ImmutableList.of(2)));
 
-    assertThat(ssmKeys.getPk()).containsExactly(0, 1);
-
-    val fks = ssmKeys.getFks();
-    assertThat(fks.size()).isEqualTo(1);
-    assertThat(fks.get(KVFileType.SAMPLE)).containsExactly(1);
-
-    val optionalFks = ssmKeys.getOptionalFks();
-    assertThat(optionalFks.size()).isEqualTo(1);
-    assertThat(optionalFks.get(KVFileType.SAMPLE)).containsExactly(2);
+    val conditions = indices.getConditionEvaluators();
+    assertThat(conditions).hasSize(1);
+    assertThat(conditions.get(SAMPLE)).isNotNull();
   }
 
   @Test
   public void testGetKeysIndices_surgery() {
-    val surgeryKeys = kvDictionary.getKeysIndices(KVFileType.SURGERY);
-    log.info("{}", surgeryKeys);
-
-    assertThat(surgeryKeys.getPk()).containsExactly(0, 5);
-
-    val surgeryFks = surgeryKeys.getFks();
-    assertThat(surgeryFks.size()).isEqualTo(1);
-    assertThat(surgeryFks.get(KVFileType.DONOR)).containsExactly(0);
-
-    val surgeryOptionalFks = surgeryKeys.getOptionalFks();
-    assertThat(surgeryOptionalFks.size()).isEqualTo(1);
-    assertThat(surgeryOptionalFks.get(KVFileType.SPECIMEN)).containsExactly(5);
+    val indices = kvDictionary.getKeysIndices(SURGERY);
+    log.info("{}", indices);
+    val keys = indices.getKeys();
+    assertThat(keys).hasSize(4);
+    assertKey(keys, PK, ImmutableMap.of(SURGERY, ImmutableList.of(0, 5)));
+    assertKey(keys, FK, ImmutableMap.of(DONOR, ImmutableList.of(0)));
+    assertKey(keys, OPTIONAL_FK, ImmutableMap.of(SPECIMEN, ImmutableList.of(5)));
+    assertKey(keys, CONDITIONAL_FK, emptyMap());
   }
 
   @Test
   public void testGetKeysIndices_biomarker() {
-    val keys = kvDictionary.getKeysIndices(KVFileType.BIOMARKER);
-    log.info("{}", keys);
-
-    assertThat(keys.getPk()).containsExactly(2, 0, 1);
-
-    val surgeryFks = keys.getFks();
-    assertThat(surgeryFks.size()).isEqualTo(2);
-    assertThat(surgeryFks.get(KVFileType.DONOR)).containsExactly(0);
-    assertThat(surgeryFks.get(KVFileType.SPECIMEN)).containsExactly(1);
-
-    assertThat(keys.getOptionalFks()).isNull();
+    val indices = kvDictionary.getKeysIndices(BIOMARKER);
+    log.info("{}", indices);
+    val keys = indices.getKeys();
+    assertThat(keys).hasSize(4);
+    assertKey(keys, PK, ImmutableMap.of(BIOMARKER, ImmutableList.of(2, 0, 1)));
+    assertKey(keys, FK, ImmutableMap.of(DONOR, ImmutableList.of(0), SPECIMEN, ImmutableList.of(1)));
+    assertKey(keys, OPTIONAL_FK, emptyMap());
+    assertKey(keys, CONDITIONAL_FK, emptyMap());
   }
 
   @Test
@@ -134,6 +142,17 @@ public class KVDynamicDictionaryTest extends AbstractDictionaryTest {
         .containsExactly("analysis_id", "analyzed_sample_id");
     assertThat(kvDictionary.getErrorFieldNames(SAMPLE, SURJECTION, Optional.of(SPECIMEN)))
         .containsExactly("specimen_id");
+  }
+
+  private static void assertKey(Map<KVKeyType, Multimap<KVFileType, Integer>> keys, KVKeyType keyType,
+      Map<KVFileType, List<Integer>> expectedValues) {
+    val actualKeys = keys.get(keyType);
+    assertThat(actualKeys.keySet()).hasSize(expectedValues.size());
+    expectedValues.entrySet().forEach(entry -> {
+      KVFileType fileType = entry.getKey();
+      List<Integer> expectedValue = entry.getValue();
+      assertThat(actualKeys.get(fileType)).isEqualTo(expectedValue);
+    });
   }
 
 }

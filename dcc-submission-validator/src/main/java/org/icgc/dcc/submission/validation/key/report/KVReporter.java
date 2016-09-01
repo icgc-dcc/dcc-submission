@@ -22,6 +22,7 @@ import static com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.String.format;
 import static org.icgc.dcc.submission.core.report.Error.error;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.CONDITIONAL_RELATION;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.OPTIONAL_RELATION;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.SURJECTION;
@@ -100,6 +101,11 @@ public class KVReporter implements Closeable {
     reportError(fileType, fileName, lineNumber, OPTIONAL_RELATION, optionalFk, referencedFileType);
   }
 
+  public void reportConditionalRelationError(KVFileType fileType, String fileName, long lineNumber,
+      KVKey conditionalFk, Optional<KVFileType> referencedFileType) {
+    reportError(fileType, fileName, lineNumber, CONDITIONAL_RELATION, conditionalFk, referencedFileType);
+  }
+
   public void reportSurjectionError(KVFileType fileType, String fileName, KVKey keys, KVFileType referencedFileType) {
     reportError(fileType, fileName, SURJECTION_ERROR_LINE_NUMBER, SURJECTION, keys, Optional.of(referencedFileType));
   }
@@ -136,7 +142,7 @@ public class KVReporter implements Closeable {
     val referencedFileType = optionalReferencedFileType.get();
 
     // RELATIONS:
-    if (errorType == RELATION || errorType == OPTIONAL_RELATION) {
+    if (errorType == RELATION || errorType == OPTIONAL_RELATION || errorType == CONDITIONAL_RELATION) {
       val referencedFields = dictionary.getPrimaryKeyNames(referencedFileType);
 
       return new Object[] { referencedFileType, referencedFields };

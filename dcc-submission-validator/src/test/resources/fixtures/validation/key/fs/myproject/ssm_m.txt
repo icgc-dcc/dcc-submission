@@ -1,3 +1,3 @@
-analysis_id	analyzed_sample_id	matched_sample_id	other_ssm_m
-an-ssm-02	sa-ssm-02.01.T01	sa-ssm-02.01.C01	dummy2
-an-ssm-03	sa-ssm-03.01.T01	sa-ssm-03.01.C01	dummy2
+analysis_id analyzed_sample_id  matched_sample_id assembly_version  platform  experimental_protocol base_calling_algorithm  alignment_algorithm variation_calling_algorithm other_analysis_algorithm  sequencing_strategy seq_coverage  raw_data_repository raw_data_accession
+an-ssm-02	sa-ssm-02.01.T01	sa-ssm-02.01.C01	dummy2	dummy3	dummy4	dummy5	dummy6	dummy7	dummy8	dummy9	dummy10	dummy11	dummy12
+an-ssm-03	sa-ssm-03.01.T01	sa-ssm-03.01.C01	dummy2	dummy3	dummy4	dummy5	dummy6	dummy7	dummy8	dummy9	dummy10	AWS	dummy12

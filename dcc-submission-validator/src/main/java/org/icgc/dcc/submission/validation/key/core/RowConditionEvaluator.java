@@ -17,36 +17,46 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
-import static org.icgc.dcc.submission.core.report.ErrorType.RELATION_PARENT_VALUE_ERROR;
-import static org.icgc.dcc.submission.core.report.ErrorType.RELATION_VALUE_ERROR;
-import static org.icgc.dcc.submission.core.report.ErrorType.UNIQUE_VALUE_ERROR;
-import static org.icgc.dcc.submission.validation.key.core.KVKeyType.CONDITIONAL_FK;
-import static org.icgc.dcc.submission.validation.key.core.KVKeyType.FK;
-import static org.icgc.dcc.submission.validation.key.core.KVKeyType.OPTIONAL_FK;
-import static org.icgc.dcc.submission.validation.key.core.KVKeyType.PK;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import static com.google.common.base.Preconditions.checkState;
 
-import org.icgc.dcc.submission.core.report.ErrorType;
+import java.util.List;
+import java.util.Map;
 
-/**
- * Type of key validator errors.
- */
-@RequiredArgsConstructor
-public enum KVErrorType {
-  UNIQUENESS(PK, UNIQUE_VALUE_ERROR),
-  RELATION(FK, RELATION_VALUE_ERROR),
-  OPTIONAL_RELATION(OPTIONAL_FK, RELATION_VALUE_ERROR), // TODO: we should distinguish with primary (for ErrorType)
-  CONDITIONAL_RELATION(CONDITIONAL_FK, RELATION_VALUE_ERROR),
-  SURJECTION(PK, RELATION_PARENT_VALUE_ERROR);
+import lombok.NonNull;
+import lombok.val;
 
-  /**
-   * The fields on which the error is reported.
-   */
-  @Getter
-  private final KVKeyType keysType;
+import org.mvel2.MVEL;
+import org.mvel2.compiler.ExecutableStatement;
 
-  @Getter
-  private final ErrorType errorType;
+import com.google.common.collect.ImmutableMap;
+
+public class RowConditionEvaluator {
+
+  private final ExecutableStatement statement;
+  private final List<String> fieldNames;
+
+  public RowConditionEvaluator(@NonNull String script, @NonNull List<String> fieldNames) {
+    this.statement = (ExecutableStatement) MVEL.compileExpression(script);
+    this.fieldNames = fieldNames;
+
+  }
+
+  public boolean evaluate(@NonNull List<String> row) {
+    val result = MVEL.executeExpression(statement, prepareInput(row));
+    checkState(result instanceof Boolean, "Failed to execute script. Result: %s", result);
+
+    return (Boolean) result;
+  }
+
+  private Map<String, Object> prepareInput(List<String> row) {
+    checkState(fieldNames.size() == row.size(), "Failed verify script for row. \nExpected fields:%s. \nRow: %s",
+        fieldNames, row);
+    val input = ImmutableMap.<String, Object> builder();
+    for (int i = 0; i < fieldNames.size(); i++) {
+      input.put(fieldNames.get(i), row.get(i));
+    }
+
+    return input.build();
+  }
 
 }

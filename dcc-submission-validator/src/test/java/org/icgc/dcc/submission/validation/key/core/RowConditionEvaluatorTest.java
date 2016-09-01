@@ -17,36 +17,33 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
-import static org.icgc.dcc.submission.core.report.ErrorType.RELATION_PARENT_VALUE_ERROR;
-import static org.icgc.dcc.submission.core.report.ErrorType.RELATION_VALUE_ERROR;
-import static org.icgc.dcc.submission.core.report.ErrorType.UNIQUE_VALUE_ERROR;
-import static org.icgc.dcc.submission.validation.key.core.KVKeyType.CONDITIONAL_FK;
-import static org.icgc.dcc.submission.validation.key.core.KVKeyType.FK;
-import static org.icgc.dcc.submission.validation.key.core.KVKeyType.OPTIONAL_FK;
-import static org.icgc.dcc.submission.validation.key.core.KVKeyType.PK;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import static com.google.common.collect.ImmutableList.of;
+import static org.assertj.core.api.Assertions.assertThat;
+import lombok.val;
 
-import org.icgc.dcc.submission.core.report.ErrorType;
+import org.junit.Before;
+import org.junit.Test;
 
-/**
- * Type of key validator errors.
- */
-@RequiredArgsConstructor
-public enum KVErrorType {
-  UNIQUENESS(PK, UNIQUE_VALUE_ERROR),
-  RELATION(FK, RELATION_VALUE_ERROR),
-  OPTIONAL_RELATION(OPTIONAL_FK, RELATION_VALUE_ERROR), // TODO: we should distinguish with primary (for ErrorType)
-  CONDITIONAL_RELATION(CONDITIONAL_FK, RELATION_VALUE_ERROR),
-  SURJECTION(PK, RELATION_PARENT_VALUE_ERROR);
+public class RowConditionEvaluatorTest {
 
-  /**
-   * The fields on which the error is reported.
-   */
-  @Getter
-  private final KVKeyType keysType;
+  RowConditionEvaluator evaluator;
 
-  @Getter
-  private final ErrorType errorType;
+  @Before
+  public void setUp() {
+    val script = "['AWS','Collab'] contains external_repo";
+    evaluator = new RowConditionEvaluator(script, of("donor_id", "external_repo", "note"));
+  }
+
+  @Test
+  public void testEvaluate() throws Exception {
+    assertThat(evaluator.evaluate(of("", "AWS", ""))).isTrue();
+    assertThat(evaluator.evaluate(of("", "Collab", ""))).isTrue();
+    assertThat(evaluator.evaluate(of("", "boo", ""))).isFalse();
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testEvaluate_inValidRow() throws Exception {
+    evaluator.evaluate(of("AWS"));
+  }
 
 }

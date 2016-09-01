@@ -11,4 +11,5 @@
 "fileName":"cnsm_m.txt","fieldNames":["analysis_id","analyzed_sample_id"],"number":0,"lineNumber":4,"value":["an-cnsm-03","sa-cnsm-03.01.T01"],"type":"UNIQUE_VALUE_ERROR","params":null
 "fileName":"cnsm_m.txt","fieldNames":["matched_sample_id"],"number":0,"lineNumber":4,"value":["sa-cnsm-03.01.C01"],"type":"RELATION_VALUE_ERROR","params":["SAMPLE",["analyzed_sample_id"]]
 "fileName":"ssm_m.txt","fieldNames":["matched_sample_id"],"number":0,"lineNumber":2,"value":["sa-ssm-02.01.C01"],"type":"RELATION_VALUE_ERROR","params":["SAMPLE",["analyzed_sample_id"]]
+"fileName":"ssm_m.txt","fieldNames":["matched_sample_id"],"number":0,"lineNumber":3,"value":["sa-ssm-03.01.C01"],"type":"RELATION_VALUE_ERROR","params":["SAMPLE",["analyzed_sample_id"]]
 "fileName":"ssm_m.txt","fieldNames":["matched_sample_id"],"number":0,"lineNumber":3,"value":["sa-ssm-03.01.C01"],"type":"RELATION_VALUE_ERROR","params":["SAMPLE",["analyzed_sample_id"]]}

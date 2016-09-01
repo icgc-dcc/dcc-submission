@@ -32,6 +32,11 @@ public enum KVKeyType {
   /**
    * An "optional FK" is one that may actually be null, unlike a regular FK.
    */
-  OPTIONAL_FK;
+  OPTIONAL_FK,
+
+  /**
+   * A script condition should be evaluated before checking for FK integrity.
+   */
+  CONDITIONAL_FK;
 
 }

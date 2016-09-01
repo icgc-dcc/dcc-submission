@@ -17,64 +17,73 @@
  */
 package org.icgc.dcc.submission.validation.key.data;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
+import static org.icgc.dcc.submission.validation.key.core.KVKeyType.CONDITIONAL_FK;
+import static org.icgc.dcc.submission.validation.key.core.KVKeyType.FK;
+import static org.icgc.dcc.submission.validation.key.core.KVKeyType.OPTIONAL_FK;
+import static org.icgc.dcc.submission.validation.key.core.KVKeyType.PK;
 
 import java.util.Map;
 
-import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+import lombok.val;
 
 import org.icgc.dcc.submission.validation.key.core.KVFileType;
 import org.icgc.dcc.submission.validation.key.core.KVKeyType;
+
+import com.google.common.collect.Table;
 
 /**
  * Data relevant to the key validation for a given row.
  */
 @Value
-@Builder
 public class KVRow {
 
-  /**
-   * Applicable for most file except for the leafs (see dictionary DAG).
-   */
-  private final KVKey pk;
+  @NonNull
+  private final Table<KVKeyType, KVFileType, KVKey> keys;
 
-  private final Map<KVFileType, KVKey> fks;
-  private final Map<KVFileType, KVKey> optionalFks;
+  public KVKey getPk() {
+    val pks = keys.row(PK);
+    checkState(pks.size() == 1, "Expected pks size to be equal to 1. Pks: %s", pks);
 
-  /**
-   * Only applicable for some meta files. See {@link KVKeyType#OPTIONAL_FK}.
-   */
-  private final KVKey optionalFk;
+    return pks.entrySet().iterator().next().getValue();
+  }
 
   public boolean hasPk() {
-    return pk != null;
+    return hasKey(PK);
+  }
+
+  public Map<KVFileType, KVKey> getFks() {
+    return keys.row(FK);
+  }
+
+  public Map<KVFileType, KVKey> getOptionalFks() {
+    return keys.row(OPTIONAL_FK);
   }
 
   public boolean hasFk(KVFileType fileType) {
-    return fks.containsKey(fileType);
+    return keys.get(FK, fileType) != null;
   }
 
   public boolean hasOptionalFks() {
-    return optionalFks != null && !optionalFks.isEmpty();
+    return hasKey(OPTIONAL_FK);
+  }
+
+  public boolean hasConditionalFks() {
+    return hasKey(CONDITIONAL_FK);
   }
 
   public KVKey getFk(KVFileType fileType) {
-    return fks.get(fileType);
+    return keys.get(FK, fileType);
   }
 
-  /**
-   * Only applicable for existing non-composite keys.
-   */
-  public boolean hasCheckeableOptionalFk() {
-    if (ROW_CHECKS_ENABLED) {
-      checkState(!checkNotNull(optionalFk,
-          "Expecting an optional FK to exist")
-          .isSingleEmptyValue(), "Expecting optional FK to be a single value, instead: '{}'", optionalFk);
-    }
-    return !optionalFk.isSingleMissingCode();
+  public Map<KVFileType, KVKey> getConditionalKeys() {
+    return keys.row(CONDITIONAL_FK);
+  }
+
+  private boolean hasKey(KVKeyType keyType) {
+    return !keys.row(keyType).isEmpty();
   }
 
 }

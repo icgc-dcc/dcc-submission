@@ -21,8 +21,10 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PUBLIC;
 import static org.icgc.dcc.common.core.util.Formats.formatCount;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.CONDITIONAL_RELATION;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.OPTIONAL_RELATION;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION;
+import static org.icgc.dcc.submission.validation.key.core.KVFileType.METH_ARRAY_P;
 import static org.icgc.dcc.submission.validation.key.core.KVSubmissionProcessor.ROW_CHECKS_ENABLED;
 
 import java.util.List;
@@ -98,13 +100,11 @@ public final class KVFileProcessor {
 
   /**
    * Processes a row (performs all validation except surjection).
-   * <p>
-   * TODO: very ugly, split per file type (subclass or compose), also for systems and referencing/non-referencing
    */
   private void processRow(KVRowContext context, KVDictionary dictionary) {
     val fileType = context.getFileType();
     // No uniqueness check for METH_ARRAY_P (at Vincent's request)
-    if (hasPrimaryKeys(dictionary, fileType) && fileType != KVFileType.METH_ARRAY_P) { // TODO: Encode in the dictionary
+    if (hasPrimaryKeys(dictionary, fileType) && fileType != METH_ARRAY_P) { // TODO: Encode in the dictionary
       valid.validateUniqueness(context);
     }
 
@@ -119,6 +119,10 @@ public final class KVFileProcessor {
 
     if (!dictionary.getSurjectiveReferencedTypes(fileType).isEmpty()) {
       addEncounteredForeignKeys(context.getFileName(), context.getEncounteredKeys(), context.getRow());
+    }
+
+    if (context.getRow().hasConditionalFks()) {
+      valid.validateConditionalForeignKeys(context);
     }
   }
 
@@ -213,6 +217,22 @@ public final class KVFileProcessor {
       }
     }
 
+    private void validateConditionalForeignKeys(KVRowContext context) {
+      val referencedPks = context.getReferencedPrimaryKeys();
+      val conditionalKeys = context.getRow().getConditionalKeys();
+      for (val entry : conditionalKeys.entrySet()) {
+        val referencedFileType = entry.getKey();
+        val fk = entry.getValue();
+        val referencedPk = referencedPks.get(referencedFileType);
+
+        validateForeignKey(context,
+            referencedPk,
+            fk,
+            CONDITIONAL_RELATION,
+            referencedFileType);
+      }
+    }
+
     /**
      * Do not call directly outside of the inner class.
      */
@@ -234,6 +254,10 @@ public final class KVFileProcessor {
           break;
         case OPTIONAL_RELATION:
           context.getReporter().reportOptionalRelationError(fileType, fileName, lineNumber, fk,
+              Optional.of(referencedFileType));
+          break;
+        case CONDITIONAL_RELATION:
+          context.getReporter().reportConditionalRelationError(fileType, fileName, lineNumber, fk,
               Optional.of(referencedFileType));
           break;
         default:
