@@ -182,7 +182,7 @@ found on host #{host}"
     if accessToken
       # refresh expire time
       # $.cookie 'accessToken', accessToken
-      xhr.setRequestHeader 'Authorization', "Basic  #{accessToken}"
+      xhr.setRequestHeader 'Authorization', "Basic #{accessToken}"
     else
       Chaplin.mediator.publish '!startupController', 'session', 'login'
 
