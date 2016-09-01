@@ -43,47 +43,48 @@ class Releases extends Component {
       defaultSortName: 'name',
     };
 
-    return <div>
-      Releases!
-      <BootstrapTable
-        data={items}
-        keyField='name'
-        striped={true}
-        pagination={true}
-        ignoreSinglePage={true}
-        search={items.length > tableOptions.sizePerPage}
-        options={tableOptions}
-      >
-        <TableHeaderColumn
-          dataField='name'
-          dataSort={true}
-          dataFormat={ releaseName => (
-            <Link to={`/releases/${releaseName}`}>
-              {releaseName}
-            </Link>
-          )}
-        >Name</TableHeaderColumn>
-        <TableHeaderColumn
-          dataField='state'
-          dataSort={true}
-        >State</TableHeaderColumn>
-        <TableHeaderColumn
-          dataField='releaseDate'
-          dataSort={true}
-          dataFormat={(releaseDate) => releaseDate || 'Unreleased'}
-        >State</TableHeaderColumn>
-        <TableHeaderColumn
-          hidden={!user.isAdmin}
-          dataFormat={(cell, release) => (
-            <div
-              onClick={() => console.log('release')}
-              className="m-btn green-stripe mini"
-            >
-              Release Now
-            </div>
-          )}
-        >Actions</TableHeaderColumn>
-      </BootstrapTable>
-    </div>
+    return (
+      <div>
+        <BootstrapTable
+          data={items}
+          keyField='name'
+          striped={true}
+          pagination={true}
+          ignoreSinglePage={true}
+          search={items.length > tableOptions.sizePerPage}
+          options={tableOptions}
+        >
+          <TableHeaderColumn
+            dataField='name'
+            dataSort={true}
+            dataFormat={ releaseName => (
+              <Link to={`/releases/${releaseName}`}>
+                {releaseName}
+              </Link>
+            )}
+          >Name</TableHeaderColumn>
+          <TableHeaderColumn
+            dataField='state'
+            dataSort={true}
+          >State</TableHeaderColumn>
+          <TableHeaderColumn
+            dataField='releaseDate'
+            dataSort={true}
+            dataFormat={(releaseDate) => releaseDate || 'Unreleased'}
+          >State</TableHeaderColumn>
+          <TableHeaderColumn
+            hidden={!user.isAdmin}
+            dataFormat={(cell, release) => (
+              <div
+                onClick={() => console.log('release')}
+                className="m-btn green-stripe mini"
+              >
+                Release Now
+              </div>
+            )}
+          >Actions</TableHeaderColumn>
+        </BootstrapTable>
+      </div>
+    )
   }
 }
