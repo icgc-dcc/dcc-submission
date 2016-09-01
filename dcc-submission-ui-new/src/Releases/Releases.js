@@ -13,13 +13,6 @@ import ActionButton from '~/common/components/ActionButton/ActionButton';
 import { openModal, closeModal } from '~/App';
 import CompleteReleaseModal from '~/common/components/modals/CompleteRelease/CompleteRelease';
 
-function showCompleteReleaseModal({releaseName}) {
-  openModal(<CompleteReleaseModal
-    releaseName={releaseName}
-    onClickClose={closeModal}
-    />);
-}
-
 const releases = observable({
   isLoading: false,
   items: []
@@ -40,6 +33,19 @@ releases.fetch = action('fetch releases', async function () {
     this.items = items;
   });
 });
+
+function showCompleteReleaseModal({releaseName, onSuccess}) {
+  openModal(<CompleteReleaseModal
+    releaseName={releaseName}
+    onClickClose={closeModal}
+    onSuccess={onSuccess}
+    />);
+}
+
+function handleSuccessfulRelease() {
+  closeModal();
+  releases.fetch();
+}
 
 function releaseDateSortFunction(a, b, order, sortField) {
   const dateA = a[sortField] || new Date().getTime();
@@ -100,7 +106,7 @@ class Releases extends Component {
             dataFormat={(cell, release) => (
               release.state === 'OPENED'
               ? <ActionButton
-                onClick={() => showCompleteReleaseModal({releaseName: release.name})}
+                onClick={() => showCompleteReleaseModal({releaseName: release.name, onSuccess: handleSuccessfulRelease})}
                 className="m-btn mini green-stripe"
               >
                 Release Now
