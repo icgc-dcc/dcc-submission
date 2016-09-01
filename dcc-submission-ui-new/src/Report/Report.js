@@ -20,7 +20,7 @@ const report = observable({
 
 report.fetch = action('fetch single report', async function (releaseName, projectKey, reportName) {
   this.isLoading = true;
-  const response = await fetch(`/ws/releases/${releaseName}/submissions/${projectKey}/report/${reportName}/`, {
+  const response = await fetch(`/ws/releases/${releaseName}/submissions/${projectKey}/files/${reportName}/report`, {
       headers: fetchHeaders.get()
     });
 
