@@ -3,6 +3,7 @@ import {Link} from 'react-router';
 import {observable, action, runInAction} from 'mobx';
 import {observer} from 'mobx-react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
+import moment from 'moment';
 
 import defaultTableOptions from '~/common/defaultTableOptions';
 import { fetchHeaders } from '~/utils';
@@ -82,8 +83,8 @@ class Releases extends Component {
           <TableHeaderColumn
             dataField='releaseDate'
             dataSort={true}
-            dataFormat={(releaseDate) => releaseDate || 'Unreleased'}
-          >State</TableHeaderColumn>
+            dataFormat={(date) => date ? moment(date).format('MMMM Do YYYY, h:mm:ss a') : 'Unreleased'}
+          >Release Date</TableHeaderColumn>
           <TableHeaderColumn
             hidden={!user.isAdmin}
             dataFormat={(cell, release) => (
