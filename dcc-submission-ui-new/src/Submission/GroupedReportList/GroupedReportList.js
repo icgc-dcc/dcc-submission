@@ -96,7 +96,7 @@ export default function GroupedReportList({
               || (submission.summaryReports && submission.summaryReports.length);
             const shouldShowReport = isNotInProgress && hasReports;
 
-            return shouldShowReport ? <Link to={`/releases/${releaseName}/submissions/${projectKey}/report/${submission.name}`}>view report</Link> : '';
+            return shouldShowReport ? <Link to={`/releases/${releaseName}/submissions/${projectKey}/report/${submission.name}`}>view</Link> : '';
           }}
         >Report</TableHeaderColumn>
 
