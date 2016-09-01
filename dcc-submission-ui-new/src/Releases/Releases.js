@@ -9,10 +9,22 @@ import { fetchHeaders } from '~/utils';
 import user from '~/user';
 import ActionButton from '~/common/components/ActionButton/ActionButton';
 
+import { openModal, closeModal } from '~/App';
+import CompleteReleaseModal from '~/common/components/modals/CompleteRelease/CompleteRelease';
+
+function showCompleteReleaseModal({releaseName}) {
+  openModal(<CompleteReleaseModal
+    releaseName={releaseName}
+    onClickClose={closeModal}
+    />);
+}
+
 const releases = observable({
   isLoading: false,
   items: []
 });
+
+window.releases = releases;
 
 releases.fetch = action('fetch releases', async function () {
   this.isLoading = true;
@@ -75,12 +87,14 @@ class Releases extends Component {
           <TableHeaderColumn
             hidden={!user.isAdmin}
             dataFormat={(cell, release) => (
-              <ActionButton
-                onClick={() => console.log('release')}
+              release.state === 'OPENED'
+              ? <ActionButton
+                onClick={() => showCompleteReleaseModal({releaseName: release.name})}
                 className="m-btn mini green-stripe"
               >
                 Release Now
               </ActionButton>
+              : ''
             )}
           >Actions</TableHeaderColumn>
         </BootstrapTable>

@@ -1,3 +1,46 @@
+@import './common/styles/eases.css';
+@import './common/styles/global.css';
+
 .App {
 
+}
+
+.ReactModal__Overlay {
+  perspective: 600;
+  opacity: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.ReactModal__Overlay--after-open {
+  opacity: 1;
+  transition: opacity 250ms ease-out;
+}
+
+.ReactModal__Content {
+  opacity: 0;
+  transform: translateY(100px);
+}
+
+.ReactModal__Content--after-open {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 250ms var(--inQuad);
+}
+
+.ReactModal__Overlay--before-close {
+  opacity: 0;
+}
+
+.ReactModal__Content--before-close {
+  opacity: 0;
+  transform: translateY(-100px);
+  transition: all 250ms var(--outQuad);
+}
+
+.ReactModal__Content.modal-dialog {
+  border: none;
+  background-color: transparent;
 }
