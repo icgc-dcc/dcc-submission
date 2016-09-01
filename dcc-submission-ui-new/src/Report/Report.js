@@ -67,7 +67,7 @@ class Report extends Component {
         <div>
           <h2>{ pageTitle }</h2>
           <ReportDetails
-            items={reportItems.slice()}
+            items={reportItems}
             isLoading={report.isLoading}
           />
         </div>
