@@ -35,7 +35,7 @@ module.exports = class SchemaReport extends Model
     @urlPath = ->
       url = "releases/#{@get('release')}/" +
         "submissions/#{@get('submission')}" +
-        "/report/#{@get('name')}/"
+        "/files/#{@get('name')}/report"
 
     if @get "errorReports"
       errors = []

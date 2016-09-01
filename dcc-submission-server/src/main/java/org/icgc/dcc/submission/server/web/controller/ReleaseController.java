@@ -133,7 +133,7 @@ public class ReleaseController {
     return ResponseEntity.ok(report);
   }
 
-  @GetMapping("{name}/submissions/{projectKey:.+}/report/{fileName:.+}/")
+  @GetMapping("{name}/submissions/{projectKey:.+}/files/{fileName:.+}/report")
   public ResponseEntity<?> getFileReport(
       @PathVariable("name") String releaseName,
       @PathVariable("projectKey") String projectKey,
@@ -180,12 +180,12 @@ public class ReleaseController {
     if (isSuperUser(authentication) == false) {
       return Responses.unauthorizedResponse();
     }
-  
+
     if (release != null) {
       val empty = releaseService.countOpenReleases() == 0;
       if (empty) {
         releaseService.createInitialRelease(release);
-  
+
         return ResponseEntity
             .ok(release);
       } else {
