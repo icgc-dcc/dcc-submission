@@ -2,6 +2,6 @@ import {computed} from 'mobx';
 import user from '~/user.js';
 
 export const fetchHeaders = computed(() => ({
-  Authorization: `X-DCC-Auth ${user.token}`,
+  Authorization: `Basic ${user.token}`,
   Accept: 'application/json',
 }));

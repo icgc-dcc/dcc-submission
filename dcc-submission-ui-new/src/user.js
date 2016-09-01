@@ -1,5 +1,7 @@
 import {observable, action, runInAction} from 'mobx';
 
+import {fetchHeaders} from '~/utils'; 
+
 function generateToken(username, password) {
   return global.btoa(`${username}:${password}`);
 }
@@ -20,10 +22,7 @@ user.login = action('login', async function (username, password) {
   this.isLoggingIn = true;
   const token = generateToken(username, password);
   const response = await fetch('/ws/users/self', {
-      headers: {
-        Authorization: `X-DCC-Auth ${token}`,
-        Accept: 'application/json'
-      }
+      headers: fetchHeaders
     });
 
   runInAction('update login status', () => { this.isLoggingIn = false });
