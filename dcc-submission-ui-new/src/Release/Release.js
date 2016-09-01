@@ -116,9 +116,6 @@ class Release extends Component {
           >Actions</TableHeaderColumn>
         </BootstrapTable>
       </div>
-      <pre>
-      {JSON.stringify(release, null, '  ')}
-      </pre>
     </div>
   }
 }

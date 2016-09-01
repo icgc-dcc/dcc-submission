@@ -1,5 +1,8 @@
 import React from 'react';
 import { map, includes } from 'lodash';
+import { AllHtmlEntities } from 'html-entities';
+
+const entities = new AllHtmlEntities();
 
 const REPORT_TYPE_DICT = {
   AVERAGE: 'Statistics',
@@ -15,7 +18,7 @@ export default function DetailedReportSummary({report}) {
       <ul>
         {map(report.summary, (value, key) => (
           <li key={key}>
-            <strong>{key}:&nbsp;</strong>
+            <strong>{entities.decode(key)}:&nbsp;</strong>
             { includes(['stddev', 'avg']) ? Number(value).toFixed(2) : value }
           </li>
         ))}

@@ -167,14 +167,6 @@ class Release extends Component {
         }
         
       </div>
-      <pre>
-      {
-        JSON.stringify(submission, null, '  ')
-        // JSON.stringify(submission.submissionFiles.map(
-        //   x => x.dataType
-        // ), null, '  ')
-      }
-      </pre>
     </div>
   }
 }

@@ -1,6 +1,6 @@
 @import '../node_modules/normalize.css/normalize.css';
 @import '../node_modules/react-bootstrap-table/css/react-bootstrap-table.css';
-@import './common/bootstrap-overrides.css';
+@import './common/global.css';
 
 body {
   margin: 0;

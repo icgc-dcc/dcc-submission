@@ -71,9 +71,6 @@ class Report extends Component {
             isLoading={report.isLoading}
           />
         </div>
-        <pre>
-        {JSON.stringify(report, null, '  ')}
-        </pre>
       </div>
     );
   }
