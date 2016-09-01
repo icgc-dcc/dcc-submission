@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import lombok.Data;
+import lombok.ToString;
 
 @Data
 public class SubmissionProperties {
@@ -34,9 +35,8 @@ public class SubmissionProperties {
    */
   private static final int DEFAULT_MAX_VALIDATING = 1;
 
-  String fsRoot;
-  String fsUrl;
-
+  FileSystemProperties fs = new FileSystemProperties();
+  AuthProperties auth = new AuthProperties();
   HttpProperties http = new HttpProperties();
   SftpProperties sftp = new SftpProperties();
   MailProperties email = new MailProperties();
@@ -49,6 +49,14 @@ public class SubmissionProperties {
 
   ValidatorProperties validator = new ValidatorProperties();
   List<String> validators = newArrayList();
+
+  @Data
+  public static class FileSystemProperties {
+
+    String root;
+    String url;
+
+  }
 
   @Data
   public static class HadoopProperties {
@@ -144,6 +152,42 @@ public class SubmissionProperties {
   public static class ShiroProperties {
 
     String realm;
+
+  }
+
+  @Data
+  public static class AuthProperties {
+
+    /**
+     * The authorized users.
+     */
+    List<User> users = newArrayList();
+
+    @Data
+    @ToString(exclude = "password")
+    public static class User {
+
+      /**
+       * The username used authenticate with the server
+       */
+      String username;
+
+      /**
+       * The password used authenticate with the server
+       */
+      String password;
+
+      /**
+       * The set of authorities given to this user as defined by the system.
+       */
+      List<String> authorities = newArrayList();
+
+      /**
+       * The set of roles given to this user as defined by the system.
+       */
+      List<String> roles = newArrayList();
+
+    }
 
   }
 

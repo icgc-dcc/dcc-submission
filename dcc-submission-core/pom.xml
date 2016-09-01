@@ -23,7 +23,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
   <parent>
     <groupId>org.icgc.dcc</groupId>
     <artifactId>dcc-submission</artifactId>
-    <version>4.3.3-SNAPSHOT</version>
+    <version>4.3.5-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -59,14 +59,12 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
     </dependency>
-    
-    <!-- Security -->
     <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-core</artifactId>
-      <version>${shiro.version}</version>
-    </dependency>
-
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-core</artifactId>
+      <version>${spring-security.version}</version>
+    </dependency>    
+    
     <!-- Validation -->
     <dependency>
       <groupId>org.hibernate</groupId>
@@ -75,10 +73,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     </dependency>
 
     <!-- Mongo -->
-    <dependency>
-      <groupId>org.mongodb</groupId>
-      <artifactId>mongo-hadoop-core</artifactId>
-    </dependency>
     <dependency>
       <groupId>org.mongodb.morphia</groupId>
       <artifactId>morphia</artifactId>
@@ -100,31 +94,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <artifactId>querydsl-mongodb</artifactId>
     </dependency>
 
-    <!-- Hadoop -->
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-annotations</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-hdfs</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-
-    <!-- Mail -->
-    <dependency>
-      <groupId>javax.mail</groupId>
-      <artifactId>mail</artifactId>
-    </dependency>
-
     <!-- Utilities -->
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -132,12 +101,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <scope>provided</scope>
     </dependency>
 
-    <!-- Testing - Utilities -->
-    <dependency>
-      <groupId>com.google.code</groupId>
-      <artifactId>externalsortinginjava</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
@@ -148,7 +111,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
         <artifactId>build-helper-maven-plugin</artifactId>
       </plugin>
 
-      <!-- Generate sources - Generate Morpia bindings -->
+      <!-- Generate sources - Generate Morphia bindings -->
       <plugin>
         <groupId>com.mysema.maven</groupId>
         <artifactId>apt-maven-plugin</artifactId>
@@ -169,9 +132,4 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     </plugins>
   </build>
 
-  <properties>
-    <!-- Versions -->
-    <hibernate-validator.version>4.3.1.Final</hibernate-validator.version>
-    <shiro.version>1.2.0</shiro.version>
-  </properties>
 </project>

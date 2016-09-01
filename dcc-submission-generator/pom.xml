@@ -21,7 +21,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
   <parent>
     <groupId>org.icgc.dcc</groupId>
     <artifactId>dcc-submission</artifactId>
-    <version>4.3.3-SNAPSHOT</version>
+    <version>4.3.5-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -96,10 +96,19 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <plugins>
       <!-- Package -->
       <plugin>
-        <artifactId>maven-shade-plugin</artifactId>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot-maven-plugin.version}</version>
         <configuration>
-          <createDependencyReducedPom>false</createDependencyReducedPom>
+          <mainClass>${main.class}</mainClass>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
@@ -107,6 +116,9 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
   <properties>
     <!-- Entry point -->
     <main.class>org.icgc.dcc.submission.generator.Main</main.class>
+    
+    <!-- Versions -->
     <commons.lang.version>2.3</commons.lang.version>
+    <jackson-yaml.version>${jackson.version}</jackson-yaml.version>
   </properties>
 </project>

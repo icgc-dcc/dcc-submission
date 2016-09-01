@@ -33,7 +33,7 @@ import org.icgc.dcc.submission.core.report.FieldReport;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
@@ -85,13 +85,13 @@ public abstract class AbstractValidationContext implements ValidationContext {
   }
 
   @Override
-  public DccFileSystem getDccFileSystem() {
+  public SubmissionFileSystem getSubmissionFileSystem() {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public ReleaseFileSystem getReleaseFileSystem() {
-    return new ReleaseFileSystem(getDccFileSystem(), getRelease());
+    return new ReleaseFileSystem(getSubmissionFileSystem(), getRelease());
   }
 
   @Override

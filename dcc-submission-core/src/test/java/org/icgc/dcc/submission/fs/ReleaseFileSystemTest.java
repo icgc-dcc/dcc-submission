@@ -57,7 +57,7 @@ public class ReleaseFileSystemTest {
 
     // Once upon a time there was a file system...
     val rootDir = tmp.newFolder();
-    val dccFileSystem = mock(DccFileSystem.class);
+    val submissionFileSystem = mock(SubmissionFileSystem.class);
 
     // And in that file system lived a simple project with two clinical files:
     val projectKey = "project1";
@@ -76,7 +76,7 @@ public class ReleaseFileSystemTest {
 
     val previousSubmission = mock(Submission.class);
     val previousSubmissionDirectory = new SubmissionDirectory(
-        dccFileSystem, previousReleaseFileSystem, previousRelease, projectKey, previousSubmission);
+        submissionFileSystem, previousReleaseFileSystem, previousRelease, projectKey, previousSubmission);
     val previousSubmissionDir = new File(previousReleaseDir, projectKey);
     val previousSubmissionPath = previousSubmissionDir.getAbsolutePath();
     val previousSubmissionSampleFile = new File(previousSubmissionPath, submissionSampleFileName);
@@ -128,7 +128,7 @@ public class ReleaseFileSystemTest {
     val nextReleaseName = "ICGC15";
     val nextRelease = mock(Release.class);
     val nextReleaseDir = new File(rootDir, nextReleaseName);
-    val nextReleaseFileSystem = new ReleaseFileSystem(dccFileSystem, nextRelease);
+    val nextReleaseFileSystem = new ReleaseFileSystem(submissionFileSystem, nextRelease);
 
     val nextSubmissionDir = new File(nextReleaseDir, projectKey);
     val nextSubmissionPath = nextSubmissionDir.getAbsolutePath();
@@ -145,11 +145,11 @@ public class ReleaseFileSystemTest {
     when(nextRelease.getName()).thenReturn(nextReleaseName);
     when(nextRelease.getSubmission(anyString())).thenReturn(
         Optional.<Submission> of(mock(Submission.class)));
-    when(dccFileSystem.buildFileStringPath(nextReleaseName, projectKey, submissionDonorFileName)).thenReturn(
+    when(submissionFileSystem.buildFileStringPath(nextReleaseName, projectKey, submissionDonorFileName)).thenReturn(
         nextSubmissionDonorFile.getAbsolutePath());
-    when(dccFileSystem.buildFileStringPath(nextReleaseName, projectKey, submissionSampleFileName)).thenReturn(
+    when(submissionFileSystem.buildFileStringPath(nextReleaseName, projectKey, submissionSampleFileName)).thenReturn(
         nextSubmissionSampleFile.getAbsolutePath());
-    when(dccFileSystem.buildValidationDirStringPath(nextReleaseName, projectKey)).thenReturn(
+    when(submissionFileSystem.buildValidationDirStringPath(nextReleaseName, projectKey)).thenReturn(
         nextSubmissionValidationDir.getAbsolutePath());
 
     //
@@ -157,10 +157,10 @@ public class ReleaseFileSystemTest {
     //
 
     // Boot the file system
-    when(dccFileSystem.getFileSystem()).thenReturn(createFileSystem());
-    when(dccFileSystem.getRootStringPath()).thenReturn(rootDir.getAbsolutePath());
-    when(dccFileSystem.buildProjectStringPath(previousReleaseName, projectKey)).thenReturn(previousSubmissionPath);
-    when(dccFileSystem.buildProjectStringPath(nextReleaseName, projectKey)).thenReturn(nextSubmissionPath);
+    when(submissionFileSystem.getFileSystem()).thenReturn(createFileSystem());
+    when(submissionFileSystem.getRootStringPath()).thenReturn(rootDir.getAbsolutePath());
+    when(submissionFileSystem.buildProjectStringPath(previousReleaseName, projectKey)).thenReturn(previousSubmissionPath);
+    when(submissionFileSystem.buildProjectStringPath(nextReleaseName, projectKey)).thenReturn(nextSubmissionPath);
 
     //
     // Exercise

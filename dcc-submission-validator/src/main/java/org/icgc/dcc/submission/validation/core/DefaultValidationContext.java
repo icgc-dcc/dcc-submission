@@ -31,7 +31,7 @@ import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
@@ -79,7 +79,7 @@ public class DefaultValidationContext implements ValidationContext {
   @NonNull
   private final List<CodeList> codeLists;
   @NonNull
-  private final DccFileSystem dccFileSystem;
+  private final SubmissionFileSystem submissionFileSystem;
   @NonNull
   private final SubmissionPlatformStrategyFactory platformStrategyFactory;
 
@@ -131,7 +131,7 @@ public class DefaultValidationContext implements ValidationContext {
 
   @Override
   public ReleaseFileSystem getReleaseFileSystem() {
-    return dccFileSystem.getReleaseFilesystem(release);
+    return submissionFileSystem.getReleaseFilesystem(release);
   }
 
   @Override
@@ -140,13 +140,13 @@ public class DefaultValidationContext implements ValidationContext {
   }
 
   @Override
-  public DccFileSystem getDccFileSystem() {
-    return dccFileSystem;
+  public SubmissionFileSystem getSubmissionFileSystem() {
+    return submissionFileSystem;
   }
 
   @Override
   public FileSystem getFileSystem() {
-    return dccFileSystem.getFileSystem();
+    return submissionFileSystem.getFileSystem();
   }
 
   @Override
