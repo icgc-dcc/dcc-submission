@@ -60,6 +60,7 @@
   "dependencies": {
     "fuse.js": "2.5.0",
     "highlight.js": "9.6.0",
+    "html-entities": "1.2.0",
     "js-beautify": "1.6.3",
     "mobx": "2.4.4",
     "mobx-react": "3.5.5",
