@@ -41,6 +41,14 @@ releases.fetch = action('fetch releases', async function () {
   });
 });
 
+function releaseDateSortFunction(a, b, order, sortField) {
+  const dateA = a[sortField] || new Date().getTime();
+  const dateB = b[sortField] || new Date().getTime();
+  return order === 'asc'
+    ? dateA - dateB
+    : dateB - dateA;
+}
+
 export default @observer
 class Releases extends Component {
   componentWillMount () {
@@ -53,7 +61,8 @@ class Releases extends Component {
     const tableOptions = {
       ...defaultTableOptions,
       noDataText: releases.isLoading ? 'Loading...' : 'There is no data to display',
-      defaultSortName: 'name',
+      defaultSortName: 'releaseDate',
+      defaultSortOrder: 'desc',
     };
 
     return (
@@ -83,6 +92,7 @@ class Releases extends Component {
           <TableHeaderColumn
             dataField='releaseDate'
             dataSort={true}
+            sortFunc={releaseDateSortFunction}
             dataFormat={(date) => date ? moment(date).format('MMMM Do YYYY, h:mm:ss a') : 'Unreleased'}
           >Release Date</TableHeaderColumn>
           <TableHeaderColumn
