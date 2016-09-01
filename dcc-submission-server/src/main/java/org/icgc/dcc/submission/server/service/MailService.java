@@ -92,7 +92,7 @@ public class MailService {
 
     send(
         feedback.getEmail(),
-        properties.getEmail().getSupportEmail(),
+        properties.getMail().getSupportEmail(),
         feedback.getSubject(),
         feedback.getMessage());
   }
@@ -101,8 +101,8 @@ public class MailService {
     sendNotification(format("Support issue - '%s'", subject));
 
     send(
-        properties.getEmail().getFromEmail(),
-        properties.getEmail().getSupportEmail(),
+        properties.getMail().getFromEmail(),
+        properties.getMail().getSupportEmail(),
         subject,
         message);
   }
@@ -126,7 +126,7 @@ public class MailService {
       @NonNull String nextReleaseName) {
     sendNotification(
         format("Signed off Projects: %s", projectKeys),
-        template(properties.getEmail().getSignoffBody(), user, projectKeys, nextReleaseName));
+        template(properties.getMail().getSignoffBody(), user, projectKeys, nextReleaseName));
   }
 
   public void sendValidationStarted(@NonNull String releaseName, @NonNull String projectKey,
@@ -153,9 +153,9 @@ public class MailService {
 
     try {
       val message = message();
-      message.setFrom(address(properties.getEmail().getFromEmail()));
+      message.setFrom(address(properties.getMail().getFromEmail()));
       message.addRecipients(TO, addresses(emails));
-      message.setSubject(template(properties.getEmail().getSubject(), projectKey, state, report));
+      message.setSubject(template(properties.getMail().getSubject(), projectKey, state, report));
       message.setText(getResult(releaseName, projectKey, state));
 
       send(message);
@@ -165,11 +165,11 @@ public class MailService {
   }
 
   public Boolean isEnabled() {
-    return properties.getEmail().getEnabled();
+    return properties.getMail().getEnabled();
   }
 
   private String getResult(String releaseName, String projectKey, State state) {
-    val mail = properties.getEmail();
+    val mail = properties.getMail();
     // @formatter:off
     return
       state == ERROR         ? template(mail.getErrorBody(),        projectKey, state)                         : 
@@ -182,8 +182,8 @@ public class MailService {
 
   private void sendNotification(String subject, String message) {
     send(
-        properties.getEmail().getFromEmail(),
-        properties.getEmail().getNotificationEmail(),
+        properties.getMail().getFromEmail(),
+        properties.getMail().getNotificationEmail(),
         NOTIFICATION_SUBJECT_PREFEX + subject,
         message);
   }
@@ -238,10 +238,10 @@ public class MailService {
 
   private Message message() {
     val props = new Properties();
-    props.put(MAIL_SMTP_HOST, properties.getEmail().getSmtpHost());
-    props.put(MAIL_SMTP_PORT, properties.getEmail().getSmtpPort());
-    props.put(MAIL_SMTP_TIMEOUT, properties.getEmail().getSmtpTimeout());
-    props.put(MAIL_SMTP_CONNECTION_TIMEOUT, properties.getEmail().getSmtpConnectionTimeout());
+    props.put(MAIL_SMTP_HOST, properties.getMail().getSmtpHost());
+    props.put(MAIL_SMTP_PORT, properties.getMail().getSmtpPort());
+    props.put(MAIL_SMTP_TIMEOUT, properties.getMail().getSmtpTimeout());
+    props.put(MAIL_SMTP_CONNECTION_TIMEOUT, properties.getMail().getSmtpConnectionTimeout());
 
     return new MimeMessage(Session.getDefaultInstance(props, null));
   }
