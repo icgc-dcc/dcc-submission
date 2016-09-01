@@ -6,8 +6,8 @@ import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 
 import defaultTableOptions from '~/common/defaultTableOptions';
 import { fetchHeaders } from '~/utils';
-// import ActionButton from '~/common/components/ActionButton/ActionButton';
 import user from '~/user';
+import ActionButton from '~/common/components/ActionButton/ActionButton';
 
 const releases = observable({
   isLoading: false,
@@ -75,12 +75,12 @@ class Releases extends Component {
           <TableHeaderColumn
             hidden={!user.isAdmin}
             dataFormat={(cell, release) => (
-              <div
+              <ActionButton
                 onClick={() => console.log('release')}
-                className="m-btn green-stripe mini"
+                className="m-btn mini green-stripe"
               >
                 Release Now
-              </div>
+              </ActionButton>
             )}
           >Actions</TableHeaderColumn>
         </BootstrapTable>

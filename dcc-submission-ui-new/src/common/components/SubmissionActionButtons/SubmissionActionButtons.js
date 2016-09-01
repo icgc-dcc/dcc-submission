@@ -1,28 +1,29 @@
 import React, { PropTypes } from 'react';
+import ActionButton from '~/common/components/ActionButton/ActionButton';
 
-export default function SubmissionActionButtons ({submission}) {
+export default function SubmissionActionButtons ({submission, buttonClassName}) {
   const { state: submissionState } = submission;
 
   switch (submissionState) {
     case 'INVALID':
-      return <button>Validate</button>;
+      return <ActionButton className={`blue-stripe ${buttonClassName}`}>Validate</ActionButton>;
     case 'QUEUED':
     case 'VALIDATING':
-      return <button>Cancel Validation</button>
+      return <ActionButton className={`red-stripe ${buttonClassName}`}>Cancel Validation</ActionButton>
     case 'VALID':
       return (
         <div>
-          <button>
+          <ActionButton className={`green-stripe ${buttonClassName}`}>
             Sign off
-          </button>
-          <button>
+          </ActionButton>
+          <ActionButton className={`blue-stripe ${buttonClassName}`} style={{marginLeft: 3}}>
             Validate
-          </button>
+          </ActionButton>
         </div>
       );
     case 'NOT_VALIDATED':
       return (submission.submissionFiles.length && submission.submissionFiles.map(x => x.schemaName).filter(Boolean).length)
-        ? <button>Validate</button>
+        ? <ActionButton className={`blue-stripe ${buttonClassName}`}>Validate</ActionButton>
         : <em>Upload Files</em>
     case 'ERROR':
     default:

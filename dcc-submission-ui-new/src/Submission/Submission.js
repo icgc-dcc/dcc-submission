@@ -84,8 +84,8 @@ class Release extends Component {
         <li>Number of submitted files{submission.submissionFiles.length}</li>
         <li>Number of valid files: {getValidFileCount(submission.report)}</li>
         <li>Size of submission data: {formatFileSize(submission.totalFileSizeInBytes.get())}</li>
-        <li>State {submission.state}</li>
-        <li>Actions: <SubmissionActionButtons submission={submission}/></li>
+        <li>State <Status statusCode={submission.state || ''}/></li>
+        <li><SubmissionActionButtons submission={submission} buttonClassName="m-btn"/></li>
       </ul>
 
       <BootstrapTable

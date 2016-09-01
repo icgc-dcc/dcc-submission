@@ -111,7 +111,7 @@ class Release extends Component {
 
           <TableHeaderColumn
             dataFormat={ (cell, submission) => (
-              <SubmissionActionButtons submission={submission}/>
+              <SubmissionActionButtons submission={submission} buttonClassName="m-btn mini"/>
             )}
           >Actions</TableHeaderColumn>
         </BootstrapTable>
