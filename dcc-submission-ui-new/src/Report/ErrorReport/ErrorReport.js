@@ -46,9 +46,10 @@ export default function ErrorReportTable ({ items, isLoading }) {
       >Count of occurrences</TableHeaderColumn>
 
       <TableHeaderColumn
-        dataField='missing'
-        dataSort={true}
-        dataFormat={(cell, error) => getErrorDetails(error)}
+        dataFormat={(cell, error) => (<div>
+          <div dangerouslySetInnerHTML={{__html: errorDict[error.errorType] && errorDict[error.errorType].description(error)}}/>
+          <div dangerouslySetInnerHTML={{__html: getErrorDetails(error)}}/>
+        </div>)}
       >Details</TableHeaderColumn>
 
     </BootstrapTable>
