@@ -94,7 +94,7 @@ class Release extends Component {
         <li>
           { map(release.summary, (count, summaryKey) => (
             <span className={`ReleaseSummaryBadge label ${summaryClassNameMap[summaryKey]}`} key={summaryKey}>
-              <span className="summary-key">{summaryKey}</span>
+              <span className="summary-key">{summaryKey}</span>&nbsp;
               <span className="summary-count">{count}</span>
             </span>
           ))}
