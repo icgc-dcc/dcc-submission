@@ -4,7 +4,7 @@ import {observer} from 'mobx-react';
 
 import { fetchHeaders } from '~/utils';
 
-const releaseErrorDict = {
+const ErrorsDict = {
   'InvalidName': 'A release name must only use letters[a-z], numbers(0-9), underscores(_) and dashes(-)',
   'DuplicateReleaseName': 'That release name has already been used.',
   'SignedOffSubmissionRequired': 'The release needs at least one SIGNED OFF submission before it can be COMPLETED.',
@@ -34,7 +34,7 @@ async function completeRelease ({releaseName, onSuccess}) {
     console.log('response not ok');
     nextRelease.error = {
       code: responseData.code,
-      message: releaseErrorDict[responseData.code] || releaseErrorDict._default,
+      message: ErrorsDict[responseData.code] || ErrorsDict._default,
     } 
   } else {
     onSuccess();
