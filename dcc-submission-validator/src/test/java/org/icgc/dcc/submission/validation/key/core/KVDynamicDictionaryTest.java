@@ -51,7 +51,6 @@ import org.icgc.dcc.submission.test.AbstractDictionaryTest;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
@@ -113,8 +112,16 @@ public class KVDynamicDictionaryTest extends AbstractDictionaryTest {
 
   @Test
   public void testGetTopologicallyOrderedFileTypes() throws Exception {
-    ImmutableList.copyOf(kvDictionary.getTopologicallyOrderedFileTypes());
-    // TODO: Test for order
+    val orderedFileTypes = ImmutableList.copyOf(kvDictionary.getTopologicallyOrderedFileTypes());
+    assertThat(orderedFileTypes)
+        .containsExactly(KVFileType.DONOR, KVFileType.SPECIMEN, KVFileType.SAMPLE,
+            KVFileType.METH_SEQ_M, KVFileType.MIRNA_SEQ_M, KVFileType.MIRNA_SEQ_P, KVFileType.EXP_SEQ_M,
+            KVFileType.EXP_SEQ_P, KVFileType.EXP_ARRAY_M, KVFileType.METH_ARRAY_PROBES, KVFileType.EXP_ARRAY_P,
+            KVFileType.METH_ARRAY_M, KVFileType.METH_ARRAY_P, KVFileType.CNSM_M, KVFileType.CNSM_P, KVFileType.CNSM_S,
+            KVFileType.PEXP_M, KVFileType.PEXP_P, KVFileType.SGV_M, KVFileType.SGV_P, KVFileType.SSM_M,
+            KVFileType.SSM_P, KVFileType.STSM_M, KVFileType.STSM_P, KVFileType.STSM_S, KVFileType.EXPOSURE,
+            KVFileType.FAMILY, KVFileType.JCN_M, KVFileType.JCN_P, KVFileType.METH_SEQ_P, KVFileType.BIOMARKER,
+            KVFileType.SURGERY, KVFileType.THERAPY);
   }
 
   @Test
@@ -134,14 +141,11 @@ public class KVDynamicDictionaryTest extends AbstractDictionaryTest {
 
   @Test
   public void testGetErrorFieldNames() throws Exception {
-    assertThat(kvDictionary.getErrorFieldNames(SSM_M, OPTIONAL_RELATION, Optional.of(SAMPLE)))
-        .containsExactly("matched_sample_id");
-    assertThat(kvDictionary.getErrorFieldNames(SSM_M, RELATION, Optional.of(SAMPLE)))
-        .containsExactly("analyzed_sample_id");
-    assertThat(kvDictionary.getErrorFieldNames(SSM_M, UNIQUENESS, Optional.of(SAMPLE)))
-        .containsExactly("analysis_id", "analyzed_sample_id");
-    assertThat(kvDictionary.getErrorFieldNames(SAMPLE, SURJECTION, Optional.of(SPECIMEN)))
-        .containsExactly("specimen_id");
+    assertThat(kvDictionary.getErrorFieldNames(SSM_M, OPTIONAL_RELATION, SAMPLE)).containsExactly("matched_sample_id");
+    assertThat(kvDictionary.getErrorFieldNames(SSM_M, RELATION, SAMPLE)).containsExactly("analyzed_sample_id");
+    assertThat(kvDictionary.getErrorFieldNames(SSM_M, UNIQUENESS, SAMPLE)).containsExactly("analysis_id",
+        "analyzed_sample_id");
+    assertThat(kvDictionary.getErrorFieldNames(SAMPLE, SURJECTION, SPECIMEN)).containsExactly("specimen_id");
   }
 
   private static void assertKey(Map<KVKeyType, Multimap<KVFileType, Integer>> keys, KVKeyType keyType,

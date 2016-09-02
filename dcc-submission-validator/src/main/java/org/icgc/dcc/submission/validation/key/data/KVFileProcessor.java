@@ -43,8 +43,6 @@ import org.icgc.dcc.submission.validation.key.core.KVFileParser;
 import org.icgc.dcc.submission.validation.key.core.KVFileType;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
-import com.google.common.base.Optional;
-
 @Slf4j
 @RequiredArgsConstructor(access = PUBLIC)
 public final class KVFileProcessor {
@@ -249,16 +247,13 @@ public final class KVFileProcessor {
       if (foreignKeyViolation) {
         switch (errorType) {
         case RELATION:
-          context.getReporter().reportRelationError(fileType, fileName, lineNumber, fk,
-              Optional.of(referencedFileType));
+          context.getReporter().reportRelationError(fileType, fileName, lineNumber, fk, referencedFileType);
           break;
         case OPTIONAL_RELATION:
-          context.getReporter().reportOptionalRelationError(fileType, fileName, lineNumber, fk,
-              Optional.of(referencedFileType));
+          context.getReporter().reportOptionalRelationError(fileType, fileName, lineNumber, fk, referencedFileType);
           break;
         case CONDITIONAL_RELATION:
-          context.getReporter().reportConditionalRelationError(fileType, fileName, lineNumber, fk,
-              Optional.of(referencedFileType));
+          context.getReporter().reportConditionalRelationError(fileType, fileName, lineNumber, fk, referencedFileType);
           break;
         default:
           throw new IllegalStateException(format("Invalid error type provided: '%s'", errorType));

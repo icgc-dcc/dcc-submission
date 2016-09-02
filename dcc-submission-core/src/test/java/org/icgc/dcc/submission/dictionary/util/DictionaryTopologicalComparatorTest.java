@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.dictionary.model;
+package org.icgc.dcc.submission.dictionary.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.METH_ARRAY_M_TYPE;
@@ -27,14 +27,15 @@ import java.util.Collections;
 import lombok.SneakyThrows;
 import lombok.val;
 
-import org.icgc.dcc.submission.dictionary.util.Dictionaries;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.test.AbstractDictionaryTest;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
-public class FileSchemaTest extends AbstractDictionaryTest {
+public class DictionaryTopologicalComparatorTest extends AbstractDictionaryTest {
 
+  DictionaryTopologicalComparator comparator;
   Dictionary dictionary;
 
   @Override
@@ -42,6 +43,7 @@ public class FileSchemaTest extends AbstractDictionaryTest {
   public void setUp() {
     super.setUp();
     dictionary = Dictionaries.readDictionary(dictionaryFile.toURI().toURL());
+    comparator = new DictionaryTopologicalComparator();
   }
 
   @Test
@@ -49,9 +51,9 @@ public class FileSchemaTest extends AbstractDictionaryTest {
     val methArrayM = dictionary.getFileSchema(METH_ARRAY_M_TYPE);
     val methArrayP = dictionary.getFileSchema(METH_ARRAY_P_TYPE);
     val methArrayProbes = dictionary.getFileSchema(METH_ARRAY_PROBES_TYPE);
-    assertThat(methArrayM.compareTo(methArrayP)).isEqualTo(-1);
-    assertThat(methArrayM.compareTo(methArrayProbes)).isEqualTo(-1);
-    assertThat(methArrayP.compareTo(methArrayProbes)).isEqualTo(1);
+    assertThat(comparator.compare(methArrayM, methArrayP)).isEqualTo(-1);
+    assertThat(comparator.compare(methArrayM, methArrayProbes)).isEqualTo(-1);
+    assertThat(comparator.compare(methArrayP, methArrayProbes)).isEqualTo(1);
 
     val fileTypes = Lists.newArrayList(METH_ARRAY_PROBES_TYPE, METH_ARRAY_P_TYPE, METH_ARRAY_M_TYPE);
     Collections.sort(fileTypes);

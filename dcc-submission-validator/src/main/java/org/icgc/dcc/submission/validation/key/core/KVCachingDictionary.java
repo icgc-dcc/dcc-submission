@@ -26,8 +26,6 @@ import java.util.Map;
 
 import lombok.NonNull;
 
-import com.google.common.base.Optional;
-
 public class KVCachingDictionary implements KVDictionary {
 
   /**
@@ -63,8 +61,7 @@ public class KVCachingDictionary implements KVDictionary {
   }
 
   @Override
-  public List<String> getErrorFieldNames(KVFileType fileType, KVErrorType errorType,
-      Optional<KVFileType> referencedFileType) {
+  public List<String> getErrorFieldNames(KVFileType fileType, KVErrorType errorType, KVFileType referencedFileType) {
     return delegate.getErrorFieldNames(fileType, errorType, referencedFileType);
   }
 

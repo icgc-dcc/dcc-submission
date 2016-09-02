@@ -17,11 +17,12 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
+import static java.util.function.Predicate.isEqual;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableMap;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.CONDITIONAL_RELATION;
@@ -47,7 +48,6 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Relation;
 import org.icgc.dcc.submission.dictionary.model.RestrictionType;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
@@ -103,12 +103,14 @@ public class KVDynamicDictionary implements KVDictionary {
 
   @Override
   public List<String> getErrorFieldNames(@NonNull KVFileType fileType, @NonNull KVErrorType errorType,
-      @NonNull Optional<KVFileType> optionalReferencedFileType) {
+      KVFileType referencedFileType) {
     if (errorType == UNIQUENESS) {
       return getPrimaryKeyNames(fileType);
     }
 
-    val referencedFileType = optionalReferencedFileType.get();
+    checkNotNull(referencedFileType, "Referenced file type must be provided for '%s' error "
+        + "type", KVErrorType.class.getSimpleName());
+
     // Return parent's fields for surjection
     if (errorType == SURJECTION) {
       return getPrimaryKeyNames(referencedFileType);
@@ -117,9 +119,6 @@ public class KVDynamicDictionary implements KVDictionary {
     val fileSchema = getFileSchema(fileType);
     val relationsStream = fileSchema.getRelations().stream()
         .filter(relation -> referencedFileType == KVFileType.from(relation.getOtherFileType()));
-
-    checkArgument(optionalReferencedFileType.isPresent(), "Referenced file type must be provided for '%s' error "
-        + "type", KVErrorType.class.getSimpleName());
 
     if (errorType == RELATION) {
       val errorFileds = relationsStream
@@ -182,9 +181,9 @@ public class KVDynamicDictionary implements KVDictionary {
   public boolean hasChildren(@NonNull KVFileType fileType) {
     return dictionary.getFiles().stream()
         .flatMap(file -> file.getRelations().stream())
-        .map(relation -> relation.getOtherFileType())
+        .map(Relation::getOtherFileType)
         .map(KVFileType::from)
-        .anyMatch(ft -> ft == fileType);
+        .anyMatch(isEqual(fileType));
   }
 
   @Override

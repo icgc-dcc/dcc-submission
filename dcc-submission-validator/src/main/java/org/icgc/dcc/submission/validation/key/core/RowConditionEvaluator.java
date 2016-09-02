@@ -38,7 +38,6 @@ public class RowConditionEvaluator {
   public RowConditionEvaluator(@NonNull String script, @NonNull List<String> fieldNames) {
     this.statement = (ExecutableStatement) MVEL.compileExpression(script);
     this.fieldNames = fieldNames;
-
   }
 
   public boolean evaluate(@NonNull List<String> row) {

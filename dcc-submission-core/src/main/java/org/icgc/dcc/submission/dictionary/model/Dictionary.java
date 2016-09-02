@@ -48,6 +48,7 @@ import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
+import org.icgc.dcc.submission.dictionary.util.DictionaryTopologicalComparator;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
 import org.mongodb.morphia.annotations.Entity;
@@ -67,6 +68,9 @@ import com.google.common.collect.ImmutableSet;
 @Entity
 @ToString(of = { "version", "state" })
 public class Dictionary extends BaseEntity implements HasName, DictionaryElement {
+
+  private static final DictionaryTopologicalComparator DICTIONARY_TOPOLOGICAL_COMPARATOR =
+      new DictionaryTopologicalComparator();
 
   @NotBlank
   @Indexed(unique = true)
@@ -387,7 +391,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   @JsonIgnore
   public List<FileType> getFileTypesReferencedBranch(FeatureType featureType) {
     return getFileSchemata(featureType).stream()
-        .sorted()
+        .sorted(DICTIONARY_TOPOLOGICAL_COMPARATOR)
         .map(fileSchema -> FileType.from(fileSchema.getName()))
         .collect(toImmutableList());
   }

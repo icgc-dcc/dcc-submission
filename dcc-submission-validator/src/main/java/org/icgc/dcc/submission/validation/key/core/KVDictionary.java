@@ -20,13 +20,11 @@ package org.icgc.dcc.submission.validation.key.core;
 import java.util.Collection;
 import java.util.List;
 
-import com.google.common.base.Optional;
-
 public interface KVDictionary {
 
   KVFileTypeKeysIndices getKeysIndices(KVFileType fileType);
 
-  List<String> getErrorFieldNames(KVFileType fileType, KVErrorType errorType, Optional<KVFileType> referencedFileType);
+  List<String> getErrorFieldNames(KVFileType fileType, KVErrorType errorType, KVFileType referencedFileType);
 
   List<String> getPrimaryKeyNames(KVFileType fileType);
 

@@ -18,8 +18,6 @@
 package org.icgc.dcc.submission.validation.key.cli;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
-import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_S_TYPE;
-import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readResourcesFileSchema;
 
 import java.util.List;
 
@@ -93,9 +91,6 @@ public class KeyValidationContext extends AbstractValidationContext {
   protected Dictionary createDictionary() {
     // val dictionary = Dictionaries.readResourcesDictionary("0.11c");
     val dictionary = Dictionaries.readResourcesDictionary();
-
-    // Add file schemata
-    dictionary.addFile(readResourcesFileSchema(SSM_S_TYPE));
 
     return dictionary;
   }

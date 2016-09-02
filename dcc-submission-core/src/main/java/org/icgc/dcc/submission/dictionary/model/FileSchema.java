@@ -60,7 +60,7 @@ import com.google.common.collect.Lists;
  */
 @Embedded
 @ToString(of = { "name" })
-public class FileSchema implements DictionaryElement, Serializable, Comparable<FileSchema> {
+public class FileSchema implements DictionaryElement, Serializable {
 
   /**
    * TODO: use {@link FileType} instead of String.
@@ -331,42 +331,6 @@ public class FileSchema implements DictionaryElement, Serializable, Comparable<F
       }
 
     });
-  }
-
-  /**
-   * Compares according to {@link Relation}. If {@code this} is a parent of the {@code ot}
-   * @return -1 if {@code this} is a parent of the {@code other}<br>
-   * 0 if they are equal<br>
-   * 1 if {@code this} is a child of the {@code other}
-   */
-  @Override
-  public int compareTo(FileSchema other) {
-    val fileType = FileType.from(name);
-    // Relations point to parents
-    val relationFileTypes = getRelationsFileType();
-    val otherFileType = FileType.from(other.name);
-    if (relationFileTypes.contains(otherFileType)) {
-      return 1;
-    }
-
-    val otherRelationFileTypes = other.getRelationsFileType();
-    if (otherRelationFileTypes.contains(fileType)) {
-      return -1;
-    }
-
-    // Schemas are already equal at this point, but we will try to compare them by proximity to the top in the
-    // hierarchy. E.g. meth_array_m and meth_array_probe are equal, but it better to put meth_array_m first.
-    val relationsSize = Integer.valueOf(relations.size());
-    val otherRelationsSize = Integer.valueOf(other.relations.size());
-
-    // This is the right comparison order. The 'smaller' FileSchema has more relations
-    return otherRelationsSize.compareTo(relationsSize);
-  }
-
-  private List<FileType> getRelationsFileType() {
-    return relations.stream()
-        .map(relation -> relation.getOtherFileType())
-        .collect(toImmutableList());
   }
 
 }

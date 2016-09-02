@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.key.report;
 
 import static com.fasterxml.jackson.core.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
 import static com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS;
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.CONDITIONAL_RELATION;
@@ -49,7 +49,6 @@ import org.icgc.dcc.submission.validation.key.data.KVKey;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.google.common.base.Optional;
 
 /**
  * Reports key validation errors in the context of the submission system.
@@ -88,30 +87,30 @@ public class KVReporter implements Closeable {
   }
 
   public void reportUniquenessError(KVFileType fileType, String fileName, long lineNumber, KVKey pk) {
-    reportError(fileType, fileName, lineNumber, UNIQUENESS, pk, Optional.absent());
+    reportError(fileType, fileName, lineNumber, UNIQUENESS, pk, null);
   }
 
   public void reportRelationError(KVFileType fileType, String fileName, long lineNumber, KVKey fk,
-      Optional<KVFileType> referencedFileType) {
+      KVFileType referencedFileType) {
     reportError(fileType, fileName, lineNumber, RELATION, fk, referencedFileType);
   }
 
   public void reportOptionalRelationError(KVFileType fileType, String fileName, long lineNumber, KVKey optionalFk,
-      Optional<KVFileType> referencedFileType) {
+      KVFileType referencedFileType) {
     reportError(fileType, fileName, lineNumber, OPTIONAL_RELATION, optionalFk, referencedFileType);
   }
 
   public void reportConditionalRelationError(KVFileType fileType, String fileName, long lineNumber,
-      KVKey conditionalFk, Optional<KVFileType> referencedFileType) {
+      KVKey conditionalFk, KVFileType referencedFileType) {
     reportError(fileType, fileName, lineNumber, CONDITIONAL_RELATION, conditionalFk, referencedFileType);
   }
 
   public void reportSurjectionError(KVFileType fileType, String fileName, KVKey keys, KVFileType referencedFileType) {
-    reportError(fileType, fileName, SURJECTION_ERROR_LINE_NUMBER, SURJECTION, keys, Optional.of(referencedFileType));
+    reportError(fileType, fileName, SURJECTION_ERROR_LINE_NUMBER, SURJECTION, keys, referencedFileType);
   }
 
   private void reportError(KVFileType fileType, String fileName, long lineNumber, KVErrorType errorType, KVKey keys,
-      Optional<KVFileType> referencedFileType) {
+      KVFileType referencedFileType) {
     log.debug("Reporting '{}' error at '({}, {}, {})': '{}'",
         new Object[] { errorType, fileType, fileName, lineNumber, keys });
 
@@ -131,15 +130,14 @@ public class KVReporter implements Closeable {
   }
 
   private Object[] getErrorParams(KVFileType fileType, KVErrorType errorType,
-      Optional<KVFileType> optionalReferencedFileType) {
+      KVFileType referencedFileType) {
     // UNIQUENESS: uniqueness errors don't need params
     if (errorType == UNIQUENESS) {
       return null;
     }
 
-    checkArgument(optionalReferencedFileType.isPresent(), "Expected referenced file type for RELATION, "
-        + "OPTIONAL_RELATION and SURJECTION error types");
-    val referencedFileType = optionalReferencedFileType.get();
+    checkNotNull(referencedFileType, "Expected referenced file type for RELATION, OPTIONAL_RELATION and SURJECTION "
+        + "error types");
 
     // RELATIONS:
     if (errorType == RELATION || errorType == OPTIONAL_RELATION || errorType == CONDITIONAL_RELATION) {

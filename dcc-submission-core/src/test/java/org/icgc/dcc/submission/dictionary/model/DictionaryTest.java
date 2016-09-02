@@ -32,6 +32,7 @@ import lombok.val;
 import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.submission.dictionary.util.Dictionaries;
 import org.icgc.dcc.submission.test.AbstractDictionaryTest;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -40,10 +41,9 @@ public class DictionaryTest extends AbstractDictionaryTest {
 
   Dictionary dictionary;
 
-  @Override
+  @Before
   @SneakyThrows
-  public void setUp() {
-    super.setUp();
+  public void setUpDictionary() {
     dictionary = Dictionaries.readDictionary(dictionaryFile.toURI().toURL());
   }
 
