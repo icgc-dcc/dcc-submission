@@ -78,7 +78,6 @@ const CompleteRelease = observer(function CompleteRelease({releaseName, onClickC
               />
             </div>
           </div>
-          {JSON.stringify(nextRelease)}
         </form>
       </div>
       <div className="modal-footer">

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {Link} from 'react-router';
+import { map } from 'lodash';
 import {observable, action, runInAction} from 'mobx';
 import {observer} from 'mobx-react';
 import { fetchHeaders, formatFileSize } from '~/utils';
@@ -8,6 +9,19 @@ import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 
 import defaultTableOptions from '~/common/defaultTableOptions';
 import SubmissionActionButtons from '~/common/components/SubmissionActionButtons/SubmissionActionButtons';
+
+import RELEASE_STATES from './RELEASE_STATES';
+import ReleaseNowButton from './ReleaseNowButton';
+
+const summaryClassNameMap = {
+  SIGNED_OFF: 'label-success',
+  VALID: 'label-success',
+  QUEUED: 'label-warning',
+  VALIDATING: 'label-warning',
+  INVALID: 'label-danger',
+  ERROR: 'label-danger',
+  NOT_VALIDATED: 'label-default',
+};
 
 const release = observable({
   isLoading: false,
@@ -20,6 +34,8 @@ const release = observable({
   submissions: [],
   summary: undefined
 });
+
+window.release = release;
 
 release.fetch = action('fetch single release', async function (releaseName) {
   this.isLoading = true;
@@ -55,13 +71,43 @@ class Release extends Component {
       defaultSortName: 'projectKey',
     };
 
-    return <div>
+    return (
+    <div>
       <h1>Release Summary</h1>
-      <ul>
-        <li>Name {release.name}</li>
-        <li>State {release.state}</li>
-        <li>Dictionary Version {release.dictionaryVersion}</li>
-        <li>Number of projects {release.submissions.length}</li>
+      <ul className="ReleaseSummaryList">
+        <li>
+          <span className="key">Name</span>
+          <span className="value">{release.name}</span>
+        </li>
+        <li>
+          <span className="key">State</span>
+          <span>{release.state}</span>
+        </li>
+        <li>
+          <span>Dictionary Version</span>
+          <span>{release.dictionaryVersion}</span>
+        </li>
+        <li>
+          <span>Number of projects</span>
+          <span>{release.submissions.length}</span>
+        </li>
+        <li>
+          { map(release.summary, (count, summaryKey) => (
+            <span className={`ReleaseSummaryBadge label ${summaryClassNameMap[summaryKey]}`} key={summaryKey}>
+              <span className="summary-key">{summaryKey}</span>
+              <span className="summary-count">{count}</span>
+            </span>
+          ))}
+        </li>
+        { release.state === RELEASE_STATES.OPENED && (
+          <li>
+            <ReleaseNowButton
+              release={release}
+              onSuccess={() => release.fetch(releaseName)}
+              className="m-btn green"
+            />
+          </li>
+        )}
       </ul>
 
       <div>
@@ -110,6 +156,7 @@ class Release extends Component {
           >State</TableHeaderColumn>
 
           <TableHeaderColumn
+            hidden={release.state !== RELEASE_STATES.OPENED}
             dataFormat={ (cell, submission) => (
               <SubmissionActionButtons submission={submission} buttonClassName="m-btn mini"/>
             )}
@@ -117,5 +164,6 @@ class Release extends Component {
         </BootstrapTable>
       </div>
     </div>
+    );
   }
 }

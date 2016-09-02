@@ -25,6 +25,8 @@ export default function SubmissionActionButtons ({submission, buttonClassName}) 
       return (submission.submissionFiles.length && submission.submissionFiles.map(x => x.schemaName).filter(Boolean).length)
         ? <ActionButton className={`blue-stripe ${buttonClassName}`}>Validate</ActionButton>
         : <em>Upload Files</em>
+    case 'SIGNED_OFF':
+      return null;
     case 'ERROR':
     default:
       return <em>Contact dcc-support@icgc.org</em>;

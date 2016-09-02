@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {Link} from 'react-router';
-import {observable, action, runInAction} from 'mobx';
+import {observable, action, runInAction, autorun} from 'mobx';
 import {observer} from 'mobx-react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import moment from 'moment';
@@ -8,10 +8,9 @@ import moment from 'moment';
 import defaultTableOptions from '~/common/defaultTableOptions';
 import { fetchHeaders } from '~/utils';
 import user from '~/user';
-import ActionButton from '~/common/components/ActionButton/ActionButton';
 
-import { openModal, closeModal } from '~/App';
-import CompleteReleaseModal from '~/common/components/modals/CompleteRelease/CompleteRelease';
+import RELEASE_STATES from '../Release/RELEASE_STATES';
+import ReleaseNowButton from '../Release/ReleaseNowButton';
 
 const releases = observable({
   isLoading: false,
@@ -33,19 +32,6 @@ releases.fetch = action('fetch releases', async function () {
     this.items = items;
   });
 });
-
-function showCompleteReleaseModal({releaseName, onSuccess}) {
-  openModal(<CompleteReleaseModal
-    releaseName={releaseName}
-    onClickClose={closeModal}
-    onSuccess={onSuccess}
-    />);
-}
-
-function handleSuccessfulRelease() {
-  closeModal();
-  releases.fetch();
-}
 
 function releaseDateSortFunction(a, b, order, sortField) {
   const dateA = a[sortField] || new Date().getTime();
@@ -104,13 +90,11 @@ class Releases extends Component {
           <TableHeaderColumn
             hidden={!user.isAdmin}
             dataFormat={(cell, release) => (
-              release.state === 'OPENED'
-              ? <ActionButton
-                onClick={() => showCompleteReleaseModal({releaseName: release.name, onSuccess: handleSuccessfulRelease})}
-                className="m-btn mini green-stripe"
-              >
-                Release Now
-              </ActionButton>
+              release.state === RELEASE_STATES.OPENED
+              ? <ReleaseNowButton
+                  release={release}
+                  onSuccess={() => releases.fetch()}
+                />
               : ''
             )}
           >Actions</TableHeaderColumn>
