@@ -167,7 +167,7 @@ public class KVDynamicDictionary implements KVDictionary {
 
   @Override
   public Iterable<KVFileType> getTopologicallyOrderedFileTypes() {
-    return KVDynamicDictionaryHelper.getTopologicallyOrderedFileTypes(dictionary);
+    return KVFileTypeRelations.getTopologicallyOrderedFileTypes(dictionary);
   }
 
   @Override

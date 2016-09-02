@@ -35,11 +35,11 @@ import org.jgrapht.graph.DefaultEdge;
 import com.google.common.collect.ImmutableList;
 
 @NoArgsConstructor(access = PRIVATE)
-public final class KVDynamicDictionaryHelper {
+public final class KVFileTypeRelations {
 
   public static Iterable<KVFileType> getTopologicallyOrderedFileTypes(Dictionary dictionary) {
     val fileTypeRelations = dictionary.getFiles().stream()
-        .map(KVDynamicDictionaryHelper::createFileTypeRelation)
+        .map(KVFileTypeRelations::createFileTypeRelation)
         .collect(toImmutableList());
 
     val graph = createGraph(fileTypeRelations);
