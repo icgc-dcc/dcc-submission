@@ -39,6 +39,10 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.cascading.CascadingContext;
@@ -58,10 +62,6 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Splitter;
-
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RunWith(MockitoJUnitRunner.class)
@@ -97,7 +97,9 @@ public class KeyValidatorTest {
     validator.validate(context);
 
     String actualErrorLines = getActualErrorLines();
+    log.error("Actual: {}", actualErrorLines);
     String expectedErrorLines = getExpectedErrorLines();
+    log.error("Expected: {}", expectedErrorLines);
     assertThat(actualErrorLines).isEqualTo(expectedErrorLines);
   }
 
@@ -121,7 +123,7 @@ public class KeyValidatorTest {
     val release = mock(Release.class);
     when(release.getName()).thenReturn(RELEASE_NAME);
 
-    val dictionary = readResourcesDictionary("0.11c");
+    val dictionary = readResourcesDictionary("0.14z");
 
     val releaseFileSystem = mock(ReleaseFileSystem.class);
 

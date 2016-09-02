@@ -25,15 +25,21 @@ import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Iterables.tryFind;
 import static com.google.common.collect.Maps.asMap;
 import static com.google.common.collect.Sets.newLinkedHashSet;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_FIELD;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.validation.Valid;
+
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.val;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.common.core.model.DataType;
@@ -42,6 +48,7 @@ import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
+import org.icgc.dcc.submission.dictionary.util.DictionaryTopologicalComparator;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
 import org.mongodb.morphia.annotations.Entity;
@@ -55,16 +62,15 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.val;
-
 /**
  * Describes a dictionary that contains {@code FileSchema}ta and that may be used by some releases
  */
 @Entity
 @ToString(of = { "version", "state" })
 public class Dictionary extends BaseEntity implements HasName, DictionaryElement {
+
+  private static final DictionaryTopologicalComparator DICTIONARY_TOPOLOGICAL_COMPARATOR =
+      new DictionaryTopologicalComparator();
 
   @NotBlank
   @Indexed(unique = true)
@@ -367,39 +373,12 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    */
   @JsonIgnore
   public List<FeatureType> getFeatureTypes() {
-    return copyOf(transform(
-
-        // Only get file types indicators of a feature type
-        filter(
-            getFileTypes(),
-            new Predicate<FileType>() {
-
-              @Override
-              public boolean apply(FileType fileType) {
-                val dataType = fileType.getDataType();
-                return !dataType.isFeatureType()
-                    || isPresenceIndicatorOf(fileType, dataType.asFeatureType());
-              }
-
-              private boolean isPresenceIndicatorOf(FileType fileType, FeatureType featureType) {
-                return featureType.getDataTypePresenceIndicator() == fileType;
-              }
-
-            }),
-
-        // Transform them into their corresponding feature type
-        new Function<FileType, FeatureType>() {
-
-          @Override
-          public FeatureType apply(FileType fileType) {
-            val dataType = fileType.getDataType();
-            checkState(dataType.isFeatureType(),
-                "Expecting a '%s' at this point, instead got: '%s'",
-                FeatureType.class.getSimpleName(), dataType);
-            return dataType.asFeatureType();
-          }
-
-        }));
+    return getFileTypes().stream()
+        .map(FileType::getDataType)
+        .filter(DataType::isFeatureType)
+        .map(DataType::asFeatureType)
+        .distinct()
+        .collect(toImmutableList());
   }
 
   /**
@@ -411,8 +390,19 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    */
   @JsonIgnore
   public List<FileType> getFileTypesReferencedBranch(FeatureType featureType) {
-    checkState(false, "WIP");
-    return null; // FIXME: not ready for prime time
+    return getFileSchemata(featureType).stream()
+        .sorted(DICTIONARY_TOPOLOGICAL_COMPARATOR)
+        .map(fileSchema -> FileType.from(fileSchema.getName()))
+        .collect(toImmutableList());
+  }
+
+  public Collection<FileType> getParents(FileType fileType) {
+    val schema = getFileSchema(fileType);
+
+    return schema.getRelations().stream()
+        .map(Relation::getOtherFileType)
+        .distinct()
+        .collect(toImmutableList());
   }
 
 }

@@ -27,6 +27,9 @@ import static org.icgc.dcc.submission.validation.key.KVTestUtils.copyDirectory;
 import java.io.File;
 import java.io.IOException;
 
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.util.Joiners;
@@ -36,9 +39,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class KeyValidatorIntegrationTest {
@@ -102,7 +102,7 @@ public class KeyValidatorIntegrationTest {
 
       @Override
       protected Dictionary createDictionary() {
-        return readResourcesDictionary("0.11c");
+        return readResourcesDictionary("0.14z");
       }
 
     };

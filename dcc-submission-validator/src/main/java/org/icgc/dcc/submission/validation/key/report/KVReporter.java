@@ -19,19 +19,24 @@ package org.icgc.dcc.submission.validation.key.report;
 
 import static com.fasterxml.jackson.core.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
 import static com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
 import static org.icgc.dcc.submission.core.report.Error.error;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.CONDITIONAL_RELATION;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.OPTIONAL_RELATION;
-import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION1;
-import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION2;
+import static org.icgc.dcc.submission.validation.key.core.KVErrorType.RELATION;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.SURJECTION;
 import static org.icgc.dcc.submission.validation.key.core.KVErrorType.UNIQUENESS;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.SPECIMEN;
 import static org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator.SURJECTION_ERROR_LINE_NUMBER;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
+
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -44,11 +49,6 @@ import org.icgc.dcc.submission.validation.key.data.KVKey;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Reports key validation errors in the context of the submission system.
@@ -87,36 +87,40 @@ public class KVReporter implements Closeable {
   }
 
   public void reportUniquenessError(KVFileType fileType, String fileName, long lineNumber, KVKey pk) {
-    reportError(fileType, fileName, lineNumber, UNIQUENESS, pk);
+    reportError(fileType, fileName, lineNumber, UNIQUENESS, pk, null);
   }
 
-  public void reportRelation1Error(KVFileType fileType, String fileName, long lineNumber, KVKey fk1) {
-    reportError(fileType, fileName, lineNumber, RELATION1, fk1);
+  public void reportRelationError(KVFileType fileType, String fileName, long lineNumber, KVKey fk,
+      KVFileType referencedFileType) {
+    reportError(fileType, fileName, lineNumber, RELATION, fk, referencedFileType);
   }
 
-  public void reportRelation2Error(KVFileType fileType, String fileName, long lineNumber, KVKey fk2) {
-    reportError(fileType, fileName, lineNumber, RELATION2, fk2);
+  public void reportOptionalRelationError(KVFileType fileType, String fileName, long lineNumber, KVKey optionalFk,
+      KVFileType referencedFileType) {
+    reportError(fileType, fileName, lineNumber, OPTIONAL_RELATION, optionalFk, referencedFileType);
   }
 
-  public void reportOptionalRelationError(KVFileType fileType, String fileName, long lineNumber, KVKey optionalFk) {
-    reportError(fileType, fileName, lineNumber, OPTIONAL_RELATION, optionalFk);
+  public void reportConditionalRelationError(KVFileType fileType, String fileName, long lineNumber,
+      KVKey conditionalFk, KVFileType referencedFileType) {
+    reportError(fileType, fileName, lineNumber, CONDITIONAL_RELATION, conditionalFk, referencedFileType);
   }
 
-  public void reportSurjectionError(KVFileType fileType, String fileName, KVKey keys) {
-    reportError(fileType, fileName, SURJECTION_ERROR_LINE_NUMBER, SURJECTION, keys);
+  public void reportSurjectionError(KVFileType fileType, String fileName, KVKey keys, KVFileType referencedFileType) {
+    reportError(fileType, fileName, SURJECTION_ERROR_LINE_NUMBER, SURJECTION, keys, referencedFileType);
   }
 
-  private void reportError(KVFileType fileType, String fileName, long lineNumber, KVErrorType errorType, KVKey keys) {
+  private void reportError(KVFileType fileType, String fileName, long lineNumber, KVErrorType errorType, KVKey keys,
+      KVFileType referencedFileType) {
     log.debug("Reporting '{}' error at '({}, {}, {})': '{}'",
         new Object[] { errorType, fileType, fileName, lineNumber, keys });
 
     persistError(error()
         .fileName(fileName)
-        .fieldNames(dictionary.getErrorFieldNames(fileType, errorType))
-        .params(getErrorParams(fileType, errorType))
+        .fieldNames(dictionary.getErrorFieldNames(fileType, errorType, referencedFileType))
+        .params(getErrorParams(fileType, errorType, referencedFileType))
         .type(errorType.getErrorType())
         .lineNumber(lineNumber)
-        .value(keys.getValues())
+        .value(keys.getStringValues())
         .build());
   }
 
@@ -125,37 +129,32 @@ public class KVReporter implements Closeable {
     WRITER.writeValue(outputStream, error);
   }
 
-  private Object[] getErrorParams(KVFileType fileType, KVErrorType errorType) {
-    Object[] errorParams = null;
+  private Object[] getErrorParams(KVFileType fileType, KVErrorType errorType,
+      KVFileType referencedFileType) {
+    // UNIQUENESS: uniqueness errors don't need params
+    if (errorType == UNIQUENESS) {
+      return null;
+    }
+
+    checkNotNull(referencedFileType, "Expected referenced file type for RELATION, OPTIONAL_RELATION and SURJECTION "
+        + "error types");
 
     // RELATIONS:
-    if (errorType == RELATION1 || errorType == RELATION2 || errorType == OPTIONAL_RELATION) {
-      KVFileType referencedFileType;
-      // DCC-3926
-      if (fileType == KVFileType.SURGERY) {
-        referencedFileType = dictionary.getOptionalReferencedFileType2(fileType).get();
-      } else if (errorType != RELATION2) {
-        referencedFileType = dictionary.getOptionalReferencedFileType1(fileType).get();
-      } else {
-        referencedFileType = dictionary.getOptionalReferencedFileType2(fileType).get();
-      }
-
+    if (errorType == RELATION || errorType == OPTIONAL_RELATION || errorType == CONDITIONAL_RELATION) {
       val referencedFields = dictionary.getPrimaryKeyNames(referencedFileType);
-      errorParams = new Object[] { referencedFileType, referencedFields };
+
+      return new Object[] { referencedFileType, referencedFields };
     }
 
     // SURJECTION
     else if (errorType == SURJECTION) {
-      // DCC-3926: Hack - need to do this because there is a many-to-one relationship with donors due to the addition of
-      // supplemental files.
-      val referencingFileType = fileType == DONOR ? SPECIMEN : dictionary.getReferencingFileType(fileType);
-      val referencingFields = dictionary.getSurjectionForeignKeyNames(referencingFileType);
-      errorParams = new Object[] { referencingFileType, referencingFields };
+      val referencingFileType = fileType;
+      val referencingFields = dictionary.getPrimaryKeyNames(referencedFileType);
+
+      return new Object[] { referencingFileType, referencingFields };
     }
 
-    // UNIQUENESS: uniqueness errors don't need params
-
-    return errorParams;
+    throw new IllegalArgumentException(format("Unsupported error type %s", errorType));
   }
 
 }
