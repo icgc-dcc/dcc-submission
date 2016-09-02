@@ -16,31 +16,6 @@ const nextRelease = observable({
   error: null,
 });
 
-async function completeRelease ({releaseName, onSuccess}) {
-  const response = await fetch('/ws/nextRelease/', {
-    method: 'POST',
-    headers: {
-      ...fetchHeaders.get(),
-      'content-type': 'application/json'
-    },
-    body: JSON.stringify({
-      name: releaseName,
-      submissions: [],
-    }),
-  });
-
-  const responseData = await response.json();
-  if (!response.ok) {
-    console.log('response not ok');
-    nextRelease.error = {
-      code: responseData.code,
-      message: ErrorsDict[responseData.code] || ErrorsDict._default,
-    } 
-  } else {
-    onSuccess();
-  }
-}
-
 const CompleteRelease = observer(function CompleteRelease({releaseName, onClickClose, onSuccess}) {
   return (
     <div className="modal-content">
@@ -82,7 +57,7 @@ const CompleteRelease = observer(function CompleteRelease({releaseName, onClickC
       </div>
       <div className="modal-footer">
         <button className="m-btn grey-stripe" onClick={onClickClose}>Close</button>
-        <button className="m-btn green" onClick={() => completeRelease({releaseName: nextRelease.name, onSuccess})}>Release</button>
+        <button className="m-btn green" onClick={() => performRelease({releaseName: nextRelease.name, onSuccess})}>Release</button>
       </div>
     </div>
   );
