@@ -14,6 +14,8 @@ import RELEASE_STATES from './RELEASE_STATES';
 import ReleaseNowButton from './ReleaseNowButton';
 
 import ReleaseModel from './ReleaseModel.js';
+import ValidateSubmissionModal from '~/Submission/modals/ValidateSubmissionModal';
+import {queueSubmissionForValidation} from '~/Submission/SubmissionModel';
 
 const summaryClassNameMap = {
   SIGNED_OFF: 'label-success',
@@ -28,6 +30,25 @@ const summaryClassNameMap = {
 export default @observer
 class Release extends Component {
   @observable release;
+  @observable submissionToValidate = null;
+
+  handleRequestValidateSubmission(submission) {
+    this.submissionToValidate = submission;
+  }
+
+  handleRequestSubmitForValidation = async ({dataTypes, emails}) => {
+    await queueSubmissionForValidation({
+      projectKey: this.submissionToValidate.projectKey,
+      dataTypes,
+      emails
+    });
+    this.closeValidateModal();
+    this.release.fetch();
+  };
+
+  closeValidateModal = () => {
+    this.submissionToValidate = null;
+  }
 
   componentWillMount () {
     const releaseName = this.props.params.releaseName;
@@ -134,11 +155,24 @@ class Release extends Component {
           <TableHeaderColumn
             hidden={release.state !== RELEASE_STATES.OPENED}
             dataFormat={ (cell, submission) => (
-              <SubmissionActionButtons submission={submission} buttonClassName="m-btn mini"/>
+              <SubmissionActionButtons
+                submission={submission}
+                buttonClassName="m-btn mini"
+                onClickValidate={() => this.handleRequestValidateSubmission(submission)}
+              />
             )}
           >Actions</TableHeaderColumn>
         </BootstrapTable>
       </div>
+
+      <ValidateSubmissionModal
+        isOpen={!!this.submissionToValidate}
+        onRequestSubmit={this.handleRequestSubmitForValidation}
+        onRequestClose={this.closeValidateModal}
+        dataTypeReports={this.submissionToValidate ? this.submissionToValidate.report.dataTypeReports.slice() : []}
+        initiallySelectedDataTypes={this.submissionToValidate ? this.submissionToValidate.report.dataTypeReports.map(x => x.dataType) : []}
+        defaultEmailsText={``}
+      />
     </div>
     );
   }
