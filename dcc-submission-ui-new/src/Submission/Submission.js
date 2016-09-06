@@ -5,7 +5,7 @@ import { groupBy, map } from 'lodash';
 import { formatFileSize } from '~/utils';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 
-import dataTypeDict from '~/common/dataTypeDict';
+import DATATYPE_DICTIONARY from '~/common/constants/DATATYPE_DICTIONARY';
 import Status from '~/common/components/Status';
 import getValidFileCount from './getValidFileCount.coffee';
 import SubmissionActionButtons from '~/Submission/SubmissionActionButtons';
@@ -53,7 +53,7 @@ class Submission extends Component {
         >
           <TableHeaderColumn
             dataField='dataType'
-            dataFormat={ dataType => ( dataTypeDict[dataType] || dataType )}
+            dataFormat={ dataType => ( DATATYPE_DICTIONARY[dataType] || dataType )}
           >Data Type</TableHeaderColumn>
           <TableHeaderColumn
             dataField='dataTypeState'

@@ -8,7 +8,7 @@ import { formatFileSize } from '~/utils';
 import defaultTableOptions from '~/common/defaultTableOptions';
 import Status from '~/common/components/Status';
 
-import dataTypeDict from '~/common/dataTypeDict';
+import DATATYPE_DICTIONARY from '~/common/constants/DATATYPE_DICTIONARY';
 
 export default function GroupedReportList({
     isLoading,
@@ -25,7 +25,7 @@ export default function GroupedReportList({
       defaultSortName: 'name',
     };
 
-  const title = dataTypeDict[dataType] || dataType;
+  const title = DATATYPE_DICTIONARY[dataType] || dataType;
   const submissionStateCanBeChanged = !includes(['QUEUED', 'VALIDATING', 'ERROR'], submissionState);
   const groupCanBeSubmittedForValidation = submissionStateCanBeChanged && dataTypeReport && includes(['VALID', 'INVALID', 'NOT_VALIDATED'], dataTypeReport.dataTypeState)
 
