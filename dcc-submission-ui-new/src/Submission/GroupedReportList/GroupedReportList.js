@@ -18,6 +18,7 @@ export default function GroupedReportList({
     dataType,
     dataTypeReport,
     submissionState,
+    onRequestValidate,
   }) {
   const tableOptions = {
       ...defaultTableOptions,
@@ -39,12 +40,12 @@ export default function GroupedReportList({
         </div>
       )}
       {
-        // TODO: make this button do something
         groupCanBeSubmittedForValidation && (
-          <a data-toggle="modal"
+          <a
+            data-toggle="modal"
             className="m-btn mini blue"
-            href="#validate-submission-popup"
-            id="validate-submission-popup-button">
+            onClick={onRequestValidate}
+          >
           Validate {title}
           </a>
         )

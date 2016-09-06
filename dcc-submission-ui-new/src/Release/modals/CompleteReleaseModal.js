@@ -2,15 +2,6 @@ import React from 'react';
 import {observable} from 'mobx';
 import {observer} from 'mobx-react';
 
-import { fetchHeaders } from '~/utils';
-
-const ErrorsDict = {
-  'InvalidName': 'A release name must only use letters[a-z], numbers(0-9), underscores(_) and dashes(-)',
-  'DuplicateReleaseName': 'That release name has already been used.',
-  'SignedOffSubmissionRequired': 'The release needs at least one SIGNED OFF submission before it can be COMPLETED.',
-  _default: 'An error occurred. Please contact Support for assistance.'
-};
-
 const nextRelease = observable({
   name: '',
   error: null,

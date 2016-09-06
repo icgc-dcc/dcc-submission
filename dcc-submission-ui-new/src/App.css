@@ -42,5 +42,5 @@
 
 .ReactModal__Content.modal-dialog {
   border: none;
-  background-color: transparent;
+  background-color: white;
 }

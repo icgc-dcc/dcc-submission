@@ -1,5 +1,5 @@
 import {observable, action, runInAction, computed} from 'mobx';
-import { includes, groupBy } from 'lodash';
+import { includes, groupBy, omit } from 'lodash';
 import { fetchHeaders } from '~/utils';
 
 import injectReportsToSubmissionFiles from './injectReportsToSubmissionFiles.coffee';
@@ -25,13 +25,24 @@ export async function queueSubmissionForValidation ({projectKey, emails, dataTyp
       dataTypes,
     }]),
   });
-  const responseData = await response.json();
   if (!response.ok) {
-    console.error('response not ok', responseData);
-    throw new Error(responseData);
+    console.error('response not ok', response);
   }
-  return responseData;
 }
+
+export async function resetSubmission ({projectKey}) {
+  const response = await fetch(`/ws/nextRelease/state/${projectKey}`, {
+    method: 'DELETE',
+    headers: {
+      ...fetchHeaders.get(),
+    },
+  });
+  if (!response.ok) {
+    console.error('response not ok', response);
+  }
+  return response
+}
+
 
 class SubmissionModel {
   @observable isLoading = false;
@@ -75,19 +86,23 @@ class SubmissionModel {
     });
     runInAction('update model', () => {
       this.isLoading = false;
-      Object.assign(this, responseData);
+      // NOTE: omit is a temporary workaround due to endpoint returning 'null' as releaseName
+      Object.assign(this, omit(responseData, 'releaseName'));
       injectReportsToSubmissionFiles(this.submissionFiles, this.report);
     });
   };
 
-  @action queueForValidation = async (emails, dataTypes) => {
+  @action requestValidation = async ({emails, dataTypes}) => {
     const responseData = await queueSubmissionForValidation({
       projectKey: this.projectKey,
       emails,
       dataTypes,
     });
-    console.log(responseData);
     return responseData;
+  };
+
+  @action reset = () => {
+    return resetSubmission({projectKey: this.projectKey});
   };
 
 };

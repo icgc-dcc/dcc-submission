@@ -2,43 +2,15 @@ import React, { Component } from 'react';
 import {observable} from 'mobx';
 import {observer} from 'mobx-react';
 
-import { fetchHeaders } from '~/utils';
-
-const ErrorsDict = {
-  _default: 'An error occurred. Please contact Support for assistance.'
-};
-
-async function validateSubmission ({projectKey, dataTypes, emails}) {
-  const response = await fetch('/ws/nextRelease/queue', {
-    method: 'POST',
-    headers: {
-      ...fetchHeaders.get(),
-    },
-    body: JSON.stringify([
-      {
-        dataTypes: dataTypes,
-        emails: emails,
-        key: projectKey
-      }
-    ]),
-  });
-
-  const responseData = await response.json();
-  if (!response.ok) {
-    console.error('response not ok', responseData);
-    throw new Error(ErrorsDict[responseData.code] || ErrorsDict._default);
-  }
-}
-
 @observer
-class ValidateModal extends Component {
+class ResetSubmissionModal extends Component {
 
   @observable errorMessage = null;
 
   handleClickSubmit = async () => {
     console.log('submit');
     try {
-      await validateSubmission();
+      await resetSubmission();
       this.props.onSuccess();
     } catch (e) {
       this.errorMessage = e.message; 
@@ -97,4 +69,4 @@ class ValidateModal extends Component {
   }
 }
 
-export default ValidateModal;
+export default ResetSubmissionModal;
