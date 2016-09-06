@@ -19,6 +19,11 @@ package org.icgc.dcc.submission.validation.pcawg;
 
 import java.util.List;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.common.core.model.Programs;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.util.CodeLists;
@@ -32,11 +37,6 @@ import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSample;
 import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSampleFilter;
 import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSampleSheet;
 import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSampleValidator;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Validator responsible for ensuring PCAWG clinical validation rules are enforced.
@@ -115,13 +115,7 @@ public class PCAWGValidator implements Validator {
       return false;
     }
 
-    // For DCC testing of PCAWG projects
-    val testPCAWG = projectKey.startsWith("TESTP-");
-
-    val pcawg = testPCAWG || pcawgSampleSheet.hasProject(projectKey);
-    val tcga = isTCGA(projectKey);
-
-    return pcawg && !tcga;
+    return !isTCGA(projectKey);
   }
 
   private boolean isProjectExcluded(String projectKey) {
