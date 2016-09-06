@@ -30,15 +30,13 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <!-- The dependencies have to be defined exactly in this order. Otherwise 
     META-INF/services/org.apache.hadoop.fs.FileSystem file is incorrectly resolved. -->
     
-    <!-- DCC -->
+    <!-- DCC - Common -->
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>dcc-common-hadoop</artifactId>
     </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>dcc-common-meta</artifactId>
-    </dependency>
+    
+    <!-- DCC - Submission -->
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>dcc-submission-core</artifactId>

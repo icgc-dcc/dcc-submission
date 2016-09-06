@@ -31,15 +31,21 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
   <description>${project.name}</description>
 
   <dependencies>
-    <!-- DCC -->
+    <!-- DCC - Submission -->
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>dcc-submission-core</artifactId>
       <version>${project.version}</version>
-    </dependency>   
+    </dependency>
+      
+    <!-- DCC - Common -->
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>dcc-common-hadoop</artifactId>
+      <artifactId>dcc-common-tcga</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-common-cascading</artifactId>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
