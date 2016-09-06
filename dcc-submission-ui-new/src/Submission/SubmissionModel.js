@@ -6,7 +6,7 @@ import injectReportsToSubmissionFiles from './injectReportsToSubmissionFiles.cof
 
 const CLINICAL_DATA_TYPES = ['CLINICAL_SUPPLEMENTAL_TYPE', 'CLINICAL_CORE_TYPE']; 
 
-export async function fetchSubmission (releaseName, projectKey) {
+export async function fetchSubmission ({releaseName, projectKey}) {
   const response = await fetch(`/ws/releases/${releaseName}/submissions/${projectKey}`, {
       headers: fetchHeaders.get()
     });
@@ -69,7 +69,10 @@ class SubmissionModel {
 
   @action fetch = async () => {
     this.isLoading = true;
-    const responseData = await fetchSubmission(this.releaseName, this.projectKey);
+    const responseData = await fetchSubmission({
+      releaseName: this.releaseName,
+      projectKey: this.projectKey,
+    });
     runInAction('update model', () => {
       this.isLoading = false;
       Object.assign(this, responseData);

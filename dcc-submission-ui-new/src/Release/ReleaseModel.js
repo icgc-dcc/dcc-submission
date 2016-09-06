@@ -9,7 +9,7 @@ const PERFORM_RELEASE_ERRORS = {
   _default: 'An error occurred. Please contact Support for assistance.'
 };
 
-export async function fetchRelease (releaseName) {
+export async function fetchRelease ({releaseName}) {
   const response = await fetch(`/ws/releases/${releaseName}`, {
     headers: fetchHeaders.get()
   });
@@ -53,7 +53,7 @@ class ReleaseModel {
 
   @action fetch = async () => {
     this.isLoading = true;
-    const responseData = await fetchRelease(this.name);
+    const responseData = await fetchRelease({releaseName: this.name});
     runInAction('update release', () => {
       this.isLoading = false;
       Object.assign(this, responseData);
