@@ -13,6 +13,26 @@ export async function fetchSubmission (releaseName, projectKey) {
   return await response.json();
 }
 
+export async function queueSubmissionForValidation ({projectKey, emails, dataTypes}) {
+  const response = await fetch('/ws/nextRelease/queue', {
+    method: 'POST',
+    headers: {
+      ...fetchHeaders.get(),
+    },
+    body: JSON.stringify([{
+      key: projectKey,
+      emails: emails,
+      dataTypes,
+    }]),
+  });
+  const responseData = await response.json();
+  if (!response.ok) {
+    console.error('response not ok', responseData);
+    throw new Error(responseData);
+  }
+  return responseData;
+}
+
 class SubmissionModel {
   @observable isLoading = false;
   @observable lastUpdated = undefined;
@@ -55,6 +75,16 @@ class SubmissionModel {
       Object.assign(this, responseData);
       injectReportsToSubmissionFiles(this.submissionFiles, this.report);
     });
+  };
+
+  @action queueForValidation = async (emails, dataTypes) => {
+    const responseData = await queueSubmissionForValidation({
+      projectKey: this.projectKey,
+      emails,
+      dataTypes,
+    });
+    console.log(responseData);
+    return responseData;
   };
 
 };
