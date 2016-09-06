@@ -3,7 +3,7 @@ import React from 'react';
 import { openModal, closeModal } from '~/App';
 import ActionButton from '~/common/components/ActionButton/ActionButton';
 
-import CompleteReleaseModal from '~/common/components/modals/CompleteReleaseModal';
+import CompleteReleaseModal from '~/Release/modals/CompleteReleaseModal';
 
 function showCompleteReleaseModal({releaseName, onSuccess}) {
   openModal(<CompleteReleaseModal
