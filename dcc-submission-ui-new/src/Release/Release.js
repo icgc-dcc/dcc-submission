@@ -8,7 +8,7 @@ import Status from '~/common/components/Status';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 
 import defaultTableOptions from '~/common/defaultTableOptions';
-import SubmissionActionButtons from '~/common/components/SubmissionActionButtons/SubmissionActionButtons';
+import SubmissionActionButtons from '~/Submission/SubmissionActionButtons';
 
 import RELEASE_STATES from './RELEASE_STATES';
 import ReleaseNowButton from './ReleaseNowButton';

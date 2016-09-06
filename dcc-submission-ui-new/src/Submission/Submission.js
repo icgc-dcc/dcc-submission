@@ -8,7 +8,7 @@ import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import dataTypeDict from '~/common/dataTypeDict';
 import Status from '~/common/components/Status';
 import getValidFileCount from './getValidFileCount.coffee';
-import SubmissionActionButtons from '~/common/components/SubmissionActionButtons/SubmissionActionButtons';
+import SubmissionActionButtons from '~/Submission/SubmissionActionButtons';
 
 import GroupedReportList from './GroupedReportList/GroupedReportList';
 
