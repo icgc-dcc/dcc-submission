@@ -17,8 +17,7 @@ export async function fetchRelease (releaseName) {
   return responseData;
 }
 
-export async function performRelease ({release}) {
-  const releaseName = release.name;
+export async function performRelease (releaseName) {
   const response = await fetch('/ws/nextRelease/', {
     method: 'POST',
     headers: {
@@ -62,7 +61,7 @@ class ReleaseModel {
   }
 
   performRelease = () => {
-    performRelease(this);
+    performRelease(this.name);
   }
 }
 
