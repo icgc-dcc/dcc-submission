@@ -7,6 +7,8 @@ import { formatFileSize } from '~/utils';
 import Status from '~/common/components/Status';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 
+import user from '~/user';
+
 import defaultTableOptions from '~/common/defaultTableOptions';
 import ActionButton from '~/common/components/ActionButton/ActionButton';
 import SubmissionActionButtons from '~/Submission/SubmissionActionButtons';
@@ -113,6 +115,8 @@ class Release extends Component {
       defaultSortName: 'projectKey',
     };
 
+    const canRelease = release.state === RELEASE_STATES.OPENED && user.isAdmin;
+
     return (
     <div>
       <h1>Release Summary</h1>
@@ -141,7 +145,7 @@ class Release extends Component {
             </span>
           ))}
         </li>
-        { release.state === RELEASE_STATES.OPENED && (
+        { canRelease && (
           <li>
             <ActionButton
               onClick={() => this.handleClickPerformRelease(release)}
