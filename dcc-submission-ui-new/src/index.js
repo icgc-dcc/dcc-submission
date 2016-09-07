@@ -1,5 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { browserHistory } from 'react-router';
+
+import {observe} from 'mobx';
 import { AppContainer } from 'react-hot-loader';
 import 'whatwg-fetch';
 
@@ -16,6 +19,13 @@ user.token = 'YWRtaW46YWRtaW5zcGFzc3dk';
 user.roles = ['admin'];
 user.isLoggedIn = true;
 window.user = user;
+
+observe(user, change => {
+  if (change.name === 'isLoggedIn' && change.oldValue === false && change.newValue === true) {
+    console.log('user just logged in. redirecting to /releases');
+    browserHistory.push('/releases')
+  }
+})
 
 const rootEl = document.getElementById('root');
 
