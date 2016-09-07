@@ -39,10 +39,13 @@ class Release extends Component {
   @computed get shouldShowValidateModal() {
     return !!this.submissionToValidate;
   }
+
   handleClickSignOffSubmission = (submission) => {
     this.submissionToSignOff = submission;
   }
+
   closeValidateModal = () => { this.submissionToValidate = null };
+
   handleRequestSubmitForSignOff = async () => {
     await signOffSubmission({projectKey: this.submissionToSignOff.projectKey});
     this.closeSignOffModal();
@@ -53,10 +56,13 @@ class Release extends Component {
   @computed get shouldShowSignOffModal() {
     return !!this.submissionToSignOff;
   }
+
   handleClickValidateSubmission = (submission) => {
     this.submissionToValidate = submission;
   }
+
   closeSignOffModal = () => { this.submissionToSignOff = null };
+
   handleRequestSubmitForValidation = async ({dataTypes, emails}) => {
     await queueSubmissionForValidation({
       projectKey: this.submissionToValidate.projectKey,
@@ -67,25 +73,32 @@ class Release extends Component {
     this.release.fetch();
   };
 
-
   @observable releaseToPerform;
   @computed get shouldShowPerformReleaseModal() {
     return !!this.releaseToPerform;
   }
+
   handleClickPerformRelease = (release) => {
     this.releaseToPerform = release;
   }
+
   closePerformReleaseModal = () => { this.releaseToPerform = null };
+
   handleRequestSubmitForRelease = async ({nextReleaseName}) => {
     await this.release.performRelease({nextReleaseName});
     this.closePerformReleaseModal();
     this.release.fetch();
   }
 
-  componentWillMount () {
+  componentWillMount() {
     const releaseName = this.props.params.releaseName;
     this.release = new ReleaseModel({name: releaseName});
     this.release.fetch();
+    this._pollInterval = global.setInterval(this.release.fetch, require('~/common/constants/POLL_INTERVAL'));
+  }
+
+  componentWillUnmount() {
+    global.clearInterval(this._pollInterval);
   }
 
   render () {

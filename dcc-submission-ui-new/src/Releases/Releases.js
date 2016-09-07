@@ -61,6 +61,11 @@ class Releases extends Component {
 
   componentWillMount () {
     releases.fetch();
+    this._pollInterval = global.setInterval(releases.fetch, require('~/common/constants/POLL_INTERVAL'));
+  }
+
+  componentWillUnmount () {
+    global.clearInterval(this._pollInterval);
   }
 
   render () {

@@ -50,6 +50,7 @@ class ReleaseModel {
   }
 
   @action fetch = async () => {
+    global.clearTimeout(this._fetchTimeout);
     this.isLoading = true;
     const responseData = await fetchRelease({releaseName: this.name});
     runInAction('update release', () => {
