@@ -37,34 +37,25 @@ const summaryClassNameMap = {
 export default @observer
 class Release extends Component {
   @observable release;
-  @observable submissionToValidate;
-  @computed get shouldShowValidateModal() {
-    return !!this.submissionToValidate;
-  }
 
-  handleClickSignOffSubmission = (submission) => {
-    this.submissionToSignOff = submission;
-  }
-
-  closeValidateModal = () => { this.submissionToValidate = null };
-
+  @observable submissionToSignOff;
+  @computed get shouldShowSignOffModal() { return !!this.submissionToSignOff }
+  handleClickSignOffSubmission = (submission) => { this.submissionToSignOff = submission; }
+  closeSignOffModal = () => { this.submissionToSignOff = null };
   handleRequestSubmitForSignOff = async () => {
     await signOffSubmission({projectKey: this.submissionToSignOff.projectKey});
     this.closeSignOffModal();
     this.release.fetch();
   }
 
-  @observable submissionToSignOff;
-  @computed get shouldShowSignOffModal() {
-    return !!this.submissionToSignOff;
+
+
+  @observable submissionToValidate;
+  @computed get shouldShowValidateModal() {
+    return !!this.submissionToValidate;
   }
-
-  handleClickValidateSubmission = (submission) => {
-    this.submissionToValidate = submission;
-  }
-
-  closeSignOffModal = () => { this.submissionToSignOff = null };
-
+  handleClickValidateSubmission = (submission) => { this.submissionToValidate = submission }
+  closeValidateModal = () => { this.submissionToValidate = null };
   handleRequestSubmitForValidation = async ({dataTypes, emails}) => {
     await queueSubmissionForValidation({
       projectKey: this.submissionToValidate.projectKey,
@@ -76,15 +67,11 @@ class Release extends Component {
   };
 
   @observable releaseToPerform;
-  @computed get shouldShowPerformReleaseModal() {
-    return !!this.releaseToPerform;
-  }
+  @computed get shouldShowPerformReleaseModal() { return !!this.releaseToPerform }
 
-  handleClickPerformRelease = (release) => {
-    this.releaseToPerform = release;
-  }
+  handleClickPerformRelease = (release) => { this.releaseToPerform = release }
 
-  closePerformReleaseModal = () => { this.releaseToPerform = null };
+  closePerformReleaseModal = () => { this.releaseToPerform = null }
 
   handleRequestSubmitForRelease = async ({nextReleaseName}) => {
     await this.release.performRelease({nextReleaseName});
