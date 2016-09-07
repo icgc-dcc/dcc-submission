@@ -1,52 +1,31 @@
 import React, { Component } from 'react';
 
-import {observable, action, runInAction } from 'mobx';
+import {observable} from 'mobx';
 import {observer} from 'mobx-react';
-import { fetchHeaders } from '~/utils';
 import Status from '~/common/components/Status';
 
+import ReportModel from './ReportModel';
 import DetailedReport from './DetailedReport/DetailedReport';
 import ErrorReport from './ErrorReport/ErrorReport';
 
-const report = observable({
-  isLoading: false,
-
-  errorReports: [],
-  fieldReports: [],
-  summaryReports: [],
-  fileName: undefined,
-  fileType: undefined,
-});
-
-report.fetch = action('fetch single report', async function (releaseName, projectKey, reportName) {
-  this.isLoading = true;
-  const response = await fetch(`/ws/releases/${releaseName}/submissions/${projectKey}/files/${reportName}/report`, {
-      headers: fetchHeaders.get()
-    });
-
-  runInAction('update loading status', () => { this.isLoading = false });
-
-  const responseData = await response.json();
-
-  runInAction('update report', () => {
-    Object.assign(this, responseData);
-  });
-});
-
-window.report = report;
 
 export default @observer
 class Report extends Component {
+  @observable report;
 
   componentWillMount () {
     const {releaseName, projectKey, fileName } = this.props.params;
-    report.fetch(releaseName, projectKey, fileName);
+    this.report = new ReportModel({releaseName, projectKey, fileName});
+    this.report.fetch();
+    this._pollInterval = global.setInterval(this.report.fetch, require('~/common/constants/POLL_INTERVAL'));
+  }
+
+  componentWillUnmount () {
+    global.clearInterval(this._pollInterval);
   }
 
   render () {
-    const {releaseName, projectKey, fileName } = this.props.params;
-    window.debugLoad = () => report.fetch(releaseName, projectKey, fileName);
-
+    const report = this.report;
     const hasErrors = report.errorReports.length
     const pageTitle = hasErrors ? 'Error Report' : 'Detailed Report';
 
