@@ -21,7 +21,7 @@
 
 .ReactModal__Content {
   opacity: 0;
-  transform: translateY(100px);
+  transform: translateY(30px);
 }
 
 .ReactModal__Content--after-open {
@@ -36,7 +36,7 @@
 
 .ReactModal__Content--before-close {
   opacity: 0;
-  transform: translateY(-100px);
+  transform: translateY(-30px);
   transition: all 250ms var(--outQuad);
 }
 
