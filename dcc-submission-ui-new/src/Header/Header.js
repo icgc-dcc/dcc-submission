@@ -6,6 +6,7 @@ import {observer} from 'mobx-react';
 import user from '~/user.js';
 
 import FeedbackModal from '~/common/components/FeedbackModal/FeedbackModal';
+import AdminModal from '~/common/components/AdminModal/AdminModal';
 
 @observer
 class Header extends Component {
@@ -14,12 +15,15 @@ class Header extends Component {
     this.shouldShowFeedback = false;
   }
   @action handleRequestShowFeedback = () => {
-    console.log('show feedback');
     this.shouldShowFeedback = true;
   }
 
-  componentWillMount() {
-
+  @observable shouldShowAdmin = false;
+  @action handleRequestHideAdmin = () => {
+    this.shouldShowAdmin = false;
+  }
+  @action handleRequestShowAdmin = () => {
+    this.shouldShowAdmin = true;
   }
 
   render() {
@@ -27,9 +31,17 @@ class Header extends Component {
       <div className="Header">
         Header
         <button onClick={this.handleRequestShowFeedback}>feedback</button>
+        <button onClick={this.handleRequestShowAdmin}>admin</button>
+        username:{user.username}
+        <a onClick={() => user.logout()}>Logout</a>
+
         <FeedbackModal
           isOpen={this.shouldShowFeedback}
           onRequestClose={this.handleRequestHideFeedback}
+        />
+        <AdminModal
+          isOpen={this.shouldShowAdmin}
+          onRequestClose={this.handleRequestHideAdmin}
         />
       </div>
     );
