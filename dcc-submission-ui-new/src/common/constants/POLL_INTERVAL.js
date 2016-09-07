@@ -1,1 +1,1 @@
-export default 4 * 1000;
+export default 15 * 1000;
