@@ -25,6 +25,10 @@ observe(user, change => {
     console.log('user just logged in. redirecting to /releases');
     browserHistory.push('/releases')
   }
+  if (change.name === 'isLoggedIn' && change.oldValue === true && change.newValue === false) {
+    console.log('user logged out. redirecting to /');
+    browserHistory.push('/')
+  }
 })
 
 const rootEl = document.getElementById('root');
