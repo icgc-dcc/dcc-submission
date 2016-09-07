@@ -6,6 +6,7 @@ export default function SubmissionActionButtons ({
   buttonClassName,
   onClickValidate,
   onClickSignOff,
+  onClickCancelValidation,
 }) {
   const { state: submissionState } = submission;
 
@@ -28,12 +29,19 @@ export default function SubmissionActionButtons ({
     </ActionButton>
   );
 
+  const cancelValidationButton = (
+    <ActionButton
+      className={`red-stripe ${buttonClassName}`}
+      onClick={onClickCancelValidation}
+    >Cancel Validation</ActionButton>
+  );
+
   switch (submissionState) {
     case 'INVALID':
       return validateButton;
     case 'QUEUED':
     case 'VALIDATING':
-      return <ActionButton className={`red-stripe ${buttonClassName}`}>Cancel Validation</ActionButton>
+      return cancelValidationButton
     case 'VALID':
       return (
         <div>
