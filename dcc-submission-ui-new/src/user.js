@@ -23,7 +23,10 @@ user.login = action('login', async function (username, password) {
   this.isLoggingIn = true;
   const token = generateToken(username, password);
   const response = await fetch('/ws/users/self', {
-      headers: fetchHeaders
+      headers: {
+        ...fetchHeaders.get(),
+        Authorization: `Basic ${token}`,
+      }
     });
 
   runInAction('update login status', () => { this.isLoggingIn = false });
