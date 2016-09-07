@@ -22,7 +22,7 @@ export async function performRelease ({nextReleaseName}) {
     method: 'POST',
     headers: fetchHeaders.get(),
     body: JSON.stringify({
-      name: nextReleaseName,
+      name: nextReleaseName || '',
       submissions: [],
     }),
   });

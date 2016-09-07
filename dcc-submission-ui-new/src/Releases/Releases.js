@@ -1,15 +1,18 @@
 import React, { Component } from 'react';
 import {Link} from 'react-router';
-import {observable, action, runInAction } from 'mobx';
+import {observable, action, runInAction, computed } from 'mobx';
 import {observer} from 'mobx-react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import moment from 'moment';
 
+import ActionButton from '~/common/components/ActionButton/ActionButton';
 import defaultTableOptions from '~/common/defaultTableOptions';
 import { fetchHeaders } from '~/utils';
 import user from '~/user';
 
 import RELEASE_STATES from '../Release/RELEASE_STATES';
+import PerformReleaseModal from '~/Release/modals/PerformReleaseModal';
+import {performRelease} from '~/Release/ReleaseModel';
 
 const releases = observable({
   isLoading: false,
@@ -42,6 +45,20 @@ function releaseDateSortFunction(a, b, order, sortField) {
 
 export default @observer
 class Releases extends Component {
+  @observable releaseToPerform;
+  @computed get shouldShowPerformReleaseModal() {
+    return !!this.releaseToPerform;
+  }
+  handleClickPerformRelease = (release) => {
+    this.releaseToPerform = release;
+  }
+  closePerformReleaseModal = () => { this.releaseToPerform = null };
+  handleRequestSubmitForRelease = async ({nextReleaseName}) => {
+    await performRelease({nextReleaseName});
+    this.closePerformReleaseModal();
+    releases.fetch();
+  }
+
   componentWillMount () {
     releases.fetch();
   }
@@ -90,11 +107,24 @@ class Releases extends Component {
             hidden={!user.isAdmin}
             dataFormat={(cell, release) => (
               release.state === RELEASE_STATES.OPENED
-              ? <div >previously release now button</div>
+              ? (
+                <ActionButton
+                  onClick={() => this.handleClickPerformRelease(release)}
+                  className={`m-btn mini green-stripe`}
+                >
+                  Release Now
+                </ActionButton>
+              )
               : ''
             )}
           >Actions</TableHeaderColumn>
         </BootstrapTable>
+        <PerformReleaseModal
+          isOpen={this.shouldShowPerformReleaseModal}
+          onRequestSubmit={this.handleRequestSubmitForRelease}
+          onRequestClose={this.closePerformReleaseModal}
+          releaseName={this.releaseToPerform ? this.releaseToPerform.name : ''}
+        />
       </div>
     )
   }

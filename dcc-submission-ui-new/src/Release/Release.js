@@ -39,29 +39,24 @@ class Release extends Component {
   @computed get shouldShowValidateModal() {
     return !!this.submissionToValidate;
   }
+  handleClickSignOffSubmission = (submission) => {
+    this.submissionToSignOff = submission;
+  }
+  closeValidateModal = () => { this.submissionToValidate = null };
+  handleRequestSubmitForSignOff = async () => {
+    await signOffSubmission({projectKey: this.submissionToSignOff.projectKey});
+    this.closeSignOffModal();
+    this.release.fetch();
+  }
 
   @observable submissionToSignOff;
   @computed get shouldShowSignOffModal() {
     return !!this.submissionToSignOff;
   }
-
-  @observable releaseToPerform;
-  @computed get shouldShowPerformReleaseModal() {
-    return !!this.releaseToPerform;
-  }
-
   handleClickValidateSubmission = (submission) => {
     this.submissionToValidate = submission;
   }
-
-  handleClickSignOffSubmission = (submission) => {
-    this.submissionToSignOff = submission;
-  }
-
-  handleClickPerformRelease = (release) => {
-    this.releaseToPerform = release;
-  }
-
+  closeSignOffModal = () => { this.submissionToSignOff = null };
   handleRequestSubmitForValidation = async ({dataTypes, emails}) => {
     await queueSubmissionForValidation({
       projectKey: this.submissionToValidate.projectKey,
@@ -72,21 +67,20 @@ class Release extends Component {
     this.release.fetch();
   };
 
-  handleRequestSubmitForSignOff = async () => {
-    await signOffSubmission({projectKey: this.submissionToSignOff.projectKey});
-    this.closeSignOffModal();
-    this.release.fetch();
-  }
 
+  @observable releaseToPerform;
+  @computed get shouldShowPerformReleaseModal() {
+    return !!this.releaseToPerform;
+  }
+  handleClickPerformRelease = (release) => {
+    this.releaseToPerform = release;
+  }
+  closePerformReleaseModal = () => { this.releaseToPerform = null };
   handleRequestSubmitForRelease = async ({nextReleaseName}) => {
     await this.release.performRelease({nextReleaseName});
     this.closePerformReleaseModal();
     this.release.fetch();
   }
-
-  closeValidateModal = () => { this.submissionToValidate = null };
-  closeSignOffModal = () => { this.submissionToSignOff = null };
-  closePerformReleaseModal = () => { this.releaseToPerform = null };
 
   componentWillMount () {
     const releaseName = this.props.params.releaseName;
@@ -137,8 +131,8 @@ class Release extends Component {
         { release.state === RELEASE_STATES.OPENED && (
           <li>
             <ActionButton
-              onClick={this.handleClickPerformRelease}
-              className={`m-btn mini green-stripe`}
+              onClick={() => this.handleClickPerformRelease(release)}
+              className={`m-btn green`}
             >
               Release Now
             </ActionButton>
@@ -224,7 +218,7 @@ class Release extends Component {
         isOpen={this.shouldShowPerformReleaseModal}
         onRequestSubmit={this.handleRequestSubmitForRelease}
         onRequestClose={this.closePerformReleaseModal}
-        releaseName={this.release.name}
+        releaseName={this.releaseToPerform ? this.releaseToPerform.name : ''}
       />
     </div>
     );
