@@ -1,4 +1,4 @@
-import {observable, action, runInAction } from 'mobx';
+import {observable, action } from 'mobx';
 import { fetchHeaders } from '~/utils';
 
 export async function fetchReport ({releaseName, projectKey, fileName}) {
