@@ -14,7 +14,7 @@ function requireAuth(nextState, replace) {
 
 const routes = (
     <Router history={browserHistory}>
-      <Route name="App" path="/" component={require('./App.js').default}>
+      <Route name="App" path="/" component={require('./App.js')}>
         <IndexRoute component={user.isLoggedIn ? require('./Releases/Releases.js') : require('./Login/Login.js')}/>
         <Route name="Login" path="login" component={require('./Login/Login.js')}/>
         <Route name="Releases" path="releases" onEnter={requireAuth}>

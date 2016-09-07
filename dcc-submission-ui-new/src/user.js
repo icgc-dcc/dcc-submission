@@ -12,6 +12,7 @@ const user = observable({
   roles: [],
   isLoggedIn: false,
   isLoggingIn: false,
+  emailsToNotify: [],
 
   isAdmin: function () {
     return this.roles.indexOf('admin') >= 0;

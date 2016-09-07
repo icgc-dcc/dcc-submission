@@ -16,9 +16,7 @@ export async function fetchSubmission ({releaseName, projectKey}) {
 export async function queueSubmissionForValidation ({projectKey, emails, dataTypes}) {
   const response = await fetch('/ws/nextRelease/queue', {
     method: 'POST',
-    headers: {
-      ...fetchHeaders.get(),
-    },
+    headers: fetchHeaders.get(),
     body: JSON.stringify([{
       key: projectKey,
       emails: emails,
@@ -30,12 +28,18 @@ export async function queueSubmissionForValidation ({projectKey, emails, dataTyp
   }
 }
 
+export function signOffSubmission ({projectKey}) {
+  return fetch('/ws/nextRelease/signed', {
+    method: 'POST',
+    headers: fetchHeaders.get(),
+    body: JSON.stringify([projectKey]),
+  });
+}
+
 export async function resetSubmission ({projectKey}) {
   const response = await fetch(`/ws/nextRelease/state/${projectKey}`, {
     method: 'DELETE',
-    headers: {
-      ...fetchHeaders.get(),
-    },
+    headers: fetchHeaders.get(),
   });
   if (!response.ok) {
     console.error('response not ok', response);
@@ -103,6 +107,10 @@ class SubmissionModel {
 
   @action reset = () => {
     return resetSubmission({projectKey: this.projectKey});
+  };
+
+  @action signOff = () => {
+    return signOffSubmission({projectKey: this.projectKey});
   };
 
 };

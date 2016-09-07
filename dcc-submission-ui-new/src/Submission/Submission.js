@@ -14,15 +14,21 @@ import GroupedReportList from './GroupedReportList/GroupedReportList';
 
 import SubmissionModel from './SubmissionModel';
 import ValidateSubmissionModal from '~/Submission/modals/ValidateSubmissionModal';
+import SignOffSubmissionModal from '~/Submission/modals/SignOffSubmissionModal';
 
+//NOTE: "project" is synonymous with "submission"
 export default @observer
 class Submission extends Component {
   @observable submission;
 
   @observable dataTypesToValidate = [];
-
   @computed get shouldShowValidateModal() {
     return this.dataTypesToValidate.length !== 0;
+  }
+
+  @observable submissionToSignOff = undefined;
+  @computed get shouldShowSignOffModal() {
+    return !!this.submissionToSignOff;
   }
 
   componentWillMount () {
@@ -40,18 +46,33 @@ class Submission extends Component {
     console.log('fetch complete');
   };
 
-  setDataTypesToValidate = (dataTypesToValidate = []) => {
-    this.dataTypesToValidate = dataTypesToValidate;
-  }
-
   closeValidateModal = () => {
     this.dataTypesToValidate = [];
   }
 
-  handleRequestSubmitForValidation = async ({dataTypes, emails}) => {
+  closeSignOffModal = () => {
+    this.submissionToSignOff = null;
+  }
+
+  handleRequestSubmitValidate = async ({dataTypes, emails}) => {
     await this.submission.requestValidation({dataTypes, emails});
     await this.submission.fetch();
     this.closeValidateModal();
+  };
+
+  handleRequestSubmitSignOff = async () => {
+    await this.submission.signOff();
+    await this.submission.fetch();
+    this.closeSignOffModal();
+  };
+
+  handleClickValidate = () => {
+    this.dataTypesToValidate = this.submission.report.dataTypeReports.map( x => x.dataType);
+  };
+
+  handleClickSignOff = () => {
+    console.log('click sign off');
+    this.submissionToSignOff = this.submission;
   };
 
   render () {
@@ -63,11 +84,18 @@ class Submission extends Component {
       <div>
         <ValidateSubmissionModal
           isOpen={this.shouldShowValidateModal}
-          onRequestSubmit={this.handleRequestSubmitForValidation}
+          onRequestSubmit={this.handleRequestSubmitValidate}
           onRequestClose={this.closeValidateModal}
           dataTypeReports={this.submission.report.dataTypeReports.slice()}
           initiallySelectedDataTypes={this.dataTypesToValidate.slice()}
           defaultEmailsText={``}
+        />
+        <SignOffSubmissionModal
+          isOpen={this.shouldShowSignOffModal}
+          onRequestSubmit={this.handleRequestSubmitSignOff}
+          onRequestClose={this.closeSignOffModal}
+          projectKey={projectKey}
+          projectName={this.submission.projectName}
         />
         <h1>Submission Summary</h1>
         <ul>
@@ -80,7 +108,8 @@ class Submission extends Component {
             <SubmissionActionButtons
               submission={submission}
               buttonClassName="m-btn"
-              onClickValidate={() => this.setDataTypesToValidate(this.submission.report.dataTypeReports.map( x => x.dataType))}
+              onClickValidate={ this.handleClickValidate }
+              onClickSignOff={ this.handleClickSignOff }
             />
             <div onClick={this.handleClickReset}>reset</div>
           </li>

@@ -1,11 +1,12 @@
 import React, { Component, PropTypes } from 'react';
 import { uniq, xor, includes } from 'lodash';
-import {observable, action, computed} from 'mobx';
+import {observable, computed} from 'mobx';
 import {observer} from 'mobx-react';
 import isEmail from 'is-email';
 
 import Modal from 'react-modal';
 
+import user from '~/user';
 import Status from '~/common/components/Status';
 import DATATYPE_DICTIONARY from '~/common/constants/DATATYPE_DICTIONARY';
 
@@ -20,12 +21,7 @@ class ValidateModal extends Component {
     initiallySelectedDataTypes: PropTypes.array.isRequired,
     dataTypeReports: PropTypes.array.isRequired,
     errorMessage: PropTypes.string,
-    defaultEmailsText: PropTypes.string,
   };
-
-  static defaultProps = {
-    defaultEmailsText: '',
-  }
 
   // requiredDataTypes must always be selected if available and cannot be deselected
   requiredDataTypes = ['CLINICAL_CORE_TYPE'];
@@ -44,12 +40,9 @@ class ValidateModal extends Component {
     return this.emails.length > 0;
   }
 
-  componentWillReceiveProps({initiallySelectedDataTypes, defaultEmailsText}) {
+  componentWillReceiveProps({initiallySelectedDataTypes}) {
     if (initiallySelectedDataTypes) {
       this.selectedDataTypes = uniq(initiallySelectedDataTypes.concat(this.requiredDataTypes));
-    }
-    if (defaultEmailsText) {
-      this.emailsText = defaultEmailsText;
     }
   }
 
@@ -58,6 +51,7 @@ class ValidateModal extends Component {
       dataTypes: this.selectedDataTypes,
       emails: this.emails,
     });
+    user.emailsToNotify = this.emails;
   }
 
   toggleSelectDataType = (dataType) => {
@@ -69,8 +63,9 @@ class ValidateModal extends Component {
       isOpen,
       onRequestClose,
       dataTypeReports,
-      defaultEmailsText,
     } = this.props;
+
+    const initialEmailsText = user.emailsToNotify.join(',\n') 
     const queueLength = 5;
     return (
       <Modal
@@ -138,7 +133,7 @@ class ValidateModal extends Component {
                 style={{width: '100%'}}
                 className="m-wrap"
                 id="emails"
-                defaultValue={defaultEmailsText}
+                defaultValue={initialEmailsText}
                 onChange={e => {this.emailsText = e.target.value}}
               />
             </div>

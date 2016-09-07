@@ -4,7 +4,8 @@ import ActionButton from '~/common/components/ActionButton/ActionButton';
 export default function SubmissionActionButtons ({
   submission,
   buttonClassName,
-  onClickValidate
+  onClickValidate,
+  onClickSignOff,
 }) {
   const { state: submissionState } = submission;
 
@@ -18,6 +19,15 @@ export default function SubmissionActionButtons ({
     </ActionButton>
   );
 
+  const signOffButton = (
+    <ActionButton
+      className={`green-stripe ${buttonClassName}`}
+      onClick={onClickSignOff}
+    >
+      Sign off
+    </ActionButton>
+  );
+
   switch (submissionState) {
     case 'INVALID':
       return validateButton;
@@ -27,9 +37,7 @@ export default function SubmissionActionButtons ({
     case 'VALID':
       return (
         <div>
-          <ActionButton className={`green-stripe ${buttonClassName}`}>
-            Sign off
-          </ActionButton>
+          {signOffButton}
           {validateButton}
         </div>
       );

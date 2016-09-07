@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {Link} from 'react-router';
-import {observable, action, runInAction, autorun} from 'mobx';
+import {observable, action, runInAction } from 'mobx';
 import {observer} from 'mobx-react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import moment from 'moment';
@@ -10,7 +10,6 @@ import { fetchHeaders } from '~/utils';
 import user from '~/user';
 
 import RELEASE_STATES from '../Release/RELEASE_STATES';
-import ReleaseNowButton from '../Release/ReleaseNowButton';
 
 const releases = observable({
   isLoading: false,
@@ -91,10 +90,7 @@ class Releases extends Component {
             hidden={!user.isAdmin}
             dataFormat={(cell, release) => (
               release.state === RELEASE_STATES.OPENED
-              ? <ReleaseNowButton
-                  release={release}
-                  onSuccess={() => releases.fetch()}
-                />
+              ? <div >previously release now button</div>
               : ''
             )}
           >Actions</TableHeaderColumn>

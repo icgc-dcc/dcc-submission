@@ -1,21 +1,25 @@
 import React, { Component } from 'react';
 import {Link} from 'react-router';
 import { map } from 'lodash';
-import {observable} from 'mobx';
+import {observable, computed} from 'mobx';
 import {observer} from 'mobx-react';
 import { formatFileSize } from '~/utils';
 import Status from '~/common/components/Status';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 
 import defaultTableOptions from '~/common/defaultTableOptions';
+import ActionButton from '~/common/components/ActionButton/ActionButton';
 import SubmissionActionButtons from '~/Submission/SubmissionActionButtons';
 
 import RELEASE_STATES from './RELEASE_STATES';
-import ReleaseNowButton from './ReleaseNowButton';
 
 import ReleaseModel from './ReleaseModel.js';
+
+import SignOffSubmissionModal from '~/Submission/modals/SignOffSubmissionModal';
 import ValidateSubmissionModal from '~/Submission/modals/ValidateSubmissionModal';
-import {queueSubmissionForValidation} from '~/Submission/SubmissionModel';
+import PerformReleaseModal from '~/Release/modals/PerformReleaseModal';
+
+import {queueSubmissionForValidation, signOffSubmission} from '~/Submission/SubmissionModel';
 
 const summaryClassNameMap = {
   SIGNED_OFF: 'label-success',
@@ -27,13 +31,35 @@ const summaryClassNameMap = {
   NOT_VALIDATED: 'label-default',
 };
 
+//NOTE: "project" is synonymous with "submission"
 export default @observer
 class Release extends Component {
   @observable release;
-  @observable submissionToValidate = null;
+  @observable submissionToValidate;
+  @computed get shouldShowValidateModal() {
+    return !!this.submissionToValidate;
+  }
 
-  handleRequestValidateSubmission(submission) {
+  @observable submissionToSignOff;
+  @computed get shouldShowSignOffModal() {
+    return !!this.submissionToSignOff;
+  }
+
+  @observable releaseToPerform;
+  @computed get shouldShowPerformReleaseModal() {
+    return !!this.releaseToPerform;
+  }
+
+  handleClickValidateSubmission = (submission) => {
     this.submissionToValidate = submission;
+  }
+
+  handleClickSignOffSubmission = (submission) => {
+    this.submissionToSignOff = submission;
+  }
+
+  handleClickPerformRelease = (release) => {
+    this.releaseToPerform = release;
   }
 
   handleRequestSubmitForValidation = async ({dataTypes, emails}) => {
@@ -46,9 +72,21 @@ class Release extends Component {
     this.release.fetch();
   };
 
-  closeValidateModal = () => {
-    this.submissionToValidate = null;
+  handleRequestSubmitForSignOff = async () => {
+    await signOffSubmission({projectKey: this.submissionToSignOff.projectKey});
+    this.closeSignOffModal();
+    this.release.fetch();
   }
+
+  handleRequestSubmitForRelease = async ({nextReleaseName}) => {
+    await this.release.performRelease({nextReleaseName});
+    this.closePerformReleaseModal();
+    this.release.fetch();
+  }
+
+  closeValidateModal = () => { this.submissionToValidate = null };
+  closeSignOffModal = () => { this.submissionToSignOff = null };
+  closePerformReleaseModal = () => { this.releaseToPerform = null };
 
   componentWillMount () {
     const releaseName = this.props.params.releaseName;
@@ -98,11 +136,12 @@ class Release extends Component {
         </li>
         { release.state === RELEASE_STATES.OPENED && (
           <li>
-            <ReleaseNowButton
-              release={release}
-              onSuccess={() => release.fetch(releaseName)}
-              className="m-btn green"
-            />
+            <ActionButton
+              onClick={this.handleClickPerformRelease}
+              className={`m-btn mini green-stripe`}
+            >
+              Release Now
+            </ActionButton>
           </li>
         )}
       </ul>
@@ -158,7 +197,8 @@ class Release extends Component {
               <SubmissionActionButtons
                 submission={submission}
                 buttonClassName="m-btn mini"
-                onClickValidate={() => this.handleRequestValidateSubmission(submission)}
+                onClickValidate={() => this.handleClickValidateSubmission(submission)}
+                onClickSignOff={() => { this.handleClickSignOffSubmission(submission) }}
               />
             )}
           >Actions</TableHeaderColumn>
@@ -166,12 +206,25 @@ class Release extends Component {
       </div>
 
       <ValidateSubmissionModal
-        isOpen={!!this.submissionToValidate}
+        isOpen={this.shouldShowValidateModal}
         onRequestSubmit={this.handleRequestSubmitForValidation}
         onRequestClose={this.closeValidateModal}
         dataTypeReports={this.submissionToValidate ? this.submissionToValidate.report.dataTypeReports.slice() : []}
         initiallySelectedDataTypes={this.submissionToValidate ? this.submissionToValidate.report.dataTypeReports.map(x => x.dataType) : []}
         defaultEmailsText={``}
+      />
+      <SignOffSubmissionModal
+        isOpen={this.shouldShowSignOffModal}
+        onRequestSubmit={this.handleRequestSubmitForSignOff}
+        onRequestClose={this.closeSignOffModal}
+        projectKey={this.submissionToSignOff && this.submissionToSignOff.projectKey}
+        projectName={this.submissionToSignOff && this.submissionToSignOff.projectName}
+      />
+      <PerformReleaseModal
+        isOpen={this.shouldShowPerformReleaseModal}
+        onRequestSubmit={this.handleRequestSubmitForRelease}
+        onRequestClose={this.closePerformReleaseModal}
+        releaseName={this.release.name}
       />
     </div>
     );

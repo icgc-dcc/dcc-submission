@@ -17,14 +17,12 @@ export async function fetchRelease ({releaseName}) {
   return responseData;
 }
 
-export async function performRelease (releaseName) {
+export async function performRelease ({nextReleaseName}) {
   const response = await fetch('/ws/nextRelease/', {
     method: 'POST',
-    headers: {
-      ...fetchHeaders.get(),
-    },
+    headers: fetchHeaders.get(),
     body: JSON.stringify({
-      name: releaseName,
+      name: nextReleaseName,
       submissions: [],
     }),
   });
@@ -60,8 +58,8 @@ class ReleaseModel {
     });
   }
 
-  performRelease = () => {
-    performRelease(this.name);
+  performRelease = ({ nextReleaseName }) => {
+    return performRelease({ nextReleaseName });
   }
 }
 
