@@ -115,7 +115,7 @@ public class PCAWGValidator implements Validator {
       return false;
     }
 
-    return !isTCGA(projectKey);
+    return !(isTCGA(projectKey) || isTestProject(projectKey));
   }
 
   private boolean isProjectExcluded(String projectKey) {
@@ -127,6 +127,11 @@ public class PCAWGValidator implements Validator {
     val testTCGA = projectKey.startsWith("TEST") && projectKey.contains("TCGA");
 
     return testTCGA || Programs.isTCGA(projectKey);
+  }
+
+  private static boolean isTestProject(String projectKey) {
+    // Skip TEST* projects but not TESTP-*(test PCAWG) projects.
+    return projectKey.startsWith("TEST") && !projectKey.startsWith("TESTP-");
   }
 
   private static CodeList getSpecimenTypes(ValidationContext context) {
