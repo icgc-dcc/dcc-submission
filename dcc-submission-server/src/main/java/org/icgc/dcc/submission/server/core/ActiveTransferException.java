@@ -15,46 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.server.sftp.fs;
+package org.icgc.dcc.submission.server.core;
 
-import static org.icgc.dcc.submission.server.sftp.fs.HdfsFileUtils.handleException;
+import java.util.Collection;
+import java.util.Map;
 
-import java.io.IOException;
+import lombok.Getter;
 
-import org.apache.sshd.common.Session;
-import org.apache.sshd.common.file.SshFile;
-import org.icgc.dcc.submission.server.sftp.SftpContext;
+@Getter
+public class ActiveTransferException extends RuntimeException {
 
-public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
+  private final Map<String, Collection<String>> files;
 
-  public SystemFileHdfsSshFile(SftpContext context, RootHdfsSshFile root, String directoryName, Session session) {
-    super(context, root, directoryName, session);
-  }
-
-  @Override
-  public boolean create() throws IOException {
-    registerChange();
-    return super.create();
-  }
-
-  @Override
-  public boolean move(SshFile destination) {
-    registerChange();
-    return super.move(destination);
-  }
-
-  @Override
-  public boolean delete() {
-    registerChange();
-    return super.delete();
-  }
-
-  private void registerChange() {
-    try {
-      context.registerReferenceChange();
-    } catch (Exception e) {
-      handleException(e);
-    }
+  public ActiveTransferException(Map<String, Collection<String>> files, String message, Object... args) {
+    super(String.format(message, args));
+    this.files = files;
   }
 
 }

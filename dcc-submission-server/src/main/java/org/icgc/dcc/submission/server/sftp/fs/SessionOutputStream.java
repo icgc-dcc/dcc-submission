@@ -17,44 +17,53 @@
  */
 package org.icgc.dcc.submission.server.sftp.fs;
 
-import static org.icgc.dcc.submission.server.sftp.fs.HdfsFileUtils.handleException;
+import static org.icgc.dcc.submission.server.sftp.SftpServerService.FILE_TRANSFER_SESSION_ATTRIBUTE;
+import static org.icgc.dcc.submission.server.sftp.SftpServerService.NO_FILE_TRANSFER;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
+import lombok.NonNull;
+
+import org.apache.hadoop.fs.Path;
 import org.apache.sshd.common.Session;
-import org.apache.sshd.common.file.SshFile;
-import org.icgc.dcc.submission.server.sftp.SftpContext;
+import org.icgc.dcc.submission.server.sftp.FileTransfer;
 
-public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
+public final class SessionOutputStream extends OutputStream {
 
-  public SystemFileHdfsSshFile(SftpContext context, RootHdfsSshFile root, String directoryName, Session session) {
-    super(context, root, directoryName, session);
+  private final OutputStream delegate;
+  private final Session session;
+
+  public SessionOutputStream(@NonNull OutputStream delegate, @NonNull Session session, @NonNull Path path) {
+    this.delegate = delegate;
+    this.session = session;
+    session.setAttribute(FILE_TRANSFER_SESSION_ATTRIBUTE, new FileTransfer(path.toString()));
   }
 
   @Override
-  public boolean create() throws IOException {
-    registerChange();
-    return super.create();
+  public void write(int b) throws IOException {
+    delegate.write(b);
   }
 
   @Override
-  public boolean move(SshFile destination) {
-    registerChange();
-    return super.move(destination);
+  public void write(byte[] b) throws IOException {
+    delegate.write(b);
   }
 
   @Override
-  public boolean delete() {
-    registerChange();
-    return super.delete();
+  public void write(byte[] b, int off, int len) throws IOException {
+    delegate.write(b, off, len);
   }
 
-  private void registerChange() {
-    try {
-      context.registerReferenceChange();
-    } catch (Exception e) {
-      handleException(e);
-    }
+  @Override
+  public void flush() throws IOException {
+    delegate.flush();
+  }
+
+  @Override
+  public void close() throws IOException {
+    delegate.close();
+    session.setAttribute(FILE_TRANSFER_SESSION_ATTRIBUTE, NO_FILE_TRANSFER);
   }
 
 }

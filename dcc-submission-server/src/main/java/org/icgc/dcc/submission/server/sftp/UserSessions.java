@@ -15,46 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.server.sftp.fs;
+package org.icgc.dcc.submission.server.sftp;
 
-import static org.icgc.dcc.submission.server.sftp.fs.HdfsFileUtils.handleException;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.google.common.collect.Iterables.getLast;
+import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 
-import java.io.IOException;
+import java.util.Collection;
 
-import org.apache.sshd.common.Session;
-import org.apache.sshd.common.file.SshFile;
-import org.icgc.dcc.submission.server.sftp.SftpContext;
+import lombok.NoArgsConstructor;
+import lombok.val;
 
-public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
+import org.icgc.dcc.common.core.util.Splitters;
+import org.icgc.dcc.submission.server.service.SystemService;
 
-  public SystemFileHdfsSshFile(SftpContext context, RootHdfsSshFile root, String directoryName, Session session) {
-    super(context, root, directoryName, session);
+@NoArgsConstructor(access = PRIVATE)
+public final class UserSessions {
+
+  public static Collection<String> getTransferFiles(SystemService systemService, String projectKey) {
+    return systemService.getFileTransfers().stream()
+        .filter(transferFile -> isProjectTransfer(projectKey, transferFile))
+        .map(transferFile -> getTransferFileName(transferFile))
+        .collect(toImmutableList());
   }
 
-  @Override
-  public boolean create() throws IOException {
-    registerChange();
-    return super.create();
+  private static String getTransferFileName(String transferFile) {
+    val fileParts = Splitters.PATH.splitToList(transferFile);
+    val fileName = getLast(fileParts);
+    checkState(!isNullOrEmpty(fileName), "Failed to resolve transfer file name from path '{}'", transferFile);
+
+    return fileName;
   }
 
-  @Override
-  public boolean move(SshFile destination) {
-    registerChange();
-    return super.move(destination);
-  }
+  private static boolean isProjectTransfer(String projectKey, String transferFile) {
+    val fileParts = Splitters.PATH.splitToList(transferFile);
+    checkState(fileParts.size() > 2, "Malformed transfer file path '{}'", transferFile);
+    // Path looks like /<root_dir_path>/<project>/<file_name>
+    val projectIndex = fileParts.size() - 2;
+    val transferProject = fileParts.get(projectIndex);
 
-  @Override
-  public boolean delete() {
-    registerChange();
-    return super.delete();
-  }
-
-  private void registerChange() {
-    try {
-      context.registerReferenceChange();
-    } catch (Exception e) {
-      handleException(e);
-    }
+    return projectKey.equals(transferProject);
   }
 
 }

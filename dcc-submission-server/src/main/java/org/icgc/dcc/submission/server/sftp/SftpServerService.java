@@ -19,13 +19,22 @@ package org.icgc.dcc.submission.server.sftp;
 
 import static com.google.common.util.concurrent.Service.State.TERMINATED;
 import static java.lang.String.valueOf;
+import static org.icgc.dcc.common.core.util.Separators.EMPTY_STRING;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.submission.server.sftp.SftpSessions.getAuthentication;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.sshd.SshServer;
+import org.apache.sshd.common.Session.AttributeKey;
 import org.apache.sshd.common.io.IoSession;
 import org.apache.sshd.common.session.AbstractSession;
 import org.icgc.dcc.submission.core.model.Status;
@@ -37,17 +46,15 @@ import com.google.common.collect.Maps;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.AbstractService;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * Service abstraction to the SFTP sub-system.
  */
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SftpServerService extends AbstractService {
+
+  public static final AttributeKey<FileTransfer> FILE_TRANSFER_SESSION_ATTRIBUTE = new AttributeKey<>();
+  public static final FileTransfer NO_FILE_TRANSFER = new FileTransfer(EMPTY_STRING);
 
   /**
    * Message sent to active session when disabling SFTP.
@@ -74,10 +81,9 @@ public class SftpServerService extends AbstractService {
     for (AbstractSession activeSession : activeSessions) {
 
       // Shorthands
-      val ioSession = activeSession.getIoSession();
       String username = activeSession.getUsername();
 
-      Map<String, String> ioSessionMap = getIoSessionMap(ioSession);
+      val ioSessionMap = getIoSessionMap(activeSession);
       log.info(getLogMessage(username),
           new Object[] { username, ioSessionMap });
 
@@ -85,6 +91,16 @@ public class SftpServerService extends AbstractService {
     }
 
     return status;
+  }
+
+  public Collection<String> getFileTransfers() {
+    val sessions = sshd.getActiveSessions();
+
+    return sessions.stream()
+        .map(session -> session.getAttribute(FILE_TRANSFER_SESSION_ATTRIBUTE))
+        .filter(transfer -> hasFileTransfer(transfer))
+        .map(FileTransfer::getPath)
+        .collect(toImmutableList());
   }
 
   public boolean isEnabled() {
@@ -168,13 +184,23 @@ public class SftpServerService extends AbstractService {
   /**
    * Returns some of the useful values for an {@link IoSession}.
    */
-  private Map<String, String> getIoSessionMap(IoSession ioSession) {
+  private Map<String, String> getIoSessionMap(AbstractSession session) {
+    val ioSession = session.getIoSession();
     val map = Maps.<String, String> newLinkedHashMap();
     map.put("id", valueOf(ioSession.getId()));
     map.put("localAddress", ioSession.getLocalAddress().toString());
     map.put("remoteAddress", ioSession.getRemoteAddress().toString());
 
+    val transfer = session.getAttribute(FILE_TRANSFER_SESSION_ATTRIBUTE);
+    if (hasFileTransfer(transfer)) {
+      map.put("fileTransfer", transfer.getPath());
+    }
+
     return map;
+  }
+
+  private static boolean hasFileTransfer(FileTransfer transfer) {
+    return transfer != null && !NO_FILE_TRANSFER.equals(transfer);
   }
 
   private static boolean isSuperUser(AbstractSession activeSession) {

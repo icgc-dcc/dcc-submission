@@ -46,17 +46,18 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsAction;
-import org.apache.sshd.common.file.SshFile;
-import org.icgc.dcc.submission.server.sftp.SftpContext;
-import org.springframework.security.core.Authentication;
-
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.sshd.common.Session;
+import org.apache.sshd.common.file.SshFile;
+import org.icgc.dcc.submission.server.sftp.SftpContext;
+import org.springframework.security.core.Authentication;
 
 @Slf4j
 @AllArgsConstructor
@@ -83,6 +84,8 @@ public abstract class HdfsSshFile implements SshFile {
   protected final FileSystem fileSystem;
   @NonNull
   protected final Authentication authentication;
+  @NonNull
+  protected final Session session;
 
   @Override
   public Map<Attribute, Object> getAttributes(boolean followLinks) throws IOException {
@@ -249,7 +252,9 @@ public abstract class HdfsSshFile implements SshFile {
       }
 
       log.info("Submission file opened: '{}'", path);
-      return fileSystem.create(path);
+      val delegate = fileSystem.create(path);
+
+      return new SessionOutputStream(delegate, session, path);
     } catch (Exception e) {
       return handleException(OutputStream.class, e);
     }

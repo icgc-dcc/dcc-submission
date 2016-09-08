@@ -17,12 +17,14 @@
  */
 package org.icgc.dcc.submission.server.service;
 
-import org.icgc.dcc.submission.core.model.Status;
-import org.icgc.dcc.submission.server.sftp.SftpServerService;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Collection;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+
+import org.icgc.dcc.submission.core.model.Status;
+import org.icgc.dcc.submission.server.sftp.SftpServerService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SystemService {
@@ -32,6 +34,10 @@ public class SystemService {
 
   public Status getStatus() {
     return sftpService.getActiveSessions();
+  }
+
+  public Collection<String> getFileTransfers() {
+    return sftpService.getFileTransfers();
   }
 
   public boolean isEnabled() {

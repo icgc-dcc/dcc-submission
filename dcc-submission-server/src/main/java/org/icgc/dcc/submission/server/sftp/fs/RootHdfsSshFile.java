@@ -25,21 +25,22 @@ import static org.icgc.dcc.submission.server.sftp.fs.HdfsFileUtils.handleExcepti
 import java.io.IOException;
 import java.util.List;
 
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.hadoop.fs.Path;
+import org.apache.sshd.common.Session;
 import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.server.sftp.SftpContext;
 import org.springframework.security.core.Authentication;
 
 import com.google.common.base.Optional;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 public class RootHdfsSshFile extends HdfsSshFile {
 
-  public RootHdfsSshFile(SftpContext context, Authentication authentication) {
-    super(context, context.getReleasePath(), context.getFileSystem(), authentication);
+  public RootHdfsSshFile(SftpContext context, Authentication authentication, Session session) {
+    super(context, context.getReleasePath(), context.getFileSystem(), authentication, session);
   }
 
   @Override
@@ -114,10 +115,10 @@ public class RootHdfsSshFile extends HdfsSshFile {
       case 0:
         return this;
       case 1:
-        return new SubmissionDirectoryHdfsSshFile(context, this, filePath.getName());
+        return new SubmissionDirectoryHdfsSshFile(context, this, filePath.getName(), session);
       case 2:
-        val parentDir = new SubmissionDirectoryHdfsSshFile(context, this, filePath.getParent().getName());
-        return new FileHdfsSshFile(context, parentDir, filePath.getName());
+        val parentDir = new SubmissionDirectoryHdfsSshFile(context, this, filePath.getParent().getName(), session);
+        return new FileHdfsSshFile(context, parentDir, filePath.getName(), session);
       }
     } catch (Exception e) {
       return handleException(HdfsSshFile.class, e);
@@ -136,7 +137,7 @@ public class RootHdfsSshFile extends HdfsSshFile {
       if (context.isSystemDirectory(path, authentication)) {
         if (context.isAdminUser(authentication)) {
           // System file directory and admin user, add to file list
-          return Optional.<SshFile> of(new SystemFileHdfsSshFile(context, this, path.getName()));
+          return Optional.<SshFile> of(new SystemFileHdfsSshFile(context, this, path.getName(), session));
         } else {
           return Optional.<SshFile> absent();
         }
@@ -148,7 +149,7 @@ public class RootHdfsSshFile extends HdfsSshFile {
           return Optional.<SshFile> absent();
         }
 
-        val submissionDir = new SubmissionDirectoryHdfsSshFile(context, this, projectKey);
+        val submissionDir = new SubmissionDirectoryHdfsSshFile(context, this, projectKey, session);
         if (submissionDir.doesExist()) {
           // Necessary because of error handling workaround
           return Optional.<SshFile> of(submissionDir);

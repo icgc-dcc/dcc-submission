@@ -42,6 +42,11 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
+import lombok.NonNull;
+import lombok.Synchronized;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
@@ -52,9 +57,9 @@ import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.core.util.NameValidator;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.fs.SubmissionFileEvent;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.QueuedProject;
@@ -75,11 +80,6 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-
-import lombok.NonNull;
-import lombok.Synchronized;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ReleaseService extends AbstractService {
@@ -789,7 +789,7 @@ public class ReleaseService extends AbstractService {
     val fileSize = fileStatus.getLen();
     val fileType = getFileType(filePatternToTypeMap, fileName).orNull();
 
-    return new SubmissionFile(fileName, fileLastUpdate, fileSize, fileType);
+    return new SubmissionFile(fileName, fileLastUpdate, fileSize, fileType, false);
   }
 
   private Map<String, List<SubmissionFile>> getSubmissionFilesByProjectKey(String releaseName, Release release) {

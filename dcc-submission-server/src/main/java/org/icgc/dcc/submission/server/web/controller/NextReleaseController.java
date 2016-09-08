@@ -23,6 +23,7 @@ import static org.icgc.dcc.submission.core.security.Authorizations.hasReleaseVie
 import static org.icgc.dcc.submission.core.security.Authorizations.hasSpecificProjectPrivilege;
 import static org.icgc.dcc.submission.core.security.Authorizations.hasSubmissionSignoffAuthority;
 import static org.icgc.dcc.submission.core.security.Authorizations.isSuperUser;
+import static org.icgc.dcc.submission.server.sftp.UserSessions.getTransferFiles;
 import static org.icgc.dcc.submission.server.web.ServerErrorCode.INVALID_STATE;
 import static org.icgc.dcc.submission.server.web.ServerErrorCode.RELEASE_EXCEPTION;
 import static org.icgc.dcc.submission.server.web.ServerErrorCode.UNAVAILABLE;
@@ -34,12 +35,19 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
+import org.icgc.dcc.common.core.util.stream.Collectors;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.server.core.ActiveTransferException;
 import org.icgc.dcc.submission.server.core.InvalidStateException;
 import org.icgc.dcc.submission.server.security.Admin;
 import org.icgc.dcc.submission.server.service.ReleaseService;
@@ -62,12 +70,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 import com.google.common.net.HttpHeaders;
-
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
@@ -173,6 +177,7 @@ public class NextReleaseController {
     }
 
     try {
+      checkProjectsWithTransfers(queuedProjects);
       releaseService.queueSubmissions(queuedProjects);
     } catch (ReleaseException e) {
       log.error("Error trying to queue submission(s)", e);
@@ -193,6 +198,12 @@ public class NextReleaseController {
           .status(HttpStatus.SERVICE_UNAVAILABLE)
           .header("Retry-After", "3")
           .body(new ServerErrorResponseMessage(code));
+    } catch (ActiveTransferException e) {
+      log.error("Failed to submit validation. Files in transfer: {}", e.getFiles());
+
+      return ResponseEntity
+          .status(HttpStatus.CONFLICT)
+          .body(e.getMessage());
     }
 
     return noContent();
@@ -331,6 +342,19 @@ public class NextReleaseController {
 
   private boolean isAccessible(Authentication authentication) {
     return systemService.isEnabled() || isSuperUser(authentication);
+  }
+
+  private void checkProjectsWithTransfers(List<QueuedProject> queuedProjects) {
+    val transfers = queuedProjects.stream()
+        .map(queuedProject -> queuedProject.getKey())
+        .map(project -> Maps.immutableEntry(project, getTransferFiles(systemService, project)))
+        .filter(entry -> !entry.getValue().isEmpty())
+        .collect(Collectors.toImmutableMap(entry -> entry.getKey(), entry -> entry.getValue()));
+
+    if (!transfers.isEmpty()) {
+      throw new ActiveTransferException(transfers, "Failed to start validation. "
+          + "Projects %s have files being transfered", transfers.keySet());
+    }
   }
 
 }

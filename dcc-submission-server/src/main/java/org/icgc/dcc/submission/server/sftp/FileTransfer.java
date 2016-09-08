@@ -15,46 +15,13 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.server.sftp.fs;
+package org.icgc.dcc.submission.server.sftp;
 
-import static org.icgc.dcc.submission.server.sftp.fs.HdfsFileUtils.handleException;
+import lombok.Value;
 
-import java.io.IOException;
+@Value
+public class FileTransfer {
 
-import org.apache.sshd.common.Session;
-import org.apache.sshd.common.file.SshFile;
-import org.icgc.dcc.submission.server.sftp.SftpContext;
-
-public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
-
-  public SystemFileHdfsSshFile(SftpContext context, RootHdfsSshFile root, String directoryName, Session session) {
-    super(context, root, directoryName, session);
-  }
-
-  @Override
-  public boolean create() throws IOException {
-    registerChange();
-    return super.create();
-  }
-
-  @Override
-  public boolean move(SshFile destination) {
-    registerChange();
-    return super.move(destination);
-  }
-
-  @Override
-  public boolean delete() {
-    registerChange();
-    return super.delete();
-  }
-
-  private void registerChange() {
-    try {
-      context.registerReferenceChange();
-    } catch (Exception e) {
-      handleException(e);
-    }
-  }
+  String path;
 
 }
