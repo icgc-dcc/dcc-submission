@@ -1,9 +1,19 @@
-import {observable, action} from 'mobx';
+import {observable, action, autorun} from 'mobx';
 
 import {fetchHeaders} from '~/utils'; 
 
 function generateToken(username, password) {
   return global.btoa(`${username}:${password}`);
+}
+
+let storedEmailsToNotify = [];
+try {
+  const emailsFromLocalstorage = JSON.parse(window.localStorage.getItem('storedEmailsToNotify'));
+  if (Array.isArray(emailsFromLocalstorage)) {
+    storedEmailsToNotify = emailsFromLocalstorage;
+  };
+} catch (e) {
+  console.error('could not read emails from local storage', e);
 }
 
 const user = observable({
@@ -12,9 +22,9 @@ const user = observable({
   roles: [],
   isLoggedIn: false,
   isLoggingIn: false,
-  emailsToNotify: [],
+  emailsToNotify: storedEmailsToNotify,
 
-  isAdmin: function () {
+  get isAdmin() {
     return this.roles.indexOf('admin') >= 0;
   },
 
@@ -49,5 +59,7 @@ const user = observable({
     this.roles = [];
   })
 });
+
+autorun(() => window.localStorage.setItem('storedEmailsToNotify', JSON.stringify(user.emailsToNotify.slice())));
 
 export default user;
