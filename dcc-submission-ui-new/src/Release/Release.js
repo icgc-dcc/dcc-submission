@@ -19,9 +19,10 @@ import ReleaseModel from './ReleaseModel.js';
 
 import SignOffSubmissionModal from '~/Submission/modals/SignOffSubmissionModal';
 import ValidateSubmissionModal from '~/Submission/modals/ValidateSubmissionModal';
+import ResetSubmissionModal from '~/Submission/modals/ResetSubmissionModal';
 import PerformReleaseModal from '~/Release/modals/PerformReleaseModal';
 
-import {queueSubmissionForValidation, signOffSubmission} from '~/Submission/SubmissionModel';
+import {queueSubmissionForValidation, signOffSubmission, resetSubmission} from '~/Submission/SubmissionModel';
 
 const summaryClassNameMap = {
   SIGNED_OFF: 'label-success',
@@ -48,12 +49,8 @@ class Release extends Component {
     this.release.fetch();
   }
 
-
-
   @observable submissionToValidate;
-  @computed get shouldShowValidateModal() {
-    return !!this.submissionToValidate;
-  }
+  @computed get shouldShowValidateModal() { return !!this.submissionToValidate }
   handleClickValidateSubmission = (submission) => { this.submissionToValidate = submission }
   closeValidateModal = () => { this.submissionToValidate = null };
   handleRequestSubmitForValidation = async ({dataTypes, emails}) => {
@@ -65,6 +62,18 @@ class Release extends Component {
     this.closeValidateModal();
     this.release.fetch();
   };
+
+  @observable submissionToReset;
+  @computed get shouldShowResetModal() { return !!this.submissionToReset }
+  handleClickReset = (submission) => {
+    this.submissionToReset = submission; 
+  }
+  closeResetModal = () => { this.submissionToReset = null };
+  handleRequestSubmitReset = async () => {
+    await resetSubmission({projectKey: this.submissionToReset.projectKey});
+    this.release.fetch();
+    this.closeResetModal();
+  } 
 
   @observable releaseToPerform;
   @computed get shouldShowPerformReleaseModal() { return !!this.releaseToPerform }
@@ -193,10 +202,14 @@ class Release extends Component {
             hidden={release.state !== RELEASE_STATES.OPENED}
             dataFormat={ (cell, submission) => (
               <SubmissionActionButtons
-                submission={submission}
+                submissionState={submission.state || ''}
+                releaseState={release.state || ''}
+                submissionHasFiles={!!submission.submissionFiles.length}
+                userIsAdmin={user.isAdmin}
                 buttonClassName="m-btn mini"
                 onClickValidate={() => this.handleClickValidateSubmission(submission)}
-                onClickSignOff={() => { this.handleClickSignOffSubmission(submission) }}
+                onClickSignOff={() => this.handleClickSignOffSubmission(submission)}
+                onClickReset={() => this.handleClickReset(submission)}
               />
             )}
           >Actions</TableHeaderColumn>
@@ -223,6 +236,12 @@ class Release extends Component {
         onRequestSubmit={this.handleRequestSubmitForRelease}
         onRequestClose={this.closePerformReleaseModal}
         releaseName={this.releaseToPerform ? this.releaseToPerform.name : ''}
+      />
+      <ResetSubmissionModal
+        isOpen={this.shouldShowResetModal}
+        onRequestSubmit={this.handleRequestSubmitReset}
+        onRequestClose={this.closeResetModal}
+        projectName={this.submissionToReset ? this.submissionToReset.projectName : ''}
       />
     </div>
     );

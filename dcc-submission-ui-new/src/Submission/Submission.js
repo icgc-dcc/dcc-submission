@@ -5,6 +5,7 @@ import { groupBy, map } from 'lodash';
 import { formatFileSize } from '~/utils';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 
+import user from '~/user';
 import DATATYPE_DICTIONARY from '~/common/constants/DATATYPE_DICTIONARY';
 import Status from '~/common/components/Status';
 import getValidFileCount from './getValidFileCount.coffee';
@@ -12,6 +13,7 @@ import SubmissionActionButtons from '~/Submission/SubmissionActionButtons';
 
 import GroupedReportList from './GroupedReportList/GroupedReportList';
 
+import ReleaseModel from '~/Release/ReleaseModel';
 import SubmissionModel from './SubmissionModel';
 import ValidateSubmissionModal from '~/Submission/modals/ValidateSubmissionModal';
 import SignOffSubmissionModal from '~/Submission/modals/SignOffSubmissionModal';
@@ -35,7 +37,9 @@ class Submission extends Component {
     const releaseName = this.props.params.releaseName;
     const projectKey = this.props.params.projectKey;
     this.submission = new SubmissionModel({releaseName, projectKey});
+    this.release = new ReleaseModel({name: releaseName});
     this.submission.fetch();
+    this.release.fetch();
     window.ssss = this.submission;
   }
 
@@ -106,12 +110,15 @@ class Submission extends Component {
           <li>State <Status statusCode={submission.state || ''}/></li>
           <li>
             <SubmissionActionButtons
-              submission={submission}
+              submissionState={submission.state || ''}
+              submissionHasFiles={!!submission.submissionFiles.length}
+              releaseState={this.release.state || ''}
+              userIsAdmin={user.isAdmin}
               buttonClassName="m-btn"
               onClickValidate={ this.handleClickValidate }
               onClickSignOff={ this.handleClickSignOff }
+              onClickReset={ this.handleClickReset }
             />
-            <div onClick={this.handleClickReset}>reset</div>
           </li>
         </ul>
 
