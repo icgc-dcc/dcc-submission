@@ -92,7 +92,6 @@ class Submission extends Component {
           onRequestClose={this.closeValidateModal}
           dataTypeReports={this.submission.report.dataTypeReports.slice()}
           initiallySelectedDataTypes={this.dataTypesToValidate.slice()}
-          defaultEmailsText={``}
         />
         <SignOffSubmissionModal
           isOpen={this.shouldShowSignOffModal}

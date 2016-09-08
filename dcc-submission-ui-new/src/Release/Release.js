@@ -222,7 +222,6 @@ class Release extends Component {
         onRequestClose={this.closeValidateModal}
         dataTypeReports={this.submissionToValidate ? this.submissionToValidate.report.dataTypeReports.slice() : []}
         initiallySelectedDataTypes={this.submissionToValidate ? this.submissionToValidate.report.dataTypeReports.map(x => x.dataType) : []}
-        defaultEmailsText={``}
       />
       <SignOffSubmissionModal
         isOpen={this.shouldShowSignOffModal}
