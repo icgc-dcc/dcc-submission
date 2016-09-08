@@ -73,13 +73,13 @@ public class FileHdfsSshFileTest {
 
     RootHdfsSshFile rootDirectory = new RootHdfsSshFile(context, authentication, session);
     String directoryName = PROJECT_KEY;
-    directory = new SubmissionDirectoryHdfsSshFile(context, rootDirectory, directoryName, session);
+    directory = new SubmissionDirectoryHdfsSshFile(context, rootDirectory, directoryName);
   }
 
   @Test
   public void testDoesNotExist() throws IOException {
     String fileName = "file.txt";
-    FileHdfsSshFile file = new FileHdfsSshFile(context, directory, fileName, session);
+    FileHdfsSshFile file = new FileHdfsSshFile(context, directory, fileName);
 
     assertThat(file.doesExist()).isFalse();
   }
@@ -87,7 +87,7 @@ public class FileHdfsSshFileTest {
   @Test
   public void testCreate() throws IOException {
     String fileName = "file.txt";
-    FileHdfsSshFile file = new FileHdfsSshFile(context, directory, fileName, session);
+    FileHdfsSshFile file = new FileHdfsSshFile(context, directory, fileName);
 
     assertThat(file.create()).isTrue();
     assertThat(file.doesExist()).isTrue();

@@ -49,7 +49,7 @@ public class SubmissionFile {
   private final Date lastUpdate;
   private final long size;
   private final FileType fileType;
-  private final boolean transfering;
+  private final boolean transferring;
 
   @JsonCreator
   public SubmissionFile(
@@ -69,13 +69,13 @@ public class SubmissionFile {
       @JsonDeserialize(using = FileTypeDeserializer.class)//
       FileType fileType,
 
-      @JsonProperty("transfering") boolean transfering)
+      @JsonProperty("transferring") boolean transferring)
   {
     this.name = name;
     this.lastUpdate = lastUpdate;
     this.size = size;
     this.fileType = fileType;
-    this.transfering = transfering;
+    this.transferring = transferring;
   }
 
   @JsonIgnore

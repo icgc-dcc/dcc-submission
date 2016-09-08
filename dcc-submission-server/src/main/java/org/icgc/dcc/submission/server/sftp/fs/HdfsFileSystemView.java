@@ -101,7 +101,7 @@ public class HdfsFileSystemView implements FileSystemView {
   private SshFile getSubmissionFile(String file, Path path, RootHdfsSshFile root) {
     val submissionDirectory = getSubmissionDirectory(file, path.getParent(), root);
     val submissionFileName = path.getName();
-    val submissionFile = new FileHdfsSshFile(context, submissionDirectory, submissionFileName, session);
+    val submissionFile = new FileHdfsSshFile(context, submissionDirectory, submissionFileName);
 
     return submissionFile;
   }
@@ -130,9 +130,9 @@ public class HdfsFileSystemView implements FileSystemView {
   private BaseDirectoryHdfsSshFile getHdfsSshFile(RootHdfsSshFile root, Path path) {
     BaseDirectoryHdfsSshFile result;
     if (context.isSystemDirectory(path, authentication) && context.isAdminUser(authentication)) {
-      result = new SystemFileHdfsSshFile(context, root, path.getName(), session);
+      result = new SystemFileHdfsSshFile(context, root, path.getName());
     } else { // FIXME? What happens if is-system-dir but not is-admin...?
-      result = new SubmissionDirectoryHdfsSshFile(context, root, path.getName(), session);
+      result = new SubmissionDirectoryHdfsSshFile(context, root, path.getName());
     }
 
     return result;

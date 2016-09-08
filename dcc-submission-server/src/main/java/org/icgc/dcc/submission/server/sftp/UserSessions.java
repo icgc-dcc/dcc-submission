@@ -19,16 +19,15 @@ package org.icgc.dcc.submission.server.sftp;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static com.google.common.collect.Iterables.getLast;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 
+import java.io.File;
 import java.util.Collection;
 
 import lombok.NoArgsConstructor;
 import lombok.val;
 
-import org.icgc.dcc.common.core.util.Splitters;
 import org.icgc.dcc.submission.server.service.SystemService;
 
 @NoArgsConstructor(access = PRIVATE)
@@ -42,19 +41,14 @@ public final class UserSessions {
   }
 
   private static String getTransferFileName(String transferFile) {
-    val fileParts = Splitters.PATH.splitToList(transferFile);
-    val fileName = getLast(fileParts);
+    val fileName = new File(transferFile).getName();
     checkState(!isNullOrEmpty(fileName), "Failed to resolve transfer file name from path '{}'", transferFile);
 
     return fileName;
   }
 
   private static boolean isProjectTransfer(String projectKey, String transferFile) {
-    val fileParts = Splitters.PATH.splitToList(transferFile);
-    checkState(fileParts.size() > 2, "Malformed transfer file path '{}'", transferFile);
-    // Path looks like /<root_dir_path>/<project>/<file_name>
-    val projectIndex = fileParts.size() - 2;
-    val transferProject = fileParts.get(projectIndex);
+    val transferProject = new File(new File(transferFile).getParent()).getName();
 
     return projectKey.equals(transferProject);
   }

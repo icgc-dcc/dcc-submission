@@ -23,7 +23,6 @@ import java.io.FileNotFoundException;
 
 import lombok.NonNull;
 
-import org.apache.sshd.common.Session;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.server.sftp.SftpContext;
@@ -33,8 +32,8 @@ public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
   @NonNull
   private final SubmissionDirectory directory;
 
-  public SubmissionDirectoryHdfsSshFile(SftpContext context, RootHdfsSshFile root, String directoryName, Session session) {
-    super(context, root, directoryName, session);
+  public SubmissionDirectoryHdfsSshFile(SftpContext context, RootHdfsSshFile root, String directoryName) {
+    super(context, root, directoryName);
     this.directory = getSubmissionDirectory(directoryName);
   }
 

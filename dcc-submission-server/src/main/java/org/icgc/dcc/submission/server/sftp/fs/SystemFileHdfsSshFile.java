@@ -21,14 +21,13 @@ import static org.icgc.dcc.submission.server.sftp.fs.HdfsFileUtils.handleExcepti
 
 import java.io.IOException;
 
-import org.apache.sshd.common.Session;
 import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.server.sftp.SftpContext;
 
 public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
-  public SystemFileHdfsSshFile(SftpContext context, RootHdfsSshFile root, String directoryName, Session session) {
-    super(context, root, directoryName, session);
+  public SystemFileHdfsSshFile(SftpContext context, RootHdfsSshFile root, String directoryName) {
+    super(context, root, directoryName);
   }
 
   @Override

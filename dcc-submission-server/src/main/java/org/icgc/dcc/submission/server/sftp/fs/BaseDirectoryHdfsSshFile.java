@@ -30,7 +30,6 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.sshd.common.Session;
 import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.server.sftp.SftpContext;
 
@@ -41,9 +40,9 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
   @NonNull
   protected final String directoryName;
 
-  protected BaseDirectoryHdfsSshFile(SftpContext context, RootHdfsSshFile root, String directoryName, Session session) {
+  protected BaseDirectoryHdfsSshFile(SftpContext context, RootHdfsSshFile root, String directoryName) {
     super(context, new Path(root.path, directoryName.isEmpty() ? "/" : directoryName), root.fileSystem,
-        root.authentication, session);
+        root.authentication, root.session);
     this.root = checkNotNull(root);
     this.directoryName = checkNotNull(directoryName);
   }
@@ -99,7 +98,7 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
       List<SshFile> sshFiles = newArrayList();
 
       for (Path path : paths) {
-        FileHdfsSshFile sshFile = new FileHdfsSshFile(context, this, path.getName(), session);
+        FileHdfsSshFile sshFile = new FileHdfsSshFile(context, this, path.getName());
         if (sshFile.doesExist()) {
           sshFiles.add(sshFile);
         }
@@ -118,7 +117,7 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
       case 0:
         return this;
       case 1:
-        return new FileHdfsSshFile(context, this, filePath.getName(), session);
+        return new FileHdfsSshFile(context, this, filePath.getName());
       }
     } catch (Exception e) {
       return handleException(HdfsSshFile.class, e);

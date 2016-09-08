@@ -19,14 +19,15 @@ package org.icgc.dcc.submission.server.sftp;
 
 import static com.google.common.util.concurrent.Service.State.TERMINATED;
 import static java.lang.String.valueOf;
-import static org.icgc.dcc.common.core.util.Separators.EMPTY_STRING;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
+import static org.icgc.dcc.submission.server.sftp.SftpSessions.NO_FILE_TRANSFER;
 import static org.icgc.dcc.submission.server.sftp.SftpSessions.getAuthentication;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.sshd.SshServer;
-import org.apache.sshd.common.Session.AttributeKey;
 import org.apache.sshd.common.io.IoSession;
 import org.apache.sshd.common.session.AbstractSession;
 import org.icgc.dcc.submission.core.model.Status;
@@ -52,9 +52,6 @@ import com.google.common.util.concurrent.AbstractService;
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SftpServerService extends AbstractService {
-
-  public static final AttributeKey<FileTransfer> FILE_TRANSFER_SESSION_ATTRIBUTE = new AttributeKey<>();
-  public static final FileTransfer NO_FILE_TRANSFER = new FileTransfer(EMPTY_STRING);
 
   /**
    * Message sent to active session when disabling SFTP.
@@ -97,9 +94,9 @@ public class SftpServerService extends AbstractService {
     val sessions = sshd.getActiveSessions();
 
     return sessions.stream()
-        .map(session -> session.getAttribute(FILE_TRANSFER_SESSION_ATTRIBUTE))
+        .map(session -> SftpSessions.getFileTransfer(session))
         .filter(transfer -> hasFileTransfer(transfer))
-        .map(FileTransfer::getPath)
+        .map(transfer -> transfer.get().getPath())
         .collect(toImmutableList());
   }
 
@@ -191,16 +188,16 @@ public class SftpServerService extends AbstractService {
     map.put("localAddress", ioSession.getLocalAddress().toString());
     map.put("remoteAddress", ioSession.getRemoteAddress().toString());
 
-    val transfer = session.getAttribute(FILE_TRANSFER_SESSION_ATTRIBUTE);
+    val transfer = SftpSessions.getFileTransfer(session);
     if (hasFileTransfer(transfer)) {
-      map.put("fileTransfer", transfer.getPath());
+      map.put("fileTransfer", transfer.get().getPath());
     }
 
     return map;
   }
 
-  private static boolean hasFileTransfer(FileTransfer transfer) {
-    return transfer != null && !NO_FILE_TRANSFER.equals(transfer);
+  private static boolean hasFileTransfer(Optional<FileTransfer> transfer) {
+    return transfer.isPresent() && !NO_FILE_TRANSFER.equals(transfer.get());
   }
 
   private static boolean isSuperUser(AbstractSession activeSession) {

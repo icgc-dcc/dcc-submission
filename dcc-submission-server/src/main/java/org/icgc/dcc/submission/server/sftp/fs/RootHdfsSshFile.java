@@ -115,10 +115,10 @@ public class RootHdfsSshFile extends HdfsSshFile {
       case 0:
         return this;
       case 1:
-        return new SubmissionDirectoryHdfsSshFile(context, this, filePath.getName(), session);
+        return new SubmissionDirectoryHdfsSshFile(context, this, filePath.getName());
       case 2:
-        val parentDir = new SubmissionDirectoryHdfsSshFile(context, this, filePath.getParent().getName(), session);
-        return new FileHdfsSshFile(context, parentDir, filePath.getName(), session);
+        val parentDir = new SubmissionDirectoryHdfsSshFile(context, this, filePath.getParent().getName());
+        return new FileHdfsSshFile(context, parentDir, filePath.getName());
       }
     } catch (Exception e) {
       return handleException(HdfsSshFile.class, e);
@@ -137,7 +137,7 @@ public class RootHdfsSshFile extends HdfsSshFile {
       if (context.isSystemDirectory(path, authentication)) {
         if (context.isAdminUser(authentication)) {
           // System file directory and admin user, add to file list
-          return Optional.<SshFile> of(new SystemFileHdfsSshFile(context, this, path.getName(), session));
+          return Optional.<SshFile> of(new SystemFileHdfsSshFile(context, this, path.getName()));
         } else {
           return Optional.<SshFile> absent();
         }
@@ -149,7 +149,7 @@ public class RootHdfsSshFile extends HdfsSshFile {
           return Optional.<SshFile> absent();
         }
 
-        val submissionDir = new SubmissionDirectoryHdfsSshFile(context, this, projectKey, session);
+        val submissionDir = new SubmissionDirectoryHdfsSshFile(context, this, projectKey);
         if (submissionDir.doesExist()) {
           // Necessary because of error handling workaround
           return Optional.<SshFile> of(submissionDir);

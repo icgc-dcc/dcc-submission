@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.submission.server.sftp.fs;
 
-import static org.icgc.dcc.submission.server.sftp.SftpServerService.FILE_TRANSFER_SESSION_ATTRIBUTE;
-import static org.icgc.dcc.submission.server.sftp.SftpServerService.NO_FILE_TRANSFER;
+import static org.icgc.dcc.submission.server.sftp.SftpSessions.setFileTransfer;
+import static org.icgc.dcc.submission.server.sftp.SftpSessions.unsetFileTransfer;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -37,7 +37,7 @@ public final class SessionOutputStream extends OutputStream {
   public SessionOutputStream(@NonNull OutputStream delegate, @NonNull Session session, @NonNull Path path) {
     this.delegate = delegate;
     this.session = session;
-    session.setAttribute(FILE_TRANSFER_SESSION_ATTRIBUTE, new FileTransfer(path.toString()));
+    setFileTransfer(session, new FileTransfer(path.toString()));
   }
 
   @Override
@@ -62,8 +62,11 @@ public final class SessionOutputStream extends OutputStream {
 
   @Override
   public void close() throws IOException {
-    delegate.close();
-    session.setAttribute(FILE_TRANSFER_SESSION_ATTRIBUTE, NO_FILE_TRANSFER);
+    try {
+      delegate.close();
+    } finally {
+      unsetFileTransfer(session);
+    }
   }
 
 }
