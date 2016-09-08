@@ -17,6 +17,10 @@ import ReleaseModel from '~/Release/ReleaseModel';
 import SubmissionModel from './SubmissionModel';
 import ValidateSubmissionModal from '~/Submission/modals/ValidateSubmissionModal';
 import SignOffSubmissionModal from '~/Submission/modals/SignOffSubmissionModal';
+import ResetSubmissionModal from '~/Submission/modals/ResetSubmissionModal';
+import CancelSubmissionValidationModal from '~/Submission/modals/CancelSubmissionValidationModal';
+
+import SUBMISSION_OPERATIONS from '~/Submission/SUBMISSION_OPERATIONS';
 
 //NOTE: "project" is synonymous with "submission"
 export default @observer
@@ -33,6 +37,16 @@ class Submission extends Component {
     return !!this.submissionToSignOff;
   }
 
+  @observable submissionToReset = undefined;
+  @computed get shouldShowResetModal() {
+    return !!this.submissionToReset;
+  }
+
+  @observable submissionToCancelValidation = undefined;
+  @computed get shouldShowCancelValidationModal() {
+    return !!this.submissionToCancelValidation;
+  }
+
   componentWillMount () {
     const releaseName = this.props.params.releaseName;
     const projectKey = this.props.params.projectKey;
@@ -40,15 +54,12 @@ class Submission extends Component {
     this.release = new ReleaseModel({name: releaseName});
     this.submission.fetch();
     this.release.fetch();
-    window.ssss = this.submission;
+    this._pollInterval = global.setInterval(this.submission.fetch, require('~/common/constants/POLL_INTERVAL'));
   }
 
-  handleClickReset = async () => {
-    await this.submission.reset();
-    console.log('reset complete');
-    await this.submission.fetch();
-    console.log('fetch complete');
-  };
+  componentWillUnmount() {
+    global.clearInterval(this._pollInterval);
+  }
 
   closeValidateModal = () => {
     this.dataTypesToValidate = [];
@@ -56,6 +67,10 @@ class Submission extends Component {
 
   closeSignOffModal = () => {
     this.submissionToSignOff = null;
+  }
+
+  closeCancelValidationModal = () => {
+    this.submissionToCancelValidation = null;
   }
 
   handleRequestSubmitValidate = async ({dataTypes, emails}) => {
@@ -70,13 +85,34 @@ class Submission extends Component {
     this.closeSignOffModal();
   };
 
+  handleRequestSubmitCancelValidation = async () => {
+    await this.submission.cancelValidation();
+    await this.submission.fetch();
+    this.closeSignOffModal();
+  };
+
+  closeResetModal = () => { this.submissionToReset = null };
+
+  handleRequestSubmitReset = async () => {
+    await this.submission.reset();
+    await this.submission.fetch();
+    this.closeResetModal();
+  } 
+
   handleClickValidate = () => {
     this.dataTypesToValidate = this.submission.report.dataTypeReports.map( x => x.dataType);
   };
 
   handleClickSignOff = () => {
-    console.log('click sign off');
     this.submissionToSignOff = this.submission;
+  };
+
+  handleClickReset = () => {
+    this.submissionToReset = this.submission;
+  };
+
+  handleClickCancelValidation = () => {
+    this.submissionToCancelValidation = this.submission;
   };
 
   render () {
@@ -100,6 +136,18 @@ class Submission extends Component {
           projectKey={projectKey}
           projectName={this.submission.projectName}
         />
+        <ResetSubmissionModal
+          isOpen={this.shouldShowResetModal}
+          onRequestSubmit={this.handleRequestSubmitReset}
+          onRequestClose={this.closeResetModal}
+          projectName={this.submission.projectName || ''}
+        />
+        <CancelSubmissionValidationModal
+          isOpen={this.shouldShowCancelValidationModal}
+          onRequestSubmit={this.handleRequestSubmitCancelValidation}
+          onRequestClose={this.closeCancelValidationModal}
+          projectName={this.submission.projectName || ''}
+        />
         <h1>Submission Summary</h1>
         <ul>
           <li>Name {submission.projectName}</li>
@@ -117,6 +165,7 @@ class Submission extends Component {
               onClickValidate={ this.handleClickValidate }
               onClickSignOff={ this.handleClickSignOff }
               onClickReset={ this.handleClickReset }
+              onClickCancelValidation={ this.handleClickCancelValidation }
             />
           </li>
         </ul>

@@ -47,6 +47,17 @@ export async function resetSubmission ({projectKey}) {
   return response
 }
 
+export async function cancelSubmissionValidation ({projectKey}) {
+  const response = await fetch(`/ws/nextRelease/validation/${projectKey}`, {
+    method: 'DELETE',
+    headers: fetchHeaders.get(),
+  });
+  if (!response.ok) {
+    console.error('response not ok', response);
+  }
+  return response
+}
+
 
 class SubmissionModel {
   @observable isLoading = false;
@@ -61,6 +72,7 @@ class SubmissionModel {
     dataTypeReports: []
   };
   @observable state = undefined;
+  // TODO: use "transferring" field in each submissionFile. don't allow submission when transfering is true' 
   @observable submissionFiles = [];
 
   constructor ({releaseName, projectKey}) {
@@ -112,6 +124,10 @@ class SubmissionModel {
   @action signOff = () => {
     return signOffSubmission({projectKey: this.projectKey});
   };
+
+  @action cancelValidation = () => {
+    return cancelSubmissionValidation({projectKey: this.projectKey});
+  }
 
 };
 

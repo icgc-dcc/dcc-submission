@@ -3,7 +3,7 @@ import {observer} from 'mobx-react';
 import Modal from 'react-modal';
 
 @observer
-class ResetModal extends Component {
+class CancelSubmissionValidationModal extends Component {
   static propTypes = {
     isOpen: PropTypes.bool.isRequired,
     onRequestClose: PropTypes.func.isRequired,
@@ -31,11 +31,11 @@ class ResetModal extends Component {
             >
               <span aria-hidden="true">&times;</span>
             </button>
-            <h3>Reset Submission</h3>
+            <h3>Cancel Submission Validation</h3>
           </div>
           <div className="modal-body">
             <div className="alert alert-info">
-              This will reset the validation on the <strong>{projectName}</strong> submission!
+              This will cancel the validation on the <strong>{projectName}</strong> submission!
             </div>
           </div>
           <div className="modal-footer">
@@ -44,7 +44,7 @@ class ResetModal extends Component {
               type="submit"
               className="m-btn red"
               onClick={onRequestSubmit}
-            >Reset Submission</button>
+            >Cancel Submission Validation</button>
           </div>
         </div>
       </Modal>
@@ -52,4 +52,4 @@ class ResetModal extends Component {
   }
 }
 
-export default ResetModal;
+export default CancelSubmissionValidationModal;

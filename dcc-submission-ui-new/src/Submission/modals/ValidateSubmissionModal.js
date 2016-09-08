@@ -40,6 +40,10 @@ class ValidateModal extends Component {
     return this.emails.length > 0;
   }
 
+  componentWillMount() {
+    this.emailsText = user.emailsToNotify.join(',\n');
+  }
+
   componentWillReceiveProps({initiallySelectedDataTypes}) {
     if (initiallySelectedDataTypes) {
       this.selectedDataTypes = uniq(initiallySelectedDataTypes.concat(this.requiredDataTypes));
@@ -64,8 +68,7 @@ class ValidateModal extends Component {
       onRequestClose,
       dataTypeReports,
     } = this.props;
-
-    const initialEmailsText = user.emailsToNotify.join(',\n') 
+ 
     const queueLength = 5;
     return (
       <Modal
@@ -133,7 +136,7 @@ class ValidateModal extends Component {
                 style={{width: '100%'}}
                 className="m-wrap"
                 id="emails"
-                defaultValue={initialEmailsText}
+                defaultValue={this.emailsText}
                 onChange={e => {this.emailsText = e.target.value}}
               />
             </div>

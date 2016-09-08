@@ -82,29 +82,6 @@ export default function SubmissionActionButtons ({
 
   const visibleElements = elements.filter( x => x.isVisible ).map(x => x.element);
   return <div>{visibleElements}</div>;
-  // switch (submissionState) {
-  //   case 'INVALID':
-  //     return validateButton;
-  //   case 'QUEUED':
-  //   case 'VALIDATING':
-  //     return cancelValidationButton
-  //   case 'VALID':
-  //     return (
-  //       <div>
-  //         {signOffButton}
-  //         {validateButton}
-  //       </div>
-  //     );
-  //   case 'NOT_VALIDATED':
-  //     return (submissionHasFiles)
-  //       ? validateButton
-  //       : <em>Upload Files</em>
-  //   case 'SIGNED_OFF':
-  //     return null;
-  //   case 'ERROR':
-  //   default:
-  //     return <em>Contact dcc-support@icgc.org</em>;
-  // }
 }
 
 SubmissionActionButtons.propTypes = {

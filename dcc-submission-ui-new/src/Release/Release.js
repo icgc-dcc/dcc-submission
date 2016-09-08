@@ -21,8 +21,9 @@ import SignOffSubmissionModal from '~/Submission/modals/SignOffSubmissionModal';
 import ValidateSubmissionModal from '~/Submission/modals/ValidateSubmissionModal';
 import ResetSubmissionModal from '~/Submission/modals/ResetSubmissionModal';
 import PerformReleaseModal from '~/Release/modals/PerformReleaseModal';
+import CancelSubmissionValidationModal from '~/Submission/modals/CancelSubmissionValidationModal';
 
-import {queueSubmissionForValidation, signOffSubmission, resetSubmission} from '~/Submission/SubmissionModel';
+import {queueSubmissionForValidation, signOffSubmission, resetSubmission, cancelSubmissionValidation} from '~/Submission/SubmissionModel';
 
 const summaryClassNameMap = {
   SIGNED_OFF: 'label-success',
@@ -65,23 +66,28 @@ class Release extends Component {
 
   @observable submissionToReset;
   @computed get shouldShowResetModal() { return !!this.submissionToReset }
-  handleClickReset = (submission) => {
-    this.submissionToReset = submission; 
-  }
+  handleClickReset = (submission) => { this.submissionToReset = submission }
   closeResetModal = () => { this.submissionToReset = null };
   handleRequestSubmitReset = async () => {
     await resetSubmission({projectKey: this.submissionToReset.projectKey});
     this.release.fetch();
     this.closeResetModal();
-  } 
+  }
+
+  @observable submissionToCancelValidation;
+  @computed get shouldShowCancelValidationModal() { return !!this.submissionToCancelValidation }
+  handleClickCancelValidation = (submission) => { this.submissionToCancelValidation = submission }
+  closeCancelValidationModal = () => { this.submissionToCancelValidation = null };
+  handleRequestSubmitCancelValidation = async () => {
+    await cancelSubmissionValidation({projectKey: this.submissionToCancelValidation.projectKey});
+    this.release.fetch();
+    this.closeResetModal();
+  }
 
   @observable releaseToPerform;
   @computed get shouldShowPerformReleaseModal() { return !!this.releaseToPerform }
-
   handleClickPerformRelease = (release) => { this.releaseToPerform = release }
-
   closePerformReleaseModal = () => { this.releaseToPerform = null }
-
   handleRequestSubmitForRelease = async ({nextReleaseName}) => {
     await this.release.performRelease({nextReleaseName});
     this.closePerformReleaseModal();
@@ -210,6 +216,7 @@ class Release extends Component {
                 onClickValidate={() => this.handleClickValidateSubmission(submission)}
                 onClickSignOff={() => this.handleClickSignOffSubmission(submission)}
                 onClickReset={() => this.handleClickReset(submission)}
+                onClickCancelValidation={() => this.handleClickCancelValidation(submission)}
               />
             )}
           >Actions</TableHeaderColumn>
@@ -241,6 +248,12 @@ class Release extends Component {
         onRequestSubmit={this.handleRequestSubmitReset}
         onRequestClose={this.closeResetModal}
         projectName={this.submissionToReset ? this.submissionToReset.projectName : ''}
+      />
+      <CancelSubmissionValidationModal
+        isOpen={this.shouldShowCancelValidationModal}
+        onRequestSubmit={this.handleRequestSubmitCancelValidation}
+        onRequestClose={this.closeCancelValidationModal}
+        projectName={this.submissionToCancelValidation && this.submissionToCancelValidation.projectName || ''}
       />
     </div>
     );
