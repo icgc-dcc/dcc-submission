@@ -7,18 +7,22 @@ import { AppContainer } from 'react-hot-loader';
 import 'whatwg-fetch';
 
 import './index.css';
+import 'rc-tooltip/assets/bootstrap.css';
 
 import user from '~/user';
 
 import routes from './routes';
 
+global.jQuery = require('jquery');
+require('bootstrap/js/dropdown');
+
 // hardcode user to be logged in
 
-// user.name = 'admin';
-// user.token = 'YWRtaW46YWRtaW5zcGFzc3dk';
-// user.roles = ['admin'];
-// user.isLoggedIn = true;
-// window.user = user;
+user.username = 'admin';
+user.token = 'YWRtaW46YWRtaW5zcGFzc3dk';
+user.roles = ['admin'];
+user.isLoggedIn = true;
+window.user = user;
 
 observe(user, change => {
   if (change.name === 'isLoggedIn' && change.oldValue === false && change.newValue === true) {
@@ -27,7 +31,7 @@ observe(user, change => {
   }
   if (change.name === 'isLoggedIn' && change.oldValue === true && change.newValue === false) {
     console.log('user logged out. redirecting to /');
-    browserHistory.push('/')
+    browserHistory.push('/login')
   }
 })
 

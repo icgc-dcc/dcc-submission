@@ -1,0 +1,10 @@
+.react-bs-table {
+  border-radius: 1px;
+  th {
+    border: 0 !important;
+  }
+  tbody tr:last-child td{
+    /*background: red!important;*/
+    border-bottom: 0;
+  }
+}

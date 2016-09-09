@@ -3,6 +3,7 @@ import {Link} from 'react-router';
 import {observable, action, runInAction, computed } from 'mobx';
 import {observer} from 'mobx-react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
+import Tooltip from 'rc-tooltip';
 import moment from 'moment';
 
 import ActionButton from '~/common/components/ActionButton/ActionButton';
@@ -78,8 +79,60 @@ class Releases extends Component {
       defaultSortOrder: 'desc',
     };
 
+    const columns = [
+      <TableHeaderColumn
+        key="name"
+        dataField="name"
+        dataSort={true}
+        dataFormat={ releaseName => (
+          <Link to={`/releases/${releaseName}`}>
+            {releaseName}
+          </Link>
+        )}
+      >Name</TableHeaderColumn>,
+
+      <TableHeaderColumn
+        key="state"
+        dataField="state"
+        dataSort={true}
+      >State</TableHeaderColumn>,
+
+      <TableHeaderColumn
+        key="releaseState"
+        dataField='releaseDate'
+        dataSort={true}
+        sortFunc={releaseDateSortFunction}
+        dataFormat={(date) => date
+          ? (
+            <Tooltip
+              mouseLeaveDelay={0}
+              overlay={<span>{moment(date).format('h:mm:ss a')}</span>}
+            >
+              <span>{moment(date).format('MMMM Do YYYY')}</span>
+            </Tooltip>
+          )
+          : 'Unreleased'}
+      >Release Date</TableHeaderColumn>,
+      
+      user.isAdmin && <TableHeaderColumn
+        key="actions"
+        dataFormat={(cell, release) => (
+          release.state === RELEASE_STATES.OPENED
+          ? (
+            <ActionButton
+              onClick={() => this.handleClickPerformRelease(release)}
+              className={`m-btn mini green-stripe`}
+            >
+              Release Now
+            </ActionButton>
+          )
+          : ''
+        )}
+      >Actions</TableHeaderColumn>,
+    ].filter(Boolean);
+
     return (
-      <div>
+      <div className="container">
         <BootstrapTable
           data={items}
           keyField='name'
@@ -89,40 +142,7 @@ class Releases extends Component {
           search={items.length > tableOptions.sizePerPage}
           options={tableOptions}
         >
-          <TableHeaderColumn
-            dataField='name'
-            dataSort={true}
-            dataFormat={ releaseName => (
-              <Link to={`/releases/${releaseName}`}>
-                {releaseName}
-              </Link>
-            )}
-          >Name</TableHeaderColumn>
-          <TableHeaderColumn
-            dataField='state'
-            dataSort={true}
-          >State</TableHeaderColumn>
-          <TableHeaderColumn
-            dataField='releaseDate'
-            dataSort={true}
-            sortFunc={releaseDateSortFunction}
-            dataFormat={(date) => date ? moment(date).format('MMMM Do YYYY, h:mm:ss a') : 'Unreleased'}
-          >Release Date</TableHeaderColumn>
-          <TableHeaderColumn
-            hidden={!user.isAdmin}
-            dataFormat={(cell, release) => (
-              release.state === RELEASE_STATES.OPENED
-              ? (
-                <ActionButton
-                  onClick={() => this.handleClickPerformRelease(release)}
-                  className={`m-btn mini green-stripe`}
-                >
-                  Release Now
-                </ActionButton>
-              )
-              : ''
-            )}
-          >Actions</TableHeaderColumn>
+          {columns}
         </BootstrapTable>
         <PerformReleaseModal
           isOpen={this.shouldShowPerformReleaseModal}

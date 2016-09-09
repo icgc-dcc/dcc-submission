@@ -11,18 +11,20 @@ import user from '~/user';
 class App extends Component {
   render() {
     const fullView = (
-      <div className="App container">
+      <div className="App">
         <Header/>
-        <Breadcrumbs
-          routes={this.props.routes}
-          params={this.props.params}
-          excludes={['App']}
-        />
+        <div className="container">
+          <Breadcrumbs
+            routes={this.props.routes}
+            params={this.props.params}
+            excludes={['App']}
+          />
+        </div>
         {this.props.children}
       </div>
     );
     const minimalView = (
-      <div className="App container">
+      <div className="App">
         { this.props.children }
       </div>
     );

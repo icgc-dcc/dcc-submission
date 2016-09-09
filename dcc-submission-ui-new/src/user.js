@@ -24,7 +24,7 @@ const user = observable({
   isLoggingIn: false,
   emailsToNotify: storedEmailsToNotify,
 
-  get isAdmin() {
+  isAdmin: function () {
     return this.roles.indexOf('admin') >= 0;
   },
 

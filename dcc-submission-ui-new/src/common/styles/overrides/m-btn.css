@@ -1,0 +1,7 @@
+.m-btn {
+  margin-top: 0;
+}
+
+.m-btn.mini {
+  height: auto;
+}
