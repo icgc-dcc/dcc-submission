@@ -70,7 +70,7 @@ class Header extends Component {
               <ul className="nav navbar-nav navbar-right">
                 <li></li>
                 <li>
-                  <a>{user.username}</a>
+                  <a className="username">{user.username}</a>
                 </li>
                 <li>
                   <a style={{cursor: 'pointer'}} onClick={() => user.logout()}>Logout</a>
