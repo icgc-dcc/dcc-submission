@@ -253,7 +253,7 @@ class Release extends Component {
         isOpen={this.shouldShowCancelValidationModal}
         onRequestSubmit={this.handleRequestSubmitCancelValidation}
         onRequestClose={this.closeCancelValidationModal}
-        projectName={this.submissionToCancelValidation && this.submissionToCancelValidation.projectName || ''}
+        projectName={this.submissionToCancelValidation ? this.submissionToCancelValidation.projectName : ''}
       />
     </div>
     );

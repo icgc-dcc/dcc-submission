@@ -20,7 +20,7 @@ import SignOffSubmissionModal from '~/Submission/modals/SignOffSubmissionModal';
 import ResetSubmissionModal from '~/Submission/modals/ResetSubmissionModal';
 import CancelSubmissionValidationModal from '~/Submission/modals/CancelSubmissionValidationModal';
 
-import SUBMISSION_OPERATIONS from '~/Submission/SUBMISSION_OPERATIONS';
+// import SUBMISSION_OPERATIONS from '~/Submission/SUBMISSION_OPERATIONS';
 
 //NOTE: "project" is synonymous with "submission"
 export default @observer
