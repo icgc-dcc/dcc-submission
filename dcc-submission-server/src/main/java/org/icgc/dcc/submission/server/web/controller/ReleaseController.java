@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.server.web.controller;
 import static org.icgc.dcc.submission.core.security.Authorizations.hasReleaseViewAuthority;
 import static org.icgc.dcc.submission.core.security.Authorizations.hasSpecificProjectPrivilege;
 import static org.icgc.dcc.submission.core.security.Authorizations.isSuperUser;
-import static org.icgc.dcc.submission.server.sftp.UserSessions.getTransferFiles;
 import static org.icgc.dcc.submission.server.web.ServerErrorCode.ALREADY_INITIALIZED;
 import static org.icgc.dcc.submission.server.web.ServerErrorCode.EMPTY_REQUEST;
 import static org.icgc.dcc.submission.server.web.controller.Responses.noSuchEntityResponse;
@@ -209,7 +208,7 @@ public class ReleaseController {
 
   private void updateTransferingFiles(DetailedSubmission detailedSubmission) {
     val projectKey = detailedSubmission.getProjectKey();
-    val transfers = getTransferFiles(systemService, projectKey);
+    val transfers = systemService.getTransferringFiles(projectKey);
     if (!transfers.isEmpty()) {
       val submissionFiles = detailedSubmission.getSubmissionFiles();
       val updatedSubmissionFiles = updateSubmissionFiles(submissionFiles, transfers);

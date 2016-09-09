@@ -29,12 +29,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.sshd.common.Session;
 import org.icgc.dcc.submission.server.sftp.FileTransfer;
 
-public final class SessionOutputStream extends OutputStream {
+public final class SessionFileTransferOutputStream extends OutputStream {
 
   private final OutputStream delegate;
   private final Session session;
 
-  public SessionOutputStream(@NonNull OutputStream delegate, @NonNull Session session, @NonNull Path path) {
+  public SessionFileTransferOutputStream(@NonNull OutputStream delegate, @NonNull Session session, @NonNull Path path) {
     this.delegate = delegate;
     this.session = session;
     setFileTransfer(session, new FileTransfer(path.toString()));

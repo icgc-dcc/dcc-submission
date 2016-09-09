@@ -94,8 +94,8 @@ public class SftpServerService extends AbstractService {
     val sessions = sshd.getActiveSessions();
 
     return sessions.stream()
-        .map(session -> SftpSessions.getFileTransfer(session))
-        .filter(transfer -> hasFileTransfer(transfer))
+        .map(SftpSessions::getFileTransfer)
+        .filter(SftpServerService::hasFileTransfer)
         .map(transfer -> transfer.get().getPath())
         .collect(toImmutableList());
   }

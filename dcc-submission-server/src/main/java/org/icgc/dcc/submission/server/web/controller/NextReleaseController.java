@@ -23,7 +23,6 @@ import static org.icgc.dcc.submission.core.security.Authorizations.hasReleaseVie
 import static org.icgc.dcc.submission.core.security.Authorizations.hasSpecificProjectPrivilege;
 import static org.icgc.dcc.submission.core.security.Authorizations.hasSubmissionSignoffAuthority;
 import static org.icgc.dcc.submission.core.security.Authorizations.isSuperUser;
-import static org.icgc.dcc.submission.server.sftp.UserSessions.getTransferFiles;
 import static org.icgc.dcc.submission.server.web.ServerErrorCode.INVALID_STATE;
 import static org.icgc.dcc.submission.server.web.ServerErrorCode.RELEASE_EXCEPTION;
 import static org.icgc.dcc.submission.server.web.ServerErrorCode.UNAVAILABLE;
@@ -177,7 +176,7 @@ public class NextReleaseController {
     }
 
     try {
-      checkProjectsWithTransfers(queuedProjects);
+      checkNotTransferring(queuedProjects);
       releaseService.queueSubmissions(queuedProjects);
     } catch (ReleaseException e) {
       log.error("Error trying to queue submission(s)", e);
@@ -344,10 +343,10 @@ public class NextReleaseController {
     return systemService.isEnabled() || isSuperUser(authentication);
   }
 
-  private void checkProjectsWithTransfers(List<QueuedProject> queuedProjects) {
+  private void checkNotTransferring(List<QueuedProject> queuedProjects) {
     val transfers = queuedProjects.stream()
         .map(queuedProject -> queuedProject.getKey())
-        .map(project -> Maps.immutableEntry(project, getTransferFiles(systemService, project)))
+        .map(project -> Maps.immutableEntry(project, systemService.getTransferringFiles(project)))
         .filter(entry -> !entry.getValue().isEmpty())
         .collect(Collectors.toImmutableMap(entry -> entry.getKey(), entry -> entry.getValue()));
 

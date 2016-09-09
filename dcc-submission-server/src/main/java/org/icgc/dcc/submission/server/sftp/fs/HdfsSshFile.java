@@ -254,7 +254,7 @@ public abstract class HdfsSshFile implements SshFile {
       log.info("Submission file opened: '{}'", path);
       val delegate = fileSystem.create(path);
 
-      return new SessionOutputStream(delegate, session, path);
+      return new SessionFileTransferOutputStream(delegate, session, path);
     } catch (Exception e) {
       return handleException(OutputStream.class, e);
     }
