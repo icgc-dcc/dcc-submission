@@ -1,6 +1,7 @@
 @import '../node_modules/normalize.css/normalize.css';
 @import '../node_modules/react-bootstrap-table/css/react-bootstrap-table.css';
 @import '../node_modules/highlight.js/styles/docco.css';
+@import './common/styles/bootstrap-overrides.css';
 
 body {
   margin: 0;

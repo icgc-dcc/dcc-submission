@@ -1,8 +1,12 @@
-@import './common/styles/eases.css';
 @import './common/styles/global.css';
+@import './common/styles/colors.css';
 
 .App {
 
+}
+
+html, body, #root, .App {
+  height: 100%;
 }
 
 .ReactModal__Overlay {
@@ -43,4 +47,9 @@
 .ReactModal__Content.modal-dialog {
   border: none;
   background-color: white;
+}
+
+h2 {
+  font-size: 21px;
+  font-weight: normal;
 }

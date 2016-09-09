@@ -13,3 +13,10 @@ ul, li {
   padding: 0;
   list-style-type: none;
 }
+
+.secondary-link {
+  color: var(--darkGrey);
+  &:hover {
+    color: var(--darkGrey);
+  }
+}

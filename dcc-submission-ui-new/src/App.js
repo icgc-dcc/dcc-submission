@@ -3,13 +3,14 @@ import Breadcrumbs from 'react-breadcrumbs';
 import './App.css';
 
 import {observer} from 'mobx-react';
-
 import Header from './Header/Header';
+
+import user from '~/user';
 
 @observer
 class App extends Component {
   render() {
-    return (
+    const fullView = (
       <div className="App container">
         <Header/>
         <Breadcrumbs
@@ -20,6 +21,12 @@ class App extends Component {
         {this.props.children}
       </div>
     );
+    const minimalView = (
+      <div className="App container">
+        { this.props.children }
+      </div>
+    );
+    return user.isLoggedIn ? fullView : minimalView;
   }
 }
 

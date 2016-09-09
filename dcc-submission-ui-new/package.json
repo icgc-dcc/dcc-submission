@@ -46,6 +46,7 @@
     "postcss-loader": "0.9.1",
     "postcss-media-minmax": "2.1.2",
     "postcss-nested": "1.0.0",
+    "postcss-nesting": "2.3.1",
     "postcss-selector-matches": "2.0.1",
     "postcss-selector-not": "2.0.0",
     "promise": "7.1.1",

@@ -102,6 +102,9 @@ module.exports = {
   },
   postcss: function() {
     return [
+      // nest one style rule inside another, following the CSS Nesting Module Level 3 specification.
+      // https://github.com/jonathantneal/postcss-nesting
+      require('postcss-nesting'),
       // Unwrap nested rules like how Sass does it
       // https://github.com/postcss/postcss-nested
       require('postcss-nested'),
