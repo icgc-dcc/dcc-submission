@@ -25,11 +25,15 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.common.ega.client.EGAClient;
 import org.icgc.dcc.common.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.server.service.DictionaryService;
 import org.icgc.dcc.submission.validation.ValidationExecutor;
+import org.icgc.dcc.submission.validation.accession.AccessionValidator;
+import org.icgc.dcc.submission.validation.accession.core.AccessionDictionary;
+import org.icgc.dcc.submission.validation.accession.ega.EGAFileAccessionValidator;
 import org.icgc.dcc.submission.validation.core.Validator;
 import org.icgc.dcc.submission.validation.first.FirstPassValidator;
 import org.icgc.dcc.submission.validation.key.KeyValidator;
@@ -76,7 +80,7 @@ public class ValidationConfig extends AbstractConfig {
   /**
    * Validator specifications.
    * <p>
-   * See {@code application.conf}.
+   * See {@code application.yaml}.
    */
   private static final String FIRST_PASS_VALIDATOR_CONFIG_VALUE = "fpv";
   private static final String PRIMARY_VALIDATOR_CONFIG_VALUE = "pv";
@@ -85,6 +89,7 @@ public class ValidationConfig extends AbstractConfig {
   private static final String REFERENCE_GENOME_VALIDATOR_CONFIG_VALUE = "rgv";
   private static final String SAMPLE_TYPE_VALIDATOR_CONFIG_VALUE = "sample";
   private static final String NORMALIZATION_VALIDATOR_CONFIG_VALUE = "nv";
+  private static final String ACCESSION_VALIDATOR_CONFIG_VALUE = "accession";
 
   @Autowired
   FileSystem fileSystem;
@@ -181,7 +186,8 @@ public class ValidationConfig extends AbstractConfig {
   }
 
   @Bean
-  public Set<Validator> validators(SubmissionProperties properties, DccFileSystem2 submissionFileSystem2, Planner planner) {
+  public Set<Validator> validators(SubmissionProperties properties, DccFileSystem2 submissionFileSystem2,
+      Planner planner) {
     // Bind common components
 
     // Set binder will preserve bind order as iteration order for injectees
@@ -208,6 +214,8 @@ public class ValidationConfig extends AbstractConfig {
           validators.add(sampleTypeValidator());
         } else if (value.equals(NORMALIZATION_VALIDATOR_CONFIG_VALUE)) {
           validators.add(normalizationValidator(properties, submissionFileSystem2));
+        } else if (value.equals(ACCESSION_VALIDATOR_CONFIG_VALUE)) {
+          validators.add(accessionValidator(properties));
         } else {
           checkState(false, "Invalid validator specification '%s'", value);
         }
@@ -221,6 +229,7 @@ public class ValidationConfig extends AbstractConfig {
       validators.add(referenceGenomeValidator(properties));
       validators.add(sampleTypeValidator());
       validators.add(normalizationValidator(properties, submissionFileSystem2));
+      validators.add(accessionValidator(properties));
     }
 
     return validators;
@@ -261,8 +270,20 @@ public class ValidationConfig extends AbstractConfig {
     return new SampleTypeValidator();
   }
 
-  private static Validator normalizationValidator(SubmissionProperties properties, DccFileSystem2 submissionFileSystem2) {
+  private static Validator normalizationValidator(SubmissionProperties properties,
+      DccFileSystem2 submissionFileSystem2) {
     return NormalizationValidator.getDefaultInstance(submissionFileSystem2, properties.getNormalizer());
+  }
+
+  private static Validator accessionValidator(SubmissionProperties properties) {
+    val dictionaryUrl =
+        firstNonNull(properties.getAccession().getDictionaryUrl(),
+            AccessionDictionary.DEFAULT_ACCESSION_DICTIONARY_URL);
+    log.info("Using accession dictionary url: {}", dictionaryUrl);
+    val egaClient = new EGAClient(properties.getEga().getUsername(), properties.getEga().getPassword());
+    val egaValidator = new EGAFileAccessionValidator(egaClient);
+
+    return new AccessionValidator(new AccessionDictionary(dictionaryUrl), egaValidator);
   }
 
 }

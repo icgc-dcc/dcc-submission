@@ -17,37 +17,59 @@
  */
 package org.icgc.dcc.submission.validation.accession;
 
-import java.util.List;
+import static org.icgc.dcc.common.core.util.Splitters.COLON;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
+import static org.icgc.dcc.submission.core.parser.SubmissionFileParsers.newMapFileParser;
+import static org.icgc.dcc.submission.core.report.Error.error;
+import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.RAW_DATA_ACCESSION_FIELD_NAME;
+import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.getAnalysisId;
+import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.getRawDataAccession;
+import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.getRawDataRepository;
+import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
-import org.icgc.dcc.common.core.model.Programs;
-import org.icgc.dcc.submission.dictionary.model.CodeList;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.common.core.model.DataType;
+import org.icgc.dcc.common.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
+import org.icgc.dcc.common.ega.model.EGAAccessionType;
+import org.icgc.dcc.common.hadoop.parser.FileParser;
+import org.icgc.dcc.submission.core.report.ErrorType;
+import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.dictionary.util.CodeLists;
-import org.icgc.dcc.submission.validation.core.ClinicalCore;
-import org.icgc.dcc.submission.validation.core.ClinicalParser;
+import org.icgc.dcc.submission.validation.accession.core.AccessionDictionary;
+import org.icgc.dcc.submission.validation.accession.ega.EGAFileAccessionValidator;
+import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
-import org.icgc.dcc.submission.validation.pcawg.core.PCAWGClinicalFilter;
-import org.icgc.dcc.submission.validation.pcawg.core.PCAWGDictionary;
-import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSample;
-import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSampleFilter;
-import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSampleSheet;
-import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSampleValidator;
+import org.icgc.dcc.submission.validation.rgv.report.TupleStateWriter;
 
+import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 /**
+ * Validates the presence and existence of accessions.
  * <p>
- * https://ega.ebi.ac.uk/ega/rest/access/v2/datasets
+ * Accessions are defined in experimental meta files (e.g. {@code ssm_p}, {@code cnsm_p}, etc.). Each meta file has a
+ * similar structure which involves 3 fields for accession validation:
+ * <ul>
+ * <li>{@code analysis_id}</li>
+ * <li>{@code raw_data_repository}</li>
+ * <li>{@code raw_data_accession}</li>
+ * </ul>
+ * Due to the effort involved in applying this new validator to existing data, it has been decided to "grandfather"
+ * existing invalid data and exclude these accessions on the basis of the {@code analysis_id}.
  * <p>
- * https://ega.ebi.ac.uk/ega/rest/access/v2/datasets/EGAD00001000107/files
- * <p>
- * curl -ks -H "Accept: application/json"
- * 'https://ega.ebi.ac.uk/ega/rest/access/v2/files/EGAD00001000107?session='$(curl -ks -X POST -F
- * loginrequest='{"username":"<username>","password":"<password>"}' -H "Accept: application/json"
- * https://ega.ebi.ac.uk/ega/rest/access/v2/users/login | jq -r '.response.result[1]')
+ * Note that only EGA is currently supported.
+ * 
+ * @see http://docs.icgc.org/dictionary/viewer/#?viewMode=table&q=raw_data%7Canalysis_id
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -57,13 +79,13 @@ public class AccessionValidator implements Validator {
    * Dependencies.
    */
   @NonNull
-  private final PCAWGDictionary pcawgDictionary;
+  private final AccessionDictionary dictionary;
   @NonNull
-  private final PCAWGSampleSheet pcawgSampleSheet;
+  private final EGAFileAccessionValidator egaValidator;
 
   @Override
   public String getName() {
-    return "PCAWG Validator";
+    return "Accession Validator";
   }
 
   @Override
@@ -77,67 +99,151 @@ public class AccessionValidator implements Validator {
       return;
     }
 
-    validateClinical(context);
+    validateMeta(context);
   }
 
-  private void validateClinical(ValidationContext context) {
-    val projectKey = context.getProjectKey();
+  @SneakyThrows
+  private void validateMeta(ValidationContext context) {
+    // Find all validatable meta file types
+    val metaFileTypes = resolveMetaFileTypes(context);
 
-    // Filter actual clinical core entities returning the excluded entity ids
-    val clinicalCore = filterClinicalCore(projectKey, context);
+    for (val metaFileType : metaFileTypes) {
+      val metaFiles = context.getFiles(metaFileType);
+      val metaFileParser = createMetaFileParser(context, metaFileType);
 
-    // Filter expected PCAWG samples to remove excluded entity ids
-    val pcawgSamples = filterPCAWGSamples(projectKey);
-
-    // Validate with filtered actual and expected values
-    new PCAWGSampleValidator(getSpecimenTypes(context), clinicalCore, pcawgSamples, context).execute();
+      validateMetaFileType(context, metaFiles, metaFileParser);
+    }
   }
 
-  private ClinicalCore filterClinicalCore(String projectKey, ValidationContext context) {
-    val clinical = ClinicalParser.parse(context);
+  private void validateMetaFileType(ValidationContext context, List<Path> metaFiles,
+      FileParser<Map<String, String>> metaFileParser) {
+    for (val metaFile : metaFiles) {
+      try {
+        // TODO: Verify that this is required
+        @Cleanup
+        val writer = createTupleStateWriter(context, metaFile);
 
-    val filter = new PCAWGClinicalFilter(projectKey, pcawgDictionary);
-    filter.filter(clinical);
-
-    return clinical.getCore();
+        // Get to work
+        log.info("Performing accession validation on meta file '{}' for '{}'", metaFile, context.getProjectKey());
+        validateMetaFile(context, metaFile, metaFileParser, writer);
+        log.info("Finished performing accession validation for '{}'", context.getProjectKey());
+      } catch (Exception e) {
+        throw new RuntimeException("Error validating accession: meta file " + metaFile, e);
+      }
+    }
   }
 
-  private List<PCAWGSample> filterPCAWGSamples(String projectKey) {
-    val pcawgSamples = pcawgSampleSheet.getProjectSamples(projectKey);
-    val filter = new PCAWGSampleFilter(projectKey, pcawgDictionary);
-
-    return filter.filter(pcawgSamples);
+  @SneakyThrows
+  private void validateMetaFile(ValidationContext context, Path filePath,
+      FileParser<Map<String, String>> fileParser, TupleStateWriter writer) {
+    // Validate all records
+    fileParser.parse(filePath, (long lineNumber, Map<String, String> record) -> validateMetaFileRecord(
+        context, writer, filePath.getName(), lineNumber, record, resolveEGATerm(context)));
   }
 
-  private boolean isValidatable(ValidationContext context) {
-    val projectKey = context.getProjectKey();
+  private void validateMetaFileRecord(ValidationContext context, TupleStateWriter writer, String fileName,
+      long lineNumber, Map<String, String> record, Term egaTerm) throws IOException {
+    // Cooperate
+    checkInterrupted(getName());
 
-    if (isProjectExcluded(projectKey)) {
-      return false;
+    // Access field values required for validation
+    val analysisId = getAnalysisId(record);
+    val rawDataRepository = getRawDataRepository(record);
+    val rawDataAccession = getRawDataAccession(record);
+
+    // Currently only EGA validation is supported
+    if (!isEGA(egaTerm, rawDataRepository)) {
+      return;
     }
 
-    // For DCC testing of PCAWG projects
-    val testPCAWG = projectKey.startsWith("TESTP-");
+    // Apply whitelist to exclude historical "grandfathered" records
+    if (dictionary.isExcluded(context.getProjectKey(), analysisId)) {
+      return;
+    }
 
-    val pcawg = testPCAWG || pcawgSampleSheet.hasProject(projectKey);
-    val tcga = isTCGA(projectKey);
+    // Parse and resolve only the the file accessions
+    val fileIds = resolveFileAccessions(rawDataAccession);
 
-    return pcawg && !tcga;
+    // [Presence] Ensure at least one file accession is specified
+    if (fileIds.isEmpty()) {
+      val type = ErrorType.FILE_ACCESSION_MISSING;
+      val value = rawDataAccession;
+      val columnName = RAW_DATA_ACCESSION_FIELD_NAME;
+      val param = analysisId;
+
+      reportError(context, writer, fileName, lineNumber, type, value, columnName, param);
+
+      return;
+    }
+
+    // [Existence] Ensure file accession exists when specified
+    for (val fileId : fileIds) {
+      val result = egaValidator.validate(fileId);
+      if (!result.isValid()) {
+        val type = ErrorType.FILE_ACCESSION_INVALID;
+        val value = rawDataRepository;
+        val columnName = RAW_DATA_ACCESSION_FIELD_NAME;
+        val param = result.getReason();
+
+        reportError(context, writer, fileName, lineNumber, type, value, columnName, param);
+      }
+    }
   }
 
-  private boolean isProjectExcluded(String projectKey) {
-    return pcawgDictionary.getExcludedProjectKeys().contains(projectKey);
+  private static boolean isValidatable(ValidationContext context) {
+    return context.getDataTypes().stream().anyMatch(DataType::isFeatureType);
   }
 
-  private static boolean isTCGA(String projectKey) {
-    // For DCC testing of PCAWG TCGA projects
-    val testTCGA = projectKey.startsWith("TEST") && projectKey.contains("TCGA");
+  private static void reportError(ValidationContext context, TupleStateWriter writer, String fileName, long lineNumber,
+      ErrorType type, String value, String columnName, String param) throws IOException {
+    // Database
+    context.reportError(
+        error()
+            .fileName(fileName)
+            .fieldNames(columnName)
+            .type(type)
+            .lineNumber(lineNumber)
+            .value(value)
+            .params(param)
+            .build());
 
-    return testTCGA || Programs.isTCGA(projectKey);
+    // File
+    val tupleState = new TupleState(lineNumber);
+    tupleState.reportError(type, columnName, value, param);
+    writer.write(tupleState);
   }
 
-  private static CodeList getSpecimenTypes(ValidationContext context) {
-    return CodeLists.getSpecimenTypes(context.getCodeLists());
+  private static boolean isEGA(Term egaTerm, String rawDataRepository) {
+    // Need to check code and value
+    return rawDataRepository.equals(egaTerm.getValue()) || rawDataRepository.equals(egaTerm.getCode());
+  }
+
+  private static List<FileType> resolveMetaFileTypes(ValidationContext context) {
+    return context.getDataTypes().stream()
+        .filter(DataType::isFeatureType)
+        .map(DataType::asFeatureType)
+        .map(FeatureType::getMetaFileType)
+        .collect(toImmutableList());
+  }
+
+  private static Term resolveEGATerm(ValidationContext context) {
+    return CodeLists.getRawDataRepositoriesEGATerm(context.getCodeLists());
+  }
+
+  private static List<String> resolveFileAccessions(String rawDataAccession) {
+    return COLON.splitToList(rawDataAccession).stream()
+        .filter(value -> EGAAccessionType.from(value).orElse(null) == EGAAccessionType.FILE)
+        .collect(toImmutableList());
+  }
+
+  private static TupleStateWriter createTupleStateWriter(ValidationContext context, Path file) throws IOException {
+    return new TupleStateWriter(
+        context.getFileSystem(), new Path(context.getSubmissionDirectory().getValidationDirPath()), file);
+  }
+
+  private static FileParser<Map<String, String>> createMetaFileParser(ValidationContext context,
+      FileType metaFileType) {
+    return newMapFileParser(context.getFileSystem(), context.getFileSchema(metaFileType));
   }
 
 }

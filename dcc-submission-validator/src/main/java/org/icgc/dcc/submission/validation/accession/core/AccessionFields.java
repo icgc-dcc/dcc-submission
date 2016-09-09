@@ -15,64 +15,35 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.dictionary.util;
+package org.icgc.dcc.submission.validation.accession.core;
 
 import static lombok.AccessLevel.PRIVATE;
 
-import java.util.List;
-import java.util.regex.Pattern;
-
-import org.icgc.dcc.submission.dictionary.model.CodeList;
-import org.icgc.dcc.submission.dictionary.model.Term;
-
-import com.google.common.collect.Maps;
+import java.util.Map;
 
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.val;
 
+/**
+ * Field accessors for accession validation.
+ */
 @NoArgsConstructor(access = PRIVATE)
-public final class CodeLists {
+public class AccessionFields {
 
-  /**
-   * Constants - Patterns.
-   */
-  private static final Pattern SPECIMEN_NAME_PATTERN = Pattern.compile("specimen\\.0\\.specimen_type\\.v(\\d+)");
-  private static final Pattern REPO_NAME_PATTERN = Pattern.compile("GLOBAL\\.0\\.raw_data_repository\\.v(\\d+)");
+  public static final String ANALYSIS_ID_FIELD_NAME = "analysis_id";
+  public static final String RAW_DATA_REPOSITORY_FIELD_NAME = "raw_data_repository";
+  public static final String RAW_DATA_ACCESSION_FIELD_NAME = "raw_data_accession";
 
-  /**
-   * Constants - Terms.
-   */
-  private static final String EGA_TERM_VALUE = "EGA";
-
-  public static Term getRawDataRepositoriesEGATerm(@NonNull List<CodeList> codeLists) {
-    return getRawDataRepositories(codeLists).getTerms().stream()
-        .filter(t -> t.getValue().equals(EGA_TERM_VALUE))
-        .findFirst()
-        .orElse(null);
+  public static String getAnalysisId(@NonNull Map<String, String> record) {
+    return record.get(ANALYSIS_ID_FIELD_NAME);
   }
 
-  public static CodeList getRawDataRepositories(@NonNull List<CodeList> codeLists) {
-    return getLatest(codeLists, REPO_NAME_PATTERN);
+  public static String getRawDataRepository(@NonNull Map<String, String> record) {
+    return record.get(RAW_DATA_REPOSITORY_FIELD_NAME);
   }
 
-  public static CodeList getSpecimenTypes(@NonNull List<CodeList> codeLists) {
-    return getLatest(codeLists, SPECIMEN_NAME_PATTERN);
-  }
-
-  private static CodeList getLatest(List<CodeList> codeLists, Pattern pattern) {
-    val versions = Maps.<Integer, CodeList> newTreeMap();
-    for (val codeList : codeLists) {
-      val matcher = pattern.matcher(codeList.getName());
-      if (matcher.matches()) {
-        // If there is no version component then just use 0
-        val version = matcher.groupCount() == 0 ? 0 : Integer.valueOf(matcher.group(1));
-        versions.put(version, codeList);
-      }
-    }
-
-    // Latest version
-    return versions.lastEntry().getValue();
+  public static String getRawDataAccession(@NonNull Map<String, String> record) {
+    return record.get(RAW_DATA_ACCESSION_FIELD_NAME);
   }
 
 }

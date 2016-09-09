@@ -46,6 +46,8 @@ public class SubmissionProperties {
   PCAWGProperties pcawg = new PCAWGProperties();
   ReferenceProperties reference = new ReferenceProperties();
   NormalizerProperties normalizer = new NormalizerProperties();
+  AccessionProperties accession = new AccessionProperties();
+  EGAProperties ega = new EGAProperties();
 
   ValidatorProperties validator = new ValidatorProperties();
   List<String> validators = newArrayList();
@@ -91,6 +93,21 @@ public class SubmissionProperties {
   public static class ReferenceProperties {
 
     String fasta;
+
+  }
+
+  @Data
+  public static class AccessionProperties {
+
+    URL dictionaryUrl;
+
+  }
+
+  @Data
+  public static class EGAProperties {
+
+    String username;
+    String password;
 
   }
 

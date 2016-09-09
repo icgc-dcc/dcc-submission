@@ -136,7 +136,7 @@ public class ReferenceGenomeValidator implements Validator {
         validateFile(context, file, fileParser, fieldAccessor, writer);
         log.info("Finished performing reference genome validation for '{}'", context.getProjectKey());
       } catch (Exception e) {
-        throw new RuntimeException("Error validating genonme: file=" + file + ", fileType=" + fileType, e);
+        throw new RuntimeException("Error validating reference genome: file=" + file + ", fileType=" + fileType, e);
       }
     }
   }

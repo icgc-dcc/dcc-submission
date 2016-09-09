@@ -473,6 +473,30 @@ public enum ErrorType {
       return ImmutableMap.of();
     }
 
+  },
+
+  /**
+   * File accession not specified.
+   */
+  FILE_ACCESSION_MISSING(CELL_LEVEL, "At least one file accession is required") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkParams(params, String.class);
+      return ImmutableMap.of(VALUE, params[0]);
+    }
+  },
+
+  /**
+   * Could not find file accession in the remote raw data repository.
+   */
+  FILE_ACCESSION_INVALID(CELL_LEVEL, "Could not find accession %s in remote repository") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkParams(params, String.class);
+      return ImmutableMap.of(VALUE, params[0]);
+    }
   };
 
   /**

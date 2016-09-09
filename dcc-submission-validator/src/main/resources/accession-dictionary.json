@@ -1,0 +1,6 @@
+{
+  "excludedProjectKeys": ["TEST2-DCC", "TEST6-DCC"],
+  "excludedAnalysisIds": {
+    "PAEN-AU": ["analysis1"]
+  }
+}
