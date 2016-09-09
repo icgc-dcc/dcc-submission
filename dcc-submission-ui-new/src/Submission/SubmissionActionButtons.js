@@ -20,7 +20,6 @@ export default function SubmissionActionButtons ({
     <ActionButton
       key="validateButton"
       className={`blue-stripe ${buttonClassName}`}
-      style={{marginLeft: 3}}
       onClick={onClickValidate}
     >Validate</ActionButton>
   );
