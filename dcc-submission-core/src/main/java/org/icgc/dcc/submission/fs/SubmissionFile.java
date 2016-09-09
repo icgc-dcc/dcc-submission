@@ -21,6 +21,9 @@ import static com.google.common.base.Optional.fromNullable;
 
 import java.util.Date;
 
+import lombok.NonNull;
+import lombok.Value;
+
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.core.util.Serdes.FileTypeDeserializer;
@@ -35,9 +38,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Optional;
 
-import lombok.NonNull;
-import lombok.Value;
-
 /**
  * For serializing file data through the REST interface
  */
@@ -49,6 +49,7 @@ public class SubmissionFile {
   private final Date lastUpdate;
   private final long size;
   private final FileType fileType;
+  private final boolean transferring;
 
   @JsonCreator
   public SubmissionFile(
@@ -66,12 +67,15 @@ public class SubmissionFile {
       @JsonProperty("fileType")//
       @JsonSerialize(using = FileTypeSerializer.class)//
       @JsonDeserialize(using = FileTypeDeserializer.class)//
-      FileType fileType)
+      FileType fileType,
+
+      @JsonProperty("transferring") boolean transferring)
   {
     this.name = name;
     this.lastUpdate = lastUpdate;
     this.size = size;
     this.fileType = fileType;
+    this.transferring = transferring;
   }
 
   @JsonIgnore

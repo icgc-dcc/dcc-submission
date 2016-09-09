@@ -15,46 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.server.sftp;
+package org.icgc.dcc.submission.server.core;
 
-import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.common.core.util.Separators.EMPTY_STRING;
+import java.util.Collection;
+import java.util.Map;
 
-import java.util.Optional;
+import lombok.Getter;
 
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+@Getter
+public class ActiveTransferException extends RuntimeException {
 
-import org.apache.sshd.common.Session;
-import org.apache.sshd.common.Session.AttributeKey;
-import org.springframework.security.core.Authentication;
+  private final Map<String, Collection<String>> files;
 
-@NoArgsConstructor(access = PRIVATE)
-public final class SftpSessions {
-
-  public static final FileTransfer NO_FILE_TRANSFER = new FileTransfer(EMPTY_STRING);
-  public static final AttributeKey<FileTransfer> FILE_TRANSFER_SESSION_ATTRIBUTE = new AttributeKey<>();
-
-  private static final AttributeKey<Authentication> SESSION_KEY = new AttributeKey<Authentication>();
-
-  public static void setAuthentication(Session session, Authentication authentication) {
-    session.setAttribute(SESSION_KEY, authentication);
-  }
-
-  public static Authentication getAuthentication(Session session) {
-    return session.getAttribute(SESSION_KEY);
-  }
-
-  public static void setFileTransfer(@NonNull Session session, @NonNull FileTransfer fileTransfer) {
-    session.setAttribute(FILE_TRANSFER_SESSION_ATTRIBUTE, fileTransfer);
-  }
-
-  public static void unsetFileTransfer(@NonNull Session session) {
-    session.setAttribute(FILE_TRANSFER_SESSION_ATTRIBUTE, NO_FILE_TRANSFER);
-  }
-
-  public static Optional<FileTransfer> getFileTransfer(@NonNull Session session) {
-    return Optional.ofNullable(session.getAttribute(FILE_TRANSFER_SESSION_ATTRIBUTE));
+  public ActiveTransferException(Map<String, Collection<String>> files, String message, Object... args) {
+    super(String.format(message, args));
+    this.files = files;
   }
 
 }

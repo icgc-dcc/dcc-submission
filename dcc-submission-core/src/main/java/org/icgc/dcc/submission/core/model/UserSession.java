@@ -19,10 +19,10 @@ package org.icgc.dcc.submission.core.model;
 
 import java.util.Map;
 
+import lombok.Value;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import lombok.Value;
 
 /**
  * Represents a user session.
@@ -40,7 +40,6 @@ public class UserSession {
     super();
     this.userName = userName;
     this.ioSessionMap = ioSessionMap;
-
   }
 
   public String getUserName() {

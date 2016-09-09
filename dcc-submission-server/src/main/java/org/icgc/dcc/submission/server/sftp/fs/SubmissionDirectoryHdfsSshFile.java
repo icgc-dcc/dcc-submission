@@ -21,11 +21,11 @@ import static org.icgc.dcc.submission.server.sftp.fs.HdfsFileUtils.handleExcepti
 
 import java.io.FileNotFoundException;
 
+import lombok.NonNull;
+
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.server.sftp.SftpContext;
-
-import lombok.NonNull;
 
 public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
 

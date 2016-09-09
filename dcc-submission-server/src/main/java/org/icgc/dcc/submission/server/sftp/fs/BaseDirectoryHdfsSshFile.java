@@ -26,12 +26,12 @@ import static org.icgc.dcc.submission.server.sftp.fs.HdfsFileUtils.handleExcepti
 import java.io.IOException;
 import java.util.List;
 
+import lombok.NonNull;
+import lombok.SneakyThrows;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.server.sftp.SftpContext;
-
-import lombok.NonNull;
-import lombok.SneakyThrows;
 
 public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
 
@@ -42,7 +42,7 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
 
   protected BaseDirectoryHdfsSshFile(SftpContext context, RootHdfsSshFile root, String directoryName) {
     super(context, new Path(root.path, directoryName.isEmpty() ? "/" : directoryName), root.fileSystem,
-        root.authentication);
+        root.authentication, root.session);
     this.root = checkNotNull(root);
     this.directoryName = checkNotNull(directoryName);
   }

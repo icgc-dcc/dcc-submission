@@ -25,9 +25,17 @@ import static org.icgc.dcc.submission.server.web.ServerErrorCode.EMPTY_REQUEST;
 import static org.icgc.dcc.submission.server.web.controller.Responses.noSuchEntityResponse;
 import static org.icgc.dcc.submission.server.web.controller.Responses.unauthorizedResponse;
 
+import java.util.Collection;
+import java.util.List;
+
 import javax.validation.Valid;
 
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.core.model.Views.Digest;
+import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.server.service.ReleaseService;
@@ -46,10 +54,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.annotations.VisibleForTesting;
-
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+import com.google.common.collect.ImmutableList;
 
 @Slf4j
 @RestController
@@ -107,6 +112,7 @@ public class ReleaseController {
     }
 
     detailedSubmission.setLocked(!systemService.isEnabled());
+    updateTransferingFiles(detailedSubmission);
 
     return ResponseEntity.ok(detailedSubmission);
   }
@@ -198,6 +204,40 @@ public class ReleaseController {
           .status(HttpStatus.BAD_REQUEST)
           .body(new ServerErrorResponseMessage(EMPTY_REQUEST));
     }
+  }
+
+  private void updateTransferingFiles(DetailedSubmission detailedSubmission) {
+    val projectKey = detailedSubmission.getProjectKey();
+    val transfers = systemService.getTransferringFiles(projectKey);
+    if (!transfers.isEmpty()) {
+      val submissionFiles = detailedSubmission.getSubmissionFiles();
+      val updatedSubmissionFiles = updateSubmissionFiles(submissionFiles, transfers);
+      detailedSubmission.setSubmissionFiles(updatedSubmissionFiles);
+    }
+  }
+
+  private static List<SubmissionFile> updateSubmissionFiles(List<SubmissionFile> submissionFiles,
+      Collection<String> transfers) {
+    val updatedSubmissionFiles = ImmutableList.<SubmissionFile> builder();
+    for (val submissionFile : submissionFiles) {
+      val fileName = submissionFile.getName();
+      if (transfers.contains(fileName)) {
+        updatedSubmissionFiles.add(setFileTransfering(submissionFile));
+      } else {
+        updatedSubmissionFiles.add(submissionFile);
+      }
+    }
+
+    return updatedSubmissionFiles.build();
+  }
+
+  private static SubmissionFile setFileTransfering(SubmissionFile submissionFile) {
+    return new SubmissionFile(
+        submissionFile.getName(),
+        submissionFile.getLastUpdate(),
+        submissionFile.getSize(),
+        submissionFile.getFileType(),
+        true);
   }
 
 }

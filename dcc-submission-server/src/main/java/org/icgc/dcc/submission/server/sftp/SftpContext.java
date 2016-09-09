@@ -26,18 +26,23 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.core.security.Authorizations;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 import org.icgc.dcc.submission.fs.SubmissionFileRenamedEvent;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.server.service.MailService;
 import org.icgc.dcc.submission.server.service.ProjectService;
@@ -48,11 +53,6 @@ import org.springframework.security.core.Authentication;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * "Encapsulated Context Object" class that insulates and decouples the SFTP subsystem from DCC file system
@@ -164,7 +164,7 @@ public class SftpContext {
     val fileSize = fileStatus.getLen();
     val fileType = getSubmissionFileType(dictionary, filePath).orNull();
 
-    return new SubmissionFile(fileName, fileLastUpdate, fileSize, fileType);
+    return new SubmissionFile(fileName, fileLastUpdate, fileSize, fileType, false);
   }
 
   // TODO: Duplicated code with ReleaseService

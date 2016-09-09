@@ -11,12 +11,12 @@ import java.util.Date;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RawLocalFileSystem;
+import org.apache.sshd.common.Session;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.server.sftp.SftpContext;
 import org.icgc.dcc.submission.server.sftp.fs.FileHdfsSshFile;
 import org.icgc.dcc.submission.server.sftp.fs.RootHdfsSshFile;
 import org.icgc.dcc.submission.server.sftp.fs.SubmissionDirectoryHdfsSshFile;
@@ -51,6 +51,8 @@ public class FileHdfsSshFileTest {
   SftpContext context;
   @Mock
   Authentication authentication;
+  @Mock
+  Session session;
 
   SubmissionDirectoryHdfsSshFile directory;
 
@@ -66,10 +68,10 @@ public class FileHdfsSshFileTest {
     when(submissionDirectory.getSubmission()).thenReturn(submission);
     when(context.getFileSystem()).thenReturn(createFileSystem());
     when(context.getReleasePath()).thenReturn(new Path(root.getAbsolutePath()));
-    when(context.getSubmissionFile(any(Path.class))).thenReturn(new SubmissionFile("", new Date(), 0, null));
+    when(context.getSubmissionFile(any(Path.class))).thenReturn(new SubmissionFile("", new Date(), 0, null, false));
     when(context.getSubmissionDirectory(PROJECT_KEY, authentication)).thenReturn(submissionDirectory);
 
-    RootHdfsSshFile rootDirectory = new RootHdfsSshFile(context, authentication);
+    RootHdfsSshFile rootDirectory = new RootHdfsSshFile(context, authentication, session);
     String directoryName = PROJECT_KEY;
     directory = new SubmissionDirectoryHdfsSshFile(context, rootDirectory, directoryName);
   }

@@ -15,46 +15,58 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.server.sftp;
+package org.icgc.dcc.submission.server.sftp.fs;
 
-import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.common.core.util.Separators.EMPTY_STRING;
+import static org.icgc.dcc.submission.server.sftp.SftpSessions.setFileTransfer;
+import static org.icgc.dcc.submission.server.sftp.SftpSessions.unsetFileTransfer;
 
-import java.util.Optional;
+import java.io.IOException;
+import java.io.OutputStream;
 
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.sshd.common.Session;
-import org.apache.sshd.common.Session.AttributeKey;
-import org.springframework.security.core.Authentication;
+import org.icgc.dcc.submission.server.sftp.FileTransfer;
 
-@NoArgsConstructor(access = PRIVATE)
-public final class SftpSessions {
+public final class SessionFileTransferOutputStream extends OutputStream {
 
-  public static final FileTransfer NO_FILE_TRANSFER = new FileTransfer(EMPTY_STRING);
-  public static final AttributeKey<FileTransfer> FILE_TRANSFER_SESSION_ATTRIBUTE = new AttributeKey<>();
+  private final OutputStream delegate;
+  private final Session session;
 
-  private static final AttributeKey<Authentication> SESSION_KEY = new AttributeKey<Authentication>();
-
-  public static void setAuthentication(Session session, Authentication authentication) {
-    session.setAttribute(SESSION_KEY, authentication);
+  public SessionFileTransferOutputStream(@NonNull OutputStream delegate, @NonNull Session session, @NonNull Path path) {
+    this.delegate = delegate;
+    this.session = session;
+    setFileTransfer(session, new FileTransfer(path.toString()));
   }
 
-  public static Authentication getAuthentication(Session session) {
-    return session.getAttribute(SESSION_KEY);
+  @Override
+  public void write(int b) throws IOException {
+    delegate.write(b);
   }
 
-  public static void setFileTransfer(@NonNull Session session, @NonNull FileTransfer fileTransfer) {
-    session.setAttribute(FILE_TRANSFER_SESSION_ATTRIBUTE, fileTransfer);
+  @Override
+  public void write(byte[] b) throws IOException {
+    delegate.write(b);
   }
 
-  public static void unsetFileTransfer(@NonNull Session session) {
-    session.setAttribute(FILE_TRANSFER_SESSION_ATTRIBUTE, NO_FILE_TRANSFER);
+  @Override
+  public void write(byte[] b, int off, int len) throws IOException {
+    delegate.write(b, off, len);
   }
 
-  public static Optional<FileTransfer> getFileTransfer(@NonNull Session session) {
-    return Optional.ofNullable(session.getAttribute(FILE_TRANSFER_SESSION_ATTRIBUTE));
+  @Override
+  public void flush() throws IOException {
+    delegate.flush();
+  }
+
+  @Override
+  public void close() throws IOException {
+    try {
+      delegate.close();
+    } finally {
+      unsetFileTransfer(session);
+    }
   }
 
 }
