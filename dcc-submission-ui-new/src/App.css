@@ -1,5 +1,4 @@
-@import './common/styles/global.css';
-@import './common/styles/colors.css';
+@import './common/styles/variables/variables.css';
 
 .App {
 

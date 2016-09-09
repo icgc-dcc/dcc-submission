@@ -43,19 +43,18 @@ class Login extends Component {
     return (
       <div className="Login">
         <div className="login-inner">
-          <a href="http://icgc.org" target="_blank">
+          <h1 className="main-logo">
             <img
               alt="ICGC"
-              className="pull-left"
-              style={{marginTop: 9}}
-              width={172}
+              className="icgc-logo"
               src={require('~/assets/images/logo-icgc.png')}
             />
-          </a>
-          <h1 className="text-center">Data Submission Login</h1>
+            <span className="icgc-text">ICGC</span>
+          </h1>
+          <h2>Data Submission</h2>
           <form
             id="login-form"
-            className="form-horizontal col-sm-4"
+            className="form-horizontal col-sm-3"
             onSubmit={this.handleSubmit}
           >
             <div className="form-group">
@@ -80,7 +79,6 @@ class Login extends Component {
             </div>
             <div className="form-group">
                 <button type="submit" className="dcc form-control btn btn-primary">
-                  <i className="fa fa-lock" />&nbsp;
                   Login
                 </button>
             </div>
