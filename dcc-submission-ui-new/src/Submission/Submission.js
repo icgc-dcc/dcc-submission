@@ -97,7 +97,9 @@ class Submission extends Component {
     await this.submission.reset();
     await this.submission.fetch();
     this.closeResetModal();
-  } 
+  }
+
+  setDataTypesToValidate = (dataTypes) => { this.dataTypesToValidate = dataTypes };
 
   handleClickValidate = () => {
     this.dataTypesToValidate = this.submission.report.dataTypeReports.map( x => x.dataType);
