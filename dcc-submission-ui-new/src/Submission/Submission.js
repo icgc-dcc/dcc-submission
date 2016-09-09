@@ -121,7 +121,7 @@ class Submission extends Component {
     const projectKey = this.props.params.projectKey;
 
     return (
-      <div>
+      <div className="container">
         <ValidateSubmissionModal
           isOpen={this.shouldShowValidateModal}
           onRequestSubmit={this.handleRequestSubmitValidate}

@@ -120,7 +120,7 @@ class Release extends Component {
     const canRelease = release.state === RELEASE_STATES.OPENED && user.isAdmin;
 
     return (
-    <div>
+    <div className="container">
       <h1>Release Summary</h1>
       <ul className="ReleaseSummaryList">
         <li>
