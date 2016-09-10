@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.core;
 
+import static com.google.common.base.Suppliers.memoizeWithExpiration;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
 import java.net.URL;
@@ -25,6 +27,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;
@@ -33,7 +36,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 public class PCAWGDictionary {
 
@@ -47,6 +52,11 @@ public class PCAWGDictionary {
    */
   @NonNull
   private final URL url;
+
+  /**
+   * State.
+   */
+  private final Supplier<JsonNode> supplier = memoizeWithExpiration(this::readDictionary, 10, MINUTES);
 
   public PCAWGDictionary() {
     this(DEFAULT_PCAWG_DICTIONARY_URL);
@@ -73,6 +83,10 @@ public class PCAWGDictionary {
     return readFieldMap(projectKey, "excludedSampleIds");
   }
 
+  private JsonNode dictionary() {
+    return supplier.get();
+  }
+
   private Set<String> readFieldMap(String projectKey, final java.lang.String fieldName) {
     Map<String, Set<String>> map = readFieldProjectMap(fieldName);
 
@@ -95,12 +109,12 @@ public class PCAWGDictionary {
   }
 
   private JsonNode readField(String fieldName) {
-    val dictionary = readDictionary();
-    return dictionary.path(fieldName);
+    return dictionary().path(fieldName);
   }
 
   @SneakyThrows
   private JsonNode readDictionary() {
+    log.info("Refreshing dictionary...");
     return DEFAULT.readTree(url);
   }
 

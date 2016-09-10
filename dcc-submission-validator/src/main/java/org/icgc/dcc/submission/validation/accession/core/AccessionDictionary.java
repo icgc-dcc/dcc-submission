@@ -17,14 +17,19 @@
  */
 package org.icgc.dcc.submission.validation.accession.core;
 
+import static com.google.common.base.Suppliers.memoizeWithExpiration;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
 import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 
+import org.icgc.dcc.submission.validation.accession.AccessionValidator;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;
@@ -33,23 +38,33 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Externalizable metadata for accession validation.
+ * <p>
+ * Used for identifying "grandfathered" {@code analysis_id}s that should be excluded from validation. See
+ * {@linkplain AccessionValidator} for details.
  */
+@Slf4j
 @RequiredArgsConstructor
 public class AccessionDictionary {
 
   /**
-   * Constants.
+   * The default location of the dictionary.
    */
   public static final URL DEFAULT_ACCESSION_DICTIONARY_URL = Resources.getResource("accession-dictionary.json");
 
   /**
-   * Configuration
+   * The URL of the externalized JSON file.
    */
   @NonNull
   private final URL url;
+
+  /**
+   * State.
+   */
+  private final Supplier<JsonNode> supplier = memoizeWithExpiration(this::readDictionary, 10, MINUTES);
 
   public AccessionDictionary() {
     this(DEFAULT_ACCESSION_DICTIONARY_URL);
@@ -71,6 +86,10 @@ public class AccessionDictionary {
 
   public Set<String> getExcludedAnalysisIds(@NonNull String projectKey) {
     return readFieldMap(projectKey, "excludedAnalysisIds");
+  }
+
+  private JsonNode dictionary() {
+    return supplier.get();
   }
 
   private Set<String> readFieldMap(String projectKey, final java.lang.String fieldName) {
@@ -95,12 +114,12 @@ public class AccessionDictionary {
   }
 
   private JsonNode readField(String fieldName) {
-    val dictionary = readDictionary();
-    return dictionary.path(fieldName);
+    return dictionary().path(fieldName);
   }
 
   @SneakyThrows
   private JsonNode readDictionary() {
+    log.info("Refreshing dictionary...");
     return DEFAULT.readTree(url);
   }
 

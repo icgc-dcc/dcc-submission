@@ -67,9 +67,12 @@ import lombok.extern.slf4j.Slf4j;
  * Due to the effort involved in applying this new validator to existing data, it has been decided to "grandfather"
  * existing invalid data and exclude these accessions on the basis of the {@code analysis_id}.
  * <p>
- * Note that only EGA is currently supported.
+ * Note that only EGA file accession is currently supported. The push for EGA validation was to ensure that files are
+ * actually submitted. Historically this has not been the case. Furthermore, EGA submissions have only been submitting
+ * study and dataset accessions. File accessions are a new feature (circa 2015) of EGA.
  * 
- * @see http://docs.icgc.org/dictionary/viewer/#?viewMode=table&q=raw_data%7Canalysis_id
+ * @see <span>Dictionary <a href="http://docs.icgc.org/dictionary/viewer/#?viewMode=table&q=raw_data%7Canalysis_id">meta
+ * files</a></span>
  */
 @Slf4j
 @RequiredArgsConstructor
