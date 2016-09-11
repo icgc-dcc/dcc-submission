@@ -50,7 +50,7 @@ public class FileLineMapParser extends AbstractFileLineParser<Map<String, String
   @NonNull
   protected final Comparator<String> fieldNameComparator;
 
-  public FileLineMapParser(FileSchema schema) {
+  public FileLineMapParser(@NonNull FileSchema schema) {
     this.schema = schema;
     this.fieldNameComparator = new FieldNameComparator(schema.getFieldNames());
   }

@@ -108,16 +108,29 @@ public class AccessionValidator implements Validator {
     validateMeta(context);
   }
 
-  @SneakyThrows
   private void validateMeta(ValidationContext context) {
-    // Find all validatable meta file types
+    // Find all validatable, requested meta file types
     val metaFileTypes = resolveMetaFileTypes(context);
 
     for (val metaFileType : metaFileTypes) {
-      val metaFiles = context.getFiles(metaFileType);
-      val metaFileParser = createMetaFileParser(context, metaFileType);
+      try {
+        val metaFiles = context.getFiles(metaFileType);
+        if (metaFiles.isEmpty()) {
+          // This could happen if the request asks for types which don't exist. Luckily, this only practically happens
+          // during testing (e.g. {@link SubmissionIntegrationTest}) since asking for all data types to validate is
+          // easier to program. Ideally this check would be pushed upstream to {@link
+          // ValidationService#createValidationContext} so that all validators wouldn't have to repeat it. However, we
+          // must be careful not to exclude validation of existence of clinical by doing so.
+          log.debug("No meta files of type {}, skipping...", metaFileType);
+          continue;
+        }
 
-      validateMetaFileType(context, metaFiles, metaFileParser);
+        val metaFileParser = createMetaFileParser(context, metaFileType);
+        validateMetaFileType(context, metaFiles, metaFileParser);
+      } catch (Exception e) {
+        log.error("Error validating file type: {}: ", metaFileType, e);
+        throw e;
+      }
     }
   }
 

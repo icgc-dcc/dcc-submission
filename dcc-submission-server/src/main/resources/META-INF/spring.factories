@@ -1,0 +1,5 @@
+# Failure Analyzers
+org.springframework.boot.diagnostics.FailureAnalyzer=\
+org.icgc.dcc.submission.server.spring.SpringBootFailureAnalyzers.MongoFailureAnalyzer,\
+org.icgc.dcc.submission.server.spring.SpringBootFailureAnalyzers.UnknownHostFailureAnalyzer,\
+org.icgc.dcc.submission.server.spring.SpringBootFailureAnalyzers.UnsatisfiedDependencyFailureAnalyzer

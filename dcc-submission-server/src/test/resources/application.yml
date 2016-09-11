@@ -62,9 +62,9 @@ normalizer:
   # dictionaryUrl: "file:../dcc-submission-validator/src/main/resources/accession-dictionary.json"
 
 # EGA
-# ega:
-  # username:
-  # password:
+ega:
+  username: user
+  password: password
   
 reference:
   # The reference genome assembly. Assumes the existence of a .fasta.fai file in the same directory. 
