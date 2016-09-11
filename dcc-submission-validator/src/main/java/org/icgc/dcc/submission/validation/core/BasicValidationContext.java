@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.key.cli;
+package org.icgc.dcc.submission.validation.core;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 import static org.icgc.dcc.common.core.model.FileTypes.FileType.SSM_S_TYPE;
@@ -37,7 +37,6 @@ import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.validation.core.AbstractValidationContext;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactoryProvider;
 
@@ -50,7 +49,7 @@ import lombok.val;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class KeyValidationContext extends AbstractValidationContext {
+public class BasicValidationContext extends AbstractValidationContext {
 
   @NonNull
   @Getter
@@ -70,6 +69,7 @@ public class KeyValidationContext extends AbstractValidationContext {
 
   @Getter(lazy = true)
   private final SubmissionProperties properties = createProperties();
+
   @Getter(lazy = true)
   private final List<DataType> dataTypes = DataTypes.values();
   @Getter(lazy = true)
@@ -88,6 +88,10 @@ public class KeyValidationContext extends AbstractValidationContext {
   private final ReleaseFileSystem releaseFileSystem = new ReleaseFileSystem(getSubmissionFileSystem(), getRelease());
   @Getter(lazy = true)
   private final SubmissionPlatformStrategy platformStrategy = createPlatformStrategy();
+
+  public BasicValidationContext(String releaseName, String projectKey, String fsRoot, String fsUrl) {
+    this(releaseName, projectKey, fsRoot, fsUrl, "localhost");
+  }
 
   @SneakyThrows
   protected Dictionary createDictionary() {

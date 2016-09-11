@@ -36,6 +36,15 @@ import lombok.extern.slf4j.Slf4j;
  * EGA specific file accession validator.
  * <p>
  * Validates that a file accession (e.g. {@code EGAF00000000001} exists in EGA.
+ * <p>
+ * Note that a 401 is returned from the EGA {@code https://ega.ebi.ac.uk/ega/rest/access/v2/files/EGF00000000001} API
+ * when either:
+ * <ul>
+ * <li>The request is unauthorized, or</li>
+ * <li>The file does not exist</li>
+ * </ul>
+ * This ambiguity implies that existence can be certain where as non-existence is most likely true if the DAC of the
+ * {@link EGAClient} has access to the corresponding study's dataset.
  */
 @Slf4j
 @RequiredArgsConstructor

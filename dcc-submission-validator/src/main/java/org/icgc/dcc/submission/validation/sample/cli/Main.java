@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.sample.cli;
 
+import org.icgc.dcc.submission.validation.core.BasicValidationContext;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.sample.SampleTypeValidator;
 
@@ -61,7 +62,7 @@ public class Main {
     log.info("output:      {}", fsRoot + "/" + releaseName + "/" + projectKey + "/" + ".validation");
     // @formatter:on
 
-    return new SampleTypeValidationContext(releaseName, projectKey, fsRoot, fsUrl);
+    return new BasicValidationContext(releaseName, projectKey, fsRoot, fsUrl);
   }
 
   private static SampleTypeValidator getValidator() {

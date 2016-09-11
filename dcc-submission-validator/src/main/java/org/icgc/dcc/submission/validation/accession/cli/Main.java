@@ -15,27 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.rgv.cli;
+package org.icgc.dcc.submission.validation.accession.cli;
 
+import org.icgc.dcc.common.ega.client.EGAClient;
+import org.icgc.dcc.submission.validation.accession.AccessionValidator;
+import org.icgc.dcc.submission.validation.accession.core.AccessionDictionary;
+import org.icgc.dcc.submission.validation.accession.ega.EGAFileAccessionValidator;
 import org.icgc.dcc.submission.validation.core.BasicValidationContext;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.rgv.ReferenceGenomeValidator;
-import org.icgc.dcc.submission.validation.rgv.reference.HtsjdkReferenceGenome;
 
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Entry point for testing {@link ReferenceGenomeValidator} from the command line in isolation of the other validators
- * and submission system infrastructure.
+ * Entry point for testing {@link AccessionValidator} from the command line in isolation of the other validators and
+ * submission system infrastructure.
+ * <p>
+ * Credentials for the {@link EGAClient} must be set through system properties. See javadoc for details.
  */
 @Slf4j
 public class Main {
 
   @SneakyThrows
   public static void main(String... args) {
-    log.info("Starting reference genome validation...");
+    log.info("Starting accession validation...");
 
     // Resolve configuration @formatter:off
     int i = 0;
@@ -43,24 +47,22 @@ public class Main {
     val projectKey  = args.length >= ++i ? args[i - 1] : "project.1";
     val fsRoot      = args.length >= ++i ? args[i - 1] : "/tmp/submission";
     val fsUrl       = args.length >= ++i ? args[i - 1] : "file:///";
-    val fastaFile   = args.length >= ++i ? args[i - 1] : "/tmp/GRCh37.fasta";
     // @formatter:on
 
-    val context = getValidationContext(releaseName, projectKey, fsRoot, fsUrl, fastaFile);
-    val validator = getValidator(fastaFile);
+    val context = getValidationContext(releaseName, projectKey, fsRoot, fsUrl);
+    val validator = getValidator();
     validator.validate(context);
 
-    log.info("Finished reference genome validation.");
+    log.info("Finished accesssion validation.");
   }
 
   private static ValidationContext getValidationContext(String releaseName, String projectKey, String fsRoot,
-      String fsUrl, String fastaFile) {
+      String fsUrl) {
     // @formatter:off
     log.info("releaseName: {}", releaseName);
     log.info("projectKey:  {}", projectKey);
     log.info("fsRoot:      {}", fsRoot);
     log.info("fsUrl:       {}", fsUrl);
-    log.info("fastaFile:   {}", fastaFile);
     log.info("input:       {}", fsRoot + "/" + releaseName + "/" + projectKey + "/" );
     log.info("output:      {}", fsRoot + "/" + releaseName + "/" + projectKey + "/" + ".validation");
     // @formatter:on
@@ -68,8 +70,11 @@ public class Main {
     return new BasicValidationContext(releaseName, projectKey, fsRoot, fsUrl);
   }
 
-  private static ReferenceGenomeValidator getValidator(String fastaFile) {
-    return new ReferenceGenomeValidator(new HtsjdkReferenceGenome(fastaFile));
+  private static AccessionValidator getValidator() {
+    val egaClient = new EGAClient();
+    val egaValidator = new EGAFileAccessionValidator(egaClient);
+
+    return new AccessionValidator(new AccessionDictionary(), egaValidator);
   }
 
 }

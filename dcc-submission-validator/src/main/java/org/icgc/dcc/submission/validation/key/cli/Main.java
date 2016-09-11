@@ -21,6 +21,7 @@ import java.util.logging.LogManager;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.icgc.dcc.submission.validation.core.BasicValidationContext;
 import org.icgc.dcc.submission.validation.key.KeyValidator;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
@@ -50,13 +51,13 @@ public class Main {
     val fsRoot = args.length >= ++i ? args[i - 1] : "/tmp/submission";
     val fsUrl = args.length >= ++i ? args[i - 1] : "file:///";
     val jobTracker = args.length >= ++i ? args[i - 1] : "localhost";
-    val context = new KeyValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
+    val context = new BasicValidationContext(releaseName, projectKey, fsRoot, fsUrl, jobTracker);
 
     // Validate
     validate(context);
   }
 
-  private static void validate(KeyValidationContext context) throws InterruptedException {
+  private static void validate(BasicValidationContext context) throws InterruptedException {
     val validator = new KeyValidator();
 
     validator.validate(context);

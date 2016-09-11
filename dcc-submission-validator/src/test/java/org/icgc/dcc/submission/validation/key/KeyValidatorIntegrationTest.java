@@ -31,7 +31,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.util.Joiners;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.validation.key.cli.KeyValidationContext;
+import org.icgc.dcc.submission.validation.core.BasicValidationContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -91,14 +91,11 @@ public class KeyValidatorIntegrationTest {
     validator.validate(context);
   }
 
-  private KeyValidationContext createContext() {
+  private BasicValidationContext createContext() {
     val fsRoot = rootDir.toUri().toString();
     val fsUrl = fileSystem.getUri().toString();
-    val jobTracker = "localhost"; // Not used
 
-    return new KeyValidationContext(
-        RELEASE_NAME, PROJECT_KEY,
-        fsRoot, fsUrl, jobTracker) {
+    return new BasicValidationContext(RELEASE_NAME, PROJECT_KEY, fsRoot, fsUrl) {
 
       @Override
       protected Dictionary createDictionary() {

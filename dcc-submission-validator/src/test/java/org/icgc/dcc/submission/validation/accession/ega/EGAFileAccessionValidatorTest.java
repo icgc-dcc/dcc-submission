@@ -20,12 +20,13 @@ package org.icgc.dcc.submission.validation.accession.ega;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.icgc.dcc.common.ega.client.EGAClient;
-import org.icgc.dcc.submission.validation.accession.ega.EGAFileAccessionValidator;
 import org.icgc.dcc.submission.validation.accession.ega.EGAFileAccessionValidator.Result;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import lombok.val;
 
+@Ignore("Need EGA credentials to run")
 public class EGAFileAccessionValidatorTest {
 
   EGAClient client = new EGAClient();

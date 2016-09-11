@@ -70,6 +70,9 @@ import lombok.extern.slf4j.Slf4j;
  * Note that only EGA file accession is currently supported. The push for EGA validation was to ensure that files are
  * actually submitted. Historically this has not been the case. Furthermore, EGA submissions have only been submitting
  * study and dataset accessions. File accessions are a new feature (circa 2015) of EGA.
+ * <p>
+ * Assumes that files are welformed (FPV has run) and primary validation has been performed. Should be scheduled as late
+ * as possible as to not block other validators from reporting upstream errors.
  * 
  * @see <span>Dictionary <a href="http://docs.icgc.org/dictionary/viewer/#?viewMode=table&q=raw_data%7Canalysis_id">meta
  * files</a></span>
