@@ -70,7 +70,7 @@ public class EGAFileAccessionValidator {
       log.warn("Not authorized to access file with id: {}: {}", fileId, e.getMessage());
       return invalid(e.getMessage());
     } catch (Exception e) {
-      log.error("Unexpected rrror getting file " + fileId + ": ", e);
+      log.error("Unexpected error getting file " + fileId + ": ", e);
       throw e;
     }
   }
