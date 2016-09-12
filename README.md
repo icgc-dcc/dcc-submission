@@ -35,6 +35,10 @@ The following are utility modules related to submissions:
 - [Submission Loader](dcc-submission-loader/README.md)
 - [Submission Generator](dcc-submission-generator/README.md)
 
+The following module is a project testing libraries:
+
+- [Submission Test](dcc-submission-test/README.md)
+
 For detailed information on each module, please consult the above `README.md`s.
 
 ## Architecture

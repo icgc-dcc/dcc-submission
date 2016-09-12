@@ -23,15 +23,16 @@ import static org.icgc.dcc.submission.server.sftp.fs.HdfsFileUtils.handleExcepti
 
 import java.io.FileNotFoundException;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+
 import org.apache.hadoop.fs.Path;
+import org.apache.sshd.common.Session;
 import org.apache.sshd.common.file.FileSystemView;
 import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.server.sftp.SftpContext;
 import org.springframework.security.core.Authentication;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
 
 /**
  * Virtual file system that bridges the SSHD SftpModule and the DCC file system
@@ -43,6 +44,8 @@ public class HdfsFileSystemView implements FileSystemView {
   private final SftpContext context;
   @NonNull
   private final Authentication authentication;
+  @NonNull
+  private final Session session;
 
   /**
    * Returns the appropriate file system abstraction for the specified {@code file} path.
@@ -54,7 +57,7 @@ public class HdfsFileSystemView implements FileSystemView {
   public SshFile getFile(String file) {
     try {
       Path filePath = getFilePath(file);
-      RootHdfsSshFile root = new RootHdfsSshFile(context, authentication);
+      RootHdfsSshFile root = new RootHdfsSshFile(context, authentication, session);
 
       switch (filePath.depth()) {
       case 0:

@@ -40,7 +40,7 @@ public class HdfsFileSystemFactory implements FileSystemFactory {
   public FileSystemView createFileSystemView(Session session) throws IOException {
     val authentication = getAuthentication(session);
 
-    return new HdfsFileSystemView(context, authentication);
+    return new HdfsFileSystemView(context, authentication, session);
   }
 
 }

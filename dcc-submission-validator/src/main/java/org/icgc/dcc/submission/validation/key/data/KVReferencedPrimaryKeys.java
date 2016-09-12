@@ -19,10 +19,10 @@ package org.icgc.dcc.submission.validation.key.data;
 
 import static java.lang.String.format;
 import static org.icgc.dcc.common.core.util.Formats.formatCount;
+import lombok.NonNull;
+import lombok.Value;
 
 import org.icgc.dcc.submission.validation.key.core.KVFileType;
-
-import lombok.Value;
 
 @Value
 public class KVReferencedPrimaryKeys {
@@ -30,7 +30,7 @@ public class KVReferencedPrimaryKeys {
   KVFileType referencedFileType;
   KVPrimaryKeys referencedPks;
 
-  public boolean hasMatchingReference(KVKey fk) {
+  public boolean hasMatchingReference(@NonNull KVKey fk) {
     return referencedPks.containsPk(fk);
   }
 

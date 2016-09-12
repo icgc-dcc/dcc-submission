@@ -38,19 +38,18 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import lombok.SneakyThrows;
+import lombok.val;
+
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.core.config.SubmissionProperties.MailProperties;
 import org.icgc.dcc.submission.core.report.Report;
-import org.icgc.dcc.submission.server.service.MailService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-
-import lombok.SneakyThrows;
-import lombok.val;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Transport.class)

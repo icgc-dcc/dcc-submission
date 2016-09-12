@@ -17,12 +17,20 @@
  */
 package org.icgc.dcc.submission.server.service;
 
-import org.icgc.dcc.submission.core.model.Status;
-import org.icgc.dcc.submission.server.sftp.SftpServerService;
-import org.springframework.beans.factory.annotation.Autowired;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
+
+import java.io.File;
+import java.util.Collection;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
+
+import org.icgc.dcc.submission.core.model.Status;
+import org.icgc.dcc.submission.server.sftp.SftpServerService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SystemService {
@@ -32,6 +40,10 @@ public class SystemService {
 
   public Status getStatus() {
     return sftpService.getActiveSessions();
+  }
+
+  public Collection<String> getFileTransfers() {
+    return sftpService.getFileTransfers();
   }
 
   public boolean isEnabled() {
@@ -44,6 +56,26 @@ public class SystemService {
 
   public void enable() {
     sftpService.enable();
+  }
+
+  public Collection<String> getTransferringFiles(@NonNull String projectKey) {
+    return getFileTransfers().stream()
+        .filter(transferFile -> isProjectTransfer(projectKey, transferFile))
+        .map(transferFile -> getTransferFileName(transferFile))
+        .collect(toImmutableList());
+  }
+
+  private static String getTransferFileName(String transferFile) {
+    val fileName = new File(transferFile).getName();
+    checkState(!isNullOrEmpty(fileName), "Failed to resolve transfer file name from path '{}'", transferFile);
+
+    return fileName;
+  }
+
+  private static boolean isProjectTransfer(String projectKey, String transferFile) {
+    val transferProject = new File(new File(transferFile).getParent()).getName();
+
+    return projectKey.equals(transferProject);
   }
 
 }

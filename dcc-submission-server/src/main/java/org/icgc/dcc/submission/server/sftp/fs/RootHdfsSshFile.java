@@ -25,21 +25,22 @@ import static org.icgc.dcc.submission.server.sftp.fs.HdfsFileUtils.handleExcepti
 import java.io.IOException;
 import java.util.List;
 
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.hadoop.fs.Path;
+import org.apache.sshd.common.Session;
 import org.apache.sshd.common.file.SshFile;
 import org.icgc.dcc.submission.server.sftp.SftpContext;
 import org.springframework.security.core.Authentication;
 
 import com.google.common.base.Optional;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 public class RootHdfsSshFile extends HdfsSshFile {
 
-  public RootHdfsSshFile(SftpContext context, Authentication authentication) {
-    super(context, context.getReleasePath(), context.getFileSystem(), authentication);
+  public RootHdfsSshFile(SftpContext context, Authentication authentication, Session session) {
+    super(context, context.getReleasePath(), context.getFileSystem(), authentication, session);
   }
 
   @Override

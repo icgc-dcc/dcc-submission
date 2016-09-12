@@ -18,15 +18,22 @@
 package org.icgc.dcc.submission.server.sftp;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.common.core.util.Separators.EMPTY_STRING;
+
+import java.util.Optional;
+
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import org.apache.sshd.common.Session;
 import org.apache.sshd.common.Session.AttributeKey;
 import org.springframework.security.core.Authentication;
 
-import lombok.NoArgsConstructor;
-
 @NoArgsConstructor(access = PRIVATE)
 public final class SftpSessions {
+
+  public static final FileTransfer NO_FILE_TRANSFER = new FileTransfer(EMPTY_STRING);
+  public static final AttributeKey<FileTransfer> FILE_TRANSFER_SESSION_ATTRIBUTE = new AttributeKey<>();
 
   private static final AttributeKey<Authentication> SESSION_KEY = new AttributeKey<Authentication>();
 
@@ -36,6 +43,18 @@ public final class SftpSessions {
 
   public static Authentication getAuthentication(Session session) {
     return session.getAttribute(SESSION_KEY);
+  }
+
+  public static void setFileTransfer(@NonNull Session session, @NonNull FileTransfer fileTransfer) {
+    session.setAttribute(FILE_TRANSFER_SESSION_ATTRIBUTE, fileTransfer);
+  }
+
+  public static void unsetFileTransfer(@NonNull Session session) {
+    session.setAttribute(FILE_TRANSFER_SESSION_ATTRIBUTE, NO_FILE_TRANSFER);
+  }
+
+  public static Optional<FileTransfer> getFileTransfer(@NonNull Session session) {
+    return Optional.ofNullable(session.getAttribute(FILE_TRANSFER_SESSION_ATTRIBUTE));
   }
 
 }

@@ -17,22 +17,19 @@
  */
 package org.icgc.dcc.submission.validation.key.core;
 
-import static com.google.common.base.Optional.of;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.icgc.dcc.common.core.util.Formats.formatBytes;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.BIOMARKER;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.DONOR;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.EXPOSURE;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.FAMILY;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.SAMPLE;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.SPECIMEN;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.SURGERY;
-import static org.icgc.dcc.submission.validation.key.core.KVFileType.THERAPY;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableMap;
 
 import java.util.Map;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
+import org.icgc.dcc.common.core.util.stream.Collectors;
 import org.icgc.dcc.submission.validation.key.data.KVEncounteredForeignKeys;
 import org.icgc.dcc.submission.validation.key.data.KVFileProcessor;
 import org.icgc.dcc.submission.validation.key.data.KVPrimaryKeys;
@@ -40,13 +37,7 @@ import org.icgc.dcc.submission.validation.key.data.KVReferencedPrimaryKeys;
 import org.icgc.dcc.submission.validation.key.report.KVReporter;
 import org.icgc.dcc.submission.validation.key.surjectivity.SurjectivityValidator;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Main processor for the key validation.
@@ -74,31 +65,8 @@ public class KVSubmissionProcessor {
 
   public void processSubmission() {
     log.info("Loading data");
-
-    // Process clinical data
-    log.info("Processing clinical data");
-    processFileType(DONOR);
-    processFileType(SPECIMEN);
-    processFileType(SAMPLE);
-
-    log.info("Processing clinicla supplemental data");
-    processFileType(BIOMARKER);
-    processFileType(FAMILY);
-    processFileType(EXPOSURE);
-    processFileType(SURGERY);
-    processFileType(THERAPY);
-
-    // Process experimental data
-    for (val dataType : dictionary.getExperimentalDataTypes()) {
-      if (kvFileSystem.hasDataType(dataType)) {
-        log.info("Processing '{}' data", dataType);
-        for (val fileType : dictionary.getExperimentalFileTypes(dataType)) { // Order matters!
-          processFileType(fileType);
-        }
-      } else {
-        log.info("No '{}' data", dataType);
-      }
-    }
+    val fileTypes = dictionary.getTopologicallyOrderedFileTypes();
+    fileTypes.forEach(fileType -> processFileType(fileType));
 
     log.info("{}", banner("="));
     for (val fileType : fileTypeToPrimaryKeys.keySet()) {
@@ -114,18 +82,15 @@ public class KVSubmissionProcessor {
     // Primary keys for the type under consideration (each file will augment it)
     val primaryKeys = new KVPrimaryKeys();
 
-    val optionallyReferencedPrimaryKeys1 = getOptionallyReferencedPrimaryKeys1(fileType);
-    val optionallyReferencedPrimaryKeys2 = getOptionallyReferencedPrimaryKeys2(fileType);
+    val referencedPrimaryKeys = getReferencedPrimaryKeys(fileType);
+    if (!referencedPrimaryKeys.isEmpty()) {
+      log.info("Created collectors for referenced file types: {}", referencedPrimaryKeys.keySet());
+    }
 
     // Encountered foreign keys in the case where we need to check for surjection
-    val optionalEncounteredForeignKeys =
-        dictionary.hasOutgoingSurjectiveRelation(fileType) ? of(new KVEncounteredForeignKeys()) : Optional
-            .<KVEncounteredForeignKeys> absent();
-
-    log.info(
-        "Processing file type: '{}'; has referencing is '{} and {}' (FK1 and FK2); will be collecting FKs: '{}'",
-        new Object[] { fileType, optionallyReferencedPrimaryKeys1.isPresent(), optionallyReferencedPrimaryKeys2
-            .isPresent(), optionalEncounteredForeignKeys.isPresent() });
+    val encounteredForeignKeys = createEncounteredForeignKeys(fileType);
+    log.info("Processing file type: '{}'; has referencing is '{}'; will be collecting FKs for '{}'",
+        new Object[] { fileType, !referencedPrimaryKeys.isEmpty(), encounteredForeignKeys.keySet() });
 
     // Process files matching the current file type
     val dataFilePaths = kvFileSystem.getDataFilePaths(fileType);
@@ -133,10 +98,8 @@ public class KVSubmissionProcessor {
       for (val dataFilePath : dataFilePaths.get()) {
         val watch = createStopwatch();
         log.info("{}", banner("-"));
-        log.info(
-            "Processing '{}' file: '{}'; has referencing is '{}' and '{}' (FK1 and FK2)",
-            new Object[] { fileType, optionallyReferencedPrimaryKeys1.isPresent(), optionallyReferencedPrimaryKeys2
-                .isPresent(), dataFilePath });
+        log.info("Processing '{}' file: '{}'; has referencing is '{}'",
+            new Object[] { fileType, !referencedPrimaryKeys.isEmpty(), dataFilePath });
 
         // TODO: subclass for referencing/non-referencing?
         val fileProcessor = new KVFileProcessor(fileType, dataFilePath);
@@ -145,9 +108,8 @@ public class KVSubmissionProcessor {
             fileParser,
             reporter,
             primaryKeys,
-            optionallyReferencedPrimaryKeys1,
-            optionallyReferencedPrimaryKeys2,
-            optionalEncounteredForeignKeys);
+            referencedPrimaryKeys,
+            encounteredForeignKeys);
 
         log.info("Finished processing file '{}' in {} with {} of JVM free memory remaining",
             new Object[] { dataFilePath, watch, formatFreeMemory() });
@@ -157,68 +119,40 @@ public class KVSubmissionProcessor {
     }
     fileTypeToPrimaryKeys.put(fileType, primaryKeys);
 
-    // Check surjection (N/A for FK2 or optional FK at the moment)
-    if (optionallyReferencedPrimaryKeys1.isPresent()) {
-      checkSurjection(
-          fileType,
-          optionallyReferencedPrimaryKeys1.get()
-              .getReferencedFileType(),
-          optionalEncounteredForeignKeys);
-    }
+    encounteredForeignKeys.entrySet()
+        .forEach(entry -> checkSurjection(fileType, entry.getKey(), entry.getValue()));
   }
 
   private void checkSurjection(
       KVFileType fileType,
       KVFileType referencedType,
-      Optional<KVEncounteredForeignKeys> optionalEncounteredForeignKeys) {
+      KVEncounteredForeignKeys encounteredForeignKeys) {
 
     log.info("{}", banner("-"));
-    if (dictionary.hasOutgoingSurjectiveRelation(fileType)) {
-      log.info("Post-processing: surjectivity check for type '{}'", fileType);
+    log.info("Post-processing: surjectivity check for type '{}'", fileType);
 
-      checkState(optionalEncounteredForeignKeys.isPresent());
-      surjectivityValidator
-          .validateSurjection(
-              fileType,
-              fileTypeToPrimaryKeys.get(referencedType),
-              optionalEncounteredForeignKeys.get(),
-              reporter,
-              referencedType);
-    } else {
-      log.info("No outgoing surjection relation for file type: '{}'", fileType);
-    }
+    surjectivityValidator
+        .validateSurjection(
+            fileType,
+            fileTypeToPrimaryKeys.get(referencedType),
+            encounteredForeignKeys,
+            reporter,
+            referencedType);
   }
 
-  private Optional<KVReferencedPrimaryKeys> getOptionallyReferencedPrimaryKeys1(KVFileType fileType) {
-    return getOptionallyReferencedPrimaryKeys(fileType, false);
+  private Map<KVFileType, KVEncounteredForeignKeys> createEncounteredForeignKeys(KVFileType fileType) {
+    return dictionary.getSurjectiveReferencedTypes(fileType).stream()
+        .collect(Collectors.toImmutableMap(rft -> rft, rft -> new KVEncounteredForeignKeys()));
   }
 
-  private Optional<KVReferencedPrimaryKeys> getOptionallyReferencedPrimaryKeys2(KVFileType fileType) {
-    return getOptionallyReferencedPrimaryKeys(fileType, true);
-  }
+  private Map<KVFileType, KVReferencedPrimaryKeys> getReferencedPrimaryKeys(KVFileType fileType) {
+    log.info("{} - {}", fileType, dictionary.getParents(fileType));
 
-  private Optional<KVReferencedPrimaryKeys> getOptionallyReferencedPrimaryKeys(KVFileType fileType, boolean secondary) {
-    // Obtain referenced file type (if applicable, for instance DONOR has none)
-    val optionalReferencedFileType = secondary ? dictionary.getOptionalReferencedFileType2(fileType) : dictionary
-        .getOptionalReferencedFileType1(fileType);
-    log.info("'{}' references '{}'", fileType, optionalReferencedFileType);
-
-    if (optionalReferencedFileType.isPresent()) {
-      // Obtain corresponding PKs for the referenced file type (also if applicable)
-      val referencedFileType = optionalReferencedFileType.get();
-      return Optional.<KVReferencedPrimaryKeys> of(
-          new KVReferencedPrimaryKeys(
-              referencedFileType,
-              fileTypeToPrimaryKeys.get(referencedFileType)));
-    } else {
-      return Optional.absent();
-    }
-  }
-
-  @SuppressWarnings("deprecation")
-  private static Stopwatch createStopwatch() {
-    // Can't use the new API here because Hadoop doesn't know about it.
-    return new Stopwatch().start();
+    return dictionary.getParents(fileType).stream()
+        .collect(toImmutableMap(
+            parent -> parent,
+            // fileTypeToPrimaryKeys.get(parent) is not null as populated by parent's check
+            parent -> new KVReferencedPrimaryKeys(parent, fileTypeToPrimaryKeys.get(parent))));
   }
 
   private static String banner(String symbol) {
@@ -227,6 +161,13 @@ public class KVSubmissionProcessor {
 
   private static String formatFreeMemory() {
     return formatBytes(Runtime.getRuntime().freeMemory());
+  }
+
+  @SuppressWarnings("deprecation")
+  private static Stopwatch createStopwatch() {
+    // Can't use the new API here because Hadoop doesn't know about it cluster side. Trying to use it will result in
+    // errors.
+    return new Stopwatch().start();
   }
 
 }

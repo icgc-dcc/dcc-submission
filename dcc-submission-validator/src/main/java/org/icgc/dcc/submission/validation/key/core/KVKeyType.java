@@ -27,16 +27,16 @@ public enum KVKeyType {
   /**
    * For most schema, there is only one FK.
    */
-  FK1,
-
-  /**
-   * We only have a maximum of 2 FKs maximum per file, not generalizing for now.
-   */
-  FK2,
+  FK,
 
   /**
    * An "optional FK" is one that may actually be null, unlike a regular FK.
    */
-  OPTIONAL_FK;
+  OPTIONAL_FK,
+
+  /**
+   * A script condition should be evaluated before checking for FK integrity.
+   */
+  CONDITIONAL_FK;
 
 }
