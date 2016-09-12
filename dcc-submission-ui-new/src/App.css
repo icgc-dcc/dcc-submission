@@ -7,6 +7,18 @@
   .Footer {
     margin-top: auto;
   }
+
+  .breadcrumbs {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .breadcrumb-separator {
+    color: #bbb;
+    margin: 0 10px;
+    font-size: 10px;
+  }
 }
 
 html, body, #root, .App {

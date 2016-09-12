@@ -19,6 +19,8 @@ class App extends Component {
             routes={this.props.routes}
             params={this.props.params}
             excludes={['App']}
+            itemClass="breadcrumb-item"
+            separator={<span className="breadcrumb-separator"><i className="fa fa-chevron-right"/></span>}
           />
         </div>
         {this.props.children}
