@@ -123,6 +123,9 @@ class Release extends Component {
 
     return (
     <div className="Release container">
+      { release.locked ? (
+        <div className="alert alert-danger">Release is locked. No validations or file transfers are permitted</div>
+      ) : null }
       <h1>Release Summary</h1>
       <ul className="ReleaseSummaryList terms summary-terms">
         <li>
