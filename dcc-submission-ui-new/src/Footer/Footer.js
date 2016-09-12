@@ -31,8 +31,8 @@ class Header extends Component {
         </a>
         <div className="col-sm-8 text-center">
           <p>
-            © 2014 <a href="http://icgc.org" target="_blank">International Cancer Genome Consortium</a>
-            <br/>
+            <a href="http://icgc.org" target="_blank">International Cancer Genome Consortium</a> <br/>
+            © 2014 <br/>
             All Rights reserved
           </p>
         </div>
