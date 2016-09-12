@@ -6,21 +6,12 @@ import {Link} from 'react-router';
 
 import user from '~/user.js';
 
-import FeedbackModal from '~/common/components/FeedbackModal/FeedbackModal';
 import AdminModal from '~/common/components/AdminModal/AdminModal';
 
 import './Header.css';
 
 @observer
 class Header extends Component {
-  @observable shouldShowFeedback = false;
-  @action handleRequestHideFeedback = () => {
-    this.shouldShowFeedback = false;
-  }
-  @action handleRequestShowFeedback = () => {
-    this.shouldShowFeedback = true;
-  }
-
   @observable shouldShowAdmin = false;
   @action handleRequestHideAdmin = () => {
     this.shouldShowAdmin = false;
@@ -80,12 +71,6 @@ class Header extends Component {
           </div>
         </nav>
         
-        <button onClick={this.handleRequestShowFeedback}>feedback</button>
-
-        <FeedbackModal
-          isOpen={this.shouldShowFeedback}
-          onRequestClose={this.handleRequestHideFeedback}
-        />
         <AdminModal
           isOpen={this.shouldShowAdmin}
           onRequestClose={this.handleRequestHideAdmin}

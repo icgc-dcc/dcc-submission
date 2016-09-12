@@ -13,7 +13,7 @@ function Warning() {
         <img
           alt="OICR"
           width={112}
-          src={require('~/assets/images/logo-oicr.jpg')}
+          src={require('~/assets/images/logo-oicr.png')}
         />
       </a>
       <div className="warning-content text-center">
@@ -83,9 +83,6 @@ class Login extends Component {
                 </button>
             </div>
           </form>
-          {
-            // <iframe src="https://www.google.com/calendar/embed?src=icgcportal%40gmail.com&ctz=America/Toronto" style={{border: 0}} width="100%" height={300} frameBorder={0} scrolling="no" />
-          }
         </div>
         <Warning/>
       </div>

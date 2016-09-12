@@ -4,6 +4,7 @@ import './App.css';
 
 import {observer} from 'mobx-react';
 import Header from './Header/Header';
+import Footer from './Footer/Footer';
 
 import user from '~/user';
 
@@ -21,6 +22,7 @@ class App extends Component {
           />
         </div>
         {this.props.children}
+        <Footer/>
       </div>
     );
     const minimalView = (

@@ -20,3 +20,15 @@ ul, li {
     color: var(--darkGrey);
   }
 }
+
+.link {
+  cursor: pointer;
+}
+
+.oicr-logo {
+  filter: grayscale(100%);
+  transition: all 0.2s ease;
+  &:hover {
+    filter: grayscale(0%);
+  }
+}

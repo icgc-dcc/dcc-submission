@@ -5,6 +5,7 @@ import {observer} from 'mobx-react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import Tooltip from 'rc-tooltip';
 import moment from 'moment';
+import { setSystemInfoFromHeaders } from '~/systemInfo';
 
 import ActionButton from '~/common/components/ActionButton/ActionButton';
 import defaultTableOptions from '~/common/defaultTableOptions';
@@ -27,6 +28,8 @@ releases.fetch = action('fetch releases', async function () {
   const response = await fetch('/ws/releases', {
       headers: fetchHeaders.get()
     });
+
+  setSystemInfoFromHeaders(response.headers);
 
   runInAction('update loading status', () => { this.isLoading = false });
 

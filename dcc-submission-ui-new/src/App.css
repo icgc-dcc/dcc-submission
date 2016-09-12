@@ -1,7 +1,12 @@
 @import './common/styles/variables/variables.css';
 
 .App {
+  display: flex;
+  flex-direction: column;
 
+  .Footer {
+    margin-top: auto;
+  }
 }
 
 html, body, #root, .App {

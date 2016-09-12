@@ -55,11 +55,6 @@
 
   .oicr-logo {
     margin-bottom: 20px;
-    filter: grayscale(100%);
-    transition: all 0.2s ease;
-    &:hover {
-      filter: grayscale(0%);
-    }
   }
 
   @media (min-width: 840px) {
