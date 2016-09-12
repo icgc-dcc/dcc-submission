@@ -1,4 +1,4 @@
-@import './modules/summary-terms.css';
+@import './modules/index.css';
 
 .react-bs-table table td, .react-bs-table table th {
   white-space: normal;

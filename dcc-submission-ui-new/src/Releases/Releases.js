@@ -126,8 +126,9 @@ class Releases extends Component {
           ? (
             <ActionButton
               onClick={() => this.handleClickPerformRelease(release)}
-              className={`m-btn mini green-stripe`}
+              className={`btn release-now-btn btn-xs`}
             >
+              <i className="fa fa-rocket"/>
               Release Now
             </ActionButton>
           )

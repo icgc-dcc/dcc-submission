@@ -76,8 +76,10 @@ class PerformReleaseModal extends Component {
             </form>
           </div>
           <div className="modal-footer">
-            <button className="m-btn grey-stripe" onClick={this.handleClickClose}>Close</button>
-            <button className="m-btn green" onClick={this.handleClickSubmit}>Release</button>
+            <button className="btn btn-default" onClick={this.handleClickClose}>Close</button>
+            <button className="btn release-now-btn" onClick={this.handleClickSubmit} style={{marginLeft: 4}}>
+              <i className="fa fa-rocket" style={{marginRight: 4}}/>Release
+            </button>
           </div>
         </div>
       </Modal>
