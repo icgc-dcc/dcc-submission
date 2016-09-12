@@ -47,7 +47,7 @@ class Header extends Component {
                 </li>
                 { user.isAdmin &&
                   <li>
-                    <a onClick={this.handleRequestShowAdmin}>Admin</a>
+                    <a className="link" onClick={this.handleRequestShowAdmin}>Admin</a>
                   </li>
                 }
                 <li className="dropdown">
