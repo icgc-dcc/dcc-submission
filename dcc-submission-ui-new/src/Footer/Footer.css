@@ -3,6 +3,7 @@
   background-color: #f5f5f5;
   padding: 20px 20px 30px;
   font-size: 12px;
+  flex-shrink: 0;
 
   color: #aaa;
   a {

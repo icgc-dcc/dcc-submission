@@ -31,6 +31,12 @@ const STATUS_MAP = {
     wrapperClass: 'valid',
     iconClass: 'fa fa-lock',
   },
+  OPENED: {
+    wrapperClass: 'valid',
+  },
+  COMPLETED: {
+    wrapperClass: 'unimportant',
+  },
   _DEFAULT: {
     wrapperClass: '',
     iconClass: '',
@@ -40,8 +46,8 @@ const STATUS_MAP = {
 function Status ({statusCode}) {
   const { wrapperClass, iconClass } = STATUS_MAP[statusCode] || STATUS_MAP._DEFAULT;
   return (
-    <span className={wrapperClass}>
-      <i className={iconClass}/>&nbsp;
+    <span className={`StatusLabel ` + wrapperClass}>
+      {iconClass && <i className={iconClass}/>}
       {(statusCode || 'SKIPPED').replace(/_/g, ' ')}
     </span>
   );

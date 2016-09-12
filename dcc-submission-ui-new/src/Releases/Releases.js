@@ -8,6 +8,7 @@ import moment from 'moment';
 import { setSystemInfoFromHeaders } from '~/systemInfo';
 
 import ActionButton from '~/common/components/ActionButton/ActionButton';
+import Status from '~/common/components/Status';
 import defaultTableOptions from '~/common/defaultTableOptions';
 import { fetchHeaders } from '~/utils';
 import user from '~/user';
@@ -98,6 +99,7 @@ class Releases extends Component {
         key="state"
         dataField="state"
         dataSort={true}
+        dataFormat={(state) => <Status statusCode={state}/>}
       >State</TableHeaderColumn>,
 
       <TableHeaderColumn

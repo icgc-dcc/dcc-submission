@@ -20,7 +20,7 @@ import SignOffSubmissionModal from '~/Submission/modals/SignOffSubmissionModal';
 import ResetSubmissionModal from '~/Submission/modals/ResetSubmissionModal';
 import CancelSubmissionValidationModal from '~/Submission/modals/CancelSubmissionValidationModal';
 
-// import SUBMISSION_OPERATIONS from '~/Submission/SUBMISSION_OPERATIONS';
+import './Submission.css';
 
 //NOTE: "project" is synonymous with "submission"
 export default @observer
@@ -123,7 +123,7 @@ class Submission extends Component {
     const projectKey = this.props.params.projectKey;
 
     return (
-      <div className="container">
+      <div className="Submission container">
         <ValidateSubmissionModal
           isOpen={this.shouldShowValidateModal}
           onRequestSubmit={this.handleRequestSubmitValidate}
@@ -151,13 +151,15 @@ class Submission extends Component {
           projectName={this.submission.projectName || ''}
         />
         <h1>Submission Summary</h1>
-        <ul>
-          <li>Name {submission.projectName}</li>
-          <li>Number of submitted files{submission.submissionFiles.length}</li>
-          <li>Number of valid files: {getValidFileCount(submission.report)}</li>
-          <li>Size of submission data: {formatFileSize(submission.totalFileSizeInBytes)}</li>
-          <li>State <Status statusCode={submission.state || ''}/></li>
-          <li>
+        <div className="row">
+          <div className="col-sm-5">
+        <ul className="terms summary-terms">
+          <li><span className="terms__term">Name</span> <span className="terms__value">{submission.projectName}</span></li>
+          <li><span className="terms__term">Number of submitted files</span> <span className="terms__value">{submission.submissionFiles.length}</span></li>
+          <li><span className="terms__term">Number of valid files</span> <span className="terms__value">{getValidFileCount(submission.report)}</span></li>
+          <li><span className="terms__term">Size of submission data</span> <span className="terms__value">{formatFileSize(submission.totalFileSizeInBytes)}</span></li>
+          <li><span className="terms__term">State</span> <Status statusCode={submission.state || ''}/></li>
+          <li className="summary-actions-container">
             <SubmissionActionButtons
               submissionState={submission.state || ''}
               submissionHasFiles={!!submission.submissionFiles.length}
@@ -171,7 +173,8 @@ class Submission extends Component {
             />
           </li>
         </ul>
-
+          </div>
+          <div className="col-sm-7 summary-table-container">
         <BootstrapTable
           data={submission.report.dataTypeReports}
           keyField='dataType'
@@ -188,6 +191,8 @@ class Submission extends Component {
             dataFormat={ state => <Status statusCode={state || ''}/>}
           >State</TableHeaderColumn>
         </BootstrapTable>
+          </div>
+        </div>
 
         <div>
           {

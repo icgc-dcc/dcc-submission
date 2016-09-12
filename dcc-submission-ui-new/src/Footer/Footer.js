@@ -26,6 +26,7 @@ class Header extends Component {
           <img
             alt="OICR"
             width={112}
+            height={80}
             src={require('~/assets/images/logo-oicr.png')}
           />
         </a>

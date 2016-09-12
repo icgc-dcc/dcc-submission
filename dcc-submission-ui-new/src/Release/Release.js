@@ -25,6 +25,8 @@ import CancelSubmissionValidationModal from '~/Submission/modals/CancelSubmissio
 
 import {queueSubmissionForValidation, signOffSubmission, resetSubmission, cancelSubmissionValidation} from '~/Submission/SubmissionModel';
 
+import './Release.css';
+
 const summaryClassNameMap = {
   SIGNED_OFF: 'label-success',
   VALID: 'label-success',
@@ -120,7 +122,7 @@ class Release extends Component {
     const canRelease = release.state === RELEASE_STATES.OPENED && user.isAdmin;
 
     return (
-    <div className="container">
+    <div className="Release container">
       <h1>Release Summary</h1>
       <ul className="ReleaseSummaryList">
         <li>
@@ -160,7 +162,7 @@ class Release extends Component {
       </ul>
 
       <div>
-        <h2>Projects included in the {release.name} release</h2>
+        <h2>Projects included in the <em className="releaseName">{release.name}</em> release</h2>
         <BootstrapTable
           data={items}
           keyField='projectKey'

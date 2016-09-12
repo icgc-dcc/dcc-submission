@@ -19,6 +19,12 @@
     margin: 0 10px;
     font-size: 10px;
   }
+  .breadcrumb-item {
+    /* hide breadcrumbs when only containing one item*/
+    &:first-child:last-child {
+      display: none;
+    }
+  }
 }
 
 html, body, #root, .App {
