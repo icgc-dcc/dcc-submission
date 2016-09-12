@@ -29,16 +29,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import lombok.Cleanup;
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.loader.cli.ClientOptions;
 import org.icgc.dcc.submission.loader.model.FileTypePath;
 import org.icgc.dcc.submission.loader.model.Project;
 
 import com.google.common.base.Stopwatch;
-
-import lombok.Cleanup;
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SubmissionLoader {
@@ -51,17 +51,17 @@ public class SubmissionLoader {
     log.info("Loading submission files for releases: {}", releases);
     for (val release : releases) {
       val allReleaseFiles = getReleaseFiles(release, options);
-      val validProjects = releaseResolver.getValidProjects(release);
-      val validProjectFiles = filterValidProjectFiles(validProjects, allReleaseFiles);
-      val loadProjects = filterProjectsToLoad(validProjects, validProjectFiles.keySet());
+      val submissionProjects = releaseResolver.getProjects(release);
+      val submissionProjectFiles = filterSubmissionProjectFiles(submissionProjects, allReleaseFiles);
+      val loadProjects = filterProjectsToLoad(submissionProjects, submissionProjectFiles.keySet());
 
-      if (validProjectFiles.isEmpty()) {
+      if (submissionProjectFiles.isEmpty()) {
         log.info("Nothing to load for release '{}'. Skipping...", release);
         continue;
       }
 
       log.info("Loading release '{}'...", release);
-      printFiles(validProjectFiles);
+      printFiles(submissionProjectFiles);
 
       @Cleanup
       val releaseFilesLoader = createReleaseFilesLoader(release, options.dbType);
@@ -73,7 +73,7 @@ public class SubmissionLoader {
       }
 
       log.info("Loading files...");
-      releaseFilesLoader.loadFiles(validProjectFiles);
+      releaseFilesLoader.loadFiles(submissionProjectFiles);
 
       log.info("Finilizing database...");
       releaseFilesLoader.finalizeDatabase();
@@ -88,14 +88,14 @@ public class SubmissionLoader {
         .collect(toImmutableList());
   }
 
-  private static Map<String, List<FileTypePath>> filterValidProjectFiles(List<Project> validProjects,
+  private static Map<String, List<FileTypePath>> filterSubmissionProjectFiles(List<Project> submissionProjects,
       Map<String, List<FileTypePath>> releaseFiles) {
-    val validProjectNames = validProjects.stream()
+    val submissionProjectNames = submissionProjects.stream()
         .map(p -> p.getProjectId())
         .collect(toImmutableList());
 
     return releaseFiles.entrySet().stream()
-        .filter(e -> validProjectNames.contains(e.getKey()))
+        .filter(e -> submissionProjectNames.contains(e.getKey()))
         .collect(toImmutableMap(e -> e.getKey(), e -> e.getValue()));
   }
 

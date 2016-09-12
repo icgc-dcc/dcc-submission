@@ -19,12 +19,12 @@ package org.icgc.dcc.submission.loader.cli;
 
 import java.util.List;
 
+import lombok.ToString;
+
 import org.icgc.dcc.submission.loader.model.DatabaseType;
 
 import com.beust.jcommander.Parameter;
 import com.google.common.collect.Lists;
-
-import lombok.ToString;
 
 @ToString
 public class ClientOptions {
@@ -34,6 +34,9 @@ public class ClientOptions {
 
   @Parameter(names = { "--hdfs-url" }, description = "HDFS URL")
   public String fsUrl;
+
+  @Parameter(names = { "--db-url" }, required = true, description = "Database connection URL")
+  public String dbUrl;
 
   @Parameter(names = { "--db-host" }, required = true, description = "Database hostname")
   public String dbHost;

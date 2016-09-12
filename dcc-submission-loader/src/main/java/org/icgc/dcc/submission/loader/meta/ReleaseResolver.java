@@ -22,8 +22,13 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.icgc.dcc.common.core.util.Separators.COLON;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.ws.rs.core.MediaType;
+
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.loader.model.Project;
 import org.icgc.dcc.submission.release.model.SubmissionState;
@@ -36,10 +41,6 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.BaseEncoding;
-
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ReleaseResolver {
@@ -79,21 +80,52 @@ public class ReleaseResolver {
    * @return {@code VALID} and {@code SIGNED-OFF} projects for the {@code release}.
    */
   public List<Project> getValidProjects(@NonNull String release) {
-    val response = getResponse(url + "/" + release.toUpperCase());
-    val validProjects = ImmutableList.<Project> builder();
-    log.debug("Submissions: {}", response);
+    return getProjects(release, (submission) -> isValidState(submission.get("state").textValue()));
+  }
 
+  /**
+   * @return all projects for the {@code release}.
+   */
+  public List<Project> getProjects(@NonNull String release) {
+    return getProjects(release, (submission) -> true);
+  }
+
+  /**
+   * Gets projects for a particular {@code release} from the releases submission endpoint, which satisfy the
+   * {@code predicate}.
+   * @param predicate on a {@code JsonNode} with the following structure:
+   * 
+   * <pre>
+   * {
+   * "name": "ICGC12",
+   * "state": "COMPLETED",
+   * "releaseDate": 1363655961497,
+   * "dictionaryVersion": "0.6c",
+   * "submissions": [
+   *   {
+   *     "projectKey": "TEST-CA",
+   *     "projectName": null,
+   *     "releaseName": null
+   *   }
+   * ]
+   * }
+   * </pre>
+   */
+  private List<Project> getProjects(String release, Predicate<JsonNode> predicate) {
+    val response = getResponse(url + "/" + release.toUpperCase());
+    val projects = ImmutableList.<Project> builder();
     for (val submission : response.get("submissions")) {
-      val submissionState = submission.get("state").textValue();
-      if (isValidState(submissionState)) {
-        validProjects.add(convertProject(submission));
+      log.debug("Processing submission: {}", submission);
+      if (predicate.test(submission)) {
+        log.debug("Adding matched submission to the projects collection...");
+        projects.add(convertProject(submission));
       }
     }
 
-    return validProjects.build();
+    return projects.build();
   }
 
-  private boolean isValidState(String submissionState) {
+  private static boolean isValidState(String submissionState) {
     return SubmissionState.VALID.getName().equals(submissionState)
         || SubmissionState.SIGNED_OFF.getName().equals(submissionState);
   }

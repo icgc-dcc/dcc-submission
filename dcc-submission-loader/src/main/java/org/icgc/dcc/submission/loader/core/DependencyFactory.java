@@ -30,10 +30,18 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.apache.tomcat.jdbc.pool.DataSource;
+import org.apache.tomcat.jdbc.pool.PoolProperties;
 import org.icgc.dcc.common.core.meta.Resolver.DictionaryResolver;
 import org.icgc.dcc.common.core.meta.RestfulCodeListsResolver;
 import org.icgc.dcc.common.core.meta.RestfulDictionaryResolver;
@@ -47,18 +55,11 @@ import org.icgc.dcc.submission.loader.meta.CodeListsService;
 import org.icgc.dcc.submission.loader.meta.ReleaseResolver;
 import org.icgc.dcc.submission.loader.meta.SubmissionMetadataService;
 import org.icgc.dcc.submission.loader.meta.TypeDefGraph;
-import org.postgresql.ds.PGPoolingDataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.google.common.collect.Maps;
 import com.orientechnologies.orient.core.db.OPartitionedDatabasePool;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
-
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
 
 @RequiredArgsConstructor(access = PRIVATE)
 public final class DependencyFactory implements Closeable {
@@ -80,7 +81,7 @@ public final class DependencyFactory implements Closeable {
   @Getter(lazy = true)
   private final ExecutorService executor = createExecutor();
   @Getter(lazy = true)
-  private final PGPoolingDataSource dataSource = createDataSource();
+  private final DataSource dataSource = createDataSource();
   @Getter(lazy = true)
   private final ReleaseResolver releaseResolver = createReleaseResolver();
   private final Map<String, SubmissionMetadataService> releaseSubmissionService = Maps.newHashMap();
@@ -160,25 +161,21 @@ public final class DependencyFactory implements Closeable {
     return new PostgresDatabaseService(submissionService, new JdbcTemplate(getDataSource()), graph);
   }
 
-  private PGPoolingDataSource createDataSource() {
-    val dataSource = new PGPoolingDataSource();
-    dataSource.setServerName(options.dbHost);
-
-    if (options.dbPort != null) {
-      dataSource.setPortNumber(Integer.parseInt(options.dbPort));
-    }
-
-    dataSource.setDatabaseName(options.dbName);
+  private DataSource createDataSource() {
+    val properties = new PoolProperties();
+    properties.setUrl(options.dbUrl);
+    properties.setValidationQuery("SELECT 1");
+    properties.setTestOnBorrow(true);
 
     if (options.dbUser != null) {
-      dataSource.setUser(options.dbUser);
+      properties.setUsername(options.dbUser);
     }
 
     if (options.dbPassword != null) {
-      dataSource.setPassword(options.dbPassword);
+      properties.setPassword(options.dbPassword);
     }
 
-    return dataSource;
+    return new org.apache.tomcat.jdbc.pool.DataSource(properties);
   }
 
   private CompressionCodecFactory createCompressionCodecFactory() {

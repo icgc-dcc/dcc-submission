@@ -24,19 +24,21 @@ import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIEL
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.icgc.dcc.common.core.util.Splitters;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
+
+import org.icgc.dcc.common.core.util.Splitters;
+import org.icgc.dcc.submission.loader.core.SubmissionLoaderException;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 @Slf4j
 public class RecordReader implements Closeable, Iterator<Map<String, String>> {
@@ -87,14 +89,17 @@ public class RecordReader implements Closeable, Iterator<Map<String, String>> {
     return readRecord();
   }
 
-  @SneakyThrows
   private Map<String, String> readRecord() {
-    val line = reader.readLine();
-    if (line == null) {
-      return null;
+    String line = null;
+    try {
+      line = reader.readLine();
+      if (line == null) {
+        return null;
+      }
+      return convertLine(line);
+    } catch (Exception e) {
+      throw new SubmissionLoaderException(e, "Failed to read record. \nField names: {}; \nLine: {}", fieldNames, line);
     }
-
-    return convertLine(line);
   }
 
   private Map<String, String> convertLine(String line) {
@@ -110,7 +115,12 @@ public class RecordReader implements Closeable, Iterator<Map<String, String>> {
       recordBuilder.put(fieldName, fieldValue);
     }
 
-    return recordBuilder.build();
+    try {
+      return recordBuilder.build();
+    } catch (Exception e) {
+      log.error("Failed to convert line:\n{}\n{}", line, e);
+      return Collections.emptyMap();
+    }
   }
 
   // Doesn't include Project ID

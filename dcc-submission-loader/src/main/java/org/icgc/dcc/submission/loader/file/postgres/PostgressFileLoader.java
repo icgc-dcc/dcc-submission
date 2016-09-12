@@ -21,15 +21,17 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.loader.file.AbstractFileLoader;
 import org.icgc.dcc.submission.loader.record.PostgressRecordConverter;
 import org.icgc.dcc.submission.loader.record.RecordReader;
+import org.icgc.dcc.submission.loader.util.DatabaseFields;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
 import com.google.common.collect.Lists;
-
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PostgressFileLoader extends AbstractFileLoader {
@@ -67,18 +69,46 @@ public class PostgressFileLoader extends AbstractFileLoader {
 
   @Override
   protected void loadRecord(Map<String, String> record) {
-    recordBuffer.add(recordConverter.convert(record));
-
-    if (isFlushRecords()) {
-      flushRecords();
+    val recordWithProject = recordConverter.convert(record);
+    val repo = recordWithProject.get("raw_data_repository");
+    if (repo != null && (repo.equals("EGA") || repo.equals("1"))) {
+      val project = recordWithProject.get(DatabaseFields.PROJECT_ID_FIELD_NAME);
+      val accession = recordWithProject.get("raw_data_accession");
+      val analysisId = recordWithProject.get("analysis_id");
+      System.out.println("OUT - " + project + ":" + analysisId + ":" + accession);
     }
+    // recordBuffer.add(recordWithProject);
+    //
+    // if (isFlushRecords()) {
+    // flushRecords();
+    // }
   }
 
   @SuppressWarnings("unchecked")
   private void flushRecords() {
-    inserter.executeBatch(recordBuffer.toArray(new Map[recordBuffer.size()]));
+    try {
+      inserter.executeBatch(recordBuffer.toArray(new Map[recordBuffer.size()]));
+    } catch (Exception e) {
+      log.warn("Caught exception while loading records. Will try to reload.");
+      sequentiallyReloadRecords();
+    }
     recordBuffer.clear();
     log.debug("[{}] Flushed records.", getName());
+  }
+
+  private void sequentiallyReloadRecords() {
+    int recordsLoaded = 0;
+    for (val record : recordBuffer) {
+      try {
+        inserter.execute(record);
+        recordsLoaded++;
+      } catch (Exception e) {
+        log.error("Failed to load record: {} \n", record, e);
+      }
+    }
+
+    val total = recordBuffer.size();
+    log.info("Loaded: sucessful {}; failed {}; total {} records", recordsLoaded, total - recordsLoaded, total);
   }
 
   private boolean isFlushRecords() {
