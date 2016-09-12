@@ -26,6 +26,7 @@ class ValidateModal extends Component {
   // requiredDataTypes must always be selected if available and cannot be deselected
   requiredDataTypes = ['CLINICAL_CORE_TYPE'];
   @observable selectedDataTypes = [];
+  @observable errorMessage;
 
   @observable emailsText = '';
   @computed get emails() {
@@ -50,22 +51,30 @@ class ValidateModal extends Component {
     }
   }
 
-  handleClickSubmit = () => {
-    this.props.onRequestSubmit({
-      dataTypes: this.selectedDataTypes,
-      emails: this.emails,
-    });
-    user.emailsToNotify = this.emails;
+  handleClickSubmit = async () => {
+    try {
+      await this.props.onRequestSubmit({
+        dataTypes: this.selectedDataTypes,
+        emails: this.emails,
+      });
+      user.emailsToNotify = this.emails;
+    } catch (e) {
+      this.errorMessage = e.message;
+    }
   }
 
   toggleSelectDataType = (dataType) => {
     this.selectedDataTypes = xor(this.selectedDataTypes.slice(), [dataType]);
   }
 
+  handleClickClose = () => {
+    this.errorMessage = '';
+    this.props.onRequestClose();
+  };
+
   render () {
     const {
       isOpen,
-      onRequestClose,
       dataTypeReports,
     } = this.props;
  
@@ -74,7 +83,7 @@ class ValidateModal extends Component {
       <Modal
           className={`Modal modal-dialog`}
           isOpen={isOpen}
-          onRequestClose={onRequestClose}
+          onRequestClose={this.handleClickClose}
           closeTimeoutMS={250}
           shouldCloseOnOverlayClick={true}
         >
@@ -84,13 +93,18 @@ class ValidateModal extends Component {
               type="button"
               className="close"
               aria-label="Close"
-              onClick={onRequestClose}
+              onClick={this.handleClickClose}
             >
               <span aria-hidden="true">&times;</span>
             </button>
             <h3>Validate Submission</h3>
           </div>
           <div className="modal-body">
+            {this.errorMessage ? (
+              <div className="alert alert-danger">
+                {this.errorMessage}
+              </div>
+            ) : ''}
             <table id="validate-file-types" className="table table-condensed">
               <tbody>
                 {
@@ -142,10 +156,10 @@ class ValidateModal extends Component {
             </div>
           </div>
           <div className="modal-footer">
-            <button className="m-btn grey-stripe" onClick={onRequestClose}>Close</button>
+            <button className="btn btn-default" onClick={this.handleClickClose}>Close</button>
             <button
               type="submit"
-              className="m-btn blue"
+              className="btn btn-primary"
               onClick={this.handleClickSubmit}
               disabled={!this.isValid}
             >Validate Submission</button>
