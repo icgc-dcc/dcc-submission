@@ -71,6 +71,16 @@ export default function GroupedReportList({
         <TableHeaderColumn
           dataField='name'
           dataSort={true}
+          dataFormat={(fileName, submission) => {
+            const fileState = submission.fileState;
+            const isNotInProgress = !includes(['QUEUED', 'VALIDATING', 'SKIPPED'], fileState);
+            const hasReports = (submission.errorReports && submission.errorReports.length)
+              || (submission.fieldReports && submission.fieldReports.length)
+              || (submission.summaryReports && submission.summaryReports.length);
+            const shouldShowReport = isNotInProgress && hasReports;
+
+            return shouldShowReport ? <Link to={`/releases/${releaseName}/submissions/${projectKey}/report/${submission.name}`}>{fileName}</Link> : fileName;
+          }}
         >File</TableHeaderColumn>
 
         <TableHeaderColumn
@@ -95,21 +105,22 @@ export default function GroupedReportList({
           )}
         >Status</TableHeaderColumn>
 
-        <TableHeaderColumn
-          dataField='name'
-          dataFormat={ (cell, submission) => {
-            const fileState = submission.fileState;
-            const isNotInProgress = !includes(['QUEUED', 'VALIDATING', 'SKIPPED'], fileState);
-            const hasReports = (submission.errorReports && submission.errorReports.length)
-              || (submission.fieldReports && submission.fieldReports.length)
-              || (submission.summaryReports && submission.summaryReports.length);
-            const shouldShowReport = isNotInProgress && hasReports;
-
-            return shouldShowReport ? <Link to={`/releases/${releaseName}/submissions/${projectKey}/report/${submission.name}`}>view</Link> : '';
-          }}
-        >Report</TableHeaderColumn>
 
       </BootstrapTable>
     </div>
   )
 }
+
+// saving in case we need to bring "report" column back
+// <TableHeaderColumn
+//           dataField='name'
+//           dataFormat={ (cell, submission) => {
+//             const fileState = submission.fileState;
+//             const isNotInProgress = !includes(['QUEUED', 'VALIDATING', 'SKIPPED'], fileState);
+//             const hasReports = (submission.errorReports && submission.errorReports.length)
+//               || (submission.fieldReports && submission.fieldReports.length)
+//               || (submission.summaryReports && submission.summaryReports.length);
+//             const shouldShowReport = isNotInProgress && hasReports;
+
+//             return shouldShowReport ? <Link to={`/releases/${releaseName}/submissions/${projectKey}/report/${submission.name}`}>view</Link> : '';
+//           }}

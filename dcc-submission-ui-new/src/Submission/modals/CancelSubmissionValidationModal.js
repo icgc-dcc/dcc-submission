@@ -39,10 +39,10 @@ class CancelSubmissionValidationModal extends Component {
             </div>
           </div>
           <div className="modal-footer">
-            <button className="m-btn grey-stripe" onClick={onRequestClose}>Close</button>
+            <button className="btn btn-default" onClick={onRequestClose}>Close</button>
             <button
               type="submit"
-              className="m-btn red"
+              className="btn btn-danger"
               onClick={onRequestSubmit}
             >Cancel Submission Validation</button>
           </div>

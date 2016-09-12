@@ -41,10 +41,10 @@ class ValidateModal extends Component {
             </div>
           </div>
           <div className="modal-footer">
-            <button className="m-btn grey-stripe" onClick={onRequestClose}>Close</button>
+            <button className="btn btn-default" onClick={onRequestClose}>Close</button>
             <button
               type="submit"
-              className="m-btn green"
+              className="btn btn-primary"
               onClick={onRequestSubmit}
             >Sign Off Submission</button>
           </div>

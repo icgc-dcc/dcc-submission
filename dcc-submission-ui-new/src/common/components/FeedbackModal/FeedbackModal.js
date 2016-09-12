@@ -132,8 +132,8 @@ class FeedbackModal extends Component {
             </form>
           </div>
           <div className="modal-footer">
-            <button className="m-btn grey-stripe" onClick={this.handleClickClose}>Close</button>
-            <button type="submit" className="m-btn green" onClick={this.handleClickSubmit}>Send Feedback</button>
+            <button className="btn btn-default" onClick={this.handleClickClose}>Close</button>
+            <button type="submit" className="btn btn-primary" onClick={this.handleClickSubmit}>Send Feedback</button>
           </div>
         </div>
       </Modal>
