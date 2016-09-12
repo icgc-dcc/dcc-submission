@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.icgc.dcc.submission.dictionary.model.CodeList;
+import org.icgc.dcc.submission.dictionary.model.Term;
 
 import com.google.common.collect.Maps;
 
@@ -34,9 +35,26 @@ import lombok.val;
 public final class CodeLists {
 
   /**
-   * Constants.
+   * Constants - Patterns.
    */
   private static final Pattern SPECIMEN_NAME_PATTERN = Pattern.compile("specimen\\.0\\.specimen_type\\.v(\\d+)");
+  private static final Pattern REPO_NAME_PATTERN = Pattern.compile("GLOBAL\\.0\\.raw_data_repository\\.v(\\d+)");
+
+  /**
+   * Constants - Terms.
+   */
+  private static final String EGA_TERM_VALUE = "EGA";
+
+  public static Term getRawDataRepositoriesEGATerm(@NonNull List<CodeList> codeLists) {
+    return getRawDataRepositories(codeLists).getTerms().stream()
+        .filter(t -> t.getValue().equals(EGA_TERM_VALUE))
+        .findFirst()
+        .orElse(null);
+  }
+
+  public static CodeList getRawDataRepositories(@NonNull List<CodeList> codeLists) {
+    return getLatest(codeLists, REPO_NAME_PATTERN);
+  }
 
   public static CodeList getSpecimenTypes(@NonNull List<CodeList> codeLists) {
     return getLatest(codeLists, SPECIMEN_NAME_PATTERN);

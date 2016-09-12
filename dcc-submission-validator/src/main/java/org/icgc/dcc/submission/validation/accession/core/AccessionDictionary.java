@@ -15,42 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.pcawg.core;
+package org.icgc.dcc.submission.validation.accession.core;
 
 import static com.google.common.base.Suppliers.memoizeWithExpiration;
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.stream.Collectors.toList;
 import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
-import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 
 import java.net.URL;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.regex.Pattern;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import org.icgc.dcc.submission.validation.accession.AccessionValidator;
+
 import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.io.Resources;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.Value;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Externalizable metadata for accession validation.
+ * <p>
+ * Used for identifying "grandfathered" {@code analysis_id}s that should be excluded from validation. See
+ * {@linkplain AccessionValidator} for details.
+ */
 @Slf4j
 @RequiredArgsConstructor
-public class PCAWGSampleSheet {
+public class AccessionDictionary {
 
   /**
-   * Constants.
+   * The default location of the dictionary.
    */
-  public static final URL DEFAULT_PCAWG_SAMPLE_SHEET_URL = Resources.getResource("pcawg-sample-sheet.json");
+  public static final URL DEFAULT_ACCESSION_DICTIONARY_URL = Resources.getResource("accession-dictionary.json");
 
   /**
-   * Configuration.
+   * The URL of the externalized JSON file.
    */
   @NonNull
   private final URL url;
@@ -58,59 +64,56 @@ public class PCAWGSampleSheet {
   /**
    * State.
    */
-  private final Supplier<List<PCAWGSample>> supplier = memoizeWithExpiration(this::readSamples, 10, MINUTES);
+  private final Supplier<Metadata> supplier = memoizeWithExpiration(this::read, 10, MINUTES);
 
-  public PCAWGSampleSheet() {
-    this(DEFAULT_PCAWG_SAMPLE_SHEET_URL);
+  public AccessionDictionary() {
+    this(DEFAULT_ACCESSION_DICTIONARY_URL);
   }
 
-  public boolean hasProject(@NonNull String projectKey) {
-    val projectNames = getProjects();
-
-    return projectNames.contains(projectKey);
-  }
-
-  public Set<String> getProjects() {
-    return samples().stream().map(PCAWGSample::getProjectKey).collect(toImmutableSet());
-  }
-
-  public List<PCAWGSample> getProjectSamples(@NonNull String projectKey) {
-    return samples().stream().filter(sample -> sample.getProjectKey().equals(projectKey)).collect(toList());
-  }
-
-  public Multimap<String, String> getProjectDonorIds() {
-    return getProjectFields(PCAWGSample::getDonorId);
-  }
-
-  public Multimap<String, String> getProjectSpecimenIds() {
-    return getProjectFields(PCAWGSample::getSpecimenId);
-  }
-
-  public Multimap<String, String> getProjectSampleIds() {
-    return getProjectFields(PCAWGSample::getSampleId);
-  }
-
-  private Multimap<String, String> getProjectFields(@NonNull Function<PCAWGSample, String> accessor) {
-    // Keep unique values only
-    val builder = ImmutableSetMultimap.<String, String> builder();
-
-    for (val sample : samples()) {
-      val projectKey = sample.getProjectKey();
-      val fieldValue = accessor.apply(sample);
-      builder.put(projectKey, fieldValue);
+  public boolean isExcluded(String projectKey, String analysisId) {
+    // Exclude by project key
+    val excludedProjectKeys = metadata().getExcludedProjectKeys();
+    if (excludedProjectKeys != null & excludedProjectKeys.contains(projectKey)) {
+      return true;
     }
 
-    return builder.build();
+    // Exclude by project key, analysis id value
+    val excludedAnalysisIds = metadata().getExcludedAnalysisIds().get(projectKey);
+    if (excludedAnalysisIds != null && excludedAnalysisIds.contains(analysisId)) {
+      return true;
+    }
+
+    // Exclude by project key, analysis id pattern
+    val excludedAnalysisIdPatterns = metadata().getExcludedAnalysisIdPatterns().get(projectKey);
+    if (excludedAnalysisIdPatterns != null) {
+      for (val pattern : excludedAnalysisIdPatterns) {
+        val exclude = pattern.matcher(analysisId).matches();
+        if (exclude) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
-  private List<PCAWGSample> samples() {
+  private Metadata metadata() {
     return supplier.get();
   }
 
   @SneakyThrows
-  private List<PCAWGSample> readSamples() {
-    log.info("Refreshing sample sheet...");
-    return DEFAULT.readValue(url, new TypeReference<List<PCAWGSample>>() {});
+  private Metadata read() {
+    log.info("Refreshing metadata...");
+    return DEFAULT.readValue(url, Metadata.class);
+  }
+
+  @Value
+  private static class Metadata {
+
+    Set<String> excludedProjectKeys = newHashSet();
+    Map<String, Set<String>> excludedAnalysisIds = newHashMap();
+    Map<String, Set<Pattern>> excludedAnalysisIdPatterns = newHashMap();
+
   }
 
 }

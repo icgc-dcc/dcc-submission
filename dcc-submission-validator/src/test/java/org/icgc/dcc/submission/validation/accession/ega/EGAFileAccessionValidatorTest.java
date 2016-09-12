@@ -15,14 +15,51 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.rgv.cli;
+package org.icgc.dcc.submission.validation.accession.ega;
 
-import org.icgc.dcc.submission.validation.key.cli.KeyValidationContext;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class ReferenceGenomeValidationContext extends KeyValidationContext {
+import org.icgc.dcc.common.ega.client.EGAClient;
+import org.icgc.dcc.submission.validation.accession.ega.EGAFileAccessionValidator.Result;
+import org.junit.Ignore;
+import org.junit.Test;
 
-  public ReferenceGenomeValidationContext(String releaseName, String projectKey, String fsRoot, String fsUrl) {
-    super(releaseName, projectKey, fsRoot, fsUrl, "");
+import lombok.val;
+
+@Ignore("Need EGA credentials to run")
+public class EGAFileAccessionValidatorTest {
+
+  EGAClient client = new EGAClient();
+  EGAFileAccessionValidator verifier = new EGAFileAccessionValidator(client);
+
+  @Test
+  public void testValidateValid() throws Exception {
+    val fileId = "EGAF00001160861";
+    val result = verify(fileId);
+    assertThat(result.isValid()).isTrue();
+  }
+
+  @Test
+  public void testValidateInvalid() throws Exception {
+    val fileId = "EGAF00000000000";
+    val result = verify(fileId);
+    assertThat(result.isValid()).isFalse();
+    assertThat(result.getReason()).startsWith("Not authorized to access entity at path /files/" + fileId);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testValidateError() throws Exception {
+    val fileId = "xxx";
+    verify(fileId);
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testValidateNull() throws Exception {
+    verifier.validate(null);
+  }
+
+  private Result verify(String fileId) {
+    return verifier.validate(fileId);
   }
 
 }

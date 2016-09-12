@@ -15,14 +15,46 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.sample.cli;
+package org.icgc.dcc.submission.validation.accession.core;
 
-import org.icgc.dcc.submission.validation.key.cli.KeyValidationContext;
+import static com.google.common.io.Resources.getResource;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class SampleTypeValidationContext extends KeyValidationContext {
+import java.net.URL;
 
-  public SampleTypeValidationContext(String releaseName, String projectKey, String fsRoot, String fsUrl) {
-    super(releaseName, projectKey, fsRoot, fsUrl, "");
+import org.junit.Test;
+
+import lombok.val;
+
+public class AccessionDictionaryTest {
+
+  private static final URL TEST_DICTIONARY_URL =
+      getResource("fixtures/validation/accession/accession-dictionary.json");
+
+  AccessionDictionary dictionary = new AccessionDictionary(TEST_DICTIONARY_URL);
+
+  @Test
+  public void testIsExcludedById() throws Exception {
+    val excluded = dictionary.isExcluded("PAEN-AU", "analysis1");
+    assertThat(excluded).isTrue();
+  }
+
+  @Test
+  public void testIsExcludedByPattern() throws Exception {
+    val excluded = dictionary.isExcluded("PAEN-AU", "analysis2");
+    assertThat(excluded).isTrue();
+  }
+
+  @Test
+  public void testIsNotExcludedProjectDefined() throws Exception {
+    val excluded = dictionary.isExcluded("PAEN-AU", "foo");
+    assertThat(excluded).isFalse();
+  }
+
+  @Test
+  public void testIsNotExcludedProjectNotDefined() throws Exception {
+    val excluded = dictionary.isExcluded("DNE", "bar");
+    assertThat(excluded).isFalse();
   }
 
 }

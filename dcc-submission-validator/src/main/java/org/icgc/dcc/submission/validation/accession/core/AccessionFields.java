@@ -15,14 +15,35 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.pcawg.cli;
+package org.icgc.dcc.submission.validation.accession.core;
 
-import org.icgc.dcc.submission.validation.key.cli.KeyValidationContext;
+import static lombok.AccessLevel.PRIVATE;
 
-public class PCAWGValidationContext extends KeyValidationContext {
+import java.util.Map;
 
-  public PCAWGValidationContext(String releaseName, String projectKey, String fsRoot, String fsUrl) {
-    super(releaseName, projectKey, fsRoot, fsUrl, "");
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+
+/**
+ * Field accessors for accession validation.
+ */
+@NoArgsConstructor(access = PRIVATE)
+public class AccessionFields {
+
+  public static final String ANALYSIS_ID_FIELD_NAME = "analysis_id";
+  public static final String RAW_DATA_REPOSITORY_FIELD_NAME = "raw_data_repository";
+  public static final String RAW_DATA_ACCESSION_FIELD_NAME = "raw_data_accession";
+
+  public static String getAnalysisId(@NonNull Map<String, String> record) {
+    return record.get(ANALYSIS_ID_FIELD_NAME);
+  }
+
+  public static String getRawDataRepository(@NonNull Map<String, String> record) {
+    return record.get(RAW_DATA_REPOSITORY_FIELD_NAME);
+  }
+
+  public static String getRawDataAccession(@NonNull Map<String, String> record) {
+    return record.get(RAW_DATA_ACCESSION_FIELD_NAME);
   }
 
 }
