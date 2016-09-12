@@ -1,0 +1,8 @@
+.terms {
+  .terms__term {
+    color: #777;
+  }
+  .terms__value {
+    margin-left: 0.5em;
+  }
+}

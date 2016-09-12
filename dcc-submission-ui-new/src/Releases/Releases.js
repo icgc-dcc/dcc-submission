@@ -138,6 +138,7 @@ class Releases extends Component {
 
     return (
       <div className="container">
+        <h1>Releases</h1>
         <BootstrapTable
           data={items}
           keyField='name'

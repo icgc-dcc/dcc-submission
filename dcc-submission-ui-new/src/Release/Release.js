@@ -124,22 +124,22 @@ class Release extends Component {
     return (
     <div className="Release container">
       <h1>Release Summary</h1>
-      <ul className="ReleaseSummaryList">
+      <ul className="ReleaseSummaryList terms summary-terms">
         <li>
-          <span className="key">Name</span>
-          <span className="value">{release.name}</span>
+          <span className="terms__term">Name</span>
+          <span className="terms__value">{release.name}</span>
         </li>
         <li>
-          <span className="key">State</span>
-          <span>{release.state}</span>
+          <span className="terms__term">State</span>
+          <span className="terms__value">{release.state}</span>
         </li>
         <li>
-          <span>Dictionary Version</span>
-          <span>{release.dictionaryVersion}</span>
+          <span className="terms__term">Dictionary Version</span>
+          <span className="terms__value">{release.dictionaryVersion}</span>
         </li>
         <li>
-          <span>Number of projects</span>
-          <span>{release.submissions.length}</span>
+          <span className="terms__term">Number of projects</span>
+          <span className="terms__value">{release.submissions.length}</span>
         </li>
         <li>
           { map(release.summary, (count, summaryKey) => (
@@ -150,10 +150,10 @@ class Release extends Component {
           ))}
         </li>
         { canRelease && (
-          <li>
+          <li className="actions-container">
             <ActionButton
               onClick={() => this.handleClickPerformRelease(release)}
-              className={`m-btn green`}
+              className={`m-btn green-stripe`}
             >
               Release Now
             </ActionButton>

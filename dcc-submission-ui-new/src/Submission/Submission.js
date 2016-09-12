@@ -154,12 +154,12 @@ class Submission extends Component {
         <div className="row">
           <div className="col-sm-5">
         <ul className="terms summary-terms">
-          <li><span className="terms__term">Name</span> <span className="terms__value">{submission.projectName}</span></li>
-          <li><span className="terms__term">Number of submitted files</span> <span className="terms__value">{submission.submissionFiles.length}</span></li>
-          <li><span className="terms__term">Number of valid files</span> <span className="terms__value">{getValidFileCount(submission.report)}</span></li>
-          <li><span className="terms__term">Size of submission data</span> <span className="terms__value">{formatFileSize(submission.totalFileSizeInBytes)}</span></li>
+          <li><span className="terms__term">Name</span><span className="terms__value">{submission.projectName}</span></li>
+          <li><span className="terms__term">Number of submitted files</span><span className="terms__value">{submission.submissionFiles.length}</span></li>
+          <li><span className="terms__term">Number of valid files</span><span className="terms__value">{getValidFileCount(submission.report)}</span></li>
+          <li><span className="terms__term">Size of submission data</span><span className="terms__value">{formatFileSize(submission.totalFileSizeInBytes)}</span></li>
           <li><span className="terms__term">State</span> <Status statusCode={submission.state || ''}/></li>
-          <li className="summary-actions-container">
+          <li className="actions-container">
             <SubmissionActionButtons
               submissionState={submission.state || ''}
               submissionHasFiles={!!submission.submissionFiles.length}

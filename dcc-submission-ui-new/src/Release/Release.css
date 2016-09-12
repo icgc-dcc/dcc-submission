@@ -3,4 +3,12 @@
     font-style: normal;
     color: #69a8c9;
   }
+  .ReleaseSummaryBadge {
+    & + .ReleaseSummaryBadge {
+      margin-left: 0.5em;
+    }
+  }
+  .actions-container {
+    margin-top: 20px;
+  }
 }
