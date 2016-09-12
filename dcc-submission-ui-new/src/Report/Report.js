@@ -8,6 +8,7 @@ import ReportModel from './ReportModel';
 import DetailedReport from './DetailedReport/DetailedReport';
 import ErrorReport from './ErrorReport/ErrorReport';
 
+import './Report.css';
 
 export default @observer
 class Report extends Component {
@@ -33,7 +34,7 @@ class Report extends Component {
     const reportItems = hasErrors ? report.errorReports : report.fieldReports;
 
     return (
-      <div>
+      <div className="Report container">
         <h1>File Summary</h1>
         <ul>
           <li>{report.fileName}</li>

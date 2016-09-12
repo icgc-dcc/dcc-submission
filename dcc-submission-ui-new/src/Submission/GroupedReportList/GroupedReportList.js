@@ -10,6 +10,8 @@ import Status from '~/common/components/Status';
 
 import DATATYPE_DICTIONARY from '~/common/constants/DATATYPE_DICTIONARY';
 
+import './GroupedReportList.css';
+
 export default function GroupedReportList({
     isLoading,
     items,
@@ -31,25 +33,31 @@ export default function GroupedReportList({
   const groupCanBeSubmittedForValidation = submissionStateCanBeChanged && dataTypeReport && includes(['VALID', 'INVALID', 'NOT_VALIDATED'], dataTypeReport.dataTypeState)
 
   return (
-    <div>
-      {dataType !== 'undefined' && (
-        <div>
-          {title}
-          -
-          <Status statusCode={dataTypeReport.dataTypeState || ''}/>
+    <div className="GroupedReportList">
+      <div className="row">
+        <div className="col-xs-6">
+          {dataType !== 'undefined' && (
+            <div>
+              {title}
+              &nbsp;-&nbsp;
+              <Status statusCode={dataTypeReport.dataTypeState || ''}/>
+            </div>
+          )}
         </div>
-      )}
-      {
-        groupCanBeSubmittedForValidation && (
-          <a
-            data-toggle="modal"
-            className="m-btn mini blue"
-            onClick={onRequestValidate}
-          >
-          Validate {title}
-          </a>
-        )
-      }
+        <div className="col-xs-6 text-right">
+          {
+            groupCanBeSubmittedForValidation && (
+              <a
+                data-toggle="modal"
+                className="m-btn mini blue"
+                onClick={onRequestValidate}
+              >
+              Validate {title}
+              </a>
+            )
+          }
+        </div>
+      </div>
       
       <BootstrapTable
         data={items}

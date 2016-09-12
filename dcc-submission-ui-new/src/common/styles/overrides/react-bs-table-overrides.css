@@ -8,3 +8,7 @@
     border-bottom: 0;
   }
 }
+
+.react-bs-table-tool-bar {
+  margin-bottom: 0.5em;
+}

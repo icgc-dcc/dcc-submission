@@ -34,3 +34,7 @@ ul, li {
     filter: grayscale(0%);
   }
 }
+
+.mono-font {
+  font-family: 'Inconsolata', monospace;
+}

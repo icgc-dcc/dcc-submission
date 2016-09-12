@@ -7,6 +7,9 @@
     & + .ReleaseSummaryBadge {
       margin-left: 0.5em;
     }
+    .summary-count {
+      margin-left: 0.5em;
+    }
   }
   .actions-container {
     margin-top: 20px;

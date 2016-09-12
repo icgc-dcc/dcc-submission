@@ -1,0 +1,10 @@
+.Report {
+  margin-bottom: 20px;
+  .react-bs-table {
+    margin: 0;
+  }
+  .react-bs-table-tool-bar {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}

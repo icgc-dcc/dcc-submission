@@ -17,12 +17,13 @@ export default function DetailedReportTable ({ items, isLoading }) {
       striped={true}
       pagination={true}
       ignoreSinglePage={true}
-      search={items.length > tableOptions.sizePerPage}
+      search={items.length > tableOptions.thresholdToShowSearch}
       options={tableOptions}
     >
       <TableHeaderColumn
         dataField='name'
         dataSort={true}
+        columnClassName="mono-font"
       >Column Name</TableHeaderColumn>
 
       <TableHeaderColumn
@@ -51,7 +52,6 @@ export default function DetailedReportTable ({ items, isLoading }) {
 
       <TableHeaderColumn
         dataSort={true}
-        width="160"
         dataFormat={ (cell, report) => (
           <DetailedReportSummary
             report={report}

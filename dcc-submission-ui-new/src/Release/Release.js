@@ -169,7 +169,7 @@ class Release extends Component {
           striped={true}
           pagination={true}
           ignoreSinglePage={true}
-          search={items.length > tableOptions.sizePerPage}
+          search={items.length > tableOptions.thresholdToShowSearch}
           options={tableOptions}
         >
           <TableHeaderColumn
