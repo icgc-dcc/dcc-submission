@@ -98,10 +98,10 @@ class AdminModal extends Component {
             </ul>
           </div>
           <div className="modal-footer">
-            <button className="m-btn grey-stripe" onClick={this.handleClickClose}>Close</button>
+            <button className="btn btn-default" onClick={this.handleClickClose}>Close</button>
             <button
               type="submit"
-              className={`m-btn ${this.sftpEnabled ? 'red' : 'green'}`}
+              className={`btn ${this.sftpEnabled ? 'btn-danger' : 'btn-primary'}`}
               onClick={this.handleClickSubmit}
             >{this.sftpEnabled ? 'Lock' : 'Unlock'} Submissions</button>
           </div>
