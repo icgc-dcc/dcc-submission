@@ -67,7 +67,7 @@ html, body, #root, .App {
 }
 
 .ReactModal__Content.modal-dialog {
-  border: none;
+  border: 1px solid #eaeaea;
   background-color: white;
 }
 
