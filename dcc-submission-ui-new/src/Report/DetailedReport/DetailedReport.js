@@ -30,24 +30,28 @@ export default function DetailedReportTable ({ items, isLoading }) {
         dataField='completeness'
         dataSort={true}
         width="100"
+        dataAlign="right"
       >Percentage of populated rows</TableHeaderColumn>
 
       <TableHeaderColumn
         dataField='populated'
         dataSort={true}
         width="100"
+        dataAlign="right"
       >Number of populated rows</TableHeaderColumn>
 
       <TableHeaderColumn
         dataField='missing'
         dataSort={true}
         width="100"
+        dataAlign="right"
       >Number of missing values</TableHeaderColumn>
 
       <TableHeaderColumn
         dataField='nulls'
         dataSort={true}
         width="100"
+        dataAlign="right"
       >Number of rows with nulls</TableHeaderColumn>
 
       <TableHeaderColumn
@@ -57,6 +61,7 @@ export default function DetailedReportTable ({ items, isLoading }) {
             report={report}
           />
         )}
+        headerAlign="right"
       >Summary</TableHeaderColumn>
     </BootstrapTable>
   );

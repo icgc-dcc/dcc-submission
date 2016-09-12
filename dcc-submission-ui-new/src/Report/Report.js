@@ -35,9 +35,9 @@ class Report extends Component {
 
     return (
       <div className="Report container">
-        <h1>File Summary</h1>
+        <h1>File Summary: <em className="colorize">{report.fileName}</em></h1>
         <ul>
-          <li>{report.fileName}</li>
+          <li></li>
           <li>
             <Status
               statusCode={report.fileState || ''}
