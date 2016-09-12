@@ -72,6 +72,14 @@ class ValidateModal extends Component {
     this.props.onRequestClose();
   };
 
+  handleClickSelectAll = () => {
+    this.selectedDataTypes = this.props.dataTypeReports.map(report => report.dataType);
+  };
+
+  handleClickClear = () => {
+    this.selectedDataTypes = [];
+  };
+
   render () {
     const {
       isOpen,
@@ -131,8 +139,8 @@ class ValidateModal extends Component {
               <tfoot>
                 <tr>
                   <td colSpan="2">
-                    <button type="button" className="m-btn mini blue-stripe">Select All</button>
-                    <button type="button" className="m-btn mini blue-stripe">Clear</button>
+                    <button type="button" className="m-btn mini blue-stripe" onClick={this.handleClickSelectAll}>Select All</button>
+                    <button type="button" className="m-btn mini blue-stripe" onClick={this.handleClickClear}>Clear</button>
                   </td>
                 </tr>
               </tfoot>
