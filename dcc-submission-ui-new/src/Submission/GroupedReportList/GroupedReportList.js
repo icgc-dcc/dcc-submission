@@ -65,7 +65,7 @@ export default function GroupedReportList({
         striped={true}
         pagination={true}
         ignoreSinglePage={true}
-        search={items.length > tableOptions.sizePerPage}
+        search={items.length > tableOptions.thresholdToShowSearch}
         options={tableOptions}
       >
         <TableHeaderColumn
@@ -77,7 +77,7 @@ export default function GroupedReportList({
           dataField='lastUpdate'
           dataSort={true}
           dataFormat={ date => (
-            moment(date).format('MMMM Do YYYY, h:mm:ss a')
+            moment(date).format('MMMM Do YYYY, h:mm a')
           )}
         >Last Updated</TableHeaderColumn>
 
