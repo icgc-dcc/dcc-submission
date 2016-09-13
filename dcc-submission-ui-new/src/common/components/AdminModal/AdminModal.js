@@ -91,7 +91,7 @@ class AdminModal extends Component {
                 <li>There are <strong>{ this.activeSftpSessions }</strong> active SFTP sessions:<br/>
                     <ul>
                       {this.userSessions.map(user => (
-                        <li><span class="label label-badge">{user.username}</span></li>
+                        <li key={user.userName}><span className="label label-default">{user.userName}</span></li>
                       ))}
                     </ul>
                 </li>
