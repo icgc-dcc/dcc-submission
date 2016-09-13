@@ -49,7 +49,7 @@ export default function GroupedReportList({
             groupCanBeSubmittedForValidation && (
               <a
                 data-toggle="modal"
-                className="m-btn mini blue"
+                className="validate-group-btn m-btn mini blue"
                 onClick={onRequestValidate}
               >
               Validate {title}
