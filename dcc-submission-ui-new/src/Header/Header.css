@@ -11,6 +11,7 @@
     font-size: 24px;
     .icgc-logo {
       height: 32px;
+      margin-left: 10px;
     }
     .icgc-text {
       font-weight: 700;
