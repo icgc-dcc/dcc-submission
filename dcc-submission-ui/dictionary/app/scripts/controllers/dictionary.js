@@ -28,9 +28,9 @@ var dictionaryApp = dictionaryApp || {};
       PROD: 'https://submissions.dcc.icgc.org'
     })
     .constant('DictionaryAppConstants', {
-      VIEWS: ['graph', 'table', 'codelist', 'report'],
+      VIEWS: ['graph', 'details', 'codelist', 'report'],
       PRETTY_VIEW_MAP: {
-        graph: 'Overview', table: 'Details', codelist: 'Codelists', report: 'Changes Report'
+        graph: 'Overview', details: 'Details', codelist: 'Codelists', report: 'Changes Report'
       },
       DETAIL_FORMAT_TYPES: {
         table: 'Table',
