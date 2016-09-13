@@ -19,7 +19,7 @@ export default function ErrorReportTable ({ items, isLoading }) {
     <BootstrapTable
       {...defaultTableProps}
       data={denormalizedErrors}
-      keyField='errorType'
+      keyField='key'
       striped={true}
       pagination={true}
       ignoreSinglePage={true}
@@ -36,7 +36,7 @@ export default function ErrorReportTable ({ items, isLoading }) {
 
       <TableHeaderColumn
         dataField='fieldNames'
-        dataFormat={(fieldNames) => fieldNames && fieldNames.map( fieldName => <div>{fieldName}</div>)}
+        dataFormat={(fieldNames) => <div>{fieldNames.join(<br/>)}</div>}
         width="200"
       >Columns</TableHeaderColumn>
 
