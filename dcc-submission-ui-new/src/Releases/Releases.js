@@ -9,7 +9,7 @@ import { setSystemInfoFromHeaders } from '~/systemInfo';
 
 import ActionButton from '~/common/components/ActionButton/ActionButton';
 import Status from '~/common/components/Status';
-import defaultTableOptions from '~/common/defaultTableOptions';
+import { defaultTableOptions, defaultTableProps } from '~/common/defaultTableOptions';
 import { fetchHeaders } from '~/utils';
 import user from '~/user';
 
@@ -141,6 +141,7 @@ class Releases extends Component {
       <div className="container">
         <h1>Releases</h1>
         <BootstrapTable
+          {...defaultTableProps}
           data={items}
           keyField='name'
           striped={true}

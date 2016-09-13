@@ -1,6 +1,6 @@
 import React from 'react';
-import defaultTableOptions from '~/common/defaultTableOptions';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
+import { defaultTableOptions, defaultTableProps } from '~/common/defaultTableOptions';
 
 import processAndDenormalizeErrors from './processAndDenormalizeErrors';
 import errorDict from './errorDict.coffee';
@@ -17,6 +17,7 @@ export default function ErrorReportTable ({ items, isLoading }) {
 
   return (
     <BootstrapTable
+      {...defaultTableProps}
       data={denormalizedErrors}
       keyField='errorType'
       striped={true}

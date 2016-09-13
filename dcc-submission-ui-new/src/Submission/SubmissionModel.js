@@ -1,5 +1,5 @@
 import {observable, action, runInAction, computed} from 'mobx';
-import { includes, groupBy, omit } from 'lodash';
+import { includes, groupBy, omit, some } from 'lodash';
 import { fetchHeaders } from '~/utils';
 
 import injectReportsToSubmissionFiles from './injectReportsToSubmissionFiles.coffee';
@@ -74,6 +74,9 @@ class SubmissionModel {
   @observable state = undefined;
   // TODO: use "transferring" field in each submissionFile. don't allow submission when transfering is true' 
   @observable submissionFiles = [];
+  @computed get someFilesTransferring() {
+    return some(this.submissionFiles, x => x.transferring);
+  }
 
   constructor ({releaseName, projectKey}) {
     this.releaseName = releaseName;

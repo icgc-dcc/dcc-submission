@@ -1,5 +1,5 @@
 import React from 'react';
-import defaultTableOptions from '~/common/defaultTableOptions';
+import { defaultTableOptions, defaultTableProps } from '~/common/defaultTableOptions';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import DetailedReportSummary from './DetailedReportSummary.js';
 
@@ -12,6 +12,7 @@ export default function DetailedReportTable ({ items, isLoading }) {
 
   return (
     <BootstrapTable
+      {...defaultTableProps}
       data={items}
       keyField='name'
       striped={true}

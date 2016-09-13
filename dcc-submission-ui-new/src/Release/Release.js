@@ -9,7 +9,7 @@ import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 
 import user from '~/user';
 
-import defaultTableOptions from '~/common/defaultTableOptions';
+import { defaultTableOptions, defaultTableProps } from '~/common/defaultTableOptions';
 import ActionButton from '~/common/components/ActionButton/ActionButton';
 import SubmissionActionButtons from '~/Submission/SubmissionActionButtons';
 
@@ -168,6 +168,7 @@ class Release extends Component {
       <div>
         <h2>Projects included in the <em className="releaseName">{release.name}</em> release</h2>
         <BootstrapTable
+          {...defaultTableProps}
           data={items}
           keyField='projectKey'
           striped={true}

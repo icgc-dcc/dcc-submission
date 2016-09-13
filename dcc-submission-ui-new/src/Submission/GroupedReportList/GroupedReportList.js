@@ -5,7 +5,7 @@ import moment from 'moment';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 
 import { formatFileSize } from '~/utils';
-import defaultTableOptions from '~/common/defaultTableOptions';
+import { defaultTableOptions, defaultTableProps } from '~/common/defaultTableOptions';
 import Status from '~/common/components/Status';
 
 import DATATYPE_DICTIONARY from '~/common/constants/DATATYPE_DICTIONARY';
@@ -60,6 +60,7 @@ export default function GroupedReportList({
       </div>
       
       <BootstrapTable
+        {...defaultTableProps}
         data={items}
         keyField='name'
         striped={true}
