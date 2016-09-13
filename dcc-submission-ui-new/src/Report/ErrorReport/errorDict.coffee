@@ -275,3 +275,15 @@ module.exports =
         The field <code>#{fieldName}</code> cannot be <code>#{unexpectedField}</code> for the following
         analyzed_sample_id(s)
         """
+    FILE_ACCESSION_MISSING:
+      name: "At least one file accession is required"
+      description: (source) ->
+        """
+        At least one file accession is required,
+        """
+    FILE_ACCESSION_INVALID:
+      name: "Could not find accession in remote repository"
+      description: (source) ->
+        """
+        Could not find accession #{source.fieldNames[0]} in remote repository
+        """
