@@ -16,5 +16,9 @@
     th:first-child {
       width: 80px;
     }
+
+    tbody tr:nth-child(even) {
+      background-color: #f0f0f0;
+    }
   }
 }
