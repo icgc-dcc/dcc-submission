@@ -82,6 +82,12 @@ class Login extends Component {
                   Login
                 </button>
             </div>
+            <div className="text-right">
+              <a
+                href="https://calendar.google.com/calendar/embed?src=icgcportal@gmail.com&ctz=America/Toronto"
+                target="_blank"
+              >Calendar</a>
+            </div>
           </form>
         </div>
         <Warning/>
