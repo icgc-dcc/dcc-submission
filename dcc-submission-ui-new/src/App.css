@@ -71,6 +71,11 @@ html, body, #root, .App {
   background-color: white;
 }
 
+.ReactModal__Content .alert {
+  border-radius: 0;
+  margin: 0;
+}
+
 h2 {
   font-size: 21px;
   font-weight: normal;
