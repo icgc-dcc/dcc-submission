@@ -74,7 +74,7 @@ class SubmissionModel {
   @observable state = undefined;
   // TODO: use "transferring" field in each submissionFile. don't allow submission when transfering is true' 
   @observable submissionFiles = [];
-  @computed get someFilesTransferring() {
+  @computed get isFileTransferInProgress() {
     return some(this.submissionFiles, x => x.transferring);
   }
 

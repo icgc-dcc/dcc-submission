@@ -52,7 +52,7 @@ module.exports = (source) ->
 
     out = ""
 
-    out += "<br><table class='table table-condensed'>
+    out += "<br><table class='table table-condensed line-value-table'>
       <th style='border:none'>Line</th>
       <th style='border:none'>Value</th>"
     for i in source.lineNumbers

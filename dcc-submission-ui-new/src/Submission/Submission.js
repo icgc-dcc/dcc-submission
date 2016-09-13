@@ -4,6 +4,7 @@ import {observer} from 'mobx-react';
 import { groupBy, map } from 'lodash';
 import { formatFileSize } from '~/utils';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
+import { defaultTableOptions, defaultTableProps } from '~/common/defaultTableOptions';
 
 import user from '~/user';
 import DATATYPE_DICTIONARY from '~/common/constants/DATATYPE_DICTIONARY';
@@ -159,6 +160,10 @@ class Submission extends Component {
           <li><span className="terms__term">Number of valid files</span><span className="terms__value">{getValidFileCount(submission.report)}</span></li>
           <li><span className="terms__term">Size of submission data</span><span className="terms__value">{formatFileSize(submission.totalFileSizeInBytes)}</span></li>
           <li><span className="terms__term">State</span> <Status statusCode={submission.state || ''}/></li>
+          {
+            submission.isFileTransferInProgress &&
+            <li><span className="file-transfer-message">File transfer in progress</span></li>
+          }
           <li className="actions-container">
             <SubmissionActionButtons
               submissionState={submission.state || ''}
@@ -170,6 +175,7 @@ class Submission extends Component {
               onClickSignOff={ this.handleClickSignOff }
               onClickReset={ this.handleClickReset }
               onClickCancelValidation={ this.handleClickCancelValidation }
+              isFileTransferInProgress={ submission.isFileTransferInProgress }
             />
           </li>
         </ul>

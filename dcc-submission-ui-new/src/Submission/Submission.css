@@ -14,4 +14,8 @@
   .react-bs-table {
     margin: 0;
   }
+  .file-transfer-message {
+    font-weight: 600;
+    color: #c62525;
+  }
 }

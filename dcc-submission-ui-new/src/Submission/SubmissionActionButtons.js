@@ -14,13 +14,14 @@ export default function SubmissionActionButtons ({
   onClickSignOff,
   onClickCancelValidation,
   onClickReset,
+  isFileTransferInProgress,
 }) {
 
   const validateButton = (
     <ActionButton
       key="validateButton"
-      className={`blue-stripe ${buttonClassName}`}
-      onClick={onClickValidate}
+      className={`blue-stripe ${buttonClassName} ${isFileTransferInProgress ? 'disabled' : ''}`}
+      onClick={!isFileTransferInProgress && onClickValidate}
     >Validate</ActionButton>
   );
 

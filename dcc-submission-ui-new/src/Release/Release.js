@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {Link} from 'react-router';
-import { map } from 'lodash';
+import { map, some } from 'lodash';
 import {observable, computed} from 'mobx';
 import {observer} from 'mobx-react';
 import { formatFileSize } from '~/utils';
@@ -224,6 +224,7 @@ class Release extends Component {
                 onClickSignOff={() => this.handleClickSignOffSubmission(submission)}
                 onClickReset={() => this.handleClickReset(submission)}
                 onClickCancelValidation={() => this.handleClickCancelValidation(submission)}
+                isFileTransferInProgress={some(submission.submissionFiles, x => x.transferring)}
               />
             )}
           >Actions</TableHeaderColumn>
