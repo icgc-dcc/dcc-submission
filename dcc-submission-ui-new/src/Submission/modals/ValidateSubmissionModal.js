@@ -10,6 +10,8 @@ import user from '~/user';
 import Status from '~/common/components/Status';
 import DATATYPE_DICTIONARY from '~/common/constants/DATATYPE_DICTIONARY';
 
+import './ValidateSubmissionModal.css';
+
 // CLINICAL_CORE_TYPE is always checked
 
 @observer
@@ -89,7 +91,7 @@ class ValidateModal extends Component {
     const queueLength = 5;
     return (
       <Modal
-          className={`Modal modal-dialog`}
+          className={`Modal modal-dialog ValidateSubmissionModal`}
           isOpen={isOpen}
           onRequestClose={this.handleClickClose}
           closeTimeoutMS={250}
@@ -128,7 +130,7 @@ class ValidateModal extends Component {
                         <td>
                           <i 
                             className={`fa fa-${isSelected ? 'check-square-o' : 'square-o'}`}
-                          />
+                          />&nbsp;
                           {DATATYPE_DICTIONARY[report.dataType]}
                         </td>
                         <td><Status statusCode={report.dataTypeState}/></td>
