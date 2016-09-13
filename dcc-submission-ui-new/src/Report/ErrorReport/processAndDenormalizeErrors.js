@@ -8,6 +8,7 @@ export default function processAndDenormalizeErrors (errorReports) {
       ...fieldErrorReport,
       errorType: errorReport.errorType, 
       lineValueMap: zipObject(fieldErrorReport.lineNumbers, fieldErrorReport.values),
-      lineNumbers: fieldErrorReport.lineNumbers.sort((a, b) => a - b)
+      lineNumbers: fieldErrorReport.lineNumbers.sort((a, b) => a - b),
+      key: `${errorReport.errorType}&${fieldErrorReport.fieldNames.join('&')}`,
     }))));
 };
