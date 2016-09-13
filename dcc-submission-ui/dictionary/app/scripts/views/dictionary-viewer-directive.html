@@ -99,16 +99,16 @@
                                     </div>
                                 </div>
                                 <div class="col-md-2 file-data-container">
-                                    <label>Version: </label>
+                                    <label>Version: </label><br/>
                                     <span>{{dictionaryViewerCtrl.vTo}}</span>
                                 </div>
                                 <div class="col-md-2 file-data-container">
-                                    <label>Last updated: </label>
+                                    <label>Last updated: </label><br/>
                                     <span>{{dictionaryViewerCtrl.lastUpdate | date:'shortDate'}}</span>
                                 </div>
                                 <div class="col-md-2 file-data-container">
-                                    <label>State: </label>
-                                    <span>{{dictionaryViewerCtrl.state}}</span>
+                                    <label>State: </label><br/>
+                                    <span ng-style="{'color' : dictionaryViewerCtrl.state==='OPEN' ? '#499246' : '#a71617'}">{{dictionaryViewerCtrl.state}}</span>
                                 </div>
                                 <div class="pull-right col-md-3 detail-format-container" style="text-align: right">
                                     <label for="detail-format-type">Format: </label>
