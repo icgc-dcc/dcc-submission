@@ -5,6 +5,8 @@ import Modal from 'react-modal';
 
 import { fetchHeaders } from '~/utils';
 
+import { setSystemLockStatus } from '~/systemInfo';
+
 export async function fetchSystemStatus () {
   const response = await fetch(`/ws/systems`, {
     headers: fetchHeaders.get()
@@ -41,8 +43,10 @@ class AdminModal extends Component {
   }
 
   handleClickSubmit = async () => {
+    const sftpEnabled = !this.sftpEnabled;
     try {
-      await setSystemSftpStatus({sftpEnabled: !this.sftpEnabled});
+      await setSystemSftpStatus({sftpEnabled});
+      setSystemLockStatus(!sftpEnabled)
       this.props.onRequestClose();
     } catch (e) {
       console.log('caught an error', e.message);

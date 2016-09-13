@@ -7,6 +7,7 @@ import Header from './Header/Header';
 import Footer from './Footer/Footer';
 
 import user from '~/user';
+import systemInfo from '~/systemInfo';
 
 @observer
 class App extends Component {
@@ -15,6 +16,9 @@ class App extends Component {
       <div className="App">
         <Header/>
         <div className="container">
+          { systemInfo.isLocked ? (
+            <div className="alert alert-danger">Release is locked. No validations or file transfers are permitted</div>
+          ) : null }
           <Breadcrumbs
             routes={this.props.routes}
             params={this.props.params}

@@ -2,6 +2,9 @@ import {observable, action, runInAction} from 'mobx';
 
 import { fetchHeaders } from '~/utils';
 
+import { setSystemLockStatus } from '~/systemInfo';
+import RELEASE_STATES from './RELEASE_STATES';
+
 const PERFORM_RELEASE_ERRORS = {
   'InvalidName': 'A release name must only use letters[a-z], numbers(0-9), underscores(_) and dashes(-)',
   'DuplicateReleaseName': 'That release name has already been used.',
@@ -14,6 +17,9 @@ export async function fetchRelease ({releaseName}) {
     headers: fetchHeaders.get()
   });
   const responseData = await response.json();
+  if (responseData.state === RELEASE_STATES.OPENED) {
+    setSystemLockStatus(responseData.locked);
+  }
   return responseData;
 }
 
