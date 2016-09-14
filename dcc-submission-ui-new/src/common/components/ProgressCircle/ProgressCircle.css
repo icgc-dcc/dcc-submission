@@ -1,0 +1,16 @@
+.ProgressCircle {
+  .progressbar-text {
+    font-weight: 700;
+    font-size: 19px;
+    margin-top: -4px;
+    &:after {
+      content: 'complete';
+      position: absolute;
+      font-size: 10px;
+      font-weight: 400;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+}

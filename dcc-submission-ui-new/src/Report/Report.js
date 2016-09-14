@@ -27,8 +27,7 @@ class Report extends Component {
 
   render () {
     const report = this.report;
-    const hasErrors = report.errorReports.length
-    const pageTitle = hasErrors ? 'Error Report' : 'Detailed Report';
+    const hasErrors = report.errorReports.length;
 
     const ReportDetails = hasErrors ? ErrorReport : DetailedReport;
     const reportItems = hasErrors ? report.errorReports : report.fieldReports;
@@ -45,7 +44,6 @@ class Report extends Component {
           </li>
         </ul>
         <div>
-          <h2>{ pageTitle }</h2>
           <ReportDetails
             items={reportItems}
             isLoading={report.isLoading}

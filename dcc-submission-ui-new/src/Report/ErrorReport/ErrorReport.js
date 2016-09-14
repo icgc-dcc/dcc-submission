@@ -6,7 +6,7 @@ import processAndDenormalizeErrors from './processAndDenormalizeErrors';
 import errorDict from './errorDict.coffee';
 import getErrorDetails from './getErrorDetails.coffee';
 
-export default function ErrorReportTable ({ items, isLoading }) {
+function ErrorReportTable ({ items, isLoading }) {
   const tableOptions = {
     ...defaultTableOptions,
     noDataText: isLoading ? 'Loading...' : 'There is no data to display',
@@ -55,5 +55,17 @@ export default function ErrorReportTable ({ items, isLoading }) {
       >Details</TableHeaderColumn>
 
     </BootstrapTable>
+  );
+}
+
+export default function ErrorReport({ items, isLoading }) {
+  return (
+    <div>
+      <h2>Error Report</h2>
+      <ErrorReportTable
+        items={items}
+        isLoading={isLoading}
+      />
+    </div>
   );
 }

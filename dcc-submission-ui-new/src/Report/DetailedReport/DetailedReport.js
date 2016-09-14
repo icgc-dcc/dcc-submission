@@ -2,8 +2,9 @@ import React from 'react';
 import { defaultTableOptions, defaultTableProps } from '~/common/defaultTableOptions';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import DetailedReportSummary from './DetailedReportSummary.js';
+import ProgressCircle from '~/common/components/ProgressCircle/ProgressCircle';
 
-export default function DetailedReportTable ({ items, isLoading }) {
+function DetailedReportTable ({ items, isLoading }) {
   const tableOptions = {
     ...defaultTableOptions,
     noDataText: isLoading ? 'Loading...' : 'There is no data to display',
@@ -65,5 +66,23 @@ export default function DetailedReportTable ({ items, isLoading }) {
         headerAlign="right"
       >Summary</TableHeaderColumn>
     </BootstrapTable>
+  );
+}
+
+export default function DetailedReport({ items, isLoading }) {
+
+  const progress = items.length ? items.map(x => x.completeness).reduce((a, b) => a + b) / items.length / 100 : 0;
+
+  return (
+    <div>
+      <h2>Detailed Report</h2>
+      <ProgressCircle
+        progress={progress}
+      />
+      <DetailedReportTable
+        items={items}
+        isLoading={isLoading}
+      />
+    </div>
   );
 }
