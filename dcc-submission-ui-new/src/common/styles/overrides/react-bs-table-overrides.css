@@ -12,3 +12,22 @@
 .react-bs-table-tool-bar {
   margin-bottom: 0.5em;
 }
+
+.react-bs-table-search-form {
+  &:before{
+    position: absolute;
+    font: normal normal normal 14px/1 FontAwesome;
+    content: '\f002';
+    display: block;
+    width: 14px;
+    height: 14px;
+    top: 0;
+    bottom: 0;
+    left: 20px;
+    margin: auto;
+    color: #bbb;
+  }
+  .form-control {
+    padding-left: 22px;
+  }
+}

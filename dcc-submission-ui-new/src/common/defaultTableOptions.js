@@ -7,7 +7,7 @@ export const defaultTableOptions = {
 };
 
 export const defaultTableProps = {
-  searchPlaceholder: 'Filter table'
+  searchPlaceholder: 'Table filter'
 };
 
 export default defaultTableOptions;
