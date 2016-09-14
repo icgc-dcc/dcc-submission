@@ -44,6 +44,7 @@ public class ReleaseView {
   protected boolean locked;
   protected String name;
   protected ReleaseState state;
+  @Setter
   protected List<DetailedSubmission> submissions = new ArrayList<DetailedSubmission>();
   protected List<String> queue = new ArrayList<String>();
   protected Date releaseDate;
