@@ -38,6 +38,7 @@ export default function ErrorReportTable ({ items, isLoading }) {
         dataField='fieldNames'
         dataFormat={(fieldNames) => <div>{fieldNames.join(<br/>)}</div>}
         width="200"
+        columnClassName="mono-font"
       >Columns</TableHeaderColumn>
 
       <TableHeaderColumn
