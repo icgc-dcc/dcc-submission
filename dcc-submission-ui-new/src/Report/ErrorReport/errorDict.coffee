@@ -279,11 +279,12 @@ module.exports =
       name: "At least one file accession is required"
       description: (source) ->
         """
-        At least one file accession is required,
+        At least one file accession is required for <span class="mono-font">analysis_id</span>: #{source.parameters.VALUE}
         """
     FILE_ACCESSION_INVALID:
       name: "Could not find accession in remote repository"
       description: (source) ->
         """
-        Could not find accession #{source.fieldNames[0]} in remote repository
+        Could not find accession #{source.fieldNames[0]} in remote repository:
+        <blockquote style="font-size: 12px;">#{source.parameters.VALUE}</blockquote>
         """
