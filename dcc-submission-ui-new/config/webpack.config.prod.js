@@ -102,15 +102,16 @@ module.exports = {
   },
   postcss: function() {
     return [
-      // nest one style rule inside another, following the CSS Nesting Module Level 3 specification.
-      // https://github.com/jonathantneal/postcss-nesting
-      require('postcss-nesting'),
-      // Unwrap nested rules like how Sass does it
-      // https://github.com/postcss/postcss-nested
-      require('postcss-nested'),
       // Transfer @import rule by inlining content, e.g. @import 'normalize.css'
       // https://github.com/postcss/postcss-import
       require('postcss-import'),
+      require('postcss-extend'),
+      // Unwrap nested rules like how Sass does it
+      // https://github.com/postcss/postcss-nested
+      require('postcss-nested'),
+      // nest one style rule inside another, following the CSS Nesting Module Level 3 specification.
+      // https://github.com/jonathantneal/postcss-nesting
+      require('postcss-nesting'),
       // W3C CSS Custom Media Queries, e.g. @custom-media --small-viewport (max-width: 30em);
       // https://github.com/postcss/postcss-custom-media
       require('postcss-custom-properties'),

@@ -96,6 +96,7 @@ module.exports = {
       require('postcss-import')({
         addDependencyTo: bundler
       }),
+      require('postcss-extend'),
       // Unwrap nested rules like how Sass does it
       // https://github.com/postcss/postcss-nested
       require('postcss-nested'),
