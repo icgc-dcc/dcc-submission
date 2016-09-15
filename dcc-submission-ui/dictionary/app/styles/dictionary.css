@@ -71,6 +71,7 @@
 
 .file-data-container{
   padding: 5px 0px;
+  text-align: center;
 }
 
 .data-type-list {
@@ -282,7 +283,7 @@ a {
 }
 
 .monospaced {
-  font-family: 'monospace';
+  font-family: monospace;
 }
 
 /* JSON Editor */
@@ -427,4 +428,8 @@ h3.change-addition-header {
   border-radius: 0px !important;
   margin-bottom: 0px !important;
   background-color: #FFF !important;
+}
+
+[ng\:cloak], [ng-cloak], .ng-cloak {
+  display: none !important;
 }
