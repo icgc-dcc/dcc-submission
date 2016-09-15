@@ -34,11 +34,6 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.icgc.dcc.common.core.util.stream.Collectors;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
@@ -72,6 +67,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.net.HttpHeaders;
 
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @RestController
 @RequestMapping("/ws/nextRelease")
@@ -95,7 +95,7 @@ public class NextReleaseController {
       return unauthorizedResponse();
     }
 
-    String prefix = properties.getHttp().getPath();
+    val prefix = properties.getHttp().getPath();
     String redirectionPath = JOINER.join(
         prefix,
         "releases",
