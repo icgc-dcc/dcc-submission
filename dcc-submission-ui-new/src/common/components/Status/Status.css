@@ -2,6 +2,7 @@
 	i {
 		margin-right: 0.4em;
 	}
+	color: #777;
 }
 
 .not_validated {
@@ -17,11 +18,11 @@
 
 .invalid,
 .error {
-	color: #b94a48;
+	color: #d9534f;
 }
 
 .queued {
-	color: #c09853;
+	color: #f0ad4e;
 }
 
 .validating {
