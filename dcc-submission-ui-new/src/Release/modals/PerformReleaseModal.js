@@ -59,6 +59,7 @@ class PerformReleaseModal extends Component {
             <div className="alert alert-info">
               Once you have confirmed completing the release <strong>"{releaseName}"</strong> it will be marked as COMPLETED and all submissions that are SIGNED OFF will be processed and included in this release. Please be certain before you continue.
             </div>
+            <br/>
             <form className="form-horizontal">
               <div className="form-group">
                 <label className="col-sm-4 text-right" htmlFor="nextRelease">Next Release Name</label>
