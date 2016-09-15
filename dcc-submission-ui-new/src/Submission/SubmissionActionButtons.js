@@ -1,7 +1,7 @@
 import React, { PropTypes } from 'react';
 import ActionButton from '~/common/components/ActionButton/ActionButton';
 import { some, includes } from 'lodash';
-import RELEASE_STATES from '~/Release/RELEASE_STATES';
+import RELEASE_STATES from '~/Release/constants/RELEASE_STATES';
 import SUBMISSION_STATES from './SUBMISSION_STATES';
 
 export default function SubmissionActionButtons ({

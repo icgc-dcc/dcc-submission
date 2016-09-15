@@ -13,9 +13,9 @@ import { defaultTableOptions, defaultTableProps } from '~/common/defaultTableOpt
 import { fetchHeaders } from '~/utils';
 import user from '~/user';
 
-import RELEASE_STATES from '../Release/RELEASE_STATES';
+import RELEASE_STATES from '../Release/constants/RELEASE_STATES';
 import PerformReleaseModal from '~/Release/modals/PerformReleaseModal';
-import {performRelease} from '~/Release/ReleaseModel';
+import {performRelease} from '~/Release/services';
 
 const releases = observable({
   isLoading: false,

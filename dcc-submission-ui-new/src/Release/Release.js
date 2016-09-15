@@ -13,7 +13,7 @@ import { defaultTableOptions, defaultTableProps } from '~/common/defaultTableOpt
 import ActionButton from '~/common/components/ActionButton/ActionButton';
 import SubmissionActionButtons from '~/Submission/SubmissionActionButtons';
 
-import RELEASE_STATES from './RELEASE_STATES';
+import RELEASE_STATES from './constants/RELEASE_STATES';
 
 import ReleaseModel from './ReleaseModel.js';
 
