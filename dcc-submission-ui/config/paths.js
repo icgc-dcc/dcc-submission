@@ -25,7 +25,7 @@ function resolveApp(relativePath) {
 if (isInCreateReactAppSource) {
   // create-react-app development: we're in ./config/
   module.exports = {
-    appBuild: resolveOwn('../public'),
+    appBuild: resolveOwn('../target/classes/public'),
     appHtml: resolveOwn('../template/index.html'),
     appFavicon: resolveOwn('../template/favicon.ico'),
     appPackageJson: resolveOwn('../package.json'),
@@ -36,7 +36,7 @@ if (isInCreateReactAppSource) {
 } else if (!isEjected) {
   // before eject: we're in ./node_modules/react-scripts/config/
   module.exports = {
-    appBuild: resolveApp('public'),
+    appBuild: resolveApp('target/classes/public'),
     appHtml: resolveApp('index.html'),
     appFavicon: resolveApp('favicon.ico'),
     appPackageJson: resolveApp('package.json'),
@@ -48,7 +48,7 @@ if (isInCreateReactAppSource) {
 } else {
   // after eject: we're in ./config/
   module.exports = {
-    appBuild: resolveApp('public'),
+    appBuild: resolveApp('target/classes/public'),
     appHtml: resolveApp('index.html'),
     appFavicon: resolveApp('favicon.ico'),
     appPackageJson: resolveApp('package.json'),
