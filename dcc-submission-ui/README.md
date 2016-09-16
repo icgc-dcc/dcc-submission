@@ -26,8 +26,10 @@ npm install
 
 ## Development
 
+```
    cd dcc/dcc-submission/dcc-submission-ui
    npm start
+```
 
 Start the [dcc-submission-server](../dcc-submission-server/README.md)
 
