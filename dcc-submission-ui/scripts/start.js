@@ -156,7 +156,13 @@ function runDevServer(port) {
     quiet: true,
     watchOptions: {
       ignored: /node_modules/
-    }
+    },
+    proxy: {
+      '/ws/*': {
+        target: 'http://10.30.128.146:5380',
+        secure: false,
+      }
+    },
   }).listen(port, (err, result) => {
     if (err) {
       return console.log(err);
