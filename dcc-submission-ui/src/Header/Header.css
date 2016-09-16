@@ -1,0 +1,26 @@
+@import '../common/styles/variables/variables.css';
+
+.Header {
+
+
+  .main-logo {
+    margin: 0;
+    color: var(--icgcBlue);
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+    .icgc-logo {
+      height: 32px;
+      margin-left: 10px;
+    }
+    .icgc-text {
+      font-weight: 700;
+      margin-left: 8px;
+    }
+    .icgc-subtext {
+      color: var(--offBlack);
+      margin-left: 8px;
+      font-weight: 300;
+    }
+  }
+}

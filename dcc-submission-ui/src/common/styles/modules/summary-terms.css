@@ -1,0 +1,9 @@
+.terms {
+  .terms__term {
+    color: #777;
+  }
+  .terms__value {
+    font-weight: 600;
+    margin-left: 0.5em;
+  }
+}

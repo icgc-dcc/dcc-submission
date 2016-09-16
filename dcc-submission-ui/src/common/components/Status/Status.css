@@ -1,0 +1,39 @@
+.StatusLabel {
+	i {
+		margin-right: 0.4em;
+	}
+	color: #777;
+}
+
+.not_validated {
+	color: #333;
+}
+
+.signed,
+.signed_off,
+.valid,
+.opened {
+	color: #468847;
+}
+
+.invalid,
+.error {
+	color: #d9534f;
+}
+
+.queued {
+	color: #f0ad4e;
+}
+
+.validating {
+	color: #d0763e;
+}
+
+.label-validating {
+	color: #fff;
+	background: #d0763e;
+}
+
+.unimportant {
+	color: #999;
+}

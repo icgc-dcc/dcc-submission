@@ -1,0 +1,38 @@
+.react-bs-table {
+  border-radius: 1px;
+  th {
+    border: 0 !important;
+  }
+  tbody tr:last-child td{
+    /*background: red!important;*/
+    border-bottom: 0;
+  }
+}
+
+.react-bs-table-tool-bar {
+  margin-bottom: 0.5em;
+}
+
+.react-bs-table-search-form {
+  max-width: 230px;
+  margin-left: auto;
+  position: relative;
+
+  &:before{
+    position: absolute;
+    font: normal normal normal 14px/1 FontAwesome;
+    content: '\f002';
+    display: block;
+    width: 14px;
+    height: 14px;
+    top: 0;
+    bottom: 0;
+    left: 6px;
+    margin: auto;
+    color: #bbb;
+  }
+
+  .form-control {
+    padding-left: 22px;
+  }
+}

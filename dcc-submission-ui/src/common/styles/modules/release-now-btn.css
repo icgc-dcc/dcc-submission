@@ -1,0 +1,22 @@
+@import 'csshake/dist/csshake-little.css';
+
+.release-now-btn {
+  background-color: #1d943b;
+  color: #fff;
+  transition: all 0.2s ease;
+  .fa {
+    margin-right: 4px;
+    margin-left: 2px;
+  }
+  &:hover {
+    color: #fff;
+    text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.4);
+    .fa {
+      animation-duration: 100ms;
+      animation-iteration-count: infinite;
+      animation-name: shake-little;
+      animation-timing-function: ease-in-out;
+      animation-play-state: running;
+    }
+  }
+}

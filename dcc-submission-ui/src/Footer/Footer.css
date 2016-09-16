@@ -1,0 +1,17 @@
+.Footer {
+  border-top: 1px solid #ddd;
+  background-color: #f5f5f5;
+  padding: 20px 20px 30px;
+  font-size: 12px;
+  flex-shrink: 0;
+
+  color: #aaa;
+  a {
+    color: #aaa;
+    text-decoration: underline;
+  }
+
+  .oicr-logo:not(:hover) {
+    opacity: 0.6;
+  }
+}
