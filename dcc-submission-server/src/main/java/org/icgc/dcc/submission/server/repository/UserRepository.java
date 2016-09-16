@@ -20,6 +20,8 @@ package org.icgc.dcc.submission.server.repository;
 
 import static org.icgc.dcc.submission.core.model.QUser.user;
 
+import java.util.List;
+
 import org.icgc.dcc.submission.core.model.QUser;
 import org.icgc.dcc.submission.core.model.User;
 import org.mongodb.morphia.Datastore;
@@ -33,6 +35,10 @@ public class UserRepository extends AbstractRepository<User, QUser> {
   @Autowired
   public UserRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
     super(morphia, datastore, user);
+  }
+
+  public List<User> findUsers() {
+    return list();
   }
 
   public User findUserByUsername(@NonNull String username) {
