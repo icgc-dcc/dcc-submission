@@ -21,6 +21,8 @@ import static org.icgc.dcc.submission.core.security.Authorizations.getUsername;
 import static org.icgc.dcc.submission.core.security.Authorizations.isSuperUser;
 import static org.icgc.dcc.submission.server.web.ServerErrorCode.NO_SUCH_ENTITY;
 
+import java.util.List;
+
 import org.icgc.dcc.submission.core.model.Feedback;
 import org.icgc.dcc.submission.core.model.User;
 import org.icgc.dcc.submission.release.model.DetailedUser;
@@ -59,14 +61,16 @@ public class UserController {
   private final MailService mailService;
 
   @GetMapping("self")
-  public DetailedUser getResource(Authentication authentication) {
+  public DetailedUser getSelf(Authentication authentication) {
     if (authentication == null) return null;
 
-    val username = getUsername(authentication);
-    val admin = isSuperUser(authentication);
-    val user = new DetailedUser(username, admin);
+    return createDetailedUser(authentication);
+  }
 
-    return user;
+  @Admin
+  @GetMapping
+  public List<User> getUsers() {
+    return userService.getUsers();
   }
 
   @PostMapping("self")
@@ -97,6 +101,14 @@ public class UserController {
 
       return ResponseEntity.ok(user);
     }
+  }
+
+  private static DetailedUser createDetailedUser(Authentication authentication) {
+    val username = getUsername(authentication);
+    val admin = isSuperUser(authentication);
+    val user = new DetailedUser(username, admin);
+  
+    return user;
   }
 
 }

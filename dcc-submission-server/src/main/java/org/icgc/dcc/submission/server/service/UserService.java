@@ -19,6 +19,8 @@ package org.icgc.dcc.submission.server.service;
 
 import static com.google.common.base.Optional.fromNullable;
 
+import java.util.List;
+
 import org.icgc.dcc.submission.core.model.User;
 import org.icgc.dcc.submission.server.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,10 @@ public class UserService {
 
   public Optional<User> getUserByUsername(String username) {
     return fromNullable(userRepository.findUserByUsername(username));
+  }
+
+  public List<User> getUsers() {
+    return userRepository.findUsers();
   }
 
   /**
