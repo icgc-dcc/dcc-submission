@@ -18,12 +18,6 @@ require('bootstrap/js/dropdown');
 
 // hardcode user to be logged in
 
-user.username = 'admin';
-user.token = 'YWRtaW46YWRtaW5zcGFzc3dk';
-user.roles = ['admin'];
-user.isLoggedIn = true;
-window.user = user;
-
 observe(user, change => {
   if (change.name === 'isLoggedIn' && change.oldValue === false && change.newValue === true) {
     console.log('user just logged in. redirecting to /releases');
