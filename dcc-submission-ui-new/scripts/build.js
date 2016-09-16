@@ -33,7 +33,7 @@ webpack(config).run(function(err, stats) {
       var fileContents = fs.readFileSync(paths.appBuild + '/' + asset.name);
       var size = gzipSize(fileContents);
       return {
-        folder: path.join('build', path.dirname(asset.name)),
+        folder: path.join(paths.appBuild, path.dirname(asset.name)),
         name: path.basename(asset.name),
         size: size,
         sizeLabel: filesize(size)
