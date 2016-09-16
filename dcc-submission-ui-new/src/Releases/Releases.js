@@ -1,21 +1,20 @@
 import React, { Component } from 'react';
 import {Link} from 'react-router';
-import {observable, action, runInAction, computed } from 'mobx';
+import {observable, action, computed } from 'mobx';
 import {observer} from 'mobx-react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import Tooltip from 'rc-tooltip';
 import moment from 'moment';
-import { setSystemInfoFromHeaders } from '~/systemInfo';
 
 import ActionButton from '~/common/components/ActionButton/ActionButton';
 import Status from '~/common/components/Status';
 import { defaultTableOptions, defaultTableProps } from '~/common/defaultTableOptions';
-import { fetchHeaders } from '~/utils';
 import user from '~/user';
 
 import RELEASE_STATES from '../Release/constants/RELEASE_STATES';
 import PerformReleaseModal from '~/Release/modals/PerformReleaseModal';
-import {performRelease} from '~/Release/services';
+import { performRelease } from '~/Release/services';
+import { fetchReleases } from '~/Releases/services';
 
 const releases = observable({
   isLoading: false,
@@ -26,18 +25,9 @@ window.releases = releases;
 
 releases.fetch = action('fetch releases', async function () {
   this.isLoading = true;
-  const response = await fetch('/ws/releases', {
-      headers: fetchHeaders.get()
-    });
-
-  setSystemInfoFromHeaders(response.headers);
-
-  runInAction('update loading status', () => { this.isLoading = false });
-
-  const items = await response.json();
-  runInAction('update releases', () => {
-    this.items = items;
-  });
+  const items = await fetchReleases();
+  this.isLoading = false;
+  this.items = items;
 });
 
 function releaseDateSortFunction(a, b, order, sortField) {

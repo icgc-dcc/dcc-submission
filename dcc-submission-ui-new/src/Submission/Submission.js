@@ -4,7 +4,6 @@ import {observer} from 'mobx-react';
 import { groupBy, map } from 'lodash';
 import { formatFileSize } from '~/utils';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
-import { defaultTableOptions, defaultTableProps } from '~/common/defaultTableOptions';
 
 import user from '~/user';
 import DATATYPE_DICTIONARY from '~/common/constants/DATATYPE_DICTIONARY';
