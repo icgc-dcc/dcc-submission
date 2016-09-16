@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.core;
 
+import static com.google.common.base.Suppliers.memoizeWithExpiration;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.stream.Collectors.toList;
 import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
@@ -27,14 +29,19 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Resources;
 
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
+@RequiredArgsConstructor
 public class PCAWGSampleSheet {
 
   /**
@@ -43,16 +50,18 @@ public class PCAWGSampleSheet {
   public static final URL DEFAULT_PCAWG_SAMPLE_SHEET_URL = Resources.getResource("pcawg-sample-sheet.json");
 
   /**
+   * Configuration.
+   */
+  @NonNull
+  private final URL url;
+
+  /**
    * State.
    */
-  private final List<PCAWGSample> samples;
+  private final Supplier<List<PCAWGSample>> supplier = memoizeWithExpiration(this::readSamples, 10, MINUTES);
 
   public PCAWGSampleSheet() {
     this(DEFAULT_PCAWG_SAMPLE_SHEET_URL);
-  }
-
-  public PCAWGSampleSheet(@NonNull URL url) {
-    this.samples = readSamples(url);
   }
 
   public boolean hasProject(@NonNull String projectKey) {
@@ -62,11 +71,11 @@ public class PCAWGSampleSheet {
   }
 
   public Set<String> getProjects() {
-    return samples.stream().map(PCAWGSample::getProjectKey).collect(toImmutableSet());
+    return samples().stream().map(PCAWGSample::getProjectKey).collect(toImmutableSet());
   }
 
   public List<PCAWGSample> getProjectSamples(@NonNull String projectKey) {
-    return samples.stream().filter(sample -> sample.getProjectKey().equals(projectKey)).collect(toList());
+    return samples().stream().filter(sample -> sample.getProjectKey().equals(projectKey)).collect(toList());
   }
 
   public Multimap<String, String> getProjectDonorIds() {
@@ -85,7 +94,7 @@ public class PCAWGSampleSheet {
     // Keep unique values only
     val builder = ImmutableSetMultimap.<String, String> builder();
 
-    for (val sample : samples) {
+    for (val sample : samples()) {
       val projectKey = sample.getProjectKey();
       val fieldValue = accessor.apply(sample);
       builder.put(projectKey, fieldValue);
@@ -94,8 +103,13 @@ public class PCAWGSampleSheet {
     return builder.build();
   }
 
+  private List<PCAWGSample> samples() {
+    return supplier.get();
+  }
+
   @SneakyThrows
-  private static List<PCAWGSample> readSamples(URL url) {
+  private List<PCAWGSample> readSamples() {
+    log.info("Refreshing sample sheet...");
     return DEFAULT.readValue(url, new TypeReference<List<PCAWGSample>>() {});
   }
 

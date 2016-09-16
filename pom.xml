@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.
- 
+
 This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
 You should have received a copy of the GNU General Public License along with
 this program. If not, see <http://www.gnu.org/licenses/>.
@@ -15,8 +15,7 @@ TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
 OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
 IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
--->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+--><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -26,7 +25,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
   </parent>
 
   <artifactId>dcc-submission</artifactId>
-  <version>4.3.3-SNAPSHOT</version>
+  <version>4.3.6-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>${project.artifactId}</name>
@@ -35,12 +34,12 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
   <modules>
     <module>dcc-submission-ui</module>
     <module>dcc-submission-core</module>
-    <module>dcc-submission-generator</module>
     <module>dcc-submission-validator</module>
     <module>dcc-submission-server</module>
-    <module>dcc-submission-resources</module>
-
     <module>dcc-submission-loader</module>
+    <module>dcc-submission-generator</module>
+    <module>dcc-submission-resources</module>
+    <module>dcc-submission-test</module>
   </modules>
 
   <repositories>
@@ -52,7 +51,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
   <dependencyManagement>
     <dependencies>
-      <!-- DCC -->
+      <!-- DCC - Common -->
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>dcc-common-core</artifactId>
@@ -70,7 +69,12 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
-        <artifactId>dcc-common-meta</artifactId>
+        <artifactId>dcc-common-ega</artifactId>
+        <version>${dcc-common.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>dcc-common-tcga</artifactId>
         <version>${dcc-common.version}</version>
       </dependency>
       <dependency>
@@ -80,6 +84,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
         <scope>test</scope>
       </dependency>
 
+      <!-- Mongo -->
       <dependency>
         <groupId>org.mongodb.morphia</groupId>
         <artifactId>morphia</artifactId>
@@ -94,45 +99,64 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
         <groupId>com.mysema.querydsl</groupId>
         <artifactId>querydsl-apt</artifactId>
         <version>${querydsl.version}</version>
-        <exclusions>
-          <exclusion>
-            <artifactId>slf4j-api</artifactId>
-            <groupId>org.slf4j</groupId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>com.mysema.querydsl</groupId>
         <artifactId>querydsl-core</artifactId>
         <version>${querydsl.version}</version>
-        <exclusions>
-          <exclusion>
-            <artifactId>slf4j-api</artifactId>
-            <groupId>org.slf4j</groupId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>com.mysema.querydsl</groupId>
         <artifactId>querydsl-mongodb</artifactId>
         <version>${querydsl.version}</version>
-        <exclusions>
-          <exclusion>
-            <artifactId>slf4j-api</artifactId>
-            <groupId>org.slf4j</groupId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>com.mysema.commons</groupId>
         <artifactId>mysema-commons-lang</artifactId>
         <version>0.2.4</version>
-        <exclusions>
-          <exclusion>
-            <artifactId>slf4j-api</artifactId>
-            <groupId>org.slf4j</groupId>
-          </exclusion>
-        </exclusions>
+      </dependency>
+
+      <!-- Spring -->
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-jdbc</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-web</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-test</artifactId>
+        <scope>test</scope>
+        <version>${spring.version}</version>
+      </dependency>
+
+      <!-- Logging -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+
+      <!-- Postgres -->
+      <dependency>
+        <groupId>ru.yandex.qatools.embed</groupId>
+        <artifactId>postgresql-embedded</artifactId>
+        <scope>test</scope>
+        <version>${embedded-postgres.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jdbi</groupId>
+        <artifactId>jdbi</artifactId>
+        <version>${jdbi.version}</version>
       </dependency>
 
       <!-- OrientDB -->
@@ -159,43 +183,17 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
         <version>${jgrapht.version}</version>
       </dependency>
 
-      <!-- Spring -->
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-context</artifactId>
-        <version>${spring.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-jdbc</artifactId>
-        <version>${spring.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-web</artifactId>
-        <version>${spring.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-test</artifactId>
-        <scope>test</scope>
-        <version>${spring.version}</version>
-      </dependency>
-
-      <!-- Postgresql -->
-      <dependency>
-        <groupId>ru.yandex.qatools.embed</groupId>
-        <artifactId>postgresql-embedded</artifactId>
-        <scope>test</scope>
-        <version>${embedded-postgres.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jdbi</groupId>
-        <artifactId>jdbi</artifactId>
-        <version>${jdbi.version}</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <dependencies>
+    <!-- Utilities -->
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
 
   <build>
     <plugins>
@@ -203,6 +201,12 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!-- Ignore for Spring Boot binding in tests -->
+          <systemPropertyVariables>
+            <spring.getenv.ignore>true</spring.getenv.ignore>
+          </systemPropertyVariables>
+        </configuration>
       </plugin>
 
       <!-- Verify -->
@@ -219,22 +223,41 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
   <properties>
     <!-- Versions - DCC -->
-    <dcc-common.version>4.0.17</dcc-common.version>
+    <dcc-common.version>4.2.12</dcc-common.version>
 
     <!-- Versions - Spring -->
     <spring.version>4.3.2.RELEASE</spring.version>
-    
+    <!-- Versions - Spring Security -->
+    <spring-security.version>4.1.1.RELEASE</spring-security.version>
+    <!-- Versions - Spring Boot -->
+    <spring-boot.version>1.4.0.RELEASE</spring-boot.version>
+    <!-- Versions - Spring Boot - Maven -->
+    <spring-boot-maven-plugin.version>${spring-boot.version}</spring-boot-maven-plugin.version>
+    <!-- Versions - Spring Boot - Logging -->
+    <logback.version>1.1.7</logback.version>
+    <!-- Versions - Spring Boot - H2 -->
+    <h2.version>1.4.192</h2.version>
+    <!-- Versions - Spring Boot - Jackson -->
+    <jackson.version>2.7.5</jackson.version>
+    <!-- Versions - Spring Boot - Slf4j -->
+    <slf4j.version>1.7.5</slf4j.version>
+
     <!-- Versions - Database -->
-    <orientdb.version>2.1.9</orientdb.version>
-    <jdbi.version>2.55</jdbi.version>
     <morphia.version>0.105</morphia.version>
     <querydsl.version>3.3.2</querydsl.version>
+    <jdbi.version>2.55</jdbi.version>
+    <orientdb.version>2.1.9</orientdb.version>
 
+    <!-- Versions - Utilities -->
     <jgrapht.version>0.9.1</jgrapht.version>
+    <hibernate-validator.version>4.3.1.Final</hibernate-validator.version>
+
+    <!-- Versions - Test - Spring Boot -->
+    <mockito.version>1.10.19</mockito.version>
+    <powermock.version>1.6.5</powermock.version>
 
     <!-- Versions - Test -->
     <junit.version>4.12</junit.version>
-    <powermock.version>1.6.1</powermock.version>
     <embedded-postgres.version>1.8</embedded-postgres.version>
   </properties>
 

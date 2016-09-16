@@ -110,7 +110,7 @@ angular.module('DictionaryViewerApp')
           var handleGraphToggle = function () {
             $scope.$apply(function () {
               var search = $location.search();
-              search.viewMode = 'table';
+              search.viewMode = 'details';
               search.dataType = _controller.tableViewer.selectedDataType;
               $location.search(search);
             });

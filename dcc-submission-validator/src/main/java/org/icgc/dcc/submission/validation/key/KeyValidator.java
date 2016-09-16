@@ -167,7 +167,7 @@ public class KeyValidator implements Validator {
   @SneakyThrows
   private static MappingIterator<Error> getErrors(
       InputStream inputStream) {
-    val reader = new ObjectMapper().reader().withType(Error.class);
+    val reader = new ObjectMapper().reader().forType(Error.class);
 
     return reader.readValues(inputStream);
   }

@@ -60,7 +60,7 @@ public final class Dictionaries {
   /**
    * Dictionary constants.
    */
-  private static final ObjectReader READER = new ObjectMapper().reader(Dictionary.class);
+  private static final ObjectReader READER = new ObjectMapper().readerFor(Dictionary.class);
   private static final String DEFAULT_DICTIONARY_PATH =
       "org/icgc/dcc/submission/resources/dictionaries/0.11c/dictionary.json";
   public static final URL DEFAULT_DICTIONARY_URL = getResource(DEFAULT_DICTIONARY_PATH);

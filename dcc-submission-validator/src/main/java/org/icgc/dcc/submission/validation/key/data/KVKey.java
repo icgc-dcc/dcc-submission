@@ -24,13 +24,13 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import lombok.Value;
+import lombok.val;
+
 import org.icgc.dcc.common.core.model.SpecialValue;
 
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
-
-import lombok.Value;
-import lombok.val;
 
 /**
  * Represents the values for a given key (a key may be composite).
@@ -117,7 +117,7 @@ public class KVKey implements Comparable<KVKey> {
     return 0;
   }
 
-  public String[] getValues() {
+  public String[] getStringValues() {
     String[] result = new String[values.length];
     for (int i = 0; i < values.length; i++) {
       result[i] = new String(values[i].array());
@@ -138,6 +138,16 @@ public class KVKey implements Comparable<KVKey> {
    */
   public boolean isSingleMissingCode() {
     return MISSING_CODE_BYTE_BUFFERS.contains(checkIsNonComposite());
+  }
+
+  public boolean hasNotApplicableCode() {
+    for (int i = 0; i < values.length; i++) {
+      if (MISSING_CODE2_BYTE_BUFFER.equals(values[i])) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private ByteBuffer checkIsNonComposite() {

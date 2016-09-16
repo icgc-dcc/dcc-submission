@@ -30,7 +30,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.icgc.dcc.common.core.tcga.TCGAClient;
+import org.icgc.dcc.common.tcga.core.TCGAMappings;
+import org.icgc.dcc.common.tcga.reader.TCGAMappingsReader;
 import org.icgc.dcc.submission.validation.pcawg.core.PCAWGSample;
 
 import com.google.common.collect.Lists;
@@ -102,9 +103,9 @@ public class PCAWGSampleSheets {
   private static class PCAWGSampleSheetMapper {
 
     /**
-     * Dependencies.
+     * State.
      */
-    private final TCGAClient tcga = new TCGAClient();
+    private final TCGAMappings mappings = new TCGAMappingsReader().readMappings();
 
     public PCAWGSample map(List<String> values) {
       val sample = new PCAWGSample();
@@ -140,12 +141,7 @@ public class PCAWGSampleSheets {
     }
 
     private String getBarcode(String uuid) {
-      while (true)
-        try {
-          // Retry to get around flaky server
-          return tcga.getBarcode(uuid);
-        } catch (Exception e) {
-        }
+      return mappings.getBarcode(uuid);
     }
 
   }

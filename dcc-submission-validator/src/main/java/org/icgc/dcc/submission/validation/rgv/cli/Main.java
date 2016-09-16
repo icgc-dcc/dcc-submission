@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.rgv.cli;
 
+import org.icgc.dcc.submission.validation.core.BasicValidationContext;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.rgv.ReferenceGenomeValidator;
 import org.icgc.dcc.submission.validation.rgv.reference.HtsjdkReferenceGenome;
@@ -64,7 +65,7 @@ public class Main {
     log.info("output:      {}", fsRoot + "/" + releaseName + "/" + projectKey + "/" + ".validation");
     // @formatter:on
 
-    return new ReferenceGenomeValidationContext(releaseName, projectKey, fsRoot, fsUrl);
+    return new BasicValidationContext(releaseName, projectKey, fsRoot, fsUrl);
   }
 
   private static ReferenceGenomeValidator getValidator(String fastaFile) {

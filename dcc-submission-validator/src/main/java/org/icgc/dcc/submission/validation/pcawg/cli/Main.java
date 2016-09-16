@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.pcawg.cli;
 
+import org.icgc.dcc.submission.validation.core.BasicValidationContext;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.pcawg.PCAWGValidator;
 import org.icgc.dcc.submission.validation.pcawg.core.PCAWGDictionary;
@@ -63,7 +64,7 @@ public class Main {
     log.info("output:      {}", fsRoot + "/" + releaseName + "/" + projectKey + "/" + ".validation");
     // @formatter:on
 
-    return new PCAWGValidationContext(releaseName, projectKey, fsRoot, fsUrl);
+    return new BasicValidationContext(releaseName, projectKey, fsRoot, fsUrl);
   }
 
   private static PCAWGValidator getValidator() {

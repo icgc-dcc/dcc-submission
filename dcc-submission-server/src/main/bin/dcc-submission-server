@@ -35,6 +35,8 @@
 # These settings can be modified to fit the needs of your application
 # Optimized for use with version 3.5.19 of the Wrapper.
 
+unset MAIL
+
 # Application
 APP_NAME="dcc-submission-server"
 APP_LONG_NAME="DCC Submission Server"
@@ -279,17 +281,7 @@ if [ "$DIST_OS" = "macosx" ]
 then
     OS_VER=`sw_vers | grep 'ProductVersion:' | grep -o '[0-9]*\.[0-9]*\.[0-9]*'`
     DIST_ARCH="universal"
-    if [[ "$OS_VER" < "10.5.0" ]]
-    then
-        DIST_BITS="32"
-    else
-        if [ "X`sysctl -n hw.cpu64bit_capable`" == "X1" ]  
-        then
-            DIST_BITS="64"
-        else
-            DIST_BITS="32"
-        fi
-    fi
+    DIST_BITS="64"
     APP_PLIST_BASE=${PLIST_DOMAIN}.${APP_NAME}
     APP_PLIST=${APP_PLIST_BASE}.plist
 else

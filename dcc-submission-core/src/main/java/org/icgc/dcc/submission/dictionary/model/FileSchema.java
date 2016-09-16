@@ -23,6 +23,7 @@ import static com.google.common.collect.Iterables.find;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.regex.Pattern.compile;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.submission.dictionary.model.Field.IS_CONTROLLED;
 
 import java.io.Serializable;
@@ -32,6 +33,10 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.validation.Valid;
+
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.val;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.common.core.model.DataType;
@@ -49,10 +54,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.val;
 
 /**
  * Describes a file schema that contains {@code Field}s and that is part of a {@code Dictionary}
@@ -122,14 +123,10 @@ public class FileSchema implements DictionaryElement, Serializable {
     });
   }
 
-  public Iterable<String> fieldNames() {
-    return ImmutableList.copyOf(transform(fields, new Function<Field, String>() {
-
-      @Override
-      public String apply(Field input) {
-        return input.getName();
-      }
-    }));
+  public List<String> fieldNames() {
+    return fields.stream()
+        .map(Field::getName)
+        .collect(toImmutableList());
   }
 
   public String getLabel() {

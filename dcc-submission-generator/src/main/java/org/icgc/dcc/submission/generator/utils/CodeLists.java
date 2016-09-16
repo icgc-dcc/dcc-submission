@@ -42,7 +42,7 @@ public class CodeLists {
   /**
    * Constants.
    */
-  private static final ObjectReader READER = new ObjectMapper().reader(CodeList.class);
+  private static final ObjectReader READER = new ObjectMapper().readerFor(CodeList.class);
   private static final String DEFAULT_CODELISTS_PATH = "org/icgc/dcc/submission/resources/codelists/codelists.json";
   private static final URL DEFAULT_CODELISTS_URL = getResource(DEFAULT_CODELISTS_PATH);
 

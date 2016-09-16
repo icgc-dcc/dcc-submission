@@ -69,7 +69,8 @@ public class FileReferenceCheckerTest {
           new Relation(fileSchema.getFieldNames(), //
               referencedSchema.getSchema().getName(), //
               referencedSchema.getSchema().getFieldNames(), //
-              isBidirectional);
+              isBidirectional,
+              ""); // Condition
       fileSchema.addRelation(relation);
     }
 

@@ -17,13 +17,13 @@
  */
 package org.icgc.dcc.submission.validation.key.data;
 
-import org.icgc.dcc.submission.validation.key.core.KVFileType;
-import org.icgc.dcc.submission.validation.key.report.KVReporter;
-
-import com.google.common.base.Optional;
+import java.util.Map;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+
+import org.icgc.dcc.submission.validation.key.core.KVFileType;
+import org.icgc.dcc.submission.validation.key.report.KVReporter;
 
 /**
  * Context object representing the surrounding context of a row under processing.
@@ -39,9 +39,8 @@ public class KVRowContext {
   private final KVFileType fileType;
   private final KVReporter reporter;
   private final KVPrimaryKeys primaryKeys;
-  private final Optional<KVReferencedPrimaryKeys> optionallyReferencedPrimaryKeys1;
-  private final Optional<KVReferencedPrimaryKeys> optionallyReferencedPrimaryKeys2;
-  private final Optional<KVEncounteredForeignKeys> optionallyEncounteredKeys;
+  private final Map<KVFileType, KVEncounteredForeignKeys> encounteredKeys;
+  private final Map<KVFileType, KVReferencedPrimaryKeys> referencedPrimaryKeys;
 
   /**
    * Transient
