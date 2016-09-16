@@ -9,6 +9,7 @@
   },
   "main": "dist/dictionary.js",
   "scripts": {
+    "build": "npm run build:module",
     "build:module": "grunt ngtemplates && grunt concat",
     "prepublish": "npm run build:module"
   },
