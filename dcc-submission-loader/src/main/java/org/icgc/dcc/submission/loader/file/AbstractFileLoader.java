@@ -72,6 +72,9 @@ public abstract class AbstractFileLoader implements FileLoader {
       log.info("[{}/{}] Loaded {} document(s). {} docs/sec", project, type, documentCount, getThroughput(elapsed));
 
       return null;
+    } catch (Exception e) {
+      log.error("Error loading project %s, type %s", project, type);
+      throw e;
     } finally {
       close();
     }

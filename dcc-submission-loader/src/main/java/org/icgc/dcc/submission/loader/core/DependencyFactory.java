@@ -241,6 +241,8 @@ public final class DependencyFactory implements Closeable {
     case POSTGRES:
       getDataSource().close();
       break;
+    case NODB:
+      break;
     default:
       throw new IllegalArgumentException(format("Unsupported database %s", options.dbType));
     }
