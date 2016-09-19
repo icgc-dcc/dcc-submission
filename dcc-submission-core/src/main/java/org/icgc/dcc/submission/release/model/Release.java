@@ -32,6 +32,14 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
@@ -39,6 +47,7 @@ import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.core.util.NameValidator;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Reference;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -47,14 +56,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Not meant to be used in a hash for now (override hashCode if so)
@@ -97,6 +98,7 @@ public class Release extends BaseEntity implements HasName {
   @Valid
   @JsonView(Digest.class)
   @Getter
+  @Reference
   protected List<Submission> submissions = Lists.newArrayList();
 
   @Valid
@@ -263,8 +265,7 @@ public class Release extends BaseEntity implements HasName {
   /**
    * Dequeues the first element of the queue, expecting the queue to contain at least one element.<br>
    * 
-   * Use in combination with <code>{@link Release#nextInQueue()}</code> and guava's <code>Optional.isPresent()</code>
-   * <br>
+   * Use in combination with <code>{@link Release#nextInQueue()}</code> and guava's <code>Optional.isPresent()</code> <br>
    * This method is <b>not</b> thread-safe.
    */
   public QueuedProject dequeueProject() {
@@ -276,6 +277,10 @@ public class Release extends BaseEntity implements HasName {
   public void emptyQueue() {
     log.info("Emptying from current queue state {}...", queue);
     queue.clear();
+  }
+
+  public void setSubmissions(@NonNull List<Submission> submissions) {
+    this.submissions = submissions;
   }
 
 }

@@ -411,7 +411,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("seed", "Seeding dictionary 2 ({} from dcc-resources)...", SECOND_DICTIONARY_VERSION);
     assertThat(
         post(restTemplate, SEED_DICTIONARIES_ENDPOINT, SECOND_DICTIONARY_ARRAY).getStatusCode().is2xxSuccessful())
-            .isTrue();
+        .isTrue();
 
     status("seed", "Seeding code lists...");
     assertThat(post(restTemplate, SEED_CODELIST_ENDPOINT, codeListsToString()).getStatusCode().is2xxSuccessful())
@@ -752,11 +752,16 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
    */
   private void checkRelease(String releaseName, String dictionaryVersion, ReleaseState expectedReleaseState,
       List<SubmissionState> expectedSubmissionStates) {
+    log.info(
+        "Checking release. ReleaseName: {}; DictionaryVersion: {}; ExpectedReleaseState: {}; ExpectedSubmissionState: {}",
+        releaseName, dictionaryVersion, expectedReleaseState, expectedSubmissionStates);
     status("admin", "Getting release '{}'...", releaseName);
     val response = get(restTemplate, RELEASES_ENDPOINT + "/" + releaseName);
+    log.info("{} response: {}", RELEASES_ENDPOINT + "/" + releaseName, response);
     assertEquals(OK, response.getStatusCode());
 
     val releaseView = asReleaseView(response);
+    log.info("ReleaseView: {}", releaseView);
     assertNotNull(releaseView);
 
     assertEquals(dictionaryVersion, releaseView.getDictionaryVersion());

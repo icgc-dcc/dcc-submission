@@ -29,6 +29,9 @@ import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import java.util.List;
 import java.util.Set;
 
+import lombok.NonNull;
+import lombok.val;
+
 import org.icgc.dcc.common.core.model.Identifiable;
 import org.icgc.dcc.submission.release.model.QRelease;
 import org.icgc.dcc.submission.release.model.QueuedProject;
@@ -39,14 +42,15 @@ import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import lombok.NonNull;
-import lombok.val;
-
 public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
 
+  private final SubmissionRepository submissionRepository;
+
   @Autowired
-  public ReleaseRepository(@NonNull Morphia morphia, @NonNull Datastore datastore) {
+  public ReleaseRepository(@NonNull Morphia morphia, @NonNull Datastore datastore,
+      @NonNull SubmissionRepository submissionRepository) {
     super(morphia, datastore, release);
+    this.submissionRepository = submissionRepository;
   }
 
   public Release findOpenRelease() {
@@ -66,8 +70,13 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
   }
 
   public List<Release> findReleaseSummaries() {
-    return list(entity.name, entity.dictionaryVersion, entity.releaseDate, entity.state,
-        entity.submissions.any().projectKey);
+    val releases = list(entity.name, entity.dictionaryVersion, entity.releaseDate, entity.state);
+    for (val release : releases) {
+      val submissions = submissionRepository.findSubmissionProjectKeysByRelease(release.getName());
+      release.setSubmissions(submissions);
+    }
+
+    return releases;
   }
 
   public Release findNextRelease() {
@@ -112,11 +121,12 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
   }
 
   public Release findReleaseSummaryByName(@NonNull String releaseName) {
-    return uniqueResult(entity.name.eq(releaseName),
-        entity.name, entity.dictionaryVersion, entity.releaseDate, entity.state,
-        entity.submissions.any().projectKey, entity.submissions.any().projectName, entity.submissions.any().state,
-        entity.submissions.any().report.dataTypeReports.any().dataType,
-        entity.submissions.any().report.dataTypeReports.any().dataTypeState);
+    val release = uniqueResult(entity.name.eq(releaseName), entity.name, entity.dictionaryVersion, entity.releaseDate,
+        entity.state);
+    val submissions = submissionRepository.findSubmissionSummaryByRelease(releaseName);
+    release.setSubmissions(submissions);
+
+    return release;
   }
 
   public Release findCompletedRelease(@NonNull String releaseName) {
@@ -128,6 +138,7 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
   }
 
   public void saveNewRelease(@NonNull Release newRelease) {
+    submissionRepository.addSubmissions(newRelease.getSubmissions());
     save(newRelease);
   }
 
@@ -146,26 +157,26 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
   }
 
   public void updateRelease(@NonNull String releaseName, @NonNull Release updatedRelease) {
+    submissionRepository.updateSubmissions(updatedRelease.getSubmissions());
     val result = updateFirst(
         createQuery()
             .filter("name", releaseName),
         updatedRelease,
         false);
 
-    result.getUpdatedCount();
-
     checkState(!result.getHadError(), "Error updating release '%s': %s", releaseName, result.getError());
     checkState(result.getUpdatedCount() == 1, "Updating release '%s' failed: %s", releaseName, result.getWriteResult());
   }
 
   public Release updateCompletedRelease(@NonNull Release completedRelease) {
+    submissionRepository.addSubmissions(completedRelease.getSubmissions());
+
     return findAndModify(
         createQuery()
             .filter("name", completedRelease.getName()),
         createUpdateOperations()
             .set("state", completedRelease.getState())
-            .set("releaseDate", completedRelease.getReleaseDate())
-            .set("submissions", completedRelease.getSubmissions()));
+            .set("releaseDate", completedRelease.getReleaseDate()));
   }
 
   public void updateReleaseQueue(@NonNull String releaseName, @NonNull List<QueuedProject> queue) {
@@ -181,6 +192,8 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
   }
 
   public Release addReleaseSubmission(@NonNull String releaseName, @NonNull Submission submission) {
+    submissionRepository.addSubmissions(submission);
+
     return findAndModify(
         createQuery()
             .field("name").equal(releaseName),
@@ -189,28 +202,18 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
   }
 
   public void updateReleaseSubmission(@NonNull String releaseName, @NonNull Submission submission) {
-    val result = update(
-        createQuery()
-            .filter("name", releaseName)
-            .filter("submissions.projectKey", submission.getProjectKey()),
-        createUpdateOperations$()
-            .set("submissions.$", submission));
+    val result = submissionRepository.updateSubmission(submission);
 
-    checkState(result.getUpdatedCount() == 1,
+    checkState(result == 1,
         "Updated more than one release when updating release '%s' with submission '%s'",
         releaseName, submission);
   }
 
   public void updateReleaseSubmissionState(@NonNull String releaseName, @NonNull String projectKey,
       @NonNull SubmissionState state) {
-    val result = update(
-        createQuery()
-            .filter("name", releaseName)
-            .filter("submissions.projectKey", projectKey),
-        createUpdateOperations$()
-            .set("submissions.$.state", state));
+    val result = submissionRepository.updateSubmissionState(releaseName, projectKey, state);
 
-    checkState(result.getUpdatedCount() == 1,
+    checkState(result == 1,
         "Updated more than one release submission when updating release '%s' project '%s' state to '%s'",
         releaseName, projectKey, state);
   }

@@ -27,6 +27,16 @@ import java.util.Set;
 
 import javax.validation.Valid;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.Identifiable;
@@ -38,9 +48,11 @@ import org.icgc.dcc.submission.core.state.DefaultStateContext;
 import org.icgc.dcc.submission.core.state.StateContext;
 import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.fs.SubmissionFileEvent;
-import org.mongodb.morphia.annotations.Embedded;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Id;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -48,25 +60,20 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 @Data
-@Embedded
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "projectKey")
+@JsonIgnoreProperties({ "id" })
 public class Submission implements Serializable, Identifiable {
 
   private static final Joiner ID_JOINER = Joiners.HASHTAG;
+
+  @Id
+  @NotBlank
+  protected String id;
 
   @NotBlank
   @JsonView(Digest.class)
@@ -106,16 +113,11 @@ public class Submission implements Serializable, Identifiable {
     this.releaseName = releaseName;
     this.state = state;
     this.lastUpdated = new Date();
-  }
-
-  @Override
-  @JsonIgnore
-  public String getId() {
-    return ID_JOINER.join(releaseName, projectKey);
+    this.id = generateId();
   }
 
   /**
-   * See {@link #getId()}.
+   * See {@link #generateId()}.
    */
   @JsonIgnore
   public static ImmutableSet<String> getProjectKeys(Set<String> submissionsIds) {
@@ -357,6 +359,10 @@ public class Submission implements Serializable, Identifiable {
       }
 
     };
+  }
+
+  private String generateId() {
+    return ID_JOINER.join(releaseName, projectKey);
   }
 
 }

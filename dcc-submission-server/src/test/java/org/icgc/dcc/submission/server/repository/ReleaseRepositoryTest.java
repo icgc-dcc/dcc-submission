@@ -4,13 +4,13 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.common.collect.Lists.newArrayList;
+import lombok.val;
 
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.QRelease;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.server.repository.ReleaseRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,11 +21,10 @@ import org.mongodb.morphia.Morphia;
 import com.mongodb.MongoClientURI;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
-import lombok.val;
-
 @RunWith(MockitoJUnitRunner.class)
 public class ReleaseRepositoryTest extends AbstractRepositoryTest {
 
+  private SubmissionRepository submissionRepository;
   private ReleaseRepository releaseRepository;
 
   private MorphiaQuery<Release> morphiaQuery;
@@ -38,20 +37,25 @@ public class ReleaseRepositoryTest extends AbstractRepositoryTest {
     val morphia = new Morphia();
 
     datastore = morphia.createDatastore(embeddedMongo.getMongo(), new MongoClientURI(getMongoUri()).getDatabase());
+    val submission1 = new Submission("P1", "P1", "R1");
+    val submission2 = new Submission("P2", "P2", "R2");
+    datastore.save(submission1);
+    datastore.save(submission2);
 
     releaseOne = new Release("R1");
     releaseOne.setState(ReleaseState.COMPLETED);
-    releaseOne.addSubmission(new Submission("P1", "P1", "R1"));
+    releaseOne.addSubmission(submission1);
 
     releaseTwo = new Release("R2");
-    releaseOne.addSubmission(new Submission("P2", "P2", "R2"));
+    releaseOne.addSubmission(submission2);
 
     datastore.save(releaseOne);
     datastore.save(releaseTwo);
 
     datastore.ensureIndexes();
 
-    releaseRepository = new ReleaseRepository(morphia, datastore);
+    submissionRepository = new SubmissionRepository(morphia, datastore);
+    releaseRepository = new ReleaseRepository(morphia, datastore, submissionRepository);
 
     morphiaQuery = new MorphiaQuery<Release>(morphia, datastore, QRelease.release);
   }
@@ -160,4 +164,5 @@ public class ReleaseRepositoryTest extends AbstractRepositoryTest {
   private String getMongoUri() {
     return format("mongodb://localhost:%s/dcc-submission-server.ReleaseRepository", embeddedMongo.getPort());
   }
+
 }
