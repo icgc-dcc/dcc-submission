@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.loader.file;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
@@ -24,6 +26,8 @@ import lombok.NonNull;
 import lombok.val;
 
 import org.icgc.dcc.submission.loader.core.DependencyFactory;
+import org.icgc.dcc.submission.loader.db.NoOpDatabaseService;
+import org.icgc.dcc.submission.loader.file.export.ExportFileLoaderFactory;
 import org.icgc.dcc.submission.loader.file.orientdb.OrientdbFileLoaderFactory;
 import org.icgc.dcc.submission.loader.file.postgres.PostgressFileLoaderFactory;
 import org.icgc.dcc.submission.loader.model.DatabaseType;
@@ -38,7 +42,7 @@ public final class ReleaseFilesLoaderFactory {
     case POSTGRES:
       return createPostgresLoader(release);
     case NODB:
-
+      return createNoOpLoader(release);
     default:
       throw new IllegalArgumentException(format("Unsupported database %s", dbType));
     }
@@ -61,6 +65,16 @@ public final class ReleaseFilesLoaderFactory {
     val completionService = dependencyFactory.createCompletionService();
 
     return new ReleaseFilesLoader(release, dbService, fileLoaderFactory, completionService);
+  }
+
+  private static ReleaseFilesLoader createNoOpLoader(String release) {
+    val dependencyFactory = DependencyFactory.getInstance();
+    val completionService = dependencyFactory.createCompletionService();
+    val outputDir = dependencyFactory.getOptions().outputDir;
+    checkArgument(!isNullOrEmpty(outputDir), "Output dir is not set.");
+    val fileLoaderFactory = new ExportFileLoaderFactory(outputDir);
+
+    return new ReleaseFilesLoader(release, new NoOpDatabaseService(), fileLoaderFactory, completionService);
   }
 
 }

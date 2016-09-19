@@ -15,85 +15,57 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.loader.file;
+package org.icgc.dcc.submission.loader.file.export;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import static org.icgc.dcc.submission.loader.util.HdfsFiles.getCompressionAgnosticBufferedReader;
 
-import lombok.NonNull;
+import java.io.File;
+
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.loader.core.DependencyFactory;
+import org.icgc.dcc.submission.loader.file.AbstractFileLoaderFactory;
+import org.icgc.dcc.submission.loader.file.FileLoader;
+import org.icgc.dcc.submission.loader.model.FileTypePath;
+import org.icgc.dcc.submission.loader.record.ExportRecordConverter;
 import org.icgc.dcc.submission.loader.record.RecordReader;
 
-import com.google.common.base.Stopwatch;
+import com.google.common.base.Optional;
 
-@Slf4j
 @RequiredArgsConstructor
-public abstract class AbstractFileLoader implements FileLoader {
+public class ExportFileLoaderFactory extends AbstractFileLoaderFactory {
 
-  /**
-   * Dependencies.
-   */
-  @NonNull
-  private final String project;
-  @NonNull
-  private final String type;
-  @NonNull
-  protected final RecordReader recordReader;
-
-  /**
-   * State.
-   */
-  private long documentCount;
+  private final String outputDirectory;
 
   @Override
-  public void close() throws IOException {
-    recordReader.close();
+  public FileLoader createFileLoader(String project, String release, FileTypePath fileType) {
+    val file = fileType.getPath();
+    val outputFileName = resolveOutputFileName(file, project);
+    val recordReader = new RecordReader(getCompressionAgnosticBufferedReader(file));
+    val type = fileType.getType();
+    val dictionary = DependencyFactory.getInstance().getDictionaryResolver().apply(Optional.absent());
+    val converter = new ExportRecordConverter(dictionary, type);
+
+    return new ExportFileLoader(project, type, recordReader, outputFileName, converter);
   }
 
-  @Override
-  public Void call() throws Exception {
-    try {
-      beforeLoad();
-      log.info("Loading {} of {}", type, project);
+  private String resolveOutputFileName(Path file, String project) {
+    val fileName = file.getName();
+    String[] parts = fileName.split("\\.");
+    val name = parts[0];
+    val projectDir = outputDirectory + "/" + project;
+    createProjectDir(projectDir);
 
-      val watch = Stopwatch.createStarted();
-      while (recordReader.hasNext()) {
-        val record = recordReader.next();
-        loadRecord(record);
-        documentCount++;
-        printStats();
-      }
+    return projectDir + "/" + name + ".txt.gz";
+  }
 
-      val elapsed = watch.elapsed(TimeUnit.SECONDS);
-      log.info("[{}/{}] Loaded {} document(s). {} docs/sec", project, type, documentCount, getThroughput(elapsed));
-
-      return null;
-    } finally {
-      close();
+  private synchronized void createProjectDir(String projectDirName) {
+    val projectDir = new File(projectDirName);
+    if (!projectDir.exists()) {
+      projectDir.mkdir();
     }
-  }
-
-  protected void beforeLoad() {
-  }
-
-  abstract protected void loadRecord(Map<String, String> record);
-
-  protected String getName() {
-    return project + "/" + type;
-  }
-
-  private void printStats() {
-    if (documentCount % 10000 == 0) {
-      log.info("[{}/{}] {} doc(s) loaded.", project, type, documentCount);
-    }
-  }
-
-  private long getThroughput(long elapsed) {
-    return elapsed == 0L ? documentCount : documentCount / elapsed;
   }
 
 }

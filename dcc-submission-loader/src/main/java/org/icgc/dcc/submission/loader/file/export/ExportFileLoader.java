@@ -15,85 +15,76 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.loader.file;
+package org.icgc.dcc.submission.loader.file.export;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.zip.GZIPOutputStream;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.common.core.util.Joiners;
+import org.icgc.dcc.submission.loader.file.AbstractFileLoader;
+import org.icgc.dcc.submission.loader.record.ExportRecordConverter;
 import org.icgc.dcc.submission.loader.record.RecordReader;
 
-import com.google.common.base.Stopwatch;
+import com.google.common.base.Joiner;
 
-@Slf4j
-@RequiredArgsConstructor
-public abstract class AbstractFileLoader implements FileLoader {
+public class ExportFileLoader extends AbstractFileLoader {
 
-  /**
-   * Dependencies.
-   */
-  @NonNull
-  private final String project;
-  @NonNull
-  private final String type;
-  @NonNull
-  protected final RecordReader recordReader;
+  private static final Joiner JOINER = Joiners.TAB;
 
-  /**
-   * State.
-   */
-  private long documentCount;
+  private final BufferedWriter writer;
+  private final ExportRecordConverter converter;
+
+  @SneakyThrows
+  public ExportFileLoader(
+      @NonNull String project,
+      @NonNull String type,
+      @NonNull RecordReader recordReader,
+      @NonNull String outputFileName,
+      @NonNull ExportRecordConverter converter) {
+    super(project, type, recordReader);
+    this.converter = converter;
+    this.writer = new BufferedWriter(
+        new OutputStreamWriter(
+            new GZIPOutputStream(
+                new FileOutputStream(
+                    new File(outputFileName)))));
+  }
+
+  @Override
+  @SneakyThrows
+  protected void beforeLoad() {
+    val header = JOINER.join(recordReader.getFieldNames());
+    writer.write(header);
+    writer.newLine();
+  }
+
+  @Override
+  @SneakyThrows
+  protected void loadRecord(Map<String, String> record) {
+    val convertedRecord = converter.convert(record);
+    if (convertedRecord != null) {
+      val line = JOINER.join(convertedRecord.values());
+      writer.write(line);
+      writer.newLine();
+    }
+  }
 
   @Override
   public void close() throws IOException {
-    recordReader.close();
-  }
-
-  @Override
-  public Void call() throws Exception {
     try {
-      beforeLoad();
-      log.info("Loading {} of {}", type, project);
-
-      val watch = Stopwatch.createStarted();
-      while (recordReader.hasNext()) {
-        val record = recordReader.next();
-        loadRecord(record);
-        documentCount++;
-        printStats();
-      }
-
-      val elapsed = watch.elapsed(TimeUnit.SECONDS);
-      log.info("[{}/{}] Loaded {} document(s). {} docs/sec", project, type, documentCount, getThroughput(elapsed));
-
-      return null;
+      super.close();
     } finally {
-      close();
+      writer.close();
     }
-  }
-
-  protected void beforeLoad() {
-  }
-
-  abstract protected void loadRecord(Map<String, String> record);
-
-  protected String getName() {
-    return project + "/" + type;
-  }
-
-  private void printStats() {
-    if (documentCount % 10000 == 0) {
-      log.info("[{}/{}] {} doc(s) loaded.", project, type, documentCount);
-    }
-  }
-
-  private long getThroughput(long elapsed) {
-    return elapsed == 0L ? documentCount : documentCount / elapsed;
   }
 
 }
