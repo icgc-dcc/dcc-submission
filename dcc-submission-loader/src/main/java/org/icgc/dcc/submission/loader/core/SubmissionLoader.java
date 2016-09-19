@@ -29,31 +29,32 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import lombok.Cleanup;
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.loader.cli.ClientOptions;
 import org.icgc.dcc.submission.loader.model.FileTypePath;
 import org.icgc.dcc.submission.loader.model.Project;
 
 import com.google.common.base.Stopwatch;
 
-import lombok.Cleanup;
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 public class SubmissionLoader {
 
   public static void loadSubmission(@NonNull ClientOptions options) throws IOException {
     val dependencyFactory = DependencyFactory.getInstance();
-    val releaseResolver = dependencyFactory.getReleaseResolver();
+    // val releaseResolver = dependencyFactory.getReleaseResolver();
     val releases = getReleases(dependencyFactory.getFileSystem(), options.submissionDirectory, options.release);
 
     log.info("Loading submission files for releases: {}", releases);
     for (val release : releases) {
       val allReleaseFiles = getReleaseFiles(release, options);
-      val validProjects = releaseResolver.getValidProjects(release);
-      val validProjectFiles = filterValidProjectFiles(validProjects, allReleaseFiles);
-      val loadProjects = filterProjectsToLoad(validProjects, validProjectFiles.keySet());
+      // val validProjects = releaseResolver.getValidProjects(release);
+      // val validProjectFiles = filterValidProjectFiles(validProjects, allReleaseFiles);
+      val validProjectFiles = allReleaseFiles;
+      // val loadProjects = filterProjectsToLoad(validProjects, validProjectFiles.keySet());
 
       if (validProjectFiles.isEmpty()) {
         log.info("Nothing to load for release '{}'. Skipping...", release);
@@ -67,16 +68,16 @@ public class SubmissionLoader {
       val releaseFilesLoader = createReleaseFilesLoader(release, options.dbType);
       val watch = Stopwatch.createStarted();
 
-      if (options.skipDbInit == false) {
-        log.info("Preparing database...");
-        releaseFilesLoader.prepareDb(loadProjects);
-      }
+      // if (options.skipDbInit == false) {
+      // log.info("Preparing database...");
+      // releaseFilesLoader.prepareDb(loadProjects);
+      // }
 
       log.info("Loading files...");
       releaseFilesLoader.loadFiles(validProjectFiles);
 
       log.info("Finilizing database...");
-      releaseFilesLoader.finalizeDatabase();
+      // releaseFilesLoader.finalizeDatabase();
 
       log.info("Finished loading release '{}' in {} second(s).", release, watch.elapsed(SECONDS));
     }

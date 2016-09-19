@@ -19,15 +19,14 @@ package org.icgc.dcc.submission.loader.file;
 
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.val;
 
 import org.icgc.dcc.submission.loader.core.DependencyFactory;
 import org.icgc.dcc.submission.loader.file.orientdb.OrientdbFileLoaderFactory;
 import org.icgc.dcc.submission.loader.file.postgres.PostgressFileLoaderFactory;
 import org.icgc.dcc.submission.loader.model.DatabaseType;
-
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.val;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class ReleaseFilesLoaderFactory {
@@ -38,6 +37,8 @@ public final class ReleaseFilesLoaderFactory {
       return createOrientDbLoader(release);
     case POSTGRES:
       return createPostgresLoader(release);
+    case NODB:
+
     default:
       throw new IllegalArgumentException(format("Unsupported database %s", dbType));
     }

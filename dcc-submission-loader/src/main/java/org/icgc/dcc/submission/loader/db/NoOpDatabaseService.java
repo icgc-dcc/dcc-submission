@@ -15,13 +15,19 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.loader.model;
+package org.icgc.dcc.submission.loader.db;
 
-public enum DatabaseType {
+import org.icgc.dcc.submission.loader.model.Project;
 
-  ORIENTDB,
-  POSTGRES,
-  // Files are not loaded to database
-  NODB;
+public class NoOpDatabaseService implements DatabaseService {
+
+  @Override
+  public void initializeDb(String release, Iterable<Project> projects) {
+  }
+
+  @Override
+  public void finalizeDb(String release) {
+
+  }
 
 }

@@ -15,13 +15,17 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.loader.model;
+package org.icgc.dcc.submission.loader.file;
 
-public enum DatabaseType {
+import java.util.concurrent.CompletionService;
 
-  ORIENTDB,
-  POSTGRES,
-  // Files are not loaded to database
-  NODB;
+import org.icgc.dcc.submission.loader.db.NoOpDatabaseService;
+
+public class ExportReleaseFilesLoader extends ReleaseFilesLoader {
+
+  public ExportReleaseFilesLoader(String release, FileLoaderFactory fileLoaderFactory,
+      CompletionService<Void> completionService) {
+    super(release, new NoOpDatabaseService(), fileLoaderFactory, completionService);
+  }
 
 }
