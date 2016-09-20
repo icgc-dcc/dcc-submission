@@ -22,6 +22,10 @@ import static lombok.AccessLevel.PROTECTED;
 
 import java.util.List;
 
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.experimental.Accessors;
+
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Key;
 import org.mongodb.morphia.Morphia;
@@ -31,15 +35,12 @@ import org.mongodb.morphia.query.UpdateResults;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
+import com.mongodb.WriteResult;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Path;
 import com.mysema.query.types.Predicate;
-
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.experimental.Accessors;
 
 @Accessors(fluent = true)
 public abstract class AbstractRepository<E, Q extends EntityPath<E>> {
@@ -151,6 +152,10 @@ public abstract class AbstractRepository<E, Q extends EntityPath<E>> {
 
   protected <R> Iterable<Key<R>> save(@NonNull Iterable<R> entities) {
     return datastore().save(entities, ACKNOWLEDGED);
+  }
+
+  protected <R> WriteResult delete(@NonNull Query<R> query) {
+    return datastore().delete(query);
   }
 
   private void registerEntityType(Class<?> entityType) {

@@ -49,4 +49,9 @@ public class RepositoryConfig extends AbstractConfig {
     return singleton(UserRepository.class);
   }
 
+  @Bean
+  public SubmissionRepository submissionRepository() {
+    return singleton(SubmissionRepository.class);
+  }
+
 }

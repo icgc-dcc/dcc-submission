@@ -30,6 +30,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import lombok.val;
+
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -42,10 +44,9 @@ import org.icgc.dcc.submission.server.repository.CodeListRepository;
 import org.icgc.dcc.submission.server.repository.DictionaryRepository;
 import org.icgc.dcc.submission.server.repository.ProjectRepository;
 import org.icgc.dcc.submission.server.repository.ReleaseRepository;
-import org.icgc.dcc.submission.server.service.DictionaryService;
-import org.icgc.dcc.submission.server.service.MailService;
-import org.icgc.dcc.submission.server.service.ReleaseService;
+import org.icgc.dcc.submission.server.repository.SubmissionRepository;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,9 +59,6 @@ import com.google.common.base.Throwables;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
-
-import org.junit.Assert;
-import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ReleaseServiceTest {
@@ -124,7 +122,8 @@ public class ReleaseServiceTest {
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
-      val releaseRepository = spy(new ReleaseRepository(morphia, datastore));
+      val submissionRepository = new SubmissionRepository(morphia, datastore);
+      val releaseRepository = spy(new ReleaseRepository(morphia, datastore, submissionRepository));
       val dictionaryRepository = spy(new DictionaryRepository(morphia, datastore));
       val codeListRepository = spy(new CodeListRepository(morphia, datastore));
       val projectRepository = spy(new ProjectRepository(morphia, datastore));
