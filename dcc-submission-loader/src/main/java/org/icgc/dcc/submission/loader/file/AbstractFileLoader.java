@@ -73,7 +73,7 @@ public abstract class AbstractFileLoader implements FileLoader {
 
       return null;
     } catch (Exception e) {
-      log.error("Error loading project %s, type %s", project, type);
+      log.error("Error loading project {}, type {}", project, type);
       throw e;
     } finally {
       close();

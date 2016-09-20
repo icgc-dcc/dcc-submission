@@ -25,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.common.core.util.Joiners;
+import org.icgc.dcc.common.core.util.Splitters;
 import org.icgc.dcc.submission.loader.core.DependencyFactory;
 import org.icgc.dcc.submission.loader.file.AbstractFileLoaderFactory;
 import org.icgc.dcc.submission.loader.file.FileLoader;
@@ -53,12 +55,15 @@ public class ExportFileLoaderFactory extends AbstractFileLoaderFactory {
 
   private String resolveOutputFileName(Path file, String project) {
     val fileName = file.getName();
-    String[] parts = fileName.split("\\.");
-    val name = parts[0];
+    val parts = Splitters.DOT.splitToList(fileName);
+    val extension = parts.get(parts.size() - 1);
+    val name = extension.equals("gz") || extension.equals("bz2") ?
+        Joiners.DOT.join(parts.subList(0, parts.size() - 1)) :
+        fileName;
     val projectDir = outputDirectory + "/" + project;
     createProjectDir(projectDir);
 
-    return projectDir + "/" + name + ".txt.gz";
+    return projectDir + "/" + name + ".gz";
   }
 
   private synchronized void createProjectDir(String projectDirName) {

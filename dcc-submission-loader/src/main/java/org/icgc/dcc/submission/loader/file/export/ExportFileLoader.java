@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
@@ -30,6 +31,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 
 import org.icgc.dcc.common.core.util.Joiners;
+import org.icgc.dcc.common.core.util.Separators;
 import org.icgc.dcc.submission.loader.file.AbstractFileLoader;
 import org.icgc.dcc.submission.loader.record.ExportRecordConverter;
 import org.icgc.dcc.submission.loader.record.RecordReader;
@@ -42,6 +44,7 @@ public class ExportFileLoader extends AbstractFileLoader {
 
   private final BufferedWriter writer;
   private final ExportRecordConverter converter;
+  private final List<String> fieldNames;
 
   @SneakyThrows
   public ExportFileLoader(
@@ -52,6 +55,7 @@ public class ExportFileLoader extends AbstractFileLoader {
       @NonNull ExportRecordConverter converter) {
     super(project, type, recordReader);
     this.converter = converter;
+    this.fieldNames = recordReader.getFieldNames();
     this.writer = new BufferedWriter(
         new OutputStreamWriter(
             new GZIPOutputStream(
@@ -62,7 +66,7 @@ public class ExportFileLoader extends AbstractFileLoader {
   @Override
   @SneakyThrows
   protected void beforeLoad() {
-    val header = JOINER.join(recordReader.getFieldNames());
+    val header = JOINER.join(fieldNames);
     writer.write(header);
     writer.newLine();
   }
@@ -72,10 +76,26 @@ public class ExportFileLoader extends AbstractFileLoader {
   protected void loadRecord(Map<String, String> record) {
     val convertedRecord = converter.convert(record);
     if (convertedRecord != null) {
-      val line = JOINER.join(convertedRecord.values());
+      val line = createLine(convertedRecord);
       writer.write(line);
       writer.newLine();
     }
+  }
+
+  private String createLine(Map<String, String> record) {
+    val stringBuilder = new StringBuilder();
+    val fieldNamesSize = fieldNames.size();
+    val lastElementIndex = fieldNamesSize - 1;
+    for (int i = 0; i < fieldNamesSize; i++) {
+      val fieldName = fieldNames.get(i);
+      val value = record.get(fieldName);
+      stringBuilder.append(value);
+      if (i != lastElementIndex) {
+        stringBuilder.append(Separators.TAB);
+      }
+    }
+
+    return stringBuilder.toString();
   }
 
   @Override
