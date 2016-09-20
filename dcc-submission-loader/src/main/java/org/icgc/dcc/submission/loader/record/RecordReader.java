@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.loader.record;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.submission.loader.util.DatabaseFields.PROJECT_ID_FIELD_NAME;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
@@ -117,7 +116,7 @@ public class RecordReader implements Closeable, Iterator<Map<String, String>> {
 
   // Doesn't include Project ID
   private int fieldsCount() {
-    return fieldNames.size() - 1;
+    return fieldNames.size();
   }
 
   private static List<String> resolveFieldNames(String header) {
@@ -125,7 +124,7 @@ public class RecordReader implements Closeable, Iterator<Map<String, String>> {
 
     val fieldNamesBuilder = ImmutableList.<String> builder();
     fieldNamesBuilder.addAll(Splitters.TAB.split(header));
-    fieldNamesBuilder.add(PROJECT_ID_FIELD_NAME);
+    // fieldNamesBuilder.add(PROJECT_ID_FIELD_NAME);
 
     val fieldNames = fieldNamesBuilder.build();
     log.debug("Field names: {}", fieldNames);
