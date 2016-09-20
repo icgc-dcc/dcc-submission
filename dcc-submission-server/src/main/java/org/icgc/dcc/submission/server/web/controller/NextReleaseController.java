@@ -29,13 +29,15 @@ import static org.icgc.dcc.submission.server.web.ServerErrorCode.UNAVAILABLE;
 import static org.icgc.dcc.submission.server.web.controller.Responses.badRequest;
 import static org.icgc.dcc.submission.server.web.controller.Responses.noContent;
 import static org.icgc.dcc.submission.server.web.controller.Responses.unauthorizedResponse;
+import static org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder.fromMethodCall;
+import static org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder.on;
 
+import java.net.URI;
 import java.util.List;
 
 import javax.validation.Valid;
 
 import org.icgc.dcc.common.core.util.stream.Collectors;
-import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.release.ReleaseException;
@@ -62,7 +64,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.net.HttpHeaders;
@@ -78,31 +79,23 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class NextReleaseController {
 
-  private static final Joiner JOINER = Joiner.on("/");
-
   /**
    * Dependencies.
    */
-  private final SubmissionProperties properties;
   private final ReleaseService releaseService;
   private final ValidationService validationScheduler;
   private final SystemService systemService;
 
   @GetMapping
   public ResponseEntity<?> getNextRelease(Authentication authentication) {
-    log.debug("Getting nextRelease");
+    log.debug("Getting nextRelease...");
     if (hasReleaseViewAuthority(authentication) == false) {
       return unauthorizedResponse();
     }
 
-    val prefix = properties.getHttp().getPath();
-    String redirectionPath = JOINER.join(
-        prefix,
-        "releases",
-        releaseService.getNextRelease() // guaranteed not to be null
-            .getName());
-
-    return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, redirectionPath).build();
+    val nextReleaseName = releaseService.getNextRelease().getName();
+    val redirectLocation = getNextReleaseURL(nextReleaseName).toString();
+    return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, redirectLocation).build();
   }
 
   /**
@@ -354,6 +347,12 @@ public class NextReleaseController {
       throw new ActiveTransferException(transfers, "Failed to start validation. "
           + "Projects %s have files being transfered", transfers.keySet());
     }
+  }
+
+  private static URI getNextReleaseURL(String releaseName) {
+    val controller = on(ReleaseController.class);
+    controller.getReleaseByName(releaseName, null);
+    return fromMethodCall(controller).build().toUri();
   }
 
 }
