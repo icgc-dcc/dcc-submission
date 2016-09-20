@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.server.repository;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.submission.release.model.QSubmission.submission;
 
 import java.util.List;
@@ -85,6 +86,14 @@ public class SubmissionRepository extends AbstractRepository<Submission, QSubmis
 
   public List<Submission> findSubmissionProjectKeysByRelease(@NonNull String releaseName) {
     return list(entity.releaseName.eq(releaseName), entity.projectKey);
+  }
+
+  public void updateReleaseSubmissions(@NonNull String releaseName, @NonNull List<Submission> submissions) {
+    submissions.forEach(submission -> checkState(releaseName.equals(submission.getReleaseName()),
+        "Expected release '%s' for submission '%s'", releaseName, submission));
+    delete(createQuery()
+        .filter("releaseName", releaseName));
+    addSubmissions(submissions);
   }
 
   private Query<Submission> createFilterByIdQuery(Submission submission) {

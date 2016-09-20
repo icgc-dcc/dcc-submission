@@ -157,7 +157,7 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
   }
 
   public void updateRelease(@NonNull String releaseName, @NonNull Release updatedRelease) {
-    submissionRepository.updateSubmissions(updatedRelease.getSubmissions());
+    submissionRepository.updateReleaseSubmissions(releaseName, updatedRelease.getSubmissions());
     val result = updateFirst(
         createQuery()
             .filter("name", releaseName),
@@ -169,14 +169,17 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
   }
 
   public Release updateCompletedRelease(@NonNull Release completedRelease) {
-    submissionRepository.addSubmissions(completedRelease.getSubmissions());
+    val completedReleaseSubmissions = completedRelease.getSubmissions();
+    val releaseName = completedRelease.getName();
+    submissionRepository.updateReleaseSubmissions(releaseName, completedReleaseSubmissions);
 
     return findAndModify(
         createQuery()
-            .filter("name", completedRelease.getName()),
+            .filter("name", releaseName),
         createUpdateOperations()
             .set("state", completedRelease.getState())
-            .set("releaseDate", completedRelease.getReleaseDate()));
+            .set("releaseDate", completedRelease.getReleaseDate())
+            .set("submissions", completedReleaseSubmissions));
   }
 
   public void updateReleaseQueue(@NonNull String releaseName, @NonNull List<QueuedProject> queue) {
