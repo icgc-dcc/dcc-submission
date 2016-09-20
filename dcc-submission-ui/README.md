@@ -1,5 +1,46 @@
 This is ejected from create-react-app
 
-- added react-hot-loader #c57e9b12882b812ecf965214b24bb2b4ade6ca7c
-- supports async/await #4b1704c6fce12da10bf40ed904e161b389178cbb
-- added postcss plugins #d71b80fa041280a9d2434f5a53923a2ae0444983
+This is the UI module which powers the front-end of the submission system.
+
+## Libraries
+
+The UI module is written using the following technology stack:
+
+- [React](https://facebook.github.io/react/)
+  - [react-bootstrap-table](https://www.npmjs.com/package/react-bootstrap-table)
+  - [react-breadcrumbs](https://www.npmjs.com/package/react-breadcrumbs)
+- [MobX](https://github.com/mobxjs/mobx)
+- [PostCSS](https://github.com/postcss/postcss)
+  - [postcss-import](https://github.com/postcss/postcss-import)
+  - [PreCSS](https://github.com/jonathantneal/precss)
+- [webpack](https://webpack.github.io/)
+
+## Setup
+
+Install [nodejs] (http://nodejs.org/#download) 4 or above. [nvm](https://github.com/creationix/nvm) is recommended.  
+
+```shell
+cd dcc/dcc-submission/dcc-submission-ui
+npm install
+```
+
+## Development
+
+```
+   cd dcc/dcc-submission/dcc-submission-ui
+   npm start
+```
+
+Start the [dcc-submission-server](../dcc-submission-server/README.md)
+
+Point your browser to:
+
+[http://localhost:3333/](http://localhost:3333/)
+
+
+## Build
+
+```shell
+cd dcc/dcc-submission/dcc-submission-ui
+mvn
+```
