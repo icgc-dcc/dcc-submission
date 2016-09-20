@@ -10,17 +10,17 @@ import './index.css';
 import 'rc-tooltip/assets/bootstrap.css';
 
 import user from '~/user';
+import systems from '~/systems';
 
 import routes from './routes';
 
 global.jQuery = require('jquery');
 require('bootstrap/js/dropdown');
 
-// hardcode user to be logged in
-
 observe(user, change => {
   if (change.name === 'isLoggedIn' && change.oldValue === false && change.newValue === true) {
     console.log('user just logged in. redirecting to /releases');
+    systems.fetch();
     browserHistory.push('/releases')
   }
   if (change.name === 'isLoggedIn' && change.oldValue === true && change.newValue === false) {

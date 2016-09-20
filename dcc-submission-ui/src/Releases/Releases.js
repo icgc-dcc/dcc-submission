@@ -13,8 +13,8 @@ import user from '~/user';
 
 import RELEASE_STATES from '../Release/constants/RELEASE_STATES';
 import PerformReleaseModal from '~/Release/modals/PerformReleaseModal';
-import { performRelease } from '~/Release/services';
-import { fetchReleases } from '~/Releases/services';
+import { performRelease } from '~/services/release';
+import { fetchReleases } from '~/services/releases';
 
 const releases = observable({
   isLoading: false,

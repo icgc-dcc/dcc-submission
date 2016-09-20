@@ -23,4 +23,3 @@ export async function performRelease ({nextReleaseName}) {
   }
   return responseData;
 }
-

@@ -7,7 +7,8 @@ import Header from './Header/Header';
 import Footer from './Footer/Footer';
 
 import user from '~/user';
-import systemInfo from '~/systemInfo';
+import systems from '~/systems';
+
 
 @observer
 class App extends Component {
@@ -16,7 +17,7 @@ class App extends Component {
       <div className="App">
         <Header/>
         <div className="container">
-          { systemInfo.isLocked ? (
+          { systems.isReleaseLocked ? (
             <div className="alert alert-danger">Release is locked. No validations or file transfers are permitted</div>
           ) : null }
           <Breadcrumbs

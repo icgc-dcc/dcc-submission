@@ -1,7 +1,6 @@
 import {observable, action, autorun} from 'mobx';
 
 import {fetchHeaders} from '~/utils';
-import { setSystemInfoFromHeaders } from '~/systemInfo';
 
 function generateToken(username, password) {
   return global.btoa(`${username}:${password}`);
@@ -38,8 +37,6 @@ const user = observable({
           Authorization: `Basic ${token}`,
         }
       });
-
-    setSystemInfoFromHeaders(response.headers);
 
     if (response.status === 200) {
       this.isLoggingIn = false;

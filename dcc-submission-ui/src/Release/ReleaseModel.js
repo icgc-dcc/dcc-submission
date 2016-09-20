@@ -1,5 +1,5 @@
 import {observable, action, runInAction} from 'mobx';
-import { fetchRelease, performRelease } from './services';
+import { fetchRelease, performRelease } from '~/services/release';
 
 class ReleaseModel {
   @observable isLoading = false;
