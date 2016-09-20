@@ -36,7 +36,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import org.icgc.dcc.common.core.json.Jackson;
-import org.icgc.dcc.common.core.util.Separators;
+import org.icgc.dcc.common.core.model.SpecialValue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -47,7 +47,7 @@ import com.google.common.collect.Maps;
 @RequiredArgsConstructor
 public class ExportRecordConverter {
 
-  private static final String MISSING_VALUE = Separators.EMPTY_STRING;
+  private static final String MISSING_VALUE = SpecialValue.NOT_APPLICABLE_CODE;
   private static final Splitter ALLELES_SPLITTER = Splitter.on("/");
   private static final Collection<String> MASKED_FILE_TYPES = ImmutableList.of("ssm_p");
 
