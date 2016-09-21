@@ -58,7 +58,7 @@ public class SystemController {
   @Admin
   @GetMapping
   public ResponseEntity<?> getStatus() {
-    log.info("Getting status...");
+    log.debug("Getting status...");
     Status status = systemService.getStatus();
 
     return ResponseEntity.ok(status);
