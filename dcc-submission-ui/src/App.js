@@ -12,6 +12,15 @@ import systems from '~/systems';
 
 @observer
 class App extends Component {
+  componentWillMount () {
+    this._pollInterval = global.setInterval(function () {
+      if (user.isLoggedIn) systems.fetch();
+    }, require('~/common/constants/POLL_INTERVAL'));
+  }
+
+  componentWillUnmount () {
+    global.clearInterval(this._pollInterval);
+  }
   render() {
     const fullView = (
       <div className="App">
