@@ -24,7 +24,6 @@ class ReleaseModel {
     const fetchMethod = shouldFetchUpcomingRelease ? fetchNextRelease : fetchRelease;
     const responseData = await fetchMethod({releaseName: this.name});
     this.isLoading = false;
-    console.log(responseData);
     Object.assign(this, responseData);
   }
 

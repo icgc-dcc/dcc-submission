@@ -10,6 +10,7 @@ import ActionButton from '~/common/components/ActionButton/ActionButton';
 import ReleaseModel from '~/Release/ReleaseModel';
 
 import { fetchQueue, clearQueue } from '~/services/nextRelease/queue';
+import { fetchUsers, unlockUser } from '~/services/users';
 
 import './Admin.css';
 
@@ -21,16 +22,18 @@ class Admin extends Component {
   @observable errorMessages = {
     lock: '',
     release: '',
+    user: '',
   };
+
+  @observable users = [];
 
   async componentWillMount() {
 
     systems.fetch();
     this.nextRelease = new ReleaseModel();
     this.nextRelease.fetch({shouldFetchUpcomingRelease: true});
-
     this.loadValidationQueue();
-    console.log('why no load');
+    this.users = await fetchUsers();
   }
 
   loadValidationQueue = async () => {
@@ -63,7 +66,6 @@ class Admin extends Component {
     } catch (e) {
       console.log('caught an error', e.message);
       this.errorMessages.release = e.message;
-      this.releaseErrorMessage = e.message;
     }
   };
 
@@ -71,7 +73,17 @@ class Admin extends Component {
     console.log('release successfully performed');
     this.nextRelease.fetch({shouldFetchUpcomingRelease: true});
   }
-
+  
+  handleClickUnlockUser = async (username) => {
+    this.errorMessages.user = '';
+    try {
+      await unlockUser(username);
+      this.users = await fetchUsers();
+    } catch (e) {
+      console.log('caught an error', e.message);
+      this.errorMessages.user = e.message;
+    }
+  };
   render () {
     const lockMessage = systems.isReleaseLocked 
       ? `Click on "Unlock Submissions" to allow uploading and validation on non-admin accounts.`
@@ -90,13 +102,10 @@ class Admin extends Component {
                 <span className="terms__term">Created</span>
                 <span className="terms__value">{moment(this.nextRelease.created, 'x').fromNow()}</span>
               </li>
-              <li>
-                <span className="terms__term">Last Updated</span>
-                <span className="terms__value">{moment(this.nextRelease.lastUpdate, 'x').fromNow()}</span>
-              </li>
             </ul>
           </header>
           
+          <br/>
           <div>
             { (this.errorMessages.lock || this.errorMessages.release) ? (
               <div className="alert alert-danger">
@@ -104,14 +113,14 @@ class Admin extends Component {
                 {this.errorMessages.release}
               </div>
             ) : ''}
-            <div>{lockMessage}</div>
           </div>
           <button
             type="submit"
             className={`btn ${systems.isReleaseLocked ? 'btn-primary' : 'btn-danger'}`}
             onClick={this.handleClickLockUnlockButton}
           >{systems.isReleaseLocked ? 'Unlock' : 'Lock'}</button>
-
+          <div>{lockMessage}</div>
+          <br/>
           <ActionButton
             onClick={() => this.handleClickPerformRelease()}
             className={`btn release-now-btn`}
@@ -161,7 +170,25 @@ class Admin extends Component {
           </ul>
 
           <h2>Users</h2>
-          
+          { this.errorMessages.user ? (
+              <div className="alert alert-danger">
+                {this.errorMessages.user}
+              </div>
+            ) : ''}
+          <ul className="terms">
+          {
+            this.users.map( user => (
+              <li key={user.username}>
+                <span>{user.name}</span>
+                {
+                  user.locked
+                  ? <span onClick={() => this.handleClickUnlockUser(user.username)}>Unlock</span>
+                  : ''
+                }
+              </li>
+            ))
+          }
+          </ul>
       </div>
     );
   }

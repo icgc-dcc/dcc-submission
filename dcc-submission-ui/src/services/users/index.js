@@ -1,1 +1,2 @@
-export * from './fetchUsers'
+export * from './fetchUsers';
+export * from './unlockUser';

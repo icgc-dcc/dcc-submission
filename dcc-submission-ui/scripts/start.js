@@ -160,6 +160,7 @@ function runDevServer(port) {
     proxy: {
       '/ws/*': {
         target: 'http://10.30.128.146:5380',
+        // target: 'https://submissions.dcc.icgc.org',
         secure: false,
       }
     },
