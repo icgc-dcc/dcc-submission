@@ -128,17 +128,22 @@ class Admin extends Component {
                   <span className="label label-default">{projectKey}</span>
                 </li>
               ))
-              : <div>Validation queue is empty</div>
+              : <div>No files are being validated</div>
           }
 
-          <button
-            type="submit"
-            className={`btn btn-danger`}
-            onClick={this.clearValidationQueue}
-            disabled={!this.validationQueue.length}
-          >
-            Clear Queue
-          </button>
+          {
+            this.validationQueue.length
+            ? (
+              <button
+                type="submit"
+                className={`btn btn-danger`}
+                onClick={this.clearValidationQueue}
+                disabled={!this.validationQueue.length}
+              >
+                Clear Queue
+              </button>
+            ) : ''
+          }
 
           <h2>SFTP</h2>
           <ul>

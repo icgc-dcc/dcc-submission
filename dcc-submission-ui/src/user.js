@@ -63,4 +63,6 @@ const user = observable({
 
 autorun(() => window.localStorage.setItem('storedEmailsToNotify', JSON.stringify(user.emailsToNotify.slice())));
 
+window.user = user;
+
 export default user;

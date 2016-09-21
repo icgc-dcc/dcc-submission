@@ -1,5 +1,6 @@
-import {observable, action, runInAction} from 'mobx';
-import { fetchRelease, performRelease } from '~/services/release';
+import {observable, action } from 'mobx';
+import { fetchRelease } from '~/services/release';
+import { fetchNextRelease, performRelease } from '~/services/nextRelease';
 
 class ReleaseModel {
   @observable isLoading = false;
@@ -12,21 +13,24 @@ class ReleaseModel {
   @observable submissions = [];
   @observable summary = undefined;
 
-  constructor ({name}) {
+  constructor ({name} = {}) {
     this.name = name;
   }
 
-  @action fetch = async () => {
+  @action fetch = async ({ shouldFetchUpcomingRelease } = {}) => {
     global.clearTimeout(this._fetchTimeout);
     this.isLoading = true;
-    const responseData = await fetchRelease({releaseName: this.name});
-    runInAction('update release', () => {
-      this.isLoading = false;
-      Object.assign(this, responseData);
-    });
+    console.log('fetch release');
+    const fetchMethod = shouldFetchUpcomingRelease ? fetchNextRelease : fetchRelease;
+    const responseData = await fetchMethod({releaseName: this.name});
+    this.isLoading = false;
+    console.log(responseData);
+    Object.assign(this, responseData);
   }
 
-  performRelease = ({ nextReleaseName }) => {
+  performRelease = () => {
+    const [currentReleasePrefix, currentReleaseNumber] = this.name.match(/^(\D+)(\d+)$/).slice(1);
+    const nextReleaseName = `${currentReleasePrefix}${Number(currentReleaseNumber) + 1}`;
     return performRelease({ nextReleaseName });
   }
 }

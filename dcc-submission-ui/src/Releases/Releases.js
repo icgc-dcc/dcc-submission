@@ -73,60 +73,6 @@ class Releases extends Component {
       defaultSortOrder: 'desc',
     };
 
-    const columns = [
-      <TableHeaderColumn
-        key="name"
-        dataField="name"
-        dataSort={true}
-        dataFormat={ releaseName => (
-          <Link to={`/releases/${releaseName}`}>
-            {releaseName}
-          </Link>
-        )}
-      >Name</TableHeaderColumn>,
-
-      <TableHeaderColumn
-        key="state"
-        dataField="state"
-        dataSort={true}
-        dataFormat={(state) => <Status statusCode={state}/>}
-      >State</TableHeaderColumn>,
-
-      <TableHeaderColumn
-        key="releaseState"
-        dataField='releaseDate'
-        dataSort={true}
-        sortFunc={releaseDateSortFunction}
-        dataFormat={(date) => date
-          ? (
-            <Tooltip
-              mouseLeaveDelay={0}
-              overlay={<span>{moment(date).format('h:mm:ss a')}</span>}
-            >
-              <span>{moment(date).format('MMMM Do YYYY')}</span>
-            </Tooltip>
-          )
-          : 'Unreleased'}
-      >Release Date</TableHeaderColumn>,
-      
-      user.isAdmin && <TableHeaderColumn
-        key="actions"
-        dataFormat={(cell, release) => (
-          release.state === RELEASE_STATES.OPENED
-          ? (
-            <ActionButton
-              onClick={() => this.handleClickPerformRelease(release)}
-              className={`btn release-now-btn btn-xs`}
-            >
-              <i className="fa fa-rocket"/>
-              Release Now
-            </ActionButton>
-          )
-          : ''
-        )}
-      >Actions</TableHeaderColumn>,
-    ].filter(Boolean);
-
     return (
       <div className="container">
         <h1>Releases</h1>
@@ -140,7 +86,41 @@ class Releases extends Component {
           search={items.length > tableOptions.thresholdToShowSearch}
           options={tableOptions}
         >
-          {columns}
+          <TableHeaderColumn
+            key="name"
+            dataField="name"
+            dataSort={true}
+            dataFormat={ releaseName => (
+              <Link to={`/releases/${releaseName}`}>
+                {releaseName}
+              </Link>
+            )}
+          >Name</TableHeaderColumn>
+
+          <TableHeaderColumn
+            key="state"
+            dataField="state"
+            dataSort={true}
+            dataFormat={(state) => <Status statusCode={state}/>}
+          >State</TableHeaderColumn>
+
+          <TableHeaderColumn
+            key="releaseState"
+            dataField='releaseDate'
+            dataSort={true}
+            sortFunc={releaseDateSortFunction}
+            dataFormat={(date) => date
+              ? (
+                <Tooltip
+                  mouseLeaveDelay={0}
+                  overlay={<span>{moment(date).format('h:mm:ss a')}</span>}
+                >
+                  <span>{moment(date).format('MMMM Do YYYY')}</span>
+                </Tooltip>
+              )
+              : 'Unreleased'}
+          >Release Date</TableHeaderColumn>
+
         </BootstrapTable>
         <PerformReleaseModal
           isOpen={this.shouldShowPerformReleaseModal}

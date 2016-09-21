@@ -17,6 +17,11 @@ import routes from './routes';
 global.jQuery = require('jquery');
 require('bootstrap/js/dropdown');
 
+user.roles = ['admin'];
+user.token = 'YWRtaW46YWRtaW5zcGFzc3dk';
+user.username = 'adsfasdf';
+user.isLoggedIn = true;
+
 observe(user, change => {
   if (change.name === 'isLoggedIn' && change.oldValue === false && change.newValue === true) {
     console.log('user just logged in. redirecting to /releases');

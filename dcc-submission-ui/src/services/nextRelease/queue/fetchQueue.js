@@ -1,10 +1,9 @@
 import { fetchHeaders } from '~/utils';
 
-export async function fetchNextRelease () {
-  const response = await fetch('/ws/nextRelease/', {
+export async function fetchQueue () {
+  const response = await fetch('/ws/nextRelease/queue', {
     method: 'GET',
     headers: fetchHeaders.get(),
-    redirect: 'follow',
   });
   const responseData = await response.json();
   if (!response.ok) {

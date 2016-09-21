@@ -74,6 +74,7 @@
     "mobx-react": "3.5.5",
     "moment": "2.14.1",
     "normalize.css": "4.2.0",
+    "pluralize": "3.0.0",
     "rc-tooltip": "3.4.2",
     "react": "^15.2.1",
     "react-bootstrap-table": "2.5.0",
