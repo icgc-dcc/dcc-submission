@@ -40,6 +40,9 @@ import lombok.val;
 @ToString
 public class ReleaseView {
 
+  protected Date created;
+  protected Date lastUpdate;
+
   @Setter
   protected boolean locked;
   protected String name;
@@ -52,6 +55,8 @@ public class ReleaseView {
   protected Map<SubmissionState, Integer> summary = newHashMap();
 
   public ReleaseView(Release release, List<Project> projects, Map<String, List<SubmissionFile>> submissionFiles) {
+    this.created = release.getCreated();
+    this.lastUpdate = release.getLastUpdate();
     this.name = release.name;
     this.state = release.state;
     this.queue = release.getQueuedProjectKeys();
