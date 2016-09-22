@@ -26,7 +26,7 @@ class App extends Component {
       <div className="App">
         <Header/>
         { systems.isReleaseLocked ? (
-          <div className="lock-message alert alert-danger">Release is locked. No validations or file transfers are permitted</div>
+          <div className="lock-message alert alert-warning">Release is locked. No validations or file transfers are permitted</div>
         ) : null }
         <div className="container">
           <Breadcrumbs

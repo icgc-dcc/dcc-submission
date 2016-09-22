@@ -33,10 +33,16 @@ class Login extends Component {
 
   @observable username = '';
   @observable password = '';
+  @observable errorMessage = '';
 
-  handleSubmit = (e) => {
+  handleSubmit = async (e) => {
     e.preventDefault();
-    user.login(this.username, this.password);
+    this.errorMessage = '';
+    try {
+      await user.login(this.username, this.password);
+    } catch (e) {
+      this.errorMessage = e.message;
+    }
   }
 
   render() {
@@ -52,6 +58,13 @@ class Login extends Component {
             <span className="icgc-text">ICGC</span>
           </h1>
           <h2>Data Submission</h2>
+          
+          {this.errorMessage && (
+            <div className="alert alert-danger">
+              {this.errorMessage}
+            </div>
+          )}
+
           <form
             id="login-form"
             className="form-horizontal col-sm-3"
@@ -82,12 +95,14 @@ class Login extends Component {
                   Login
                 </button>
             </div>
-            <div className="text-right">
-              <a
-                href="https://calendar.google.com/calendar/embed?src=icgcportal@gmail.com&ctz=America/Toronto"
-                target="_blank"
-              >Calendar</a>
-            </div>
+            {
+              // <div className="text-right">
+              //   <a
+              //     href="https://calendar.google.com/calendar/embed?src=icgcportal@gmail.com&ctz=America/Toronto"
+              //     target="_blank"
+              //   >Calendar</a>
+              // </div>
+            }
           </form>
         </div>
         <Warning/>

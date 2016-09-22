@@ -11,6 +11,7 @@
   .login-inner {
     flex-grow: 1;
     display: flex;
+    flex-shrink: 0;
     flex-direction: column;
     justify-content: center;
     align-items: center;

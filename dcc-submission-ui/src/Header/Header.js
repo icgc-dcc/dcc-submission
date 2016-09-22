@@ -32,9 +32,6 @@ class Header extends Component {
                 <li>
                   <Link to={`/releases`}>Releases</Link>
                 </li>
-                <li>
-                  <Link to={`/calendar`}>Calendar</Link>
-                </li>
                 { user.isAdmin &&
                   <li>
                     <Link to="/admin" className="link">Admin</Link>

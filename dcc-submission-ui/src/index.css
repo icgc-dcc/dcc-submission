@@ -12,6 +12,6 @@ body {
 
   transition: background-color 0.1s var(--inQuad);
   &.release-locked {
-    background-color: #f0f0f0;
+    background-color: #f5f5f5;
   }
 }

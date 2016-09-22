@@ -6,6 +6,8 @@ import pluralize from 'pluralize';
 
 import systems from '~/systems';
 import ActionButton from '~/common/components/ActionButton/ActionButton';
+import Tooltip from 'rc-tooltip';
+import { sortBy } from 'lodash';
 
 import ReleaseModel from '~/Release/ReleaseModel';
 
@@ -13,6 +15,27 @@ import { fetchQueue, clearQueue } from '~/services/nextRelease/queue';
 import { fetchUsers, unlockUser } from '~/services/users';
 
 import './Admin.css';
+
+function User({name, isLocked, onRequestUnlock}) {
+  const user = <span className="user normal label label-default">{name}</span>;
+  const lockedUser = (
+    <Tooltip
+      mouseLeaveDelay={0}
+      overlay={<span>Click to unlock</span>}
+      placement="bottom"
+    >
+      <span
+        className="user locked btn btn-xs btn-warning"
+        onClick={onRequestUnlock}
+      >
+        <i className="fa fa-lock"/>
+        <i className="fa fa-unlock"/>
+        {name}
+      </span>
+    </Tooltip>
+  );
+  return isLocked ? lockedUser : user;
+}
 
 @observer
 class Admin extends Component {
@@ -28,7 +51,6 @@ class Admin extends Component {
   @observable users = [];
 
   async componentWillMount() {
-
     systems.fetch();
     this.nextRelease = new ReleaseModel();
     this.nextRelease.fetch({shouldFetchUpcomingRelease: true});
@@ -70,10 +92,9 @@ class Admin extends Component {
   };
 
   handlePerformReleaseSuccess = () => {
-    console.log('release successfully performed');
     this.nextRelease.fetch({shouldFetchUpcomingRelease: true});
   }
-  
+
   handleClickUnlockUser = async (username) => {
     this.errorMessages.user = '';
     try {
@@ -88,46 +109,66 @@ class Admin extends Component {
     const lockMessage = systems.isReleaseLocked 
       ? `Click on "Unlock Submissions" to allow uploading and validation on non-admin accounts.`
       : `Click on "Lock Submissions" to prevent uploading and validation on non-admin accounts.`;
+
+    const lockUnlockButton = (
+      <Tooltip
+            mouseLeaveDelay={0}
+            overlay={<span>{lockMessage}</span>}
+            placement="bottom"
+          >
+            { systems.isReleaseLocked
+              ? (
+                <button
+                  className="lock-unlock unlock btn btn-xs btn-primary"
+                  onClick={this.handleClickLockUnlockButton}
+                >
+                  <i className="fa fa-unlock"/>
+                  Unlock
+                </button>
+              )
+              : (
+                <button
+                  className="lock-unlock lock btn btn-xs btn-danger"
+                  onClick={this.handleClickLockUnlockButton}
+                >
+                  <i className="fa fa-lock"/>
+                  Lock
+                </button>
+                )
+            }
+          </Tooltip>
+    );
+    const releaseNowButton = (
+      <ActionButton
+        onClick={() => this.handleClickPerformRelease()}
+        className={`btn btn-xs release-now-btn`}
+      >
+        <i className="fa fa-rocket"/>
+        Release Now
+      </ActionButton>
+    );
+
     return (
       <div className="Admin container">
           <h1>Admin</h1>
-
-          <header>
-            <h2>
-              Upcoming Release -
-              <span>{this.nextRelease.name}</span>
-            </h2>
-            <ul className="terms">
-              <li>
-                <span className="terms__term">Created</span>
-                <span className="terms__value">{moment(this.nextRelease.created, 'x').fromNow()}</span>
-              </li>
-            </ul>
-          </header>
-          
-          <br/>
-          <div>
+          <header className="heading">
             { (this.errorMessages.lock || this.errorMessages.release) ? (
               <div className="alert alert-danger">
                 {this.errorMessages.lock}
                 {this.errorMessages.release}
               </div>
             ) : ''}
-          </div>
-          <button
-            type="submit"
-            className={`btn ${systems.isReleaseLocked ? 'btn-primary' : 'btn-danger'}`}
-            onClick={this.handleClickLockUnlockButton}
-          >{systems.isReleaseLocked ? 'Unlock' : 'Lock'}</button>
-          <div>{lockMessage}</div>
-          <br/>
-          <ActionButton
-            onClick={() => this.handleClickPerformRelease()}
-            className={`btn release-now-btn`}
-          >
-            <i className="fa fa-rocket"/>
-            Release Now
-          </ActionButton>
+            <small>Upcoming Release</small>
+            <h2>
+              <span className="release-name">{this.nextRelease.name}</span>
+              <span className="terms creation-time">
+                <span className="terms__term">Created</span>
+                <span className="terms__value">{moment(this.nextRelease.created, 'x').fromNow()}</span>
+              </span>
+              {lockUnlockButton}
+              {releaseNowButton}
+            </h2>
+          </header>
 
           <h2>Validation</h2>
           {
@@ -160,9 +201,16 @@ class Admin extends Component {
               There { pluralize('is', systems.activeSftpSessions) } <strong>{ systems.activeSftpSessions }</strong> active SFTP { pluralize('session', systems.activeSftpSessions) }
               <ul>
                 {systems.userSessions.map(user => (
-                  <li key={user.userName}>
+                  <li className="sftp-item" key={user.userName}>
                     <span className="label label-default sftp-username">{user.userName}</span>
-                    <span className="label label-primary sftp-filename">{ user.ioSessionMap.fileTransfer ? user.ioSessionMap.fileTransfer : 'idle' }</span>
+                    <span className="label label-primary sftp-filename">{user.ioSessionMap.fileTransfer
+                      ? (
+                        <span>
+                          <span style={{fontWeight: 700}}>transferring: </span> 
+                          <span style={{fontWeight: 600}}>{user.ioSessionMap.fileTransfer}</span>
+                        </span>
+                        ) : 'idle' }
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -175,20 +223,34 @@ class Admin extends Component {
                 {this.errorMessages.user}
               </div>
             ) : ''}
-          <ul className="terms">
-          {
-            this.users.map( user => (
-              <li key={user.username}>
-                <span>{user.name}</span>
-                {
-                  user.locked
-                  ? <span onClick={() => this.handleClickUnlockUser(user.username)}>Unlock</span>
-                  : ''
-                }
-              </li>
-            ))
-          }
-          </ul>
+          <div className="user-list">
+            {
+              sortBy(this.users, 'name')
+              .filter(user => user.locked)
+              .map( user => (
+                <User
+                  key={user.username}
+                  name={user.name}
+                  isLocked={user.locked}
+                  onRequestUnlock={() => this.handleClickUnlockUser(user.username)}
+                />
+              ))
+            }
+          </div>
+          <div className="user-list">
+            {
+              sortBy(this.users, 'name')
+              .filter(user => !user.locked)
+              .map( user => (
+                <User
+                  key={user.username}
+                  name={user.name}
+                  isLocked={user.locked}
+                  onRequestUnlock={() => this.handleClickUnlockUser(user.username)}
+                />
+              ))
+            }
+          </div>
       </div>
     );
   }

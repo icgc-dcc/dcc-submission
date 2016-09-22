@@ -47,6 +47,10 @@ const user = observable({
       this.isLoggedIn = true;
     } else if (response.status === 401) {
       throw new Error('Incorrect username or password');
+    } else if (response.status === 403) {
+      const errorData = await response.json();
+      console.log(errorData);
+      throw new Error(errorData.message);
     } else {
       throw new Error('Login failed');
     }
