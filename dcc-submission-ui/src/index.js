@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { browserHistory } from 'react-router';
 
-import {observe} from 'mobx';
+import {observe, autorun} from 'mobx';
 import { AppContainer } from 'react-hot-loader';
 import 'whatwg-fetch';
 
@@ -33,6 +33,12 @@ observe(user, change => {
     browserHistory.push('/login')
   }
 })
+
+autorun(() => {
+  document.body.classList.remove('release-locked');
+  document.body.classList.remove('release-unlocked');
+  document.body.classList.add(systems.isReleaseLocked ? 'release-locked' : 'release-unlocked');
+});
 
 const rootEl = document.getElementById('root');
 
