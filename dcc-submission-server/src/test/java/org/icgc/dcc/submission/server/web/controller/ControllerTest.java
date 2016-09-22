@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.server.web.controller;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -72,7 +71,7 @@ public abstract class ControllerTest {
       when(userService.getUserByUsername(user.getUsername())).thenReturn(Optional.of(value));
     }
 
-    when(userService.getUserByUsername(any(String.class))).thenReturn(Optional.absent());
+    when(userService.getUserByUsername("unknown")).thenReturn(Optional.absent());
   }
 
   protected RequestPostProcessor admin() {
