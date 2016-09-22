@@ -26,6 +26,13 @@ import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import java.util.Collection;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.Value;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.DataType;
@@ -38,18 +45,11 @@ import org.icgc.dcc.submission.dictionary.util.Dictionaries;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.fs.SubmissionFileSystem;
-import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.core.AbstractValidationContext;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactoryProvider;
-
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.Value;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class StandAloneNomalizationValidationContext extends AbstractValidationContext {
@@ -83,7 +83,7 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
 
   @Getter
   @NonNull
-  private final Release release;
+  private final ReleaseSubmissionView release;
   @Getter
   @NonNull
   private final Submission submission;
@@ -107,7 +107,7 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
 
     this.param = new Param(fsUrl, overarchDirName, jobTracker);
 
-    this.release = new Release(getFakeInputReleaseName());
+    this.release = new ReleaseSubmissionView(getFakeInputReleaseName());
     this.submission = new Submission(projectKey, projectKey, getFakeInputReleaseName());
 
     this.fileSystem = FileSystems.getFileSystem(fsUrl);

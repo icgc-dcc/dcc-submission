@@ -17,9 +17,9 @@
  */
 package org.icgc.dcc.submission.server.repository;
 
-import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.submission.release.model.QSubmission.submission;
 
+import java.util.Collection;
 import java.util.List;
 
 import lombok.NonNull;
@@ -33,7 +33,7 @@ import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.collect.ImmutableList;
+import com.mysema.query.mongodb.MongodbQuery;
 
 public class SubmissionRepository extends AbstractRepository<Submission, QSubmission> {
 
@@ -42,22 +42,20 @@ public class SubmissionRepository extends AbstractRepository<Submission, QSubmis
     super(morphia, datastore, submission);
   }
 
-  public void addSubmissions(@NonNull Submission... submissions) {
-    addSubmissions(ImmutableList.copyOf(submissions));
-  }
-
   public void addSubmissions(@NonNull Iterable<Submission> submissions) {
-    for (val submission : submissions) {
-      save(submission);
-    }
+    save(submissions);
   }
 
-  public void updateSubmissions(@NonNull Iterable<Submission> submissions) {
+  public void addSubmission(@NonNull Submission submission) {
+    save(submission);
+  }
+
+  public void updateExistingSubmissions(@NonNull Iterable<Submission> submissions) {
     for (val submission : submissions) {
       updateFirst(
           createFilterByIdQuery(submission),
           submission,
-          true);
+          false);
     }
   }
 
@@ -67,38 +65,40 @@ public class SubmissionRepository extends AbstractRepository<Submission, QSubmis
     return result.getUpdatedCount();
   }
 
-  public int updateSubmissionState(@NonNull String releaseName, @NonNull String projectKey,
-      @NonNull SubmissionState state) {
-    val result = update(
-        createQuery()
-            .filter("releaseName", releaseName)
-            .filter("projectKey", projectKey),
-        createUpdateOperations$()
-            .set("state", state));
-
-    return result.getUpdatedCount();
+  public Submission findSubmission(@NonNull String releaseName, @NonNull String projectKey) {
+    return createFilterByReleaseNameQuery(releaseName)
+        .where(entity.projectKey.eq(projectKey)).singleResult();
   }
 
-  public List<Submission> findSubmissionSummaryByRelease(@NonNull String releaseName) {
-    return list(entity.releaseName.eq(releaseName), entity.projectKey, entity.projectName, entity.state,
-        entity.report.dataTypeReports.any().dataType, entity.report.dataTypeReports.any().dataTypeState);
+  public List<Submission> findSubmissions(@NonNull String releaseName, @NonNull Collection<String> projectKeys) {
+    return createFilterByReleaseNameQuery(releaseName)
+        .where(entity.projectKey.in(projectKeys))
+        .list();
   }
 
-  public List<Submission> findSubmissionProjectKeysByRelease(@NonNull String releaseName) {
-    return list(entity.releaseName.eq(releaseName), entity.projectKey);
+  public List<Submission> findSubmissions(@NonNull String releaseName) {
+    return createFilterByReleaseNameQuery(releaseName).list();
   }
 
-  public void updateReleaseSubmissions(@NonNull String releaseName, @NonNull List<Submission> submissions) {
-    submissions.forEach(submission -> checkState(releaseName.equals(submission.getReleaseName()),
-        "Expected release '%s' for submission '%s'", releaseName, submission));
-    delete(createQuery()
-        .filter("releaseName", releaseName));
-    addSubmissions(submissions);
+  public List<Submission> findSubmissions() {
+    return list();
+  }
+
+  public int deleteByReleaseAndNotState(@NonNull String releaseName, @NonNull SubmissionState state) {
+    val result = delete(createQuery()
+        .filter("releaseName == ", releaseName)
+        .filter("state !=", state));
+
+    return result.getN();
   }
 
   private Query<Submission> createFilterByIdQuery(Submission submission) {
     return createQuery()
         .filter("id", submission.getId());
+  }
+
+  private MongodbQuery<Submission> createFilterByReleaseNameQuery(String releaseName) {
+    return query().where(entity.releaseName.eq(releaseName));
   }
 
 }

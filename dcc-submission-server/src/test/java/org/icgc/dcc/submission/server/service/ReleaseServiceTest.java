@@ -46,9 +46,7 @@ import org.icgc.dcc.submission.server.repository.ProjectRepository;
 import org.icgc.dcc.submission.server.repository.ReleaseRepository;
 import org.icgc.dcc.submission.server.repository.SubmissionRepository;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -160,16 +158,6 @@ public class ReleaseServiceTest {
     assertEquals(release.getId(), releaseService.getNextRelease().getId());
     Release newRelease = addNewRelease("release2");
     assertEquals(newRelease.getName(), releaseService.getNextRelease().getName());
-  }
-
-  @Test
-  public void test_getFromName_exists() {
-    Assert.assertNotNull(releaseService.getReleaseByName("release1"));
-  }
-
-  @Test
-  public void test_getFromName_notExists() {
-    Assert.assertNull(releaseService.getReleaseByName("dummy"));
   }
 
   // @Test; The workflow seems to be that a Release has to be created first and then projects are added to it. This test

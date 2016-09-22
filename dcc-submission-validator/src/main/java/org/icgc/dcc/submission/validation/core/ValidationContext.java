@@ -27,10 +27,10 @@ import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
+import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 
 /**
@@ -61,7 +61,7 @@ public interface ValidationContext extends ReportContext {
   /**
    * Gets the current release.
    */
-  Release getRelease();
+  ReleaseSubmissionView getRelease();
 
   /**
    * Gets the current release dictionary.

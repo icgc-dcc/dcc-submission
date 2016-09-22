@@ -18,13 +18,8 @@
 package org.icgc.dcc.submission.release.model;
 
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.ImmutableList.copyOf;
-import static com.google.common.collect.Iterables.transform;
-import static com.google.common.collect.Iterables.tryFind;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
-import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
-import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 
 import java.util.Date;
 import java.util.List;
@@ -47,13 +42,10 @@ import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.core.util.NameValidator;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.mongodb.morphia.annotations.Entity;
-import org.mongodb.morphia.annotations.Reference;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -65,14 +57,6 @@ import com.google.common.collect.Lists;
 @ToString
 @EqualsAndHashCode(of = "name", callSuper = false)
 public class Release extends BaseEntity implements HasName {
-
-  public static final Predicate<Submission> SIGNED_OFF_PROJECTS_PREDICATE = new Predicate<Submission>() {
-
-    @Override
-    public boolean apply(Submission submission) {
-      return SIGNED_OFF == submission.getState();
-    }
-  };
 
   @NotBlank
   @Pattern(regexp = NameValidator.DEFAULT_NAME_PATTERN)
@@ -96,12 +80,6 @@ public class Release extends BaseEntity implements HasName {
   protected String dictionaryVersion;
 
   @Valid
-  @JsonView(Digest.class)
-  @Getter
-  @Reference
-  protected List<Submission> submissions = Lists.newArrayList();
-
-  @Valid
   @Getter
   protected List<QueuedProject> queue = Lists.newArrayList();
 
@@ -120,71 +98,12 @@ public class Release extends BaseEntity implements HasName {
     this.setState(OPENED);
   }
 
-  public Optional<Submission> getSubmission(final @NonNull String projectKey) {
-    return tryFind(getSubmissions(), new Predicate<Submission>() {
-
-      @Override
-      public boolean apply(Submission submission) {
-        return submission.getProjectKey().equals(projectKey);
-      }
-
-    });
-  }
-
   /**
    * Not thread-safe.
    */
   public void complete() {
     setState(COMPLETED);
     resetReleaseDate();
-
-    for (int i = submissions.size() - 1; i >= 0; i--) {
-      val submission = getSubmissions().get(i);
-      if (submission.getState() != SIGNED_OFF) {
-        getSubmissions().remove(i);
-      }
-    }
-  }
-
-  @JsonIgnore
-  public Iterable<String> getProjectKeys() {
-    return copyOf(transform(getSubmissions(), new Function<Submission, String>() {
-
-      @Override
-      public String apply(Submission input) {
-        return input.getProjectKey();
-      }
-
-    }));
-  }
-
-  @JsonIgnore
-  public List<String> getInvalidProjectKeys() {
-    val invalidProjectKeys = ImmutableList.<String> builder();
-    for (val submission : getSubmissions()) {
-      if (submission.getState() == INVALID) {
-        invalidProjectKeys.add(submission.getProjectKey());
-      }
-    }
-
-    return invalidProjectKeys.build();
-  }
-
-  public void addSubmission(Submission submission) {
-    getSubmissions().add(submission);
-  }
-
-  @JsonIgnore
-  public boolean isSignOffAllowed() {
-    // At least one submission must be signed off on
-    for (val submission : getSubmissions()) {
-      val signedOff = submission.getState() == SIGNED_OFF;
-      if (signedOff) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   public Date getReleaseDate() {
@@ -277,10 +196,6 @@ public class Release extends BaseEntity implements HasName {
   public void emptyQueue() {
     log.info("Emptying from current queue state {}...", queue);
     queue.clear();
-  }
-
-  public void setSubmissions(@NonNull List<Submission> submissions) {
-    this.submissions = submissions;
   }
 
 }

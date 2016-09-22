@@ -51,7 +51,8 @@ public class ReleaseView {
   protected String dictionaryVersion;
   protected Map<SubmissionState, Integer> summary = newHashMap();
 
-  public ReleaseView(Release release, List<Project> projects, Map<String, List<SubmissionFile>> submissionFiles) {
+  public ReleaseView(ReleaseSubmissionView release, List<Project> projects,
+      Map<String, List<SubmissionFile>> submissionFiles) {
     this.name = release.name;
     this.state = release.state;
     this.queue = release.getQueuedProjectKeys();

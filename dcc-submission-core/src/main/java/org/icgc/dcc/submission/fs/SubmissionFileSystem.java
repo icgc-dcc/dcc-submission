@@ -27,19 +27,19 @@ import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.toFilenameList;
 
 import java.util.Set;
 
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
-import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 
 import com.google.common.base.Joiner;
-
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SubmissionFileSystem {
@@ -81,7 +81,7 @@ public class SubmissionFileSystem {
    * Creates new user-tailored "view" of a given release filesystem. We may change that behavior later to not creating
    * it on the fly (for now we have very few users and don't plan on having millions ever).
    */
-  public ReleaseFileSystem getReleaseFilesystem(Release release, Authentication authentication) {
+  public ReleaseFileSystem getReleaseFilesystem(ReleaseSubmissionView release, Authentication authentication) {
     return new ReleaseFileSystem(this, release, authentication);
   }
 
@@ -90,7 +90,7 @@ public class SubmissionFileSystem {
    * are actually accessible () We may change that behavior later to not creating it on the fly (for now we have very
    * few users and don't plan on having millions ever).
    */
-  public ReleaseFileSystem getReleaseFilesystem(Release release) {
+  public ReleaseFileSystem getReleaseFilesystem(ReleaseSubmissionView release) {
     return new ReleaseFileSystem(this, release);
   }
 
@@ -99,7 +99,7 @@ public class SubmissionFileSystem {
    * 
    * @param release the new release
    */
-  public void createInitialReleaseFilesystem(Release release, Set<String> projectKeyList) {
+  public void createInitialReleaseFilesystem(ReleaseSubmissionView release, Set<String> projectKeyList) {
     val newReleaseName = release.getName();
 
     // create path for release

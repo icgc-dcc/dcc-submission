@@ -23,6 +23,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+import lombok.val;
+import lombok.experimental.Delegate;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.ClinicalType;
@@ -31,22 +38,15 @@ import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
+import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-import lombok.val;
-import lombok.experimental.Delegate;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * The "default" implementation of the {@link ValidationContext}.
@@ -73,7 +73,7 @@ public class DefaultValidationContext implements ValidationContext {
   @NonNull
   private final List<DataType> dataTypes;
   @NonNull
-  private final Release release;
+  private final ReleaseSubmissionView release;
   @NonNull
   private final Dictionary dictionary;
   @NonNull
@@ -115,7 +115,7 @@ public class DefaultValidationContext implements ValidationContext {
   }
 
   @Override
-  public Release getRelease() {
+  public ReleaseSubmissionView getRelease() {
     return release;
   }
 

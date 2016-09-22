@@ -34,11 +34,17 @@ import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 
 import java.util.Set;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.common.core.model.Identifiable.Identifiables;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
 import org.icgc.dcc.submission.server.core.InvalidStateException;
 import org.icgc.dcc.submission.server.repository.CodeListRepository;
 import org.icgc.dcc.submission.validation.ValidationExecutor;
@@ -56,11 +62,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.AbstractScheduledService;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Coordinator task that runs periodically to dispatch validations for execution.
@@ -207,7 +208,7 @@ public class ValidationService extends AbstractScheduledService {
    * @param project the project to validate
    * @throws ValidationRejectedException if the validation could not be executed
    */
-  private void tryValidation(@NonNull final Release release, @NonNull final QueuedProject project) {
+  private void tryValidation(@NonNull final ReleaseSubmissionView release, @NonNull final QueuedProject project) {
     // Prepare validation
     val validationContext = createValidationContext(release, project);
     val validation = createValidation(validationContext);
@@ -289,7 +290,7 @@ public class ValidationService extends AbstractScheduledService {
    * @param project the project to create the validation context for
    * @return
    */
-  private ValidationContext createValidationContext(Release release, QueuedProject project) {
+  private ValidationContext createValidationContext(ReleaseSubmissionView release, QueuedProject project) {
     val dictionary = releaseService.getNextDictionary();
     val codeLists = codeListRepository.findCodeLists();
 

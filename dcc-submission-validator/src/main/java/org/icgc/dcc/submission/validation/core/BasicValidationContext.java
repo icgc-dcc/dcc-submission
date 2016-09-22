@@ -21,6 +21,13 @@ import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME
 
 import java.util.List;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -33,17 +40,10 @@ import org.icgc.dcc.submission.dictionary.util.Dictionaries;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.fs.SubmissionFileSystem;
-import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactoryProvider;
-
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = true)
@@ -75,7 +75,7 @@ public class BasicValidationContext extends AbstractValidationContext {
   @Getter(lazy = true)
   private final List<CodeList> codeLists = createCodeLists();
   @Getter(lazy = true)
-  private final Release release = new Release(releaseName);
+  private final ReleaseSubmissionView release = new ReleaseSubmissionView(releaseName);
   @Getter(lazy = true)
   private final SubmissionDirectory submissionDirectory = createSubmissionDirectory();
   @Getter(lazy = true)

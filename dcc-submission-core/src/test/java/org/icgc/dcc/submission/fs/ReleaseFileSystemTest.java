@@ -27,20 +27,20 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.util.List;
 
+import lombok.SneakyThrows;
+import lombok.val;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.google.common.base.Optional;
-
-import lombok.SneakyThrows;
-import lombok.val;
 
 public class ReleaseFileSystemTest {
 
@@ -70,7 +70,7 @@ public class ReleaseFileSystemTest {
 
     // But there was a dark past:
     val previousReleaseName = "ICGC14";
-    val previousRelease = mock(Release.class);
+    val previousRelease = mock(ReleaseSubmissionView.class);
     val previousReleaseFileSystem = mock(ReleaseFileSystem.class);
     val previousReleaseDir = new File(rootDir, previousReleaseName);
 
@@ -126,7 +126,7 @@ public class ReleaseFileSystemTest {
 
     // Which gave birth to the next heir
     val nextReleaseName = "ICGC15";
-    val nextRelease = mock(Release.class);
+    val nextRelease = mock(ReleaseSubmissionView.class);
     val nextReleaseDir = new File(rootDir, nextReleaseName);
     val nextReleaseFileSystem = new ReleaseFileSystem(submissionFileSystem, nextRelease);
 

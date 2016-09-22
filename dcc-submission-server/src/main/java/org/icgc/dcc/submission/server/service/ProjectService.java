@@ -3,19 +3,19 @@ package org.icgc.dcc.submission.server.service;
 import java.util.List;
 import java.util.Set;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.server.repository.ProjectRepository;
 import org.mongodb.morphia.Key;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -63,7 +63,7 @@ public class ProjectService {
     return clean;
   }
 
-  public Set<Submission> getSubmissions(Iterable<Release> releases, String projectKey) {
+  public Set<Submission> getSubmissions(Iterable<ReleaseSubmissionView> releases, String projectKey) {
     val submissions = Sets.<Submission> newHashSet();
 
     for (val release : releases) {

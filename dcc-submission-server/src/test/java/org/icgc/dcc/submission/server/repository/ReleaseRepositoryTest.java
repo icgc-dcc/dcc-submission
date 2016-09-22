@@ -4,7 +4,6 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.submission.release.model.QSubmission.submission;
 import lombok.val;
 
 import org.icgc.dcc.submission.release.ReleaseException;
@@ -194,18 +193,6 @@ public class ReleaseRepositoryTest extends AbstractRepositoryTest {
   public void testUpdateReleaseStringRelease() throws Exception {
     // This method is tested exactly the same way as the updateCompletedRelease()
     testUpdateCompletedRelease();
-  }
-
-  @Test
-  public void testUpdateReleaseSubmissionState() throws Exception {
-    releaseRepository.updateReleaseSubmissionState("R1", "P1", SubmissionState.ERROR);
-
-    val notErrorCount = submissionMorphiaQuery.where(submission.state.ne(SubmissionState.ERROR)).count();
-    assertThat(notErrorCount).isEqualTo(1);
-
-    val errorSubmissions = datastore.createQuery(Submission.class).filter("state", SubmissionState.ERROR).asList();
-    assertThat(errorSubmissions).hasSize(1);
-    assertThat(errorSubmissions.get(0).getId()).isEqualTo("R1#P1");
   }
 
   @Test
