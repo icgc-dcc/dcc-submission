@@ -7,7 +7,7 @@ import pluralize from 'pluralize';
 import systems from '~/systems';
 import ActionButton from '~/common/components/ActionButton/ActionButton';
 import Tooltip from 'rc-tooltip';
-import { sortBy } from 'lodash';
+import _ from 'lodash';
 
 import ReleaseModel from '~/Release/ReleaseModel';
 
@@ -37,6 +37,33 @@ function User({name, isLocked, onRequestUnlock}) {
   return isLocked ? lockedUser : user;
 }
 
+function UserList({users}) {
+  return (
+    <div className="user-list">
+      {
+        _(users)
+          .sortBy('name')
+          .groupBy(user => user.name[0].toLowerCase())
+          .map((group, letter) => (
+            <div className="letter-group" key={letter}>
+              <h3 className="letter">{letter.toUpperCase()}</h3>
+              <div>
+                {group.map(user => (
+                  <User
+                    key={user.username}
+                    name={user.name}
+                    isLocked={user.locked}
+                    onRequestUnlock={() => this.handleClickUnlockUser(user.username)}
+                  />
+                ))}
+              </div>
+            </div>
+          )).value()
+      }
+    </div>
+  );
+}
+
 @observer
 class Admin extends Component {
   @observable nextRelease;
@@ -48,6 +75,10 @@ class Admin extends Component {
     user: '',
   };
 
+  @observable successMessages = {
+    release: '',
+  };
+
   @observable users = [];
 
   async componentWillMount() {
@@ -55,7 +86,11 @@ class Admin extends Component {
     this.nextRelease = new ReleaseModel();
     this.nextRelease.fetch({shouldFetchUpcomingRelease: true});
     this.loadValidationQueue();
-    this.users = await fetchUsers();
+    // this.users = await fetchUsers();
+    this.users = require('lodash').range(400).map((_, i) => ({
+      name: Math.random().toString(36).substring(7),
+      locked: i % 2 === 0 
+    }));
   }
 
   loadValidationQueue = async () => {
@@ -92,6 +127,7 @@ class Admin extends Component {
   };
 
   handlePerformReleaseSuccess = () => {
+    this.successMessage.release = `${this.nextRelease.name} successfully released!`;
     this.nextRelease.fetch({shouldFetchUpcomingRelease: true});
   }
 
@@ -223,34 +259,10 @@ class Admin extends Component {
                 {this.errorMessages.user}
               </div>
             ) : ''}
-          <div className="user-list">
-            {
-              sortBy(this.users, 'name')
-              .filter(user => user.locked)
-              .map( user => (
-                <User
-                  key={user.username}
-                  name={user.name}
-                  isLocked={user.locked}
-                  onRequestUnlock={() => this.handleClickUnlockUser(user.username)}
-                />
-              ))
-            }
-          </div>
-          <div className="user-list">
-            {
-              sortBy(this.users, 'name')
-              .filter(user => !user.locked)
-              .map( user => (
-                <User
-                  key={user.username}
-                  name={user.name}
-                  isLocked={user.locked}
-                  onRequestUnlock={() => this.handleClickUnlockUser(user.username)}
-                />
-              ))
-            }
-          </div>
+
+          <UserList users={this.users.filter(user => user.locked)}/>
+
+          <UserList users={this.users.filter(user => !user.locked)}/>
       </div>
     );
   }
