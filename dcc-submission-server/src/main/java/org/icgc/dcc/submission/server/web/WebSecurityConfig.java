@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.server.web;
 
 import static org.springframework.http.HttpMethod.GET;
 
+import org.icgc.dcc.submission.server.security.SubmissionAuthenticationEntryPoint;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -43,15 +44,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
               "/ws/codeLists",
               "/ws/dictionaries/**",
               "/releases/**",
-              "/login")
+              "/login",
+              "/")
             .permitAll()
           .antMatchers("/ws/**")
             .authenticated()
         .and()
-          .httpBasic()
-        .and()
-          .formLogin()
-          .loginPage("/")          
+          .httpBasic().authenticationEntryPoint(new SubmissionAuthenticationEntryPoint())
         .and()
           .csrf().disable();
   }

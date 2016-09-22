@@ -61,6 +61,11 @@ public class UserService {
   }
 
   public User resetUser(User user) {
+    if (user.getFailedAttempts() == 0) {
+      // No need to reset
+      return user;
+    }
+
     user.resetAttempts();
     return userRepository.updateUser(user);
   }

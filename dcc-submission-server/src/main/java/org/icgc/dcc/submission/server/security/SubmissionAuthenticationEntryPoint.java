@@ -15,37 +15,40 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.model;
+package org.icgc.dcc.submission.server.security;
 
-import java.io.Serializable;
-import java.util.Date;
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
-import org.bson.types.ObjectId;
-import org.mongodb.morphia.annotations.Id;
-import org.mongodb.morphia.annotations.Version;
+import java.io.IOException;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-public abstract class BaseEntity extends Timestamped implements HasId, Serializable {
+import org.springframework.security.authentication.LockedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.util.Assert;
 
-  @Id
-  @JsonIgnore
-  protected ObjectId id;
+import lombok.Data;
+import lombok.val;
 
-  /**
-   * Internal version for optimistic lock (do <b>not</b> modify directly)
-   */
-  @Version
-  private Long internalVersion;
+@Data
+public class SubmissionAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-  protected BaseEntity() {
-    this.created = new Date();
-    this.lastUpdate = this.created;
+  private String realmName;
+
+  public void afterPropertiesSet() throws Exception {
+    Assert.hasText(realmName, "realmName must be specified");
   }
 
   @Override
-  public ObjectId getId() {
-    return id;
+  public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+      throws IOException, ServletException {
+    response.addHeader("WWW-Authenticate", "Basic realm=\"" + realmName + "\"");
+    val sc = authException instanceof LockedException ? SC_FORBIDDEN : SC_UNAUTHORIZED;
+    response.sendError(sc, authException.getMessage());
   }
 
 }
