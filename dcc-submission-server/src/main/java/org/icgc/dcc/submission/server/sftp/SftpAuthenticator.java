@@ -26,6 +26,7 @@ import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
@@ -33,6 +34,7 @@ import com.google.common.eventbus.Subscribe;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -62,27 +64,33 @@ public class SftpAuthenticator implements PasswordAuthenticator {
   private volatile boolean enabled = true;
 
   @Override
+  @SneakyThrows
   public boolean authenticate(String username, String password, ServerSession session) {
-    val authentication = authenticate(username, password);
+    try {
+      val authentication = authenticate(username, password);
 
-    val authenticated = authentication.isAuthenticated();
-    if (authenticated) {
-      // Add principal to MINA SFTP session
-      if (!isAccessible(authentication)) {
-        // Only allow new connection when enabled
-        log.info("Blocked connection for user '{}' because SFTP is disabled", username);
-        disconnect(session);
+      val authenticated = authentication.isAuthenticated();
+      if (authenticated) {
+        // Add principal to MINA SFTP session
+        if (!isAccessible(authentication)) {
+          // Only allow new connection when enabled
+          log.info("Blocked connection for user '{}' because SFTP is disabled", username);
+          disconnect(session);
 
-        return false;
+          return false;
+        }
+
+        setAuthentication(session, authentication);
+
+        // Send an informative message
+        sendBanner(username, session, authentication);
       }
 
-      setAuthentication(session, authentication);
-
-      // Send an informative message
-      sendBanner(username, session, authentication);
+      return authenticated;
+    } catch (LockedException e) {
+      session.disconnect(0, e.getMessage());
+      return false;
     }
-
-    return authenticated;
   }
 
   /**
