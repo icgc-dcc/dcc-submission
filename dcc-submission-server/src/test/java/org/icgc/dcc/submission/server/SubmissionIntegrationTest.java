@@ -79,11 +79,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -111,6 +106,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.jcraft.jsch.SftpException;
+import com.mongodb.BasicDBObject;
+
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SubmissionIntegrationTest extends BaseIntegrationTest {
@@ -355,6 +356,12 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("init", "Dropping database...");
     datastore.getDB().dropDatabase();
 
+    status("init", "Creating admin...");
+    val admin = new BasicDBObject();
+    admin.put("username", "admin");
+    admin.put("failedAttempts", 0);
+    datastore.getDB().getCollection("User").save(admin);
+
     status("init", "Starting SMTP server...");
     smtpServer = SimpleSmtpServer.start(Integer.valueOf(properties.getMail().getSmtpPort()));
   }
@@ -404,6 +411,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   }
 
   private void seedSystem() throws IOException {
+
     status("seed", "Seeding dictionary 1 ({})...", FIRST_DICTIONARY_VERSION);
     assertThat(post(restTemplate, SEED_DICTIONARIES_ENDPOINT, FIRST_DICTIONARY_ARRAY).getStatusCode().is2xxSuccessful())
         .isTrue();

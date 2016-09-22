@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.server.core;
 
+import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.server.service.ReleaseService;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -49,7 +50,11 @@ public class StartupListener {
   @EventListener(ApplicationReadyEvent.class)
   public void start() throws InvalidStateException {
     log.info("Clearing queue, if needed...");
-    releaseService.removeQueuedSubmissions();
+    try {
+      releaseService.removeQueuedSubmissions();
+    } catch (ReleaseException e) {
+      log.warn("Could not clear queue: {}", e.getMessage());
+    }
   }
 
 }

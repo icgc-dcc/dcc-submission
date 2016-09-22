@@ -200,7 +200,9 @@ public class ReleaseService extends AbstractService {
    */
   public Release getNextRelease() {
     val nextRelease = releaseRepository.findNextRelease();
-    checkNotNull(nextRelease, "There is no next release in the database.");
+    if (nextRelease == null) {
+      throw new ReleaseException("There is no next release in the database.");
+    }
 
     return nextRelease;
   }
