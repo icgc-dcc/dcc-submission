@@ -24,7 +24,9 @@ import static org.icgc.dcc.common.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -45,7 +47,7 @@ import org.icgc.dcc.submission.dictionary.util.Dictionaries;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.fs.SubmissionFileSystem;
-import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
+import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.core.AbstractValidationContext;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
@@ -83,10 +85,13 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
 
   @Getter
   @NonNull
-  private final ReleaseSubmissionView release;
+  private final Release release;
   @Getter
   @NonNull
   private final Submission submission;
+  @Getter
+  @NonNull
+  private final Map<String, Submission> releaseSubmissions;
   @Getter
   @NonNull
   private final FileSystem fileSystem;
@@ -107,12 +112,13 @@ public class StandAloneNomalizationValidationContext extends AbstractValidationC
 
     this.param = new Param(fsUrl, overarchDirName, jobTracker);
 
-    this.release = new ReleaseSubmissionView(getFakeInputReleaseName());
+    this.release = new Release(getFakeInputReleaseName());
     this.submission = new Submission(projectKey, projectKey, getFakeInputReleaseName());
+    this.releaseSubmissions = Collections.singletonMap(projectKey, this.submission);
 
     this.fileSystem = FileSystems.getFileSystem(fsUrl);
     this.submissionFileSystem = new SubmissionFileSystem(param.getProperties(), fileSystem);
-    this.releaseFileSystem = new ReleaseFileSystem(submissionFileSystem, release);
+    this.releaseFileSystem = new ReleaseFileSystem(submissionFileSystem, release, releaseSubmissions);
     this.submissionDirectory = new SubmissionDirectory(
         submissionFileSystem, releaseFileSystem, release, projectKey, submission);
   }

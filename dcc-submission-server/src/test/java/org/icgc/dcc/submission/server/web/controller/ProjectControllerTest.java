@@ -33,11 +33,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 
+import lombok.val;
+
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.server.service.ReleaseService;
-import org.icgc.dcc.submission.server.web.controller.ProjectController;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -50,8 +51,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mongodb.CommandResult;
 import com.mongodb.MongoException.DuplicateKey;
-
-import lombok.val;
 
 @WebMvcTest(ProjectController.class)
 public class ProjectControllerTest extends ControllerTest {
@@ -95,8 +94,8 @@ public class ProjectControllerTest extends ControllerTest {
     when(projectService.getProject(projectOne.getKey())).thenReturn(projectOne);
     when(projectService.getProjectByUser(projectOne.getKey(), AUTH_ALLOWED_USER)).thenReturn(projectOne);
     when(projectService.getProjectsByUser(AUTH_ALLOWED_USER)).thenReturn(Lists.newArrayList(projectOne));
-    when(projectService.getSubmissions(releases, projectOne.getKey()))
-        .thenReturn(submissions);
+    // when(projectService.getSubmissions(releases, projectOne.getKey()))
+    // .thenReturn(submissions);
   }
 
   @Test
@@ -373,7 +372,7 @@ public class ProjectControllerTest extends ControllerTest {
             + "]"));
 
     verify(releaseService).getReleases();
-    verify(projectService).getSubmissions(releases, projectOne.getKey());
+    // verify(projectService).getSubmissions(releases, projectOne.getKey());
   }
 
 }

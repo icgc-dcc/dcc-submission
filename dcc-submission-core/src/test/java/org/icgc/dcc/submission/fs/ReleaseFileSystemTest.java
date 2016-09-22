@@ -25,6 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 
 import lombok.SneakyThrows;
@@ -34,6 +35,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.junit.Rule;
@@ -126,9 +128,10 @@ public class ReleaseFileSystemTest {
 
     // Which gave birth to the next heir
     val nextReleaseName = "ICGC15";
-    val nextRelease = mock(ReleaseSubmissionView.class);
+    val nextRelease = mock(Release.class);
+    val nextReleaseSubmissions = Collections.singletonMap(projectKey, mock(Submission.class));
     val nextReleaseDir = new File(rootDir, nextReleaseName);
-    val nextReleaseFileSystem = new ReleaseFileSystem(submissionFileSystem, nextRelease);
+    val nextReleaseFileSystem = new ReleaseFileSystem(submissionFileSystem, nextRelease, nextReleaseSubmissions);
 
     val nextSubmissionDir = new File(nextReleaseDir, projectKey);
     val nextSubmissionPath = nextSubmissionDir.getAbsolutePath();
@@ -143,8 +146,6 @@ public class ReleaseFileSystemTest {
     val nextSystemFile = new File(nextSystemDir, "system.txt");
 
     when(nextRelease.getName()).thenReturn(nextReleaseName);
-    when(nextRelease.getSubmission(anyString())).thenReturn(
-        Optional.<Submission> of(mock(Submission.class)));
     when(submissionFileSystem.buildFileStringPath(nextReleaseName, projectKey, submissionDonorFileName)).thenReturn(
         nextSubmissionDonorFile.getAbsolutePath());
     when(submissionFileSystem.buildFileStringPath(nextReleaseName, projectKey, submissionSampleFileName)).thenReturn(
@@ -159,7 +160,8 @@ public class ReleaseFileSystemTest {
     // Boot the file system
     when(submissionFileSystem.getFileSystem()).thenReturn(createFileSystem());
     when(submissionFileSystem.getRootStringPath()).thenReturn(rootDir.getAbsolutePath());
-    when(submissionFileSystem.buildProjectStringPath(previousReleaseName, projectKey)).thenReturn(previousSubmissionPath);
+    when(submissionFileSystem.buildProjectStringPath(previousReleaseName, projectKey)).thenReturn(
+        previousSubmissionPath);
     when(submissionFileSystem.buildProjectStringPath(nextReleaseName, projectKey)).thenReturn(nextSubmissionPath);
 
     //

@@ -21,7 +21,6 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Iterables.tryFind;
 import static java.util.Collections.emptyList;
-import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 
 import java.util.Date;
@@ -43,7 +42,6 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 /**
@@ -76,10 +74,7 @@ public class ReleaseSubmissionView extends Release {
     this.submissions = Lists.newArrayList(submissions);
   }
 
-  public void addSubmission(Submission submission) {
-    getSubmissions().add(submission);
-  }
-
+  @Deprecated
   @JsonIgnore
   public boolean isSignOffAllowed() {
     // At least one submission must be signed off on
@@ -94,6 +89,7 @@ public class ReleaseSubmissionView extends Release {
   }
 
   @JsonIgnore
+  @Deprecated
   public Iterable<String> getProjectKeys() {
     return copyOf(transform(getSubmissions(), new Function<Submission, String>() {
 
@@ -103,18 +99,6 @@ public class ReleaseSubmissionView extends Release {
       }
 
     }));
-  }
-
-  @JsonIgnore
-  public List<String> getInvalidProjectKeys() {
-    val invalidProjectKeys = ImmutableList.<String> builder();
-    for (val submission : getSubmissions()) {
-      if (submission.getState() == INVALID) {
-        invalidProjectKeys.add(submission.getProjectKey());
-      }
-    }
-
-    return invalidProjectKeys.build();
   }
 
   public Optional<Submission> getSubmission(final @NonNull String projectKey) {

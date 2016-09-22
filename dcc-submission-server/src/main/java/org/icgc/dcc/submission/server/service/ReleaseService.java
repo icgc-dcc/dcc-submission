@@ -27,6 +27,7 @@ import static org.icgc.dcc.submission.core.security.Authorizations.getUsername;
 import static org.icgc.dcc.submission.core.security.Authorizations.hasSpecificProjectPrivilege;
 import static org.icgc.dcc.submission.core.util.NameValidator.validateEntityName;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
+import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 import static org.icgc.dcc.submission.server.web.ServerErrorCode.DUPLICATE_RELEASE_NAME;
@@ -54,11 +55,11 @@ import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.Outcome;
-import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.report.FileReport;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.core.util.NameValidator;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.fs.SubmissionFileEvent;
 import org.icgc.dcc.submission.fs.SubmissionFileSystem;
@@ -127,20 +128,16 @@ public class ReleaseService extends AbstractService {
     return releaseRepository.countOpenReleases();
   }
 
-  public List<ReleaseSubmissionView> getReleases() {
+  public List<Release> getReleases() {
     log.info("Request to find all Releases");
-    val releases = releaseRepository.findReleases();
-    val submissions = submissionService.findReleaseNameToSubmissions();
-
-    return releases.stream()
-        .map(release -> new ReleaseSubmissionView(release, submissions.get(release.getName())))
-        .collect(toImmutableList());
+    return releaseRepository.findReleases();
   }
 
   /**
    * Returns a list of {@code Release}s with their @{code Submission} filtered based on the user's privilege on
    * projects.
    */
+  @Deprecated
   public List<ReleaseSubmissionView> getReleasesBySubject(Authentication authentication) {
     log.debug("getting releases for {}", getUsername(authentication));
 
@@ -176,34 +173,36 @@ public class ReleaseService extends AbstractService {
    */
   public Optional<ReleaseView> getReleaseViewBySubject(String releaseName, Authentication authentication) {
     val release = releaseRepository.findReleaseSummaryByName(releaseName);
-    val releaseSubmissions = submissionService.findSubmissions(release.getName());
-    val releaseSubmissionView = new ReleaseSubmissionView(release, releaseSubmissions);
+    val submissions = submissionService.findSubmissionsByProjectKey(releaseName);
     Optional<ReleaseView> releaseView = Optional.absent();
     if (release != null) {
       // populate project name for submissions
-      val projects = getProjects(releaseSubmissionView, authentication);
-      val submissionFilesMap = getSubmissionFilesByProjectKey(releaseName, releaseSubmissionView);
+      val projectKeys = submissionService.findReleaseProjectKeys(releaseName);
+      val projects = projectRepository.findProjects(projectKeys);
+      // TODO: Optimize. Looks like the method looks project keys itself.
+      val submissionFilesMap = getSubmissionFilesByProjectKey(release);
 
-      releaseView = Optional.of(new ReleaseView(releaseSubmissionView, projects, submissionFilesMap));
+      releaseView = Optional.of(new ReleaseView(release, submissions, projects, submissionFilesMap));
     }
 
     return releaseView;
   }
 
   public List<String> getSignedOffReleases() {
-    val submissions = getNextRelease().getSubmissions();
+    val nextRelease = getNextRelease();
+    val submissions = submissionService.findSubmissions(nextRelease.getName());
+
     return getProjectKeysBySubmissionState(submissions, SIGNED_OFF);
   }
 
   /**
    * Returns the {@code NextRelease} (guaranteed not to be null if returned).
    */
-  public ReleaseSubmissionView getNextRelease() {
+  public Release getNextRelease() {
     val nextRelease = releaseRepository.findNextRelease();
     checkNotNull(nextRelease, "There is no next release in the database.");
-    val nextReleaseSubmissions = submissionService.findSubmissions(nextRelease.getName());
 
-    return new ReleaseSubmissionView(nextRelease, nextReleaseSubmissions);
+    return nextRelease;
   }
 
   /**
@@ -243,7 +242,15 @@ public class ReleaseService extends AbstractService {
 
     // After initial release, create initial file system
     val projects = Sets.<String> newHashSet();
-    submissionFileSystem.createInitialReleaseFilesystem(new ReleaseSubmissionView(nextRelease), projects);
+    val submissions = submissionService.findSubmissionsByProjectKey(releaseName);
+    submissionFileSystem.createInitialReleaseFilesystem(nextRelease, submissions, projects);
+  }
+
+  public boolean isSignOffAllowed(String releaseName) {
+    return submissionService.findSubmissionStateByReleaseName(releaseName).stream()
+        .map(Submission::getState)
+        // At least one submission must be signed off on
+        .anyMatch(state -> state == SIGNED_OFF);
   }
 
   @Synchronized
@@ -266,7 +273,7 @@ public class ReleaseService extends AbstractService {
         log.error(errorMessage);
         throw new InvalidStateException(INVALID_STATE, errorMessage);
       }
-      if (!oldRelease.isSignOffAllowed()) {
+      if (!isSignOffAllowed(oldRelease.getName())) {
         val errorMessage = "No signed off project in " + oldRelease;
         log.error(errorMessage);
         throw new InvalidStateException(SIGNED_OFF_SUBMISSION_REQUIRED, errorMessage);
@@ -326,7 +333,7 @@ public class ReleaseService extends AbstractService {
     submissionService.updateExistingSubmissions(submissions.values());
 
     // Remove validation files in the ".validation" folder (leave normalization files untouched)
-    val releaseFs = submissionFileSystem.getReleaseFilesystem(release);
+    val releaseFs = submissionFileSystem.getReleaseFilesystem(release, submissions);
     val projects = projectRepository.findProjects(projectKeys);
     for (val project : projects) {
       releaseFs.getSubmissionDirectory(project.getKey()).removeValidationFiles();
@@ -624,14 +631,20 @@ public class ReleaseService extends AbstractService {
   }
 
   public void resetSubmissions() {
-    resetSubmissions(getNextRelease().getProjectKeys());
+    val projectKeys = submissionService.findReleaseProjectKeys(getNextRelease().getName());
+    resetSubmissions(projectKeys);
   }
 
   @Synchronized
   public void resetInvalidSubmissions() {
     val release = getNextRelease();
     val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
-    for (val projectKey : release.getInvalidProjectKeys()) {
+    val invalidProjectKeys = submissionService.findSubmissions(release.getName()).stream()
+        .filter(submission -> submission.getState() == INVALID)
+        .map(Submission::getProjectKey)
+        .collect(toImmutableList());
+
+    for (val projectKey : invalidProjectKeys) {
       resetSubmission(release, projectKey, filePatternToTypeMap);
     }
   }
@@ -698,7 +711,7 @@ public class ReleaseService extends AbstractService {
     log.info("Resolved project '{}'", projectKey);
   }
 
-  private Release performRelease(@NonNull ReleaseSubmissionView oldRelease, @NonNull String nextReleaseName,
+  private Release performRelease(@NonNull Release oldRelease, @NonNull String nextReleaseName,
       @NonNull String dictionaryVersion) {
 
     // Create new release entity
@@ -743,15 +756,16 @@ public class ReleaseService extends AbstractService {
     return newRelease;
   }
 
-  private void setUpNewReleaseFileSystem(@NonNull ReleaseSubmissionView oldRelease, @NonNull Release nextRelease) {
-    val oldReleaseFileSystem = submissionFileSystem.getReleaseFilesystem(convertRelease(oldRelease));
+  private void setUpNewReleaseFileSystem(@NonNull Release oldRelease, @NonNull Release nextRelease) {
+    val submissions = submissionService.findSubmissionsByProjectKey(oldRelease.getName());
+    val oldReleaseFileSystem = submissionFileSystem.getReleaseFilesystem(oldRelease, submissions);
 
     // Copy all files from the old to the new release
-    submissionFileSystem.getReleaseFilesystem(convertRelease(nextRelease))
+    submissionFileSystem.getReleaseFilesystem(nextRelease, submissions)
         .setUpNewReleaseFileSystem(
             nextRelease.getName(),
             oldReleaseFileSystem,
-            oldRelease.getProjectKeys());
+            submissions.keySet());
   }
 
   /**
@@ -762,11 +776,14 @@ public class ReleaseService extends AbstractService {
    */
   private void resetValidationFolder(@NonNull String projectKey, @NonNull Release release) {
     log.info("Resetting validation folder for '{}' in release '{}'", projectKey, release.getName());
-    submissionFileSystem.getReleaseFilesystem(convertRelease(release)).resetValidationFolder(projectKey);
+    getReleaseFileSystem(release).resetValidationFolder(projectKey);
   }
 
-  private ReleaseSubmissionView convertRelease(Release release) {
-    return new ReleaseSubmissionView(release, submissionService.findSubmissions(release.getName()));
+  private ReleaseFileSystem getReleaseFileSystem(Release release) {
+    val releaseName = release.getName();
+    val submissions = submissionService.findSubmissionsByProjectKey(releaseName);
+
+    return submissionFileSystem.getReleaseFilesystem(release, submissions);
   }
 
   private Submission resetSubmission(
@@ -786,18 +803,6 @@ public class ReleaseService extends AbstractService {
     resetValidationFolder(projectKey, release);
 
     return submission;
-  }
-
-  private List<Project> getProjects(ReleaseSubmissionView release, Authentication authentication) {
-    val builder = ImmutableList.<String> builder();
-    for (val projectKey : release.getProjectKeys()) {
-      val viewable = hasSpecificProjectPrivilege(authentication, projectKey);
-      if (viewable) {
-        builder.add(projectKey);
-      }
-    }
-
-    return projectRepository.findProjects(builder.build());
   }
 
   private Submission getSubmission(Release release, String projectKey) {
@@ -821,11 +826,13 @@ public class ReleaseService extends AbstractService {
     return new SubmissionFile(fileName, fileLastUpdate, fileSize, fileType, false);
   }
 
-  private Map<String, List<SubmissionFile>> getSubmissionFilesByProjectKey(String releaseName,
-      ReleaseSubmissionView release) {
+  private Map<String, List<SubmissionFile>> getSubmissionFilesByProjectKey(Release release) {
+    val releaseName = release.getName();
     val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
     val builder = ImmutableMap.<String, List<SubmissionFile>> builder();
-    for (val projectKey : release.getProjectKeys()) {
+    val projectKeys = submissionService.findReleaseProjectKeys(releaseName);
+
+    for (val projectKey : projectKeys) {
       val submissionFiles = getSubmissionFiles(releaseName, projectKey, filePatternToTypeMap);
 
       builder.put(projectKey, submissionFiles);

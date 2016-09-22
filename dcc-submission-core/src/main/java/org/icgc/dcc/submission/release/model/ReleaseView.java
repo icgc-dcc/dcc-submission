@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.release.model;
 
-import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.ArrayList;
@@ -25,15 +25,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.fs.SubmissionFile;
-import org.icgc.dcc.submission.release.ReleaseException;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.val;
+
+import org.icgc.dcc.submission.core.model.Project;
+import org.icgc.dcc.submission.fs.SubmissionFile;
+import org.icgc.dcc.submission.release.ReleaseException;
 
 @NoArgsConstructor
 @Getter
@@ -51,7 +51,7 @@ public class ReleaseView {
   protected String dictionaryVersion;
   protected Map<SubmissionState, Integer> summary = newHashMap();
 
-  public ReleaseView(ReleaseSubmissionView release, List<Project> projects,
+  public ReleaseView(Release release, Map<String, Submission> submissions, List<Project> projects,
       Map<String, List<SubmissionFile>> submissionFiles) {
     this.name = release.name;
     this.state = release.state;
@@ -60,12 +60,11 @@ public class ReleaseView {
     this.dictionaryVersion = release.dictionaryVersion;
 
     for (val project : projects) {
-      String projectKey = project.getKey();
-      val optional = release.getSubmission(projectKey);
-      checkState(optional.isPresent(), "Could not find project '%s' in release '%s'", projectKey, name);
+      val projectKey = project.getKey();
+      val submission = submissions.get(projectKey);
+      checkNotNull(submission, "Could not find project '%s' in release '%s'", projectKey, name);
 
-      val submission = optional.get();
-      DetailedSubmission detailedSubmission = new DetailedSubmission(submission, project);
+      val detailedSubmission = new DetailedSubmission(submission, project);
       detailedSubmission.setSubmissionFiles(submissionFiles.get(projectKey));
       this.submissions.add(detailedSubmission);
 

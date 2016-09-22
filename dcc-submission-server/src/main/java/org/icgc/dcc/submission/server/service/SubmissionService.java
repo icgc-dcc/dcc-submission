@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.server.service;
 
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableMap;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 
@@ -54,12 +55,25 @@ public class SubmissionService extends AbstractService {
         .collect(toImmutableMap(Submission::getProjectKey, submission -> submission));
   }
 
+  public Map<String, Submission> findSubmissionsByProjectKey(@NonNull String releaseName) {
+    return findSubmissions(releaseName).stream()
+        .collect(toImmutableMap(Submission::getProjectKey, submission -> submission));
+  }
+
+  public List<Submission> findSubmissionStateByReleaseName(@NonNull String releaseName) {
+    return submissionRepository.findSubmissionStateByReleaseName(releaseName);
+  }
+
   public Optional<Submission> findSubmission(@NonNull String releaseName, @NonNull String projectKey) {
     return Optional.fromNullable(submissionRepository.findSubmission(releaseName, projectKey));
   }
 
   public List<Submission> findSubmissions(@NonNull String releaseName) {
     return submissionRepository.findSubmissions(releaseName);
+  }
+
+  public List<Submission> findSubmissionByProjectKey(@NonNull String projectKey) {
+    return submissionRepository.findSubmissionByProjectKey(projectKey);
   }
 
   public Multimap<String, Submission> findReleaseNameToSubmissions() {
@@ -70,6 +84,12 @@ public class SubmissionService extends AbstractService {
     }
 
     return releaseSubmissions;
+  }
+
+  public List<String> findReleaseProjectKeys(@NonNull String releaseName) {
+    return findSubmissions(releaseName).stream()
+        .map(Submission::getProjectKey)
+        .collect(toImmutableList());
   }
 
   /**

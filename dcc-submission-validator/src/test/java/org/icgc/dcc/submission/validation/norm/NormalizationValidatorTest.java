@@ -38,6 +38,9 @@ import java.io.File;
 import java.util.List;
 import java.util.UUID;
 
+import lombok.SneakyThrows;
+import lombok.val;
+
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.cascading.CascadingContext;
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
@@ -46,7 +49,7 @@ import org.icgc.dcc.submission.core.config.SubmissionProperties.NormalizerProper
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationReporter;
@@ -63,11 +66,9 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.google.common.collect.ImmutableMap;
-
 import cascading.tap.Tap;
-import lombok.SneakyThrows;
-import lombok.val;
+
+import com.google.common.collect.ImmutableMap;
 
 @PowerMockIgnore({ "javax.management.*", "javax.xml.parsers.*", "com.sun.org.apache.xerces.internal.jaxp.*", "ch.qos.logback.*", "org.slf4j.*" })
 @RunWith(PowerMockRunner.class)
@@ -114,7 +115,7 @@ public class NormalizationValidatorTest {
   private DccFileSystem2 mockDccFileSystem2;
 
   @Mock
-  private Release mockRelease;
+  private ReleaseSubmissionView mockRelease;
 
   @Mock
   private Dictionary mockDictionary;

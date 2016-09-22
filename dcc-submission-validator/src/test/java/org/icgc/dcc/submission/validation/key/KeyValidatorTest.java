@@ -26,8 +26,8 @@ import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.lsRecursive;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.readSmallTextFile;
 import static org.icgc.dcc.submission.dictionary.util.Dictionaries.readResourcesDictionary;
-import static org.icgc.dcc.submission.fs.SubmissionFileSystem.VALIDATION_DIRNAME;
 import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
+import static org.icgc.dcc.submission.fs.SubmissionFileSystem.VALIDATION_DIRNAME;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.FS_DIR;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.REFERENCE_FILE_NAME;
 import static org.icgc.dcc.submission.validation.key.KVTestUtils.TEST_DIR;
@@ -51,7 +51,7 @@ import org.icgc.dcc.common.core.util.Joiners;
 import org.icgc.dcc.common.hadoop.fs.FileSystems;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.junit.Before;
@@ -120,7 +120,7 @@ public class KeyValidatorTest {
     validationDir = new Path(rootDir, VALIDATION_DIRNAME).toUri().toString();
 
     // Setup: Mock
-    val release = mock(Release.class);
+    val release = mock(ReleaseSubmissionView.class);
     when(release.getName()).thenReturn(RELEASE_NAME);
 
     val dictionary = readResourcesDictionary("0.14z");

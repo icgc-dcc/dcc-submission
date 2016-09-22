@@ -27,7 +27,7 @@ import java.util.List;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.User;
-import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.junit.Before;
@@ -54,7 +54,7 @@ public class FileSystemTest {
 
   protected static final String FILEPATH_2 = ROOT_DIR + RELEASE_NAME + "/" + PROJECT_KEY + "/" + FILENAME_2;
 
-  protected Release mockRelease;
+  protected ReleaseSubmissionView mockRelease;
 
   protected User mockUser;
 
@@ -66,7 +66,7 @@ public class FileSystemTest {
 
   @Before
   public void setUp() throws IOException {
-    this.mockRelease = mock(Release.class);
+    this.mockRelease = mock(ReleaseSubmissionView.class);
     this.mockUser = mock(User.class);
     this.mockProject = mock(Project.class);
     this.mockSubmission = mock(Submission.class);

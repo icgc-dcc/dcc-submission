@@ -30,6 +30,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,7 @@ import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseView;
 import org.icgc.dcc.submission.server.service.ReleaseService;
+import org.icgc.dcc.submission.server.service.SubmissionService;
 import org.icgc.dcc.submission.server.service.SystemService;
 import org.icgc.dcc.submission.server.web.ServerErrorResponseMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,20 +65,23 @@ import com.google.common.collect.ImmutableList;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ReleaseController {
 
+  @NonNull
   private final ReleaseService releaseService;
+  @NonNull
+  private final SubmissionService submissionService;
+  @NonNull
   private final SystemService systemService;
 
   @GetMapping
   @JsonView(Digest.class)
+  // TODO: Create a method that returns all authorized submissions.
   public ResponseEntity<?> getReleases(Authentication authentication) {
     log.debug("Getting visible releases");
     if (hasReleaseViewAuthority(authentication) == false) {
       return unauthorizedResponse();
     }
 
-    val visibileReleases = releaseService.getReleasesBySubject(authentication);
-
-    return ResponseEntity.ok(visibileReleases);
+    return ResponseEntity.ok(releaseService.getReleases());
   }
 
   @GetMapping("{name}")

@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.server.fs;
 
+import static java.util.Collections.singletonMap;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -54,6 +55,7 @@ public class SubmissionFileSystemTest extends FileSystemTest {
     when(this.mockFileSystem.exists(any(Path.class)))
         .thenReturn(false, false, true, true, false);
     this.submissionFileSystem.createInitialReleaseFilesystem(this.mockRelease,
+        singletonMap(PROJECT_KEY, mockSubmission),
         Sets.newHashSet(this.mockProject.getKey()));
   }
 
@@ -62,6 +64,7 @@ public class SubmissionFileSystemTest extends FileSystemTest {
     when(this.mockFileSystem.exists(any(Path.class)))
         .thenReturn(false, false, true, true, false);
     this.submissionFileSystem.createInitialReleaseFilesystem(this.mockRelease,
+        singletonMap(PROJECT_KEY, mockSubmission),
         Sets.newHashSet(this.mockProject.getKey()));
   }
 }

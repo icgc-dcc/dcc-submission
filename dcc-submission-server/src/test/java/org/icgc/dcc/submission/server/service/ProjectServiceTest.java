@@ -4,14 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import lombok.val;
 
 import org.bson.types.ObjectId;
 import org.elasticsearch.common.collect.Lists;
 import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.server.repository.ProjectRepository;
-import org.icgc.dcc.submission.server.service.ProjectService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,8 +21,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mongodb.morphia.Key;
 
 import com.google.common.collect.Sets;
-
-import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProjectServiceTest {
@@ -128,14 +126,14 @@ public class ProjectServiceTest {
 
   @Test
   public void testExtractSubmissions() throws Exception {
-    val releaseOne = new Release("R1");
-    val releaseTwo = new Release("R2");
-    val releaseThree = new Release("R3");
+    val releaseOne = new ReleaseSubmissionView("R1");
+    val releaseTwo = new ReleaseSubmissionView("R2");
+    val releaseThree = new ReleaseSubmissionView("R3");
     val submissionOne = new Submission(projectOne.getKey(), projectOne.getName(), releaseOne.getName());
     val submissionTwo = new Submission(projectOne.getKey(), projectOne.getName(), releaseTwo.getName());
 
-    releaseOne.addSubmission(submissionOne);
-    releaseTwo.addSubmission(submissionTwo);
+    // releaseOne.addSubmission(submissionOne);
+    // releaseTwo.addSubmission(submissionTwo);
 
     val releases = Sets.newHashSet(releaseOne, releaseTwo, releaseThree);
 

@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.server.sftp;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.lang.String.format;
+import static java.util.Collections.singletonMap;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -38,7 +39,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
+
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -49,18 +55,15 @@ import org.icgc.dcc.submission.core.model.Status;
 import org.icgc.dcc.submission.core.model.UserSession;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.server.service.MailService;
 import org.icgc.dcc.submission.server.service.ProjectService;
 import org.icgc.dcc.submission.server.service.ReleaseService;
-import org.icgc.dcc.submission.server.sftp.SftpAuthenticator;
-import org.icgc.dcc.submission.server.sftp.SftpContext;
-import org.icgc.dcc.submission.server.sftp.SftpServerService;
-import org.icgc.dcc.submission.server.sftp.SshServerProvider;
+import org.icgc.dcc.submission.server.service.SubmissionService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -77,10 +80,6 @@ import com.google.common.base.Optional;
 import com.google.common.eventbus.EventBus;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
-
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RunWith(MockitoJUnitRunner.class)
@@ -126,7 +125,11 @@ public class SftpServerServiceTest {
   @Mock
   ReleaseService releaseService;
   @Mock
+  SubmissionService submissionService;
+  @Mock
   MailService mailService;
+
+  Map<String, Submission> releaseSubmissions;
 
   SftpServerService service;
   File root;
@@ -140,6 +143,7 @@ public class SftpServerServiceTest {
     properties.getSftp().setPath(tmp.newFile().getAbsolutePath());
     properties.getSftp().setKey("key");
     properties.getSftp().setNioWorkers(NIO_WORKERS);
+    releaseSubmissions = singletonMap(PROJECT_KEY, submission);
 
     // Mock authentication
     val authentication = new UsernamePasswordAuthenticationToken(USERNAME, PASSWORD, null);
@@ -155,10 +159,11 @@ public class SftpServerServiceTest {
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
     when(projectService.getProject(not(eq(PROJECT_KEY)))).thenThrow(new RuntimeException(""));
     when(projectService.getProjects()).thenReturn(newArrayList(project));
+    when(submissionService.findSubmissionsByProjectKey(RELEASE_NAME)).thenReturn(releaseSubmissions);
 
     // Mock file system
     when(fs.buildReleaseStringPath(release.getName())).thenReturn(root.getAbsolutePath());
-    when(fs.getReleaseFilesystem(release, authentication)).thenReturn(releaseFileSystem);
+    when(fs.getReleaseFilesystem(release, releaseSubmissions, authentication)).thenReturn(releaseFileSystem);
     when(fs.getFileSystem()).thenReturn(fileSystem());
     when(releaseFileSystem.getSubmissionFileSystem()).thenReturn(fs);
     when(releaseFileSystem.getRelease()).thenReturn(release);
@@ -436,7 +441,8 @@ public class SftpServerServiceTest {
   }
 
   private SftpServerService createService() {
-    SftpContext context = new SftpContext(fs, releaseService, projectService, authenticator, mailService);
+    SftpContext context =
+        new SftpContext(fs, releaseService, submissionService, projectService, authenticator, mailService);
     SftpAuthenticator sftpAuthenticator = new SftpAuthenticator(authenticator, context);
     SshServer sshd = new SshServerProvider(properties, context, sftpAuthenticator).get();
     EventBus eventBus = new EventBus();

@@ -33,18 +33,18 @@ import static org.mockito.Mockito.when;
 import java.util.Collections;
 import java.util.Set;
 
+import lombok.SneakyThrows;
+import lombok.val;
+
 import org.icgc.dcc.submission.core.model.Outcome;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.release.model.QueuedProject;
-import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.server.repository.CodeListRepository;
-import org.icgc.dcc.submission.server.service.MailService;
-import org.icgc.dcc.submission.server.service.ReleaseService;
-import org.icgc.dcc.submission.server.service.ValidationService;
 import org.icgc.dcc.submission.validation.ValidationExecutor;
 import org.icgc.dcc.submission.validation.ValidationListener;
 import org.icgc.dcc.submission.validation.core.Validation;
@@ -62,9 +62,6 @@ import org.mockito.stubbing.Answer;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-
-import lombok.SneakyThrows;
-import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ValidationServiceTest {
@@ -106,7 +103,7 @@ public class ValidationServiceTest {
   @Mock
   ValidationContext context;
   @Mock
-  Release release;
+  ReleaseSubmissionView release;
   @Mock
   Submission submission;
   @Mock

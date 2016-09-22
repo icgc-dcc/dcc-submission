@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.core;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -30,7 +31,8 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.fs.SubmissionFileSystem;
-import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
+import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 
 /**
@@ -61,7 +63,12 @@ public interface ValidationContext extends ReportContext {
   /**
    * Gets the current release.
    */
-  ReleaseSubmissionView getRelease();
+  Release getRelease();
+
+  /**
+   * Gets the current release submissions by project key.
+   */
+  Map<String, Submission> getReleaseSubmissions();
 
   /**
    * Gets the current release dictionary.

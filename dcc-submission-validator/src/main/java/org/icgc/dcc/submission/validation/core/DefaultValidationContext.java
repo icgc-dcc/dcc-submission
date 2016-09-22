@@ -22,6 +22,7 @@ import static java.util.regex.Pattern.matches;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +42,8 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.fs.SubmissionFileSystem;
-import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
+import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactory;
 
@@ -73,7 +75,9 @@ public class DefaultValidationContext implements ValidationContext {
   @NonNull
   private final List<DataType> dataTypes;
   @NonNull
-  private final ReleaseSubmissionView release;
+  private final Release release;
+  @NonNull
+  private final Map<String, Submission> submissions;
   @NonNull
   private final Dictionary dictionary;
   @NonNull
@@ -115,7 +119,7 @@ public class DefaultValidationContext implements ValidationContext {
   }
 
   @Override
-  public ReleaseSubmissionView getRelease() {
+  public Release getRelease() {
     return release;
   }
 
@@ -131,7 +135,7 @@ public class DefaultValidationContext implements ValidationContext {
 
   @Override
   public ReleaseFileSystem getReleaseFileSystem() {
-    return submissionFileSystem.getReleaseFilesystem(release);
+    return submissionFileSystem.getReleaseFilesystem(release, submissions);
   }
 
   @Override
@@ -192,6 +196,17 @@ public class DefaultValidationContext implements ValidationContext {
   @Override
   public FileSchema getFileSchema(FileType fileType) {
     return getDictionary().getFileSchemaByName(fileType.getId()).orNull();
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.icgc.dcc.submission.validation.core.ValidationContext#getReleaseSubmissions()
+   */
+  @Override
+  public Map<String, Submission> getReleaseSubmissions() {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

@@ -40,7 +40,7 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.fs.SubmissionFileSystem;
-import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
+import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 
 import com.google.common.collect.ImmutableList;
@@ -70,7 +70,7 @@ public abstract class AbstractValidationContext implements ValidationContext {
   }
 
   @Override
-  public ReleaseSubmissionView getRelease() {
+  public Release getRelease() {
     throw new UnsupportedOperationException();
   }
 
@@ -91,7 +91,7 @@ public abstract class AbstractValidationContext implements ValidationContext {
 
   @Override
   public ReleaseFileSystem getReleaseFileSystem() {
-    return new ReleaseFileSystem(getSubmissionFileSystem(), getRelease());
+    return new ReleaseFileSystem(getSubmissionFileSystem(), getRelease(), getReleaseSubmissions());
   }
 
   @Override

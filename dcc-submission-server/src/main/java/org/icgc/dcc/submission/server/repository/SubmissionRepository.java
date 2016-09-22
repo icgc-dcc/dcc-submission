@@ -65,6 +65,11 @@ public class SubmissionRepository extends AbstractRepository<Submission, QSubmis
     return result.getUpdatedCount();
   }
 
+  public List<Submission> findSubmissionStateByReleaseName(@NonNull String releaseName) {
+    return where(entity.releaseName.eq(releaseName))
+        .list(entity.state);
+  }
+
   public Submission findSubmission(@NonNull String releaseName, @NonNull String projectKey) {
     return createFilterByReleaseNameQuery(releaseName)
         .where(entity.projectKey.eq(projectKey)).singleResult();
@@ -82,6 +87,12 @@ public class SubmissionRepository extends AbstractRepository<Submission, QSubmis
 
   public List<Submission> findSubmissions() {
     return list();
+  }
+
+  public List<Submission> findSubmissionByProjectKey(@NonNull String projectKey) {
+    return query()
+        .where(entity.projectKey.eq(projectKey))
+        .list();
   }
 
   public int deleteByReleaseAndNotState(@NonNull String releaseName, @NonNull SubmissionState state) {

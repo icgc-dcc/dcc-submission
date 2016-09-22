@@ -63,6 +63,7 @@ public class ProjectService {
     return clean;
   }
 
+  @Deprecated
   public Set<Submission> getSubmissions(Iterable<ReleaseSubmissionView> releases, String projectKey) {
     val submissions = Sets.<Submission> newHashSet();
 

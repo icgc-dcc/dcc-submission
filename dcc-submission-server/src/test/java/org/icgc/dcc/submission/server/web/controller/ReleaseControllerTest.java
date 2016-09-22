@@ -24,11 +24,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.Submission;
+import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
 import org.icgc.dcc.submission.server.service.ReleaseService;
 import org.icgc.dcc.submission.server.service.SystemService;
-import org.icgc.dcc.submission.server.web.controller.ReleaseController;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -42,7 +40,7 @@ public class ReleaseControllerTest extends ControllerTest {
   /**
    * Test data.
    */
-  Release release;
+  ReleaseSubmissionView release;
 
   /**
    * Test collaborators.
@@ -54,12 +52,12 @@ public class ReleaseControllerTest extends ControllerTest {
 
   @Before
   public void setUp() {
-    release = new Release();
+    release = new ReleaseSubmissionView("ICGC13");
     release.setDictionaryVersion("0.6e");
     release.setName("ICGC13");
     release.setReleaseDate();
-    release.addSubmission(new Submission("project1", "project one", release.getName()));
-    release.addSubmission(new Submission("project2", "project two", release.getName()));
+    // release.addSubmission(new Submission("project1", "project one", release.getName()));
+    // release.addSubmission(new Submission("project2", "project two", release.getName()));
 
     when(releaseService.getReleasesBySubject(any(Authentication.class))).thenReturn(newArrayList(release));
   }
@@ -72,10 +70,13 @@ public class ReleaseControllerTest extends ControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .with(admin()))
         .andExpect(status().isOk())
-        .andExpect(content().string("[{\"name\":\"ICGC13\",\"state\":\"OPENED\",\"releaseDate\":"
-            + release.getReleaseDate().getTime()
-            + ",\"dictionaryVersion\":\"0.6e\",\"submissions\":[{\"projectKey\":\"project1\",\"projectName\":\"project one\",\"releaseName\":\"ICGC13\"},"
-            + "{\"projectKey\":\"project2\",\"projectName\":\"project two\",\"releaseName\":\"ICGC13\"}]}]"));
+        .andExpect(
+            content()
+                .string(
+                    "[{\"name\":\"ICGC13\",\"state\":\"OPENED\",\"releaseDate\":"
+                        + release.getReleaseDate().getTime()
+                        + ",\"dictionaryVersion\":\"0.6e\",\"submissions\":[{\"projectKey\":\"project1\",\"projectName\":\"project one\",\"releaseName\":\"ICGC13\"},"
+                        + "{\"projectKey\":\"project2\",\"projectName\":\"project two\",\"releaseName\":\"ICGC13\"}]}]"));
   }
 
 }

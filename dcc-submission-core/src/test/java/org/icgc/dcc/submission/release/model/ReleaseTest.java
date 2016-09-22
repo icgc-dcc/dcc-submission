@@ -21,14 +21,14 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
+import lombok.val;
+
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
-
-import lombok.val;
 
 /**
  * 
@@ -53,13 +53,13 @@ public class ReleaseTest {
 
   private static final String EMAIL = "a@a.com";
 
-  @Test
-  public void test_addSubmission() {
-    assertEquals(0, release.getSubmissions().size());
-    Submission submission = new Submission();
-    release.addSubmission(submission);
-    assertEquals(1, release.getSubmissions().size());
-  }
+  // @Test
+  // public void test_addSubmission() {
+  // assertEquals(0, release.getSubmissions().size());
+  // Submission submission = new Submission();
+  // release.addSubmission(submission);
+  // assertEquals(1, release.getSubmissions().size());
+  // }
 
   @Test
   public void test_enqueue_oneKey() {
