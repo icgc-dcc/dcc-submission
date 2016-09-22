@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.server.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -42,8 +43,10 @@ import org.icgc.dcc.submission.server.repository.CodeListRepository;
 import org.icgc.dcc.submission.server.repository.DictionaryRepository;
 import org.icgc.dcc.submission.server.repository.ProjectRepository;
 import org.icgc.dcc.submission.server.repository.ReleaseRepository;
+import org.icgc.dcc.submission.server.repository.SubmissionRepository;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -58,6 +61,8 @@ import com.mongodb.MongoException;
 @RunWith(MockitoJUnitRunner.class)
 public class ReleaseServiceTest {
 
+  private static final String RELEASE_NAME = "release1";
+
   /**
    * Class under test.
    */
@@ -69,6 +74,7 @@ public class ReleaseServiceTest {
   private Datastore datastore;
   private Dictionary dictionary;
   private DictionaryService dictionaryService;
+  private SubmissionService submissionService;
   private Release release;
 
   @Mock
@@ -90,30 +96,25 @@ public class ReleaseServiceTest {
       datastore.delete(datastore.createQuery(Dictionary.class));
       datastore.delete(datastore.createQuery(Release.class));
       datastore.delete(datastore.createQuery(Project.class));
+      datastore.delete(datastore.createQuery(Submission.class));
 
       // Set up a minimal test case
       dictionary = new Dictionary();
       dictionary.setVersion("foo");
 
-      val project1 = new Project("Project One", "p1");
-      val validSubmission = new Submission();
+      val project1 = new Project("p1", "Project One");
+      val validSubmission = new Submission(project1.getKey(), project1.getName(), RELEASE_NAME);
       validSubmission.setState(SubmissionState.VALID);
-      validSubmission.setProjectKey(project1.getKey());
 
-      val project2 = new Project("Project Two", "p2");
-      val notValidatedSubmission = new Submission();
+      val project2 = new Project("p2", "Project Two");
+      val notValidatedSubmission = new Submission(project2.getKey(), project2.getName(), RELEASE_NAME);
       notValidatedSubmission.setState(SubmissionState.NOT_VALIDATED);
-      notValidatedSubmission.setProjectKey(project2.getKey());
 
-      val project3 = new Project("Project Three", "p3");
-      val queuedSubmission = new Submission();
+      val project3 = new Project("p3", "Project Three");
+      val queuedSubmission = new Submission(project3.getKey(), project3.getName(), RELEASE_NAME);
       queuedSubmission.setState(SubmissionState.QUEUED);
-      queuedSubmission.setProjectKey(project3.getKey());
 
-      release = new Release("release1");
-      // release.addSubmission(validSubmission);
-      // release.addSubmission(notValidatedSubmission);
-      // release.addSubmission(queuedSubmission);
+      release = new Release(RELEASE_NAME);
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
@@ -121,9 +122,15 @@ public class ReleaseServiceTest {
       val dictionaryRepository = spy(new DictionaryRepository(morphia, datastore));
       val codeListRepository = spy(new CodeListRepository(morphia, datastore));
       val projectRepository = spy(new ProjectRepository(morphia, datastore));
+      val submissionRepository = spy(new SubmissionRepository(morphia, datastore));
+
+      submissionService = new SubmissionService(mailService, submissionRepository);
+      submissionService.addSubmission(validSubmission);
+      submissionService.addSubmission(notValidatedSubmission);
+      submissionService.addSubmission(queuedSubmission);
 
       releaseService = new ReleaseService(mailService, submissionFileSystem,
-          releaseRepository, dictionaryRepository, projectRepository, null);
+          releaseRepository, dictionaryRepository, projectRepository, submissionService);
 
       dictionaryService = new DictionaryService(releaseService, dictionaryRepository, codeListRepository);
       dictionaryService.addDictionary(dictionary);
@@ -182,18 +189,19 @@ public class ReleaseServiceTest {
     assertEquals(2, releaseService.getReleases().size());
   }
 
-  // @Test
-  // public void test_can_release() throws InvalidStateException, DccModelOptimisticLockException {
-  // val nextReleaseRelease = releaseService.getNextRelease();
-  // assertTrue(!nextReleaseRelease.isSignOffAllowed());
-  //
-  // List<String> projectKeys = new ArrayList<String>();
-  // projectKeys.add("p1");
-  // String user = "admin";
-  // releaseService.signOffRelease(projectKeys, user);
-  //
-  // assertTrue(nextReleaseRelease.isSignOffAllowed());
-  // }
+  @Test
+  public void test_can_release() throws InvalidStateException, DccModelOptimisticLockException {
+    val nextReleaseRelease = releaseService.getNextRelease();
+    val releaseName = nextReleaseRelease.getName();
+    assertThat(releaseService.isSignOffAllowed(releaseName)).isFalse();
+
+    List<String> projectKeys = new ArrayList<String>();
+    projectKeys.add("p1");
+    String user = "admin";
+    releaseService.signOffRelease(projectKeys, user);
+
+    assertThat(releaseService.isSignOffAllowed(releaseName)).isTrue();
+  }
 
   // @Test
   public void test_update_valid() {

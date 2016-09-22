@@ -83,6 +83,8 @@ public class ValidationServiceTest {
   @Mock
   ReleaseService releaseService;
   @Mock
+  SubmissionService submissionService;
+  @Mock
   CodeListRepository codeListRepository;
   @Mock
   ValidationExecutor executor;

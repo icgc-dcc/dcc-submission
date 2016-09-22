@@ -3,10 +3,10 @@ package org.icgc.dcc.submission.server.repository;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import lombok.val;
 
 import org.icgc.dcc.submission.release.model.QRelease;
-import org.icgc.dcc.submission.release.model.QSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
@@ -23,11 +23,9 @@ import com.mysema.query.mongodb.morphia.MorphiaQuery;
 @RunWith(MockitoJUnitRunner.class)
 public class ReleaseRepositoryTest extends AbstractRepositoryTest {
 
-  private SubmissionRepository submissionRepository;
   private ReleaseRepository releaseRepository;
 
-  private MorphiaQuery<Release> releaseMorphiaQuery;
-  private MorphiaQuery<Submission> submissionMorphiaQuery;
+  private MorphiaQuery<Release> morphiaQuery;
   private Datastore datastore;
   private Release releaseOne;
   private Release releaseTwo;
@@ -52,18 +50,16 @@ public class ReleaseRepositoryTest extends AbstractRepositoryTest {
 
     datastore.ensureIndexes();
 
-    submissionRepository = new SubmissionRepository(morphia, datastore);
     releaseRepository = new ReleaseRepository(morphia, datastore);
 
-    releaseMorphiaQuery = new MorphiaQuery<Release>(morphia, datastore, QRelease.release);
-    submissionMorphiaQuery = new MorphiaQuery<Submission>(morphia, datastore, QSubmission.submission);
+    morphiaQuery = new MorphiaQuery<Release>(morphia, datastore, QRelease.release);
   }
 
   @Test
   public void testFindReleases() {
     val expected = newArrayList(releaseOne, releaseTwo);
     val actual = releaseRepository.findReleases();
-    val morphiaResponse = copyOf(releaseMorphiaQuery.list());
+    val morphiaResponse = copyOf(morphiaQuery.list());
 
     assertThat(actual).isEqualTo(expected);
     assertThat(morphiaResponse).isEqualTo(expected);
@@ -91,7 +87,7 @@ public class ReleaseRepositoryTest extends AbstractRepositoryTest {
   public void testFind() {
     val expected = releaseOne;
     val actual = releaseRepository.findReleaseByName(releaseOne.getName());
-    val morphiaResponse = releaseMorphiaQuery.where(QRelease.release.name.eq(releaseOne.getName())).singleResult();
+    val morphiaResponse = morphiaQuery.where(QRelease.release.name.eq(releaseOne.getName())).singleResult();
 
     assertThat(actual).isEqualTo(expected);
     assertThat(morphiaResponse).isEqualTo(expected);
@@ -102,63 +98,31 @@ public class ReleaseRepositoryTest extends AbstractRepositoryTest {
     val expected = releaseTwo;
     val actual = releaseRepository.findOpenRelease();
     val morphiaResponse =
-        releaseMorphiaQuery.where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
+        morphiaQuery.where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
 
     assertThat(actual).isEqualTo(expected);
     assertThat(morphiaResponse).isEqualTo(expected);
   }
 
-  // @Test
-  // public void testUpdateRelease() throws Exception {
-  // val submission = new Submission("PRJ3", "Project Three", releaseTwo.getName());
-  // val getOpenReleaseQuery =
-  // releaseMorphiaQuery.where(QRelease.release.state.eq(ReleaseState.OPENED));
-  //
-  // // Check that Release in DB does not have Submission
-  // // FIXME: Add submissions
-  // val release = new ReleaseSubmissionView(getOpenReleaseQuery.singleResult());
-  // release.getSubmission(submission.getProjectKey());
-  // assertThat(!release.getSubmission(submission.getProjectKey()).isPresent());
-  //
-  // // Add Submission
-  // release.addSubmission(submission);
-  //
-  // // Check that Release has Submission
-  // assertThat(release.getSubmissions()).contains(submission);
-  //
-  // // Save to DB
-  // releaseRepository.updateRelease(release.getName(), release);
-  //
-  // // Confirm that Release in DB has Submission
-  // val actual = getOpenReleaseQuery.singleResult();
-  // assertThat(actual).isEqualTo(release);
-  // assertThat(actual.getSubmissions()).contains(submission);
-  // }
+  @Test
+  public void testUpdateRelease() throws Exception {
+    releaseTwo.setState(COMPLETED);
+    releaseRepository.updateRelease("R2", releaseTwo);
+    val completedReleaseCount = morphiaQuery.where(QRelease.release.state.eq(COMPLETED)).count();
+    assertThat(completedReleaseCount).isEqualTo(2);
+  }
 
-  // @Test
-  // public void testUpdateCompletedRelease() throws Exception {
-  // val submission = new Submission("P3", "P3", "R1");
-  // val testRelease = new Release("R1");
-  // testRelease.setState(ReleaseState.COMPLETED);
-  // testRelease.setReleaseDate();
-  // testRelease.addSubmission(submission);
-  //
-  // val newRelease = releaseRepository.updateCompletedRelease(testRelease);
-  // assertThat(newRelease.getName()).isEqualTo(testRelease.getName());
-  // assertThat(newRelease.getState()).isEqualTo(testRelease.getState());
-  // assertThat(newRelease.getReleaseDate()).isEqualTo(testRelease.getReleaseDate());
-  //
-  // val submissions = newRelease.getSubmissions();
-  // assertThat(submissions).hasSize(1);
-  // assertThat(submissions.get(0)).isEqualTo(submission);
-  //
-  // assertThat(submissionMorphiaQuery.list()).hasSize(1);
-  // }
+  @Test
+  public void testUpdateCompletedRelease() throws Exception {
+    releaseTwo.complete();
+    releaseRepository.updateCompletedRelease(releaseTwo);
 
-  // @Test
-  // public void testUpdateReleaseStringRelease() throws Exception {
-  // // This method is tested exactly the same way as the updateCompletedRelease()
-  // testUpdateCompletedRelease();
-  // }
+    val releases = morphiaQuery.where(QRelease.release.name.eq("R2")).list();
+    assertThat(releases).hasSize(1);
+
+    val r2 = releases.get(0);
+    assertThat(r2.getState()).isEqualTo(ReleaseState.COMPLETED);
+    assertThat(r2.getReleaseDate()).isEqualTo(releaseTwo.getReleaseDate());
+  }
 
 }

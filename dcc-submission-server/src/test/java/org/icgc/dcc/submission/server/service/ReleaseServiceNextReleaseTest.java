@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.server.service;
 
+import static java.util.Collections.singletonList;
+import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
@@ -76,6 +78,8 @@ public class ReleaseServiceNextReleaseTest {
   ReleaseFileSystem releaseFileSystem;
   @Mock
   MailService mailService;
+  @Mock
+  SubmissionService submissionService;
 
   @Mock
   DictionaryService dictionaryService;
@@ -102,12 +106,8 @@ public class ReleaseServiceNextReleaseTest {
     when(release.getName()).thenReturn(FIRST_RELEASE_NAME);
     when(release.getState()).thenReturn(ReleaseState.OPENED);
     when(release.getState()).thenReturn(ReleaseState.OPENED).thenReturn(ReleaseState.COMPLETED);
-    // when(release.getProjectKeys()).thenReturn(
-    // newArrayList(PROJECT_NAME));
-    // when(release.getSubmissions()).thenReturn(
-    // newArrayList(new Submission(PROJECT_NAME, PROJECT_NAME, FIRST_RELEASE_NAME, SubmissionState.SIGNED_OFF)));
-    // when(release.getSubmissions()).thenReturn(
-    // newArrayList(new Submission(PROJECT_NAME, PROJECT_NAME, FIRST_RELEASE_NAME, SubmissionState.SIGNED_OFF)));
+    when(submissionService.findSubmissionStateByReleaseName(FIRST_RELEASE_NAME))
+        .thenReturn(singletonList(new Submission(PROJECT_NAME, PROJECT_NAME, FIRST_RELEASE_NAME, SIGNED_OFF)));
 
     when(releaseRepository.findNextRelease()).thenReturn(release);
     when(releaseRepository.findReleaseByName(FIRST_RELEASE_NAME)).thenReturn(release);
@@ -208,7 +208,6 @@ public class ReleaseServiceNextReleaseTest {
     when(dictionary.getVersion()).thenReturn("0.6c");
     when(dictionary.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> absent());
     when(release.getDictionaryVersion()).thenReturn("0.6c");
-    // when(release.isSignOffAllowed()).thenReturn(true);
     when(release.isQueued()).thenReturn(false);
   }
 
