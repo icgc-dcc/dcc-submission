@@ -86,11 +86,11 @@ class Admin extends Component {
     this.nextRelease = new ReleaseModel();
     this.nextRelease.fetch({shouldFetchUpcomingRelease: true});
     this.loadValidationQueue();
-    // this.users = await fetchUsers();
-    this.users = require('lodash').range(400).map((_, i) => ({
-      name: Math.random().toString(36).substring(7),
-      locked: i % 2 === 0 
-    }));
+    this.users = await fetchUsers();
+    // this.users = require('lodash').range(400).map((_, i) => ({
+    //   name: Math.random().toString(36).substring(7),
+    //   locked: i % 2 === 0 
+    // }));
   }
 
   loadValidationQueue = async () => {
