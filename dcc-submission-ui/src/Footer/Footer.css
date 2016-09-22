@@ -14,4 +14,9 @@
   .oicr-logo:not(:hover) {
     opacity: 0.6;
   }
+  
+  .release-locked & {
+    transition: background-color 0.1s var(--inQuad);
+    background-color: #f0f0f0;
+  }
 }

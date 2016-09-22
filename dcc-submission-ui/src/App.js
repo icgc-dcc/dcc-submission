@@ -7,18 +7,28 @@ import Header from './Header/Header';
 import Footer from './Footer/Footer';
 
 import user from '~/user';
-import systemInfo from '~/systemInfo';
+import systems from '~/systems';
+
 
 @observer
 class App extends Component {
+  componentWillMount () {
+    this._pollInterval = global.setInterval(function () {
+      if (user.isLoggedIn) systems.fetch();
+    }, require('~/common/constants/POLL_INTERVAL'));
+  }
+
+  componentWillUnmount () {
+    global.clearInterval(this._pollInterval);
+  }
   render() {
     const fullView = (
       <div className="App">
         <Header/>
+        { systems.isReleaseLocked ? (
+          <div className="lock-message alert alert-warning">Release is locked. No validations or file transfers are permitted</div>
+        ) : null }
         <div className="container">
-          { systemInfo.isLocked ? (
-            <div className="alert alert-danger">Release is locked. No validations or file transfers are permitted</div>
-          ) : null }
           <Breadcrumbs
             routes={this.props.routes}
             params={this.props.params}

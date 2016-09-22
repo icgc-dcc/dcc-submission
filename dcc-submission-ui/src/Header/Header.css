@@ -2,6 +2,11 @@
 
 .Header {
 
+  .navbar-collapse{
+    a:not(.username) {
+      color: #337ab7;
+    }
+  }
 
   .main-logo {
     margin: 0;

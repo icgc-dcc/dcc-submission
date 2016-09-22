@@ -12,11 +12,21 @@ function requireAuth(nextState, replace) {
   }
 }
 
+function requireAdmin(nextState, replace) {
+  if (!user.isAdmin) {
+    replace({
+      pathname: '/login',
+      state: { nextPathname: nextState.location.pathname }
+    })
+  }
+}
+
 const routes = (
     <Router history={browserHistory}>
       <Route name="App" path="/" component={require('./App.js')}>
         <IndexRoute component={require('./Releases/Releases.js')} onEnter={requireAuth} />
         <Route name="Login" path="login" component={require('./Login/Login.js')}/>
+        <Route name="Admin" path="admin" component={require('./Admin/Admin.js')} onEnter={requireAdmin}/>
         <Route name="Calendar" path="calendar" component={require('./Calendar/Calendar.js')}/>
         <Route name="Releases" path="releases" onEnter={requireAuth}>
           <IndexRoute name="ReleasesIndex" component={require('./Releases/Releases.js')}/>

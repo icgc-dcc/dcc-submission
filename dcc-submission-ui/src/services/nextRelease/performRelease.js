@@ -4,6 +4,7 @@ const PERFORM_RELEASE_ERRORS = {
   'InvalidName': 'A release name must only use letters[a-z], numbers(0-9), underscores(_) and dashes(-)',
   'DuplicateReleaseName': 'That release name has already been used.',
   'SignedOffSubmissionRequired': 'The release needs at least one SIGNED OFF submission before it can be COMPLETED.',
+  'QueueNotEmpty': 'The validation queue is not empty. Please wait for it to complete or clear the queue before release.',
   _default: 'An error occurred. Please contact Support for assistance.'
 };
 
@@ -23,4 +24,3 @@ export async function performRelease ({nextReleaseName}) {
   }
   return responseData;
 }
-

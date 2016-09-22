@@ -2,27 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import {observable} from 'mobx';
 import {observer} from 'mobx-react';
 import Modal from 'react-modal';
-
-import { fetchHeaders } from '~/utils';
-
-import { setSystemLockStatus } from '~/systemInfo';
-
-export async function fetchSystemStatus () {
-  const response = await fetch(`/ws/systems`, {
-    headers: fetchHeaders.get()
-  });
-  return await response.json();
-}
-
-function setSystemSftpStatus({sftpEnabled}) {
-  return fetch(`/ws/systems`, {
-    method: 'PATCH',
-    headers: fetchHeaders.get(),
-    body: JSON.stringify({
-      active: sftpEnabled,
-    }),
-  });
-}
+import systems from '~/systems';
 
 @observer
 class AdminModal extends Component {
@@ -31,22 +11,18 @@ class AdminModal extends Component {
     onRequestClose: PropTypes.func.isRequired,
   };
 
-  @observable sftpEnabled = undefined;
-  @observable activeSftpSessions = 0;
-  @observable userSessions = [];
-
   async componentWillReceiveProps({isOpen}) {
-    if (isOpen) {
-      const responseData = await fetchSystemStatus();
-      Object.assign(this, responseData);
-    }
+    systems.fetch();
   }
 
   handleClickSubmit = async () => {
-    const sftpEnabled = !this.sftpEnabled;
+    console.log(systems);
     try {
-      await setSystemSftpStatus({sftpEnabled});
-      setSystemLockStatus(!sftpEnabled)
+      if (systems.isReleaseLocked) {
+        await systems.unlockRelease()
+      } else {
+        await systems.lockRelease();
+      }
       this.props.onRequestClose();
     } catch (e) {
       console.log('caught an error', e.message);
@@ -60,8 +36,8 @@ class AdminModal extends Component {
   };
 
   render () {
-    const {isOpen} = this.props;
-    const message = this.sftpEnabled 
+    const {isOpen} = this.props; 
+    const message = systems.isReleaseLocked 
       ? `Click on "Lock Submissions" to prevent uploading and validation on non-admin accounts.`
       : `Click on "Unlock Submissions" to allow uploading and validation on non-admin accounts.`;
     return (
@@ -92,9 +68,9 @@ class AdminModal extends Component {
             ) : ''}
             <div>{message}</div>
             <ul>
-                <li>There are <strong>{ this.activeSftpSessions }</strong> active SFTP sessions:<br/>
+                <li>There are <strong>{ systems.activeSftpSessions }</strong> active SFTP sessions:<br/>
                     <ul>
-                      {this.userSessions.map(user => (
+                      {systems.userSessions.map(user => (
                         <li key={user.userName}><span className="label label-default">{user.userName}</span></li>
                       ))}
                     </ul>
@@ -105,9 +81,9 @@ class AdminModal extends Component {
             <button className="btn btn-default" onClick={this.handleClickClose}>Close</button>
             <button
               type="submit"
-              className={`btn ${this.sftpEnabled ? 'btn-danger' : 'btn-primary'}`}
+              className={`btn ${systems.isReleaseLocked ? 'btn-primary' : 'btn-danger'}`}
               onClick={this.handleClickSubmit}
-            >{this.sftpEnabled ? 'Lock' : 'Unlock'} Submissions</button>
+            >{systems.isReleaseLocked ? 'Unlock' : 'Lock'} Submissions</button>
           </div>
         </div>
       </Modal>

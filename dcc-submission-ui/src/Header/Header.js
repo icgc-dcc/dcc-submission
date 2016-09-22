@@ -1,24 +1,14 @@
 import React, { Component } from 'react';
 
-import {observable, action} from 'mobx';
 import {observer} from 'mobx-react';
 import {Link} from 'react-router';
 
 import user from '~/user.js';
 
-import AdminModal from '~/common/components/AdminModal/AdminModal';
-
 import './Header.css';
 
 @observer
 class Header extends Component {
-  @observable shouldShowAdmin = false;
-  @action handleRequestHideAdmin = () => {
-    this.shouldShowAdmin = false;
-  }
-  @action handleRequestShowAdmin = () => {
-    this.shouldShowAdmin = true;
-  }
 
   render() {
     return (
@@ -42,12 +32,9 @@ class Header extends Component {
                 <li>
                   <Link to={`/releases`}>Releases</Link>
                 </li>
-                <li>
-                  <Link to={`/calendar`}>Calendar</Link>
-                </li>
                 { user.isAdmin &&
                   <li>
-                    <a className="link" onClick={this.handleRequestShowAdmin}>Admin</a>
+                    <Link to="/admin" className="link">Admin</Link>
                   </li>
                 }
                 <li className="dropdown">
@@ -72,11 +59,6 @@ class Header extends Component {
             </div>
           </div>
         </nav>
-        
-        <AdminModal
-          isOpen={this.shouldShowAdmin}
-          onRequestClose={this.handleRequestHideAdmin}
-        />
       </div>
     );
   }

@@ -1,7 +1,6 @@
 import {observable, action, autorun} from 'mobx';
 
 import {fetchHeaders} from '~/utils';
-import { setSystemInfoFromHeaders } from '~/systemInfo';
 
 function generateToken(username, password) {
   return global.btoa(`${username}:${password}`);
@@ -39,8 +38,6 @@ const user = observable({
         }
       });
 
-    setSystemInfoFromHeaders(response.headers);
-
     if (response.status === 200) {
       this.isLoggingIn = false;
       const userData = await response.json();
@@ -50,6 +47,10 @@ const user = observable({
       this.isLoggedIn = true;
     } else if (response.status === 401) {
       throw new Error('Incorrect username or password');
+    } else if (response.status === 403) {
+      const errorData = await response.json();
+      console.log(errorData);
+      throw new Error(errorData.message);
     } else {
       throw new Error('Login failed');
     }
@@ -65,5 +66,7 @@ const user = observable({
 });
 
 autorun(() => window.localStorage.setItem('storedEmailsToNotify', JSON.stringify(user.emailsToNotify.slice())));
+
+window.user = user;
 
 export default user;

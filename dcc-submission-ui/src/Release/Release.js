@@ -20,7 +20,6 @@ import ReleaseModel from './ReleaseModel.js';
 import SignOffSubmissionModal from '~/Submission/modals/SignOffSubmissionModal';
 import ValidateSubmissionModal from '~/Submission/modals/ValidateSubmissionModal';
 import ResetSubmissionModal from '~/Submission/modals/ResetSubmissionModal';
-import PerformReleaseModal from '~/Release/modals/PerformReleaseModal';
 import CancelSubmissionValidationModal from '~/Submission/modals/CancelSubmissionValidationModal';
 
 import {queueSubmissionForValidation, signOffSubmission, resetSubmission, cancelSubmissionValidation} from '~/Submission/SubmissionModel';
@@ -86,16 +85,6 @@ class Release extends Component {
     this.closeResetModal();
   }
 
-  @observable releaseToPerform;
-  @computed get shouldShowPerformReleaseModal() { return !!this.releaseToPerform }
-  handleClickPerformRelease = (release) => { this.releaseToPerform = release }
-  closePerformReleaseModal = () => { this.releaseToPerform = null }
-  handleRequestSubmitForRelease = async ({nextReleaseName}) => {
-    await this.release.performRelease({nextReleaseName});
-    this.closePerformReleaseModal();
-    this.release.fetch();
-  }
-
   componentWillMount() {
     const releaseName = this.props.params.releaseName;
     this.release = new ReleaseModel({name: releaseName});
@@ -149,17 +138,7 @@ class Release extends Component {
             </span>
           ))}
         </li>
-        { canRelease && (
-          <li className="actions-container">
-            <ActionButton
-              onClick={() => this.handleClickPerformRelease(release)}
-              className={`btn release-now-btn`}
-            >
-              <i className="fa fa-rocket"/>
-              Release Now
-            </ActionButton>
-          </li>
-        )}
+        
       </ul>
 
       <div>
@@ -241,12 +220,6 @@ class Release extends Component {
         onRequestClose={this.closeSignOffModal}
         projectKey={this.submissionToSignOff && this.submissionToSignOff.projectKey}
         projectName={this.submissionToSignOff && this.submissionToSignOff.projectName}
-      />
-      <PerformReleaseModal
-        isOpen={this.shouldShowPerformReleaseModal}
-        onRequestSubmit={this.handleRequestSubmitForRelease}
-        onRequestClose={this.closePerformReleaseModal}
-        releaseName={this.releaseToPerform ? this.releaseToPerform.name : ''}
       />
       <ResetSubmissionModal
         isOpen={this.shouldShowResetModal}

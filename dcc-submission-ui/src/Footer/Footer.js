@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import {observable, action} from 'mobx';
 import {observer} from 'mobx-react';
 
-import systemInfo from '~/systemInfo';
+import systems from '~/systems';
 import FeedbackModal from '~/common/components/FeedbackModal/FeedbackModal';
 
 import './Footer.css';
@@ -19,7 +19,7 @@ class Header extends Component {
   }
 
   render () {
-    const {version, commitId} = systemInfo;
+    const {version, commitId} = systems;
     return (
       <div className="Footer row">
         <a className="col-sm-2 oicr-logo" href="http://oicr.on.ca" target="_blank">
