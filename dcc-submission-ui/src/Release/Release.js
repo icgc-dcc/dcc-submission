@@ -99,7 +99,6 @@ class Release extends Component {
   render () {
     const release = this.release;
     const releaseName = this.props.params.releaseName;
-    window.debugLoad = () => release.fetch(releaseName);
     const items = release.submissions;
 
     const tableOptions = {
@@ -107,8 +106,6 @@ class Release extends Component {
       noDataText: release.isLoading ? 'Loading...' : 'There is no data to display',
       defaultSortName: 'projectKey',
     };
-
-    const canRelease = release.state === RELEASE_STATES.OPENED && user.isAdmin;
 
     return (
     <div className="Release container">
@@ -171,11 +168,12 @@ class Release extends Component {
             dataSort={true}
             sortFunc={(a, b, order) => order === 'desc' ? a.submissionFiles.length - b.submissionFiles.length : b.submissionFiles.length - a.submissionFiles.length}
             dataFormat={ files => {
-              const fileSize = formatFileSize(files
+              const fileSize = files
                   .map(x => x.size)
-                  .reduce((a, b) => a + b));
+                  .reduce((a, b) => a + b, 0);
+              const formattedFileSize = formatFileSize(fileSize);
               const fileCount = files.length;
-              return `${fileCount} (${fileSize})`;
+              return `${fileCount} (${formattedFileSize})`;
             }}
           >Files</TableHeaderColumn>
 
