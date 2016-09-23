@@ -55,12 +55,10 @@ class Admin extends Component {
     this.nextRelease = new ReleaseModel();
     this.nextRelease.fetch({shouldFetchUpcomingRelease: true});
     this.loadValidationQueue();
-    this.users = await fetchUsers();
   }
 
   loadValidationQueue = async () => {
     this.validationQueue = await fetchQueue();
-    // this.validationQueue = ["project.7","project.6","project.5","project.4","project.3"];
   };
 
   clearValidationQueue = async () => {
@@ -119,7 +117,7 @@ class Admin extends Component {
             { systems.isReleaseLocked
               ? (
                 <button
-                  className="lock-unlock unlock btn btn-xs btn-primary"
+                  className="lock-unlock unlock btn btn-xs btn-primary hover-fade-in"
                   onClick={this.handleClickLockUnlockButton}
                 >
                   <i className="fa fa-unlock"/>
@@ -128,7 +126,7 @@ class Admin extends Component {
               )
               : (
                 <button
-                  className="lock-unlock lock btn btn-xs btn-danger"
+                  className="lock-unlock lock btn btn-xs btn-danger hover-fade-in"
                   onClick={this.handleClickLockUnlockButton}
                 >
                   <i className="fa fa-lock"/>
@@ -141,7 +139,7 @@ class Admin extends Component {
     const releaseNowButton = (
       <ActionButton
         onClick={() => this.handleClickPerformRelease()}
-        className={`btn btn-xs release-now-btn`}
+        className={`btn btn-xs release-now-btn hover-fade-in`}
       >
         <i className="fa fa-rocket"/>
         Release Now
@@ -170,30 +168,35 @@ class Admin extends Component {
             </h2>
           </header>
 
-          <h2>Validation</h2>
+          <h2>
+            Validation
+            {
+              this.validationQueue.length
+              ? (
+                <button
+                  className={`btn btn-xs btn-danger hover-fade-in clear-queue-btn`}
+                  onClick={this.clearValidationQueue}
+                  disabled={!this.validationQueue.length}
+                >
+                  <i className="fa fa-trash"/>
+                  Clear Queue
+                </button>
+              ) : ''
+            }
+          </h2>
+
+
+          <ul className="validation-list">
           {
             this.validationQueue.length
               ? this.validationQueue.map(projectKey => (
-                <li key={projectKey}>
-                  <span className="label label-default">{projectKey}</span>
+                <li className="validation-item" key={projectKey}>
+                  <span className="">{projectKey}</span>
                 </li>
               ))
-              : <div>No files are being validated</div>
+              : <li>No files are being validated</li>
           }
-
-          {
-            this.validationQueue.length
-            ? (
-              <button
-                type="submit"
-                className={`btn btn-danger`}
-                onClick={this.clearValidationQueue}
-                disabled={!this.validationQueue.length}
-              >
-                Clear Queue
-              </button>
-            ) : ''
-          }
+          </ul>
 
           <h2>SFTP</h2>
           <ul>
