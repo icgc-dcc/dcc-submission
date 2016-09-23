@@ -80,7 +80,19 @@ export default function GroupedReportList({
               || (submission.summaryReports && submission.summaryReports.length);
             const shouldShowReport = isNotInProgress && hasReports;
 
-            return shouldShowReport ? <Link to={`/releases/${releaseName}/submissions/${projectKey}/report/${submission.name}`}>{fileName}</Link> : fileName;
+            return (
+              <span>
+                {
+                  shouldShowReport
+                    ? <Link to={`/releases/${releaseName}/submissions/${projectKey}/report/${submission.name}`}>{fileName}</Link>
+                    : fileName
+                }
+
+                {
+                  submission.transferring ? <i className="fa fa-upload uploading-indicator"/> : ''
+                }
+              </span>
+            );
           }}
         >File</TableHeaderColumn>
 
