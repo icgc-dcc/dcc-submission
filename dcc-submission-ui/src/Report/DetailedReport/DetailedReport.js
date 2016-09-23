@@ -1,6 +1,8 @@
 import React from 'react';
 import { defaultTableOptions, defaultTableProps } from '~/common/defaultTableOptions';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
+import Tooltip from 'rc-tooltip';
+
 import DetailedReportSummary from './DetailedReportSummary.js';
 import ProgressCircle from '~/common/components/ProgressCircle/ProgressCircle';
 
@@ -79,6 +81,14 @@ export default function DetailedReport({ items, isLoading }) {
       <ProgressCircle
         progress={progress}
       />
+      <div style={{ position: 'relative'}}>
+        <Tooltip
+          mouseLeaveDelay={0}
+          overlay={<span>Completeness % is not adjusted for required fields and fields that allow N/A</span>}
+        >
+          <a style={{fontSize: 10, marginTop: 10, color: '#888', backgroundColor: ''}}>Average of field completeness <i className="fa fa-info-circle"/></a>
+        </Tooltip>
+      </div>
       <DetailedReportTable
         items={items}
         isLoading={isLoading}

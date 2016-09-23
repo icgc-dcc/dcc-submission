@@ -1,4 +1,8 @@
 .Admin {
+  .btn .fa {
+    margin-right: 4px;
+  }
+
   .sftp-item {
     & + .sftp-item {
       margin-top: 4px;
@@ -17,6 +21,14 @@
     .fa {
       margin-right: 4px;
     }
+  }
+
+  .hover-fade-in {
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    &:hover {
+      opacity: 1;
+    } 
   }
 
   .heading {
@@ -39,14 +51,6 @@
       margin-left: 24px;
       opacity: 0.7;
     }
-
-    .btn {
-      opacity: 0.7;
-      transition: opacity 0.2s ease;
-      &:hover {
-        opacity: 1;
-      } 
-    }
     .release-now-btn {
       margin-left: 10px;
     }
@@ -68,14 +72,8 @@
     line-height: 1.5;
     border: 0;
     position: relative;
-
-    .fa {
-      margin-right: 4px;
-    }
-
-    & + .user {
-      margin-left: 4px;
-    }
+    margin-bottom: 3px;
+    margin-right: 3px;
 
     &.locked {
       &:hover .fa-lock {
@@ -85,6 +83,16 @@
         display: none;
       }
     }
+  }
+
+  .validation-item {
+    margin-bottom: 4px;
+    list-style-type: disc;
+    list-style-position: inside;
+  }
+
+  .clear-queue-btn {
+    margin-left: 10px;
   }
 
 }

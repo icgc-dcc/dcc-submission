@@ -28,7 +28,7 @@ export default function ProgressCircle({progress, className}) {
   return (
     <Circle
       progress={progress}
-      text={ (progress * 100).toPrecision(4) + '%' }
+      text={ Math.floor(progress * 100) + '%' }
       options={options}
       initialAnimate={true}
       containerStyle={containerStyle}
