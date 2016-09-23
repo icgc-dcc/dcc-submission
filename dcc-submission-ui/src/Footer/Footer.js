@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 
 import {observable, action} from 'mobx';
 import {observer} from 'mobx-react';
+import moment from 'moment';
 
 import systems from '~/systems';
 import FeedbackModal from '~/common/components/FeedbackModal/FeedbackModal';
@@ -33,7 +34,7 @@ class Header extends Component {
         <div className="col-sm-8 text-center">
           <p>
             <a href="http://icgc.org" target="_blank">International Cancer Genome Consortium</a> <br/>
-            © 2014 <br/>
+            © {moment(new Date()).format('YYYY')} <br/>
             All Rights reserved
           </p>
         </div>
