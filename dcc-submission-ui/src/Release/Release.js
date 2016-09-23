@@ -156,6 +156,7 @@ class Release extends Component {
             dataFormat={ projectKey => (
               <Link to={`/releases/${release.name}/submissions/${projectKey}`}>{projectKey}</Link>
             )}
+            width="150"
           >Project Key</TableHeaderColumn>
           
           <TableHeaderColumn
@@ -175,6 +176,7 @@ class Release extends Component {
               const fileCount = files.length;
               return `${fileCount} (${formattedFileSize})`;
             }}
+            width="150"
           >Files</TableHeaderColumn>
 
           <TableHeaderColumn
@@ -183,6 +185,7 @@ class Release extends Component {
             dataFormat={ state => (
               <Status statusCode={state}/>
             )}
+            width="170"
           >State</TableHeaderColumn>
 
           <TableHeaderColumn
@@ -201,6 +204,7 @@ class Release extends Component {
                 isFileTransferInProgress={some(submission.submissionFiles, x => x.transferring)}
               />
             )}
+            width="220"
           >Actions</TableHeaderColumn>
         </BootstrapTable>
       </div>
