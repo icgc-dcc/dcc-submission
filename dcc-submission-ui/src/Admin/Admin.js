@@ -55,6 +55,7 @@ class Admin extends Component {
     this.nextRelease = new ReleaseModel();
     this.nextRelease.fetch({shouldFetchUpcomingRelease: true});
     this.loadValidationQueue();
+    this.users = await fetchUsers();
   }
 
   loadValidationQueue = async () => {
