@@ -121,7 +121,14 @@ class Release extends Component {
         </li>
         <li>
           <span className="terms__term">Dictionary Version</span>
-          <span className="terms__value">{release.dictionaryVersion}</span>
+          <span className="terms__value">
+            <a
+              href={`http://docs.icgc.org/dictionary/viewer/#?vFrom=${release.dictionaryVersion}`}
+              target="_blank"
+            >
+              {release.dictionaryVersion}
+            </a>
+          </span>
         </li>
         <li>
           <span className="terms__term">Number of projects</span>
