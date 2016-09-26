@@ -81,6 +81,9 @@ class Admin extends Component {
   };
 
   handleClickPerformRelease = async () => {
+    if (!window.confirm('Do you really want to perform a release?')) {
+      return;
+    }
     try {
       await this.nextRelease.performRelease();
       this.handlePerformReleaseSuccess();
