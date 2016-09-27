@@ -98,8 +98,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mongodb.morphia.Datastore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 import com.dumbster.smtp.SimpleSmtpServer;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -875,6 +879,21 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     checkArgument(!states.isEmpty());
 
     return toArray(states.values(), SubmissionState.class);
+  }
+
+  /**
+   * See https://github.com/spring-projects/spring-boot/issues/7031 for why this needs to be here.
+   */
+  @TestConfiguration
+  static class Config {
+
+    @Bean
+    public RestTemplateBuilder restTemplateBuilder() {
+      return new RestTemplateBuilder()
+          .requestFactory(SimpleClientHttpRequestFactory.class)
+          .basicAuthorization("admin", "adminspasswd");
+    }
+
   }
 
 }
