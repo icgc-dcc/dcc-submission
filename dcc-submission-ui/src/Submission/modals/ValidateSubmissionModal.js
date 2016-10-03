@@ -10,6 +10,8 @@ import user from '~/user';
 import Status from '~/common/components/Status';
 import DATATYPE_DICTIONARY from '~/common/constants/DATATYPE_DICTIONARY';
 
+import { fetchQueue } from '~/services/nextRelease/queue';
+
 import './ValidateSubmissionModal.css';
 
 // CLINICAL_CORE_TYPE is always checked
@@ -29,6 +31,7 @@ class ValidateModal extends Component {
   requiredDataTypes = ['CLINICAL_CORE_TYPE'];
   @observable selectedDataTypes = [];
   @observable errorMessage;
+  @observable queueLength = '..';
 
   @observable emailsText = '';
   @computed get emails() {
@@ -47,9 +50,12 @@ class ValidateModal extends Component {
     this.emailsText = user.emailsToNotify.join(',\n');
   }
 
-  componentWillReceiveProps({initiallySelectedDataTypes}) {
+  async componentWillReceiveProps({initiallySelectedDataTypes, isOpen}, { isOpen: wasOpen }) {
     if (initiallySelectedDataTypes) {
       this.selectedDataTypes = uniq(initiallySelectedDataTypes.concat(this.requiredDataTypes));
+    }
+    if ( isOpen && !wasOpen) {
+      this.queueLength = (await fetchQueue()).length;
     }
   }
 
@@ -87,8 +93,7 @@ class ValidateModal extends Component {
       isOpen,
       dataTypeReports,
     } = this.props;
- 
-    const queueLength = 5;
+
     return (
       <Modal
           className={`Modal modal-dialog ValidateSubmissionModal`}
@@ -151,7 +156,7 @@ class ValidateModal extends Component {
           <div>
             <div className="alert alert-danger">Validation may take several hours to complete!</div>
             <div className="alert alert-info">
-              There are currently <strong>{queueLength}</strong> submission(s) in the Validation Queue.
+              There are currently <strong>{this.queueLength}</strong> submission(s) in the Validation Queue.
               <br/>
               Enter a comma(,) seperated list of the email addresses that should be notified when validation is finished:
               <br/><br/>
