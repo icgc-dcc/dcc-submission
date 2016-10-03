@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {observable, computed} from 'mobx';
 import {observer} from 'mobx-react';
-import { groupBy, map } from 'lodash';
+import { groupBy, map, concat, flow, orderBy } from 'lodash';
 import { formatFileSize } from '~/utils';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 
@@ -122,13 +122,20 @@ class Submission extends Component {
     const releaseName = this.props.params.releaseName;
     const projectKey = this.props.params.projectKey;
 
+    const orderedDataTypes = flow(
+      files => groupBy(files, 'dataType'),
+      Object.keys,
+    )(concat(submission.abstractlyGroupedSubmissionFiles.CLINICAL, submission.abstractlyGroupedSubmissionFiles.EXPERIMENTAL));
+
+    const orderedReports = orderBy(submission.report.dataTypeReports, (report) => orderedDataTypes.indexOf(report.dataType));
+
     return (
       <div className="Submission container">
         <ValidateSubmissionModal
           isOpen={this.shouldShowValidateModal}
           onRequestSubmit={this.handleRequestSubmitValidate}
           onRequestClose={this.closeValidateModal}
-          dataTypeReports={this.submission.report.dataTypeReports.slice()}
+          dataTypeReports={orderedReports.slice()}
           initiallySelectedDataTypes={this.dataTypesToValidate.slice()}
         />
         <SignOffSubmissionModal
@@ -181,7 +188,7 @@ class Submission extends Component {
           </div>
           <div className="col-sm-7 summary-table-container">
         <BootstrapTable
-          data={submission.report.dataTypeReports}
+          data={orderedReports}
           keyField='dataType'
           striped={true}
           pagination={false}
