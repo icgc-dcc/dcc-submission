@@ -127,13 +127,15 @@ class Submission extends Component {
       Object.keys,
     )(concat(submission.abstractlyGroupedSubmissionFiles.CLINICAL, submission.abstractlyGroupedSubmissionFiles.EXPERIMENTAL));
 
+    const orderedReports = orderBy(submission.report.dataTypeReports, (report) => orderedDataTypes.indexOf(report.dataType));
+
     return (
       <div className="Submission container">
         <ValidateSubmissionModal
           isOpen={this.shouldShowValidateModal}
           onRequestSubmit={this.handleRequestSubmitValidate}
           onRequestClose={this.closeValidateModal}
-          dataTypeReports={this.submission.report.dataTypeReports.slice()}
+          dataTypeReports={orderedReports.slice()}
           initiallySelectedDataTypes={this.dataTypesToValidate.slice()}
         />
         <SignOffSubmissionModal
@@ -186,7 +188,7 @@ class Submission extends Component {
           </div>
           <div className="col-sm-7 summary-table-container">
         <BootstrapTable
-          data={orderBy(submission.report.dataTypeReports, (report) => orderedDataTypes.indexOf(report.dataType))}
+          data={orderedReports}
           keyField='dataType'
           striped={true}
           pagination={false}
