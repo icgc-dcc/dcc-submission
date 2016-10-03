@@ -71,7 +71,7 @@ public class EGAFileAccessionValidator {
       return invalid(e.getMessage());
     } catch (Exception e) {
       log.error("Unexpected error getting file " + fileId + ": ", e);
-      throw e;
+      return invalid("Unexpected error getting file " + fileId + ": " + e.getMessage());
     }
   }
 
