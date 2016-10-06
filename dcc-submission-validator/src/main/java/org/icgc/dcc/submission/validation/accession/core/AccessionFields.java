@@ -31,11 +31,16 @@ import lombok.NonNull;
 public class AccessionFields {
 
   public static final String ANALYSIS_ID_FIELD_NAME = "analysis_id";
+  public static final String ANALYZED_SAMPLE_ID_FIELD_NAME = "analyzed_sample_id";
   public static final String RAW_DATA_REPOSITORY_FIELD_NAME = "raw_data_repository";
   public static final String RAW_DATA_ACCESSION_FIELD_NAME = "raw_data_accession";
 
   public static String getAnalysisId(@NonNull Map<String, String> record) {
     return record.get(ANALYSIS_ID_FIELD_NAME);
+  }
+
+  public static String getAnalyzedSampleId(@NonNull Map<String, String> record) {
+    return record.get(ANALYZED_SAMPLE_ID_FIELD_NAME);
   }
 
   public static String getRawDataRepository(@NonNull Map<String, String> record) {

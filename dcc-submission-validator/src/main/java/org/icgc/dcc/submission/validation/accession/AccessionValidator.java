@@ -23,6 +23,7 @@ import static org.icgc.dcc.submission.core.parser.SubmissionFileParsers.newMapFi
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.RAW_DATA_ACCESSION_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.getAnalysisId;
+import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.getAnalyzedSampleId;
 import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.getRawDataAccession;
 import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.getRawDataRepository;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
@@ -126,7 +127,7 @@ public class AccessionValidator implements Validator {
         }
 
         val metaFileParser = createMetaFileParser(context, metaFileType);
-        validateMetaFileType(context, metaFiles, metaFileParser);
+        validateMetaFileType(context, metaFileType, metaFiles, metaFileParser);
       } catch (Exception e) {
         log.error("Error validating file type: {}: ", metaFileType, e);
         throw e;
@@ -134,7 +135,7 @@ public class AccessionValidator implements Validator {
     }
   }
 
-  private void validateMetaFileType(ValidationContext context, List<Path> metaFiles,
+  private void validateMetaFileType(ValidationContext context, FileType metaFileType, List<Path> metaFiles,
       FileParser<Map<String, String>> metaFileParser) {
     for (val metaFile : metaFiles) {
       try {
@@ -144,7 +145,7 @@ public class AccessionValidator implements Validator {
 
         // Get to work
         log.info("Performing accession validation on meta file '{}' for '{}'", metaFile, context.getProjectKey());
-        validateMetaFile(context, metaFile, metaFileParser, writer);
+        validateMetaFile(context, metaFileType, metaFile, metaFileParser, writer);
         log.info("Finished performing accession validation for '{}'", context.getProjectKey());
       } catch (Exception e) {
         throw new RuntimeException("Error validating accession: meta file " + metaFile, e);
@@ -153,30 +154,32 @@ public class AccessionValidator implements Validator {
   }
 
   @SneakyThrows
-  private void validateMetaFile(ValidationContext context, Path filePath,
+  private void validateMetaFile(ValidationContext context, FileType fileType, Path filePath,
       FileParser<Map<String, String>> fileParser, TupleStateWriter writer) {
     // Validate all records
     fileParser.parse(filePath, (long lineNumber, Map<String, String> record) -> validateMetaFileRecord(
-        context, writer, filePath.getName(), lineNumber, record, resolveEGATerm(context)));
+        context, writer, fileType, filePath.getName(), lineNumber, record, resolveEGATerm(context)));
   }
 
-  private void validateMetaFileRecord(ValidationContext context, TupleStateWriter writer, String fileName,
+  private void validateMetaFileRecord(ValidationContext context, TupleStateWriter writer, FileType fileType,
+      String fileName,
       long lineNumber, Map<String, String> record, Term egaTerm) throws IOException {
     // Cooperate
     checkInterrupted(getName());
 
-    // Access field values required for validation
-    val analysisId = getAnalysisId(record);
-    val rawDataRepository = getRawDataRepository(record);
-    val rawDataAccession = getRawDataAccession(record);
-
     // Currently only EGA validation is supported
+    val rawDataRepository = getRawDataRepository(record);
     if (!isEGA(egaTerm, rawDataRepository)) {
       return;
     }
 
+    // Access field values required for validation
+    val analysisId = getAnalysisId(record);
+    val analyzedSampleId = getAnalyzedSampleId(record);
+    val rawDataAccession = getRawDataAccession(record);
+
     // Apply whitelist to exclude historical "grandfathered" records
-    if (dictionary.isExcluded(context.getProjectKey(), analysisId)) {
+    if (dictionary.isExcluded(context.getProjectKey(), fileType, analysisId, analyzedSampleId)) {
       return;
     }
 
