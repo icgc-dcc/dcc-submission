@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import { uniq, xor, includes } from 'lodash';
+import { uniq, xor, includes, isEqual } from 'lodash';
 import {observable, computed} from 'mobx';
 import {observer} from 'mobx-react';
 import isEmail from 'is-email';
@@ -50,11 +50,14 @@ class ValidateModal extends Component {
     this.emailsText = user.emailsToNotify.join(',\n');
   }
 
-  async componentWillReceiveProps({initiallySelectedDataTypes, isOpen}, { isOpen: wasOpen }) {
-    if (initiallySelectedDataTypes) {
-      this.selectedDataTypes = uniq(initiallySelectedDataTypes.concat(this.requiredDataTypes));
+  async componentDidUpdate({
+    isOpen: wasOpen,
+    initiallySelectedDataTypes: previousInitiallySelectedDataTypes
+  }) {
+    if (!isEqual(this.props.initiallySelectedDataTypes, previousInitiallySelectedDataTypes)) {
+      this.selectedDataTypes = uniq(this.props.initiallySelectedDataTypes.concat(this.requiredDataTypes));
     }
-    if ( isOpen && !wasOpen) {
+    if ( this.props.isOpen && !wasOpen) {
       this.queueLength = (await fetchQueue()).length;
     }
   }
