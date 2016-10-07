@@ -55,7 +55,7 @@ class ValidateModal extends Component {
     initiallySelectedDataTypes: previousInitiallySelectedDataTypes
   }) {
     if (!isEqual(this.props.initiallySelectedDataTypes, previousInitiallySelectedDataTypes)) {
-      this.selectedDataTypes = uniq(this.requiredDataTypes.concat(this.props.initiallySelectedDataTypes));
+      this.selectedDataTypes = uniq(this.props.initiallySelectedDataTypes.concat(this.requiredDataTypes));
     }
     if ( this.props.isOpen && !wasOpen) {
       this.queueLength = (await fetchQueue()).length;
