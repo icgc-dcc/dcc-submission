@@ -153,8 +153,6 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
         updatedRelease,
         false);
 
-    result.getUpdatedCount();
-
     checkState(!result.getHadError(), "Error updating release '%s': %s", releaseName, result.getError());
     checkState(result.getUpdatedCount() == 1, "Updating release '%s' failed: %s", releaseName, result.getWriteResult());
   }

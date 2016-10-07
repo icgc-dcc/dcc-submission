@@ -594,7 +594,7 @@ public class ReleaseService extends AbstractService {
       val projectKey = queuedProject.getKey();
       val dataTypes = queuedProject.getDataTypes();
 
-      val remove = projectKeys.contains(projectKey);
+      val remove = projectKeys.isEmpty() || projectKeys.contains(projectKey);
       if (remove) {
         val submission = release.getSubmission(projectKey).get();
         val submissionFiles = getSubmissionFiles(releaseName, projectKey, filePatternToTypeMap);
