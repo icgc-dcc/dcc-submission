@@ -85,7 +85,7 @@ class ValidateModal extends Component {
   };
 
   handleClickClear = () => {
-    this.selectedDataTypes = [];
+    this.selectedDataTypes = this.requiredDataTypes.slice();
   };
 
   render () {
