@@ -198,7 +198,7 @@ class Admin extends Component {
                   <span className="">{projectKey}</span>
                 </li>
               ))
-              : <li>No files are being validated</li>
+              : <li>No submissions are currently queued for validation.</li>
           }
           </ul>
 
