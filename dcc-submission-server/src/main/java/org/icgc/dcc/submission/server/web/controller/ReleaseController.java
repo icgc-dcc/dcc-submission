@@ -111,7 +111,7 @@ public class ReleaseController {
       return unauthorizedResponse();
     }
 
-    return ResponseEntity.ok(submissionService.findSubmissionsBySubject(releaseName, authentication));
+    return ResponseEntity.ok(releaseService.getDetailedSubmissionsBySubject(releaseName, authentication));
   }
 
   @GetMapping("{name}/submissions/{projectKey:.+}")

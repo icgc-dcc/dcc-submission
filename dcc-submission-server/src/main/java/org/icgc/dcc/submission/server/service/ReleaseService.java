@@ -422,32 +422,16 @@ public class ReleaseService extends AbstractService {
     return detailedSubmission;
   }
 
+  public List<DetailedSubmission> getDetailedSubmissionsBySubject(String releaseName, Authentication authentication) {
+    val submissions = submissionService.findSubmissionsBySubject(releaseName, authentication);
+
+    return convertToDetailedSubmissions(submissions);
+  }
+
   public List<SubmissionFile> getSubmissionFiles(@NonNull String releaseName, @NonNull String projectKey) {
     val release =
         checkNotNull(releaseRepository.findReleaseByName(releaseName), "No release with name '%s'", releaseName);
     return getSubmissionFiles(release.getName(), release.getDictionaryVersion(), projectKey);
-  }
-
-  private List<SubmissionFile> getSubmissionFiles(
-      @NonNull String releaseName, @NonNull String dictionaryVersion, @NonNull String projectKey) {
-    return getSubmissionFiles(releaseName, projectKey, dictionaryRepository.getFilePatternToTypeMap(dictionaryVersion));
-  }
-
-  private List<SubmissionFile> getSubmissionFiles(
-      @NonNull String releaseName, @NonNull String projectKey, @NonNull Map<String, FileType> filePatternToTypeMap) {
-    val submissionFiles = new ArrayList<SubmissionFile>();
-    val projectStringPath = new Path(submissionFileSystem.buildProjectStringPath(releaseName, projectKey));
-
-    for (val path : lsFile(submissionFileSystem.getFileSystem(), projectStringPath)) {
-      try {
-        submissionFiles.add(getSubmissionFile(filePatternToTypeMap, path));
-      } catch (Exception e) {
-        // This could happen if the file was renamed or removed in the meantime
-        log.warn("Could not get submission file '{}': {}", path, e.getMessage());
-      }
-    }
-
-    return submissionFiles;
   }
 
   public Optional<FileReport> getFileReport(String releaseName, String projectKey, String fileName) {
@@ -675,6 +659,46 @@ public class ReleaseService extends AbstractService {
     }
 
     log.info("Resolved project '{}'", projectKey);
+  }
+
+  private List<SubmissionFile> getSubmissionFiles(
+      @NonNull String releaseName, @NonNull String dictionaryVersion, @NonNull String projectKey) {
+    return getSubmissionFiles(releaseName, projectKey, dictionaryRepository.getFilePatternToTypeMap(dictionaryVersion));
+  }
+
+  private List<SubmissionFile> getSubmissionFiles(
+      @NonNull String releaseName, @NonNull String projectKey, @NonNull Map<String, FileType> filePatternToTypeMap) {
+    val submissionFiles = new ArrayList<SubmissionFile>();
+    val projectStringPath = new Path(submissionFileSystem.buildProjectStringPath(releaseName, projectKey));
+
+    for (val path : lsFile(submissionFileSystem.getFileSystem(), projectStringPath)) {
+      try {
+        submissionFiles.add(getSubmissionFile(filePatternToTypeMap, path));
+      } catch (Exception e) {
+        // This could happen if the file was renamed or removed in the meantime
+        log.warn("Could not get submission file '{}': {}", path, e.getMessage());
+      }
+    }
+
+    return submissionFiles;
+  }
+
+  private List<DetailedSubmission> convertToDetailedSubmissions(List<Submission> submissions) {
+    return submissions.stream()
+        .map(this::convertToDetailedSubmission)
+        .collect(toImmutableList());
+  }
+
+  private DetailedSubmission convertToDetailedSubmission(Submission submission) {
+    val releaseName = submission.getReleaseName();
+    val projectKey = submission.getProjectKey();
+    val project = projectRepository.findProject(projectKey);
+
+    val detailedSubmission = new DetailedSubmission(submission, project);
+    val submissionFiles = getSubmissionFiles(releaseName, projectKey);
+    detailedSubmission.setSubmissionFiles(submissionFiles);
+
+    return detailedSubmission;
   }
 
   private Release performRelease(@NonNull Release oldRelease, @NonNull String nextReleaseName,
