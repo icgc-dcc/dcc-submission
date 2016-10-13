@@ -45,14 +45,14 @@ public class SubmissionRuntime {
 
   @PostConstruct
   public void start() {
-    for (Service service : services) {
+    for (val service : services) {
       tryStartService(service);
     }
   }
 
   @PreDestroy
   public void stop() {
-    for (Service service : services) {
+    for (val service : services) {
       tryStopService(service);
     }
   }

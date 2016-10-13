@@ -28,6 +28,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import lombok.NonNull;
 import lombok.val;
@@ -48,48 +49,45 @@ public class SubmissionAuthenticationProvider extends DaoAuthenticationProvider 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
     val username = getUsername(authentication);
-    val optionalUser = userService.getUserByUsername(username);
-    boolean newUser = optionalUser.isPresent() == false;
-    User user;
+    User user = getUser(username);
 
-    if (newUser) {
-      // Roles to be added along with saving after login (when subject will be linked to username)
-      user = new User();
-      user.setUsername(username);
-    } else {
-      user = optionalUser.get();
-    }
-
+    // Ensure not locked
     if (user.isLocked()) {
-      log.info("User '{}' is locked. Please contact your administrator.", username);
-      throw new LockedException(username);
+      // Trigger 403
+      val message = "User '" + username + "' is locked. Please contact your administrator.";
+      log.warn(message);
+      throw new LockedException(message);
     }
 
     try {
+      // Check password
       val auth = super.authenticate(authentication);
 
-      if (newUser) {
-        // TODO: Revisit (will save all script kiddies username attempts)?
-        userService.saveUser(user);
-      } else {
-        // If correct password, reset the user_attempts
-        userService.resetUser(user);
-      }
-
-      // TODO: Add project privileges here, using ProjectController logic.
+      // If correct password, reset the user_attempts
+      userService.resetUser(user);
 
       return auth;
     } catch (BadCredentialsException e) {
-      // Invalid login, update user_attempts, set attempts+1
-      userService.reprimandUser(user);
+      // Invalid login, update attempts
+      user = userService.reprimandUser(user);
 
       log.info(
           user.isLocked() ? "User {} was locked after too many failed attempts" : "User {} was reprimanded after a failed attempt",
           username);
 
+      // Let this trigger a 401
       throw e;
     }
 
+  }
+
+  private User getUser(String username) {
+    val user = userService.getUserByUsername(username);
+    if (!user.isPresent()) {
+      throw new UsernameNotFoundException("User with username '" + username + "' not found");
+    }
+
+    return user.get();
   }
 
 }

@@ -40,6 +40,9 @@ import org.icgc.dcc.submission.release.ReleaseException;
 @ToString
 public class ReleaseView {
 
+  protected Date created;
+  protected Date lastUpdate;
+
   @Setter
   protected boolean locked;
   protected String name;
@@ -53,6 +56,8 @@ public class ReleaseView {
 
   public ReleaseView(Release release, Map<String, Submission> submissions, List<Project> projects,
       Map<String, List<SubmissionFile>> submissionFiles) {
+    this.created = release.getCreated();
+    this.lastUpdate = release.getLastUpdate();
     this.name = release.name;
     this.state = release.state;
     this.queue = release.getQueuedProjectKeys();

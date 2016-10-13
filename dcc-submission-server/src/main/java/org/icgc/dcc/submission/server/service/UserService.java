@@ -19,6 +19,8 @@ package org.icgc.dcc.submission.server.service;
 
 import static com.google.common.base.Optional.fromNullable;
 
+import java.util.List;
+
 import org.icgc.dcc.submission.core.model.User;
 import org.icgc.dcc.submission.server.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,10 @@ public class UserService {
     return fromNullable(userRepository.findUserByUsername(username));
   }
 
+  public List<User> getUsers() {
+    return userRepository.findUsers();
+  }
+
   /**
    * Saves the information pertaining to user that is relevant to the locking of users after too many failed attempts.
    * NOT intended for saving roles/permissions and emails at the moment.
@@ -55,6 +61,11 @@ public class UserService {
   }
 
   public User resetUser(User user) {
+    if (user.getFailedAttempts() == 0) {
+      // No need to reset
+      return user;
+    }
+
     user.resetAttempts();
     return userRepository.updateUser(user);
   }

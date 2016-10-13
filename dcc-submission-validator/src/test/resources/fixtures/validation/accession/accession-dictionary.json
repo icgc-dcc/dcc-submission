@@ -1,9 +1,4 @@
-{
-  "excludedProjectKeys": ["TEST2-DCC", "TEST6-DCC"],
-  "excludedAnalysisIds": {
-    "PAEN-AU": ["analysis1"]
-  },
-  "excludedAnalysisIdPatterns": {
-    "PAEN-AU": ["analysis.*"]
-  }  
-}
+[
+	{"projectKey": "project1", "fileType": "SSM_M_TYPE", "analyzedSampleId": "sample1", "analysisId": "analysis1"},
+	{"projectKey": "project1", "fileType": "CNSM_M_TYPE", "analyzedSampleId": "sample2", "analysisId": "analysis2"}
+]	

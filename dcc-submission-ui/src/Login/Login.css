@@ -1,0 +1,75 @@
+@import '../common/styles/variables/variables.css';
+
+.Login {
+  background: white;
+  color: var(--darkGrey);
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  .login-inner {
+    flex-grow: 1;
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  h2 {
+    font-weight: 300;
+    font-size: 36px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+  }
+
+  .main-logo {
+    font-weight: 700;
+    margin: 0;
+    color: var(--icgcBlue);
+    display: flex;
+    align-items: center;
+    font-size: 36px;
+    .icgc-text {
+      margin-left: 8px;
+    }
+    .icgc-logo {
+      width: 46px;
+    }
+  }
+
+  button[type="submit"] {
+    font-weight: 600;
+    height: 48px;
+  }
+}
+
+.Warning {
+  color: var(--darkGrey);
+  font-size: 11px;
+  padding: 12px 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  .oicr-logo {
+    margin-bottom: 20px;
+  }
+
+  @media (min-width: 840px) {
+    flex-direction: row;
+    .warning-content {
+      width: 80%;
+    }
+    .oicr-logo {
+      position: absolute;
+      left: 20px;
+      bottom: 20px;
+      margin-bottom: 0;
+      transition: all 0;
+    }
+  }
+}

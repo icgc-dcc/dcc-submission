@@ -47,4 +47,5 @@ public abstract class BaseEntity extends Timestamped implements HasId, Serializa
   public ObjectId getId() {
     return id;
   }
+
 }

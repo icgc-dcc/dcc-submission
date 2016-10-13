@@ -18,18 +18,16 @@
 package org.icgc.dcc.submission.validation.accession.core;
 
 import static com.google.common.base.Suppliers.memoizeWithExpiration;
-import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Sets.newHashSet;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
 import java.net.URL;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
+import java.util.List;
 
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.validation.accession.AccessionValidator;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Supplier;
 import com.google.common.io.Resources;
 
@@ -64,55 +62,42 @@ public class AccessionDictionary {
   /**
    * State.
    */
-  private final Supplier<Metadata> supplier = memoizeWithExpiration(this::read, 10, MINUTES);
+  private final Supplier<List<Record>> supplier = memoizeWithExpiration(this::read, 10, MINUTES);
 
   public AccessionDictionary() {
     this(DEFAULT_ACCESSION_DICTIONARY_URL);
   }
 
-  public boolean isExcluded(String projectKey, String analysisId) {
-    // Exclude by project key
-    val excludedProjectKeys = metadata().getExcludedProjectKeys();
-    if (excludedProjectKeys != null & excludedProjectKeys.contains(projectKey)) {
-      return true;
-    }
-
-    // Exclude by project key, analysis id value
-    val excludedAnalysisIds = metadata().getExcludedAnalysisIds().get(projectKey);
-    if (excludedAnalysisIds != null && excludedAnalysisIds.contains(analysisId)) {
-      return true;
-    }
-
-    // Exclude by project key, analysis id pattern
-    val excludedAnalysisIdPatterns = metadata().getExcludedAnalysisIdPatterns().get(projectKey);
-    if (excludedAnalysisIdPatterns != null) {
-      for (val pattern : excludedAnalysisIdPatterns) {
-        val exclude = pattern.matcher(analysisId).matches();
-        if (exclude) {
-          return true;
-        }
+  public boolean isExcluded(String projectKey, FileType fileType, String analysisId, String analyzedSampleId) {
+    for (val record : records()) {
+      if (record.getProjectKey().equals(projectKey) &&
+          record.getFileType().equals(fileType) &&
+          record.getAnalysisId().equals(analysisId) &&
+          record.getAnalyzedSampleId().equals(analyzedSampleId)) {
+        return true;
       }
     }
 
     return false;
   }
 
-  private Metadata metadata() {
+  private List<Record> records() {
     return supplier.get();
   }
 
   @SneakyThrows
-  private Metadata read() {
-    log.info("Refreshing metadata...");
-    return DEFAULT.readValue(url, Metadata.class);
+  private List<Record> read() {
+    log.info("Refreshing dictionary...");
+    return DEFAULT.readValue(url, new TypeReference<List<Record>>() {});
   }
 
   @Value
-  private static class Metadata {
+  private static class Record {
 
-    Set<String> excludedProjectKeys = newHashSet();
-    Map<String, Set<String>> excludedAnalysisIds = newHashMap();
-    Map<String, Set<Pattern>> excludedAnalysisIdPatterns = newHashMap();
+    String projectKey;
+    FileType fileType;
+    String analyzedSampleId;
+    String analysisId;
 
   }
 

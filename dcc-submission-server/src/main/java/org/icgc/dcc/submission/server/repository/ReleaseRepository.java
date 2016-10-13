@@ -81,6 +81,10 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
         entity.state);
   }
 
+  public Release findCompletedRelease(@NonNull String releaseName) {
+    return uniqueResult(entity.state.eq(COMPLETED).and(entity.name.eq(releaseName)));
+  }
+
   public List<Release> findCompletedReleases() {
     return list(entity.state.eq(COMPLETED));
   }

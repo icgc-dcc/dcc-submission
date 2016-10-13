@@ -24,14 +24,19 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.util.concurrent.AbstractScheduledService.Scheduler.newFixedDelaySchedule;
 import static java.lang.Thread.sleep;
+import static java.util.Comparator.comparing;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.icgc.dcc.common.core.model.ClinicalType.CLINICAL_CORE_TYPE;
+import static org.icgc.dcc.common.core.model.ClinicalType.CLINICAL_SUPPLEMENTAL_TYPE;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.submission.core.model.Outcome.ABORTED;
 import static org.icgc.dcc.submission.core.model.Outcome.CANCELLED;
 import static org.icgc.dcc.submission.core.model.Outcome.COMPLETED;
 import static org.icgc.dcc.submission.core.model.Outcome.FAILED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,6 +45,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.Identifiable.Identifiables;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.fs.SubmissionFileSystem;
@@ -299,12 +305,16 @@ public class ValidationService extends AbstractScheduledService {
       QueuedProject project) {
     val dictionary = releaseService.getNextDictionary();
     val codeLists = codeListRepository.findCodeLists();
+    val prioritizedDataTypes = project.getDataTypes().stream()
+        .distinct() // Remove duplicates, if any
+        .sorted(prioritizedDataTypes())
+        .collect(toImmutableList());
 
     val context = new DefaultValidationContext(
         createReportContext(),
         project.getKey(),
         project.getEmails(),
-        project.getDataTypes(),
+        prioritizedDataTypes,
         release,
         submissions,
         dictionary,
@@ -313,6 +323,13 @@ public class ValidationService extends AbstractScheduledService {
         platformStrategyFactory);
 
     return context;
+  }
+
+  /**
+   * @return a {@link Comparator} that gives preference to clinical types.
+   */
+  private static Comparator<DataType> prioritizedDataTypes() {
+    return comparing(x -> x == CLINICAL_CORE_TYPE ? 1 : x == CLINICAL_SUPPLEMENTAL_TYPE ? 2 : 3);
   }
 
   /**

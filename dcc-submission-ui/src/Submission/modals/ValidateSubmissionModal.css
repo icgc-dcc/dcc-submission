@@ -1,0 +1,14 @@
+.ValidateSubmissionModal {
+  #validate-file-types{
+    tr:not(.required-row) {
+      cursor: pointer;
+      color: #444;
+      &:hover {
+        background: #f1faff;
+      }
+    }
+    .required-row {
+      color: #999;
+    }
+  }
+}

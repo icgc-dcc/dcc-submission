@@ -1,0 +1,7 @@
+.form-control {
+  border-radius: 2px;
+}
+
+.release-locked .table-striped>tbody>tr:nth-of-type(odd) {
+  background-color: #e8e8e8;
+}

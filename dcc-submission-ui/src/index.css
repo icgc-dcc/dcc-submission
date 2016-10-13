@@ -1,0 +1,17 @@
+@import '../node_modules/normalize.css/normalize.css';
+@import '../node_modules/react-bootstrap-table/css/react-bootstrap-table.css';
+@import '../node_modules/highlight.js/styles/docco.css';
+@import './common/styles/overrides/index.css';
+@import './common/styles/variables/variables.css';
+@import './common/styles/global.css';
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Open Sans', sans-serif;
+
+  transition: background-color 0.1s var(--inQuad);
+  &.release-locked {
+    background-color: #f5f5f5;
+  }
+}

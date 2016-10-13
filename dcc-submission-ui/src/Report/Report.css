@@ -1,0 +1,24 @@
+.Report {
+  margin-bottom: 20px;
+  .react-bs-table {
+    margin: 0;
+  }
+  .react-bs-table-tool-bar {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .table {
+    background-color: transparent;
+  }
+
+  .line-value-table {
+    th:first-child {
+      width: 80px;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f0f0f0;
+    }
+  }
+}

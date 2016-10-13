@@ -1,0 +1,19 @@
+.Release {
+  margin-bottom: 44px;
+
+  em.releaseName {
+    font-style: normal;
+    color: #69a8c9;
+  }
+  .ReleaseSummaryBadge {
+    & + .ReleaseSummaryBadge {
+      margin-left: 0.5em;
+    }
+    .summary-count {
+      margin-left: 0.5em;
+    }
+  }
+  .actions-container {
+    margin-top: 20px;
+  }
+}

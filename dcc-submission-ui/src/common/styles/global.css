@@ -1,0 +1,40 @@
+@import './modules/index.css';
+
+.react-bs-table table td, .react-bs-table table th {
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.m-btn.mini {
+  height: auto;
+  margin: 0;
+}
+
+ul, li {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+.secondary-link {
+  color: var(--darkGrey);
+  &:hover {
+    color: var(--darkGrey);
+  }
+}
+
+.link {
+  cursor: pointer;
+}
+
+.oicr-logo {
+  filter: grayscale(100%);
+  transition: all 0.2s ease;
+  &:hover {
+    filter: grayscale(0%);
+  }
+}
+
+.mono-font {
+  font-family: 'Inconsolata', monospace;
+}

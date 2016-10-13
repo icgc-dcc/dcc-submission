@@ -17,50 +17,19 @@
  */
 package org.icgc.dcc.submission.server.spring;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-import static com.google.common.base.Strings.repeat;
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newLinkedHashSet;
-import static java.util.stream.Collectors.joining;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.net.UnknownHostException;
 
-import org.springframework.beans.factory.UnsatisfiedDependencyException;
 import org.springframework.boot.diagnostics.AbstractFailureAnalyzer;
 import org.springframework.boot.diagnostics.FailureAnalysis;
 
 import com.mongodb.MongoException;
 
 import lombok.NoArgsConstructor;
-import lombok.val;
 
 @NoArgsConstructor(access = PRIVATE)
 class SpringBootFailureAnalyzers {
-
-  static class UnsatisfiedDependencyFailureAnalyzer extends AbstractFailureAnalyzer<UnsatisfiedDependencyException> {
-
-    @Override
-    protected FailureAnalysis analyze(Throwable rootFailure, UnsatisfiedDependencyException cause) {
-      val lines = newLinkedHashSet(newArrayList(cause.getMessage().split("(?=Unsatisfied dependency)")));
-      val message = lines.stream().map(l -> {
-        String result = "";
-        int i = 0;
-        for (String s : l.split("(?<=:(?! \\{))")) {
-          if (isNullOrEmpty(s)) continue;
-          result += "\n" + repeat(" ", i++) + s;
-        }
-
-        return result;
-      }).collect(joining("\n"));
-
-      return new FailureAnalysis(
-          "Portal failed to start due to a Spring bean error: \n\"" + message + "\n\"\n",
-          "Review the stack trace and configuration",
-          cause);
-    }
-
-  }
 
   static class UnknownHostFailureAnalyzer extends AbstractFailureAnalyzer<UnknownHostException> {
 

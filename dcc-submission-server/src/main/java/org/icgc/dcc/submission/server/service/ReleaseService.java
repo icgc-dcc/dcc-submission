@@ -43,11 +43,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
-import lombok.NonNull;
-import lombok.Synchronized;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
@@ -81,6 +76,11 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+
+import lombok.NonNull;
+import lombok.Synchronized;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ReleaseService extends AbstractService {
@@ -167,7 +167,9 @@ public class ReleaseService extends AbstractService {
    */
   public Release getNextRelease() {
     val nextRelease = releaseRepository.findNextRelease();
-    checkNotNull(nextRelease, "There is no next release in the database.");
+    if (nextRelease == null) {
+      throw new ReleaseException("There is no next release in the database.");
+    }
 
     return nextRelease;
   }
@@ -577,7 +579,7 @@ public class ReleaseService extends AbstractService {
       val projectKey = queuedProject.getKey();
       val dataTypes = queuedProject.getDataTypes();
 
-      val remove = projectKeys.contains(projectKey);
+      val remove = projectKeys.isEmpty() || projectKeys.contains(projectKey);
       if (remove) {
         val submission = submissions.get(projectKey);
         checkNotNullSubmission(releaseName, projectKey, submission);

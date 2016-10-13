@@ -29,10 +29,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import lombok.SneakyThrows;
@@ -53,18 +49,6 @@ public abstract class BaseIntegrationTest {
     Path errorFile = new Path(dir, path);
     assertTrue("Expected file does not exist: " + path, checkExistence(fileSystem, errorFile));
     assertTrue("Expected empty file: " + path, getFileStatus(fileSystem, errorFile).get().getLen() == 0);
-  }
-
-  @Configuration
-  static class Config {
-
-    @Bean
-    public RestTemplateBuilder restTemplateBuilder() {
-      return new RestTemplateBuilder()
-          .requestFactory(SimpleClientHttpRequestFactory.class)
-          .basicAuthorization("admin", "adminspasswd");
-    }
-
   }
 
 }

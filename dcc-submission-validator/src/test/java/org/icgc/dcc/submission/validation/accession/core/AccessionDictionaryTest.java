@@ -22,11 +22,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URL;
 
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.junit.Test;
 
 import lombok.val;
 
 public class AccessionDictionaryTest {
+
+  @SuppressWarnings("unused")
+  private static final URL REAL_DICTIONARY_URL =
+      getResource("accession-dictionary.json");
 
   private static final URL TEST_DICTIONARY_URL =
       getResource("fixtures/validation/accession/accession-dictionary.json");
@@ -35,25 +40,13 @@ public class AccessionDictionaryTest {
 
   @Test
   public void testIsExcludedById() throws Exception {
-    val excluded = dictionary.isExcluded("PAEN-AU", "analysis1");
+    val excluded = dictionary.isExcluded("project1", FileType.SSM_M_TYPE, "analysis1", "sample1");
     assertThat(excluded).isTrue();
   }
 
   @Test
-  public void testIsExcludedByPattern() throws Exception {
-    val excluded = dictionary.isExcluded("PAEN-AU", "analysis2");
-    assertThat(excluded).isTrue();
-  }
-
-  @Test
-  public void testIsNotExcludedProjectDefined() throws Exception {
-    val excluded = dictionary.isExcluded("PAEN-AU", "foo");
-    assertThat(excluded).isFalse();
-  }
-
-  @Test
-  public void testIsNotExcludedProjectNotDefined() throws Exception {
-    val excluded = dictionary.isExcluded("DNE", "bar");
+  public void testIsNotExcludedById() throws Exception {
+    val excluded = dictionary.isExcluded("project3", FileType.CNSM_M_TYPE, "analysis1", "sample1");
     assertThat(excluded).isFalse();
   }
 
