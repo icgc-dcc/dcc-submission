@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.server.web.controller;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -41,6 +42,8 @@ import com.google.common.collect.ImmutableList;
 @WebMvcTest(ReleaseController.class)
 public class ReleaseControllerTest extends ControllerTest {
 
+  private static final String RELEASE_NAME = "ICGC13";
+
   /**
    * Test data.
    */
@@ -58,9 +61,9 @@ public class ReleaseControllerTest extends ControllerTest {
 
   @Before
   public void setUp() {
-    release = new Release("ICGC13");
+    release = new Release(RELEASE_NAME);
     release.setDictionaryVersion("0.6e");
-    release.setName("ICGC13");
+    release.setName(RELEASE_NAME);
     release.setReleaseDate();
     val submissionOne = new Submission("project1", "project one", release.getName());
     val submissionTwo = new Submission("project2", "project two", release.getName());
@@ -68,7 +71,7 @@ public class ReleaseControllerTest extends ControllerTest {
     submissionTwo.setLastUpdated(release.getReleaseDate());
 
     when(releaseService.getReleases()).thenReturn(ImmutableList.of(release));
-    when(submissionService.findSubmissionsBySubject(any(Authentication.class))).thenReturn(
+    when(submissionService.findSubmissionsBySubject(eq(RELEASE_NAME), any(Authentication.class))).thenReturn(
         ImmutableList.of(submissionOne, submissionTwo));
   }
 
@@ -94,7 +97,7 @@ public class ReleaseControllerTest extends ControllerTest {
     val releaseDate = release.getReleaseDate().getTime();
     mvc
         .perform(
-            get("/ws/releases/submissions")
+            get("/ws/releases/ICGC13/submissions")
                 .accept(MediaType.APPLICATION_JSON)
                 .with(admin()))
         .andExpect(status().isOk())
