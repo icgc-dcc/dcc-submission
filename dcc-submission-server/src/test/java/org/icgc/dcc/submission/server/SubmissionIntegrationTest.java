@@ -79,6 +79,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -109,13 +114,9 @@ import com.dumbster.smtp.SimpleSmtpServer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.jcraft.jsch.SftpException;
 import com.mongodb.BasicDBObject;
-
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SubmissionIntegrationTest extends BaseIntegrationTest {
@@ -423,7 +424,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("seed", "Seeding dictionary 2 ({} from dcc-resources)...", SECOND_DICTIONARY_VERSION);
     assertThat(
         post(restTemplate, SEED_DICTIONARIES_ENDPOINT, SECOND_DICTIONARY_ARRAY).getStatusCode().is2xxSuccessful())
-            .isTrue();
+        .isTrue();
 
     status("seed", "Seeding code lists...");
     assertThat(post(restTemplate, SEED_CODELIST_ENDPOINT, codeListsToString()).getStatusCode().is2xxSuccessful())
@@ -774,12 +775,13 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     assertEquals(dictionaryVersion, releaseView.getDictionaryVersion());
     assertEquals(expectedReleaseState, releaseView.getState());
     assertEquals(ImmutableList.<String> of(), releaseView.getQueue());
-    assertEquals(expectedSubmissionStates.size(), releaseView.getSubmissions().size());
 
-    int i = 0;
-    for (val submission : releaseView.getSubmissions()) {
-      assertEquals(submission.getProjectKey(), expectedSubmissionStates.get(i++), submission.getState());
+    val expectedSubmissionStateCounts = Maps.<SubmissionState, Integer> newHashMap();
+    for (val submissionState : expectedSubmissionStates) {
+      val count = expectedSubmissionStateCounts.getOrDefault(submissionState, 0);
+      expectedSubmissionStateCounts.put(submissionState, count + 1);
     }
+    assertEquals(expectedSubmissionStateCounts, releaseView.getSummary());
   }
 
   private void checkValidations() {

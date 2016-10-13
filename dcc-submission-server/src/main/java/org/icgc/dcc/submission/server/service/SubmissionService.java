@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.server.service;
 
+import static com.google.common.base.Optional.fromNullable;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableMap;
 import static org.icgc.dcc.submission.core.security.Authorizations.ALL_PROJECTS_LIST;
@@ -71,7 +72,7 @@ public class SubmissionService extends AbstractService {
   }
 
   public Optional<Submission> findSubmission(@NonNull String releaseName, @NonNull String projectKey) {
-    return Optional.fromNullable(submissionRepository.findSubmissionByReleaseNameAndProjectKey(releaseName, projectKey));
+    return fromNullable(submissionRepository.findSubmissionByReleaseNameAndProjectKey(releaseName, projectKey));
   }
 
   public List<Submission> findSubmissions(@NonNull String releaseName) {
@@ -104,10 +105,10 @@ public class SubmissionService extends AbstractService {
     log.debug("User is allowed to view projects: {}", permittedProjectKeys);
 
     if (permittedProjectKeys == ALL_PROJECTS_LIST) {
-      return submissionRepository.findSubmissionsByReleaseNameAndProjectKey(releaseName, permittedProjectKeys);
+      return submissionRepository.findSubmissionsByReleaseName(releaseName);
     }
 
-    return submissionRepository.findSubmissionsByReleaseName(releaseName);
+    return submissionRepository.findSubmissionsByReleaseNameAndProjectKey(releaseName, permittedProjectKeys);
   }
 
   /**

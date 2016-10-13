@@ -39,7 +39,6 @@ import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.ReleaseView;
 import org.icgc.dcc.submission.server.service.ReleaseService;
 import org.icgc.dcc.submission.server.service.SubmissionService;
 import org.icgc.dcc.submission.server.service.SystemService;
@@ -98,7 +97,7 @@ public class ReleaseController {
 
     val result = releaseView.get();
     result.setLocked(!systemService.isEnabled());
-    updateTransferingFiles(result);
+    // TODO: updateTransferingFiles() was here.
 
     return ResponseEntity.ok(result);
   }
@@ -224,11 +223,6 @@ public class ReleaseController {
           .status(HttpStatus.BAD_REQUEST)
           .body(new ServerErrorResponseMessage(EMPTY_REQUEST));
     }
-  }
-
-  private void updateTransferingFiles(ReleaseView result) {
-    result.getSubmissions()
-        .forEach(this::updateTransferingFiles);
   }
 
   private void updateTransferingFiles(DetailedSubmission detailedSubmission) {

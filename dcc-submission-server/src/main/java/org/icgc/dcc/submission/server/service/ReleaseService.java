@@ -43,6 +43,11 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
+import lombok.NonNull;
+import lombok.Synchronized;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
@@ -74,13 +79,7 @@ import org.springframework.security.core.Authentication;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-
-import lombok.NonNull;
-import lombok.Synchronized;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ReleaseService extends AbstractService {
@@ -140,16 +139,14 @@ public class ReleaseService extends AbstractService {
    */
   public Optional<ReleaseView> getReleaseViewBySubject(String releaseName, Authentication authentication) {
     val release = releaseRepository.findReleaseSummaryByName(releaseName);
-    val submissions = submissionService.findSubmissionsByProjectKey(releaseName);
+    val submissionStates = submissionService.findSubmissionStateByReleaseName(releaseName)
+        .stream()
+        .map(Submission::getState)
+        .collect(toImmutableList());
+
     Optional<ReleaseView> releaseView = Optional.absent();
     if (release != null) {
-      // populate project name for submissions
-      val projectKeys = submissionService.findReleaseProjectKeys(releaseName);
-      val projects = projectRepository.findProjects(projectKeys);
-      // TODO: Optimize. Looks like the method looks project keys itself.
-      val submissionFilesMap = getSubmissionFilesByProjectKey(release);
-
-      releaseView = Optional.of(new ReleaseView(release, submissions, projects, submissionFilesMap));
+      releaseView = Optional.of(new ReleaseView(release, submissionStates));
     }
 
     return releaseView;
@@ -793,21 +790,6 @@ public class ReleaseService extends AbstractService {
     val fileType = getFileType(filePatternToTypeMap, fileName).orNull();
 
     return new SubmissionFile(fileName, fileLastUpdate, fileSize, fileType, false);
-  }
-
-  private Map<String, List<SubmissionFile>> getSubmissionFilesByProjectKey(Release release) {
-    val releaseName = release.getName();
-    val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
-    val builder = ImmutableMap.<String, List<SubmissionFile>> builder();
-    val projectKeys = submissionService.findReleaseProjectKeys(releaseName);
-
-    for (val projectKey : projectKeys) {
-      val submissionFiles = getSubmissionFiles(releaseName, projectKey, filePatternToTypeMap);
-
-      builder.put(projectKey, submissionFiles);
-    }
-
-    return builder.build();
   }
 
   private static List<String> getProjectKeysBySubmissionState(@NonNull List<Submission> submissions,
