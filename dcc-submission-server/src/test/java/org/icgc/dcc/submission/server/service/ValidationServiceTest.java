@@ -25,7 +25,6 @@ import static org.icgc.dcc.submission.core.model.Outcome.COMPLETED;
 import static org.icgc.dcc.submission.core.model.Outcome.FAILED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,7 +41,7 @@ import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.release.model.QueuedProject;
-import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
+import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.server.repository.CodeListRepository;
 import org.icgc.dcc.submission.validation.ValidationExecutor;
@@ -105,7 +104,7 @@ public class ValidationServiceTest {
   @Mock
   ValidationContext context;
   @Mock
-  ReleaseSubmissionView release;
+  Release release;
   @Mock
   Submission submission;
   @Mock
@@ -117,7 +116,6 @@ public class ValidationServiceTest {
     when(submission.getReport()).thenReturn(new Report());
     when(release.nextInQueue()).thenReturn(Optional.fromNullable(queuedProject));
     when(release.getState()).thenReturn(OPENED);
-    when(release.getSubmission(anyString())).thenReturn(Optional.of(submission));
 
     when(context.getReport()).thenReturn(new Report());
 

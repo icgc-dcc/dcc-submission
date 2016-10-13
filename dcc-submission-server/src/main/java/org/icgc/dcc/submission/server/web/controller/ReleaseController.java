@@ -74,9 +74,10 @@ public class ReleaseController {
 
   @GetMapping
   @JsonView(Digest.class)
-  // TODO: Create a method that returns all authorized submissions.
   public ResponseEntity<?> getReleases(Authentication authentication) {
     log.debug("Getting visible releases");
+    // TODO: Consult with UI devs what type of Auth is required
+
     if (hasReleaseViewAuthority(authentication) == false) {
       return unauthorizedResponse();
     }
@@ -100,6 +101,18 @@ public class ReleaseController {
     updateTransferingFiles(result);
 
     return ResponseEntity.ok(result);
+  }
+
+  @GetMapping("{name}/submissions")
+  public ResponseEntity<?> getSubmissions(
+      @PathVariable("name") String releaseName,
+      Authentication authentication) {
+    // TODO: Consult with UI devs what type of Auth is required
+    if (hasReleaseViewAuthority(authentication) == false) {
+      return unauthorizedResponse();
+    }
+
+    return ResponseEntity.ok(submissionService.findSubmissionsBySubject(releaseName, authentication));
   }
 
   @GetMapping("{name}/submissions/{projectKey:.+}")

@@ -51,7 +51,7 @@ import org.icgc.dcc.common.core.util.Joiners;
 import org.icgc.dcc.common.hadoop.fs.FileSystems;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
+import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.junit.Before;
@@ -120,7 +120,7 @@ public class KeyValidatorTest {
     validationDir = new Path(rootDir, VALIDATION_DIRNAME).toUri().toString();
 
     // Setup: Mock
-    val release = mock(ReleaseSubmissionView.class);
+    val release = mock(Release.class);
     when(release.getName()).thenReturn(RELEASE_NAME);
 
     val dictionary = readResourcesDictionary("0.14z");

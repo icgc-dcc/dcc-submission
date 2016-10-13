@@ -51,26 +51,26 @@ public class SubmissionRepositoryTest extends AbstractRepositoryTest {
   }
 
   @Test
-  public void testFindSubmission() throws Exception {
-    assertThat(submissionRepository.findSubmission("R1", "P1")).isNotNull();
-    assertThat(submissionRepository.findSubmission("fake", "P1")).isNull();
-  }
+    public void testFindSubmissionByReleaseNameAndProjectKey() throws Exception {
+      assertThat(submissionRepository.findSubmissionByReleaseNameAndProjectKey("R1", "P1")).isNotNull();
+      assertThat(submissionRepository.findSubmissionByReleaseNameAndProjectKey("fake", "P1")).isNull();
+    }
 
   @Test
-  public void testFindSubmissionsByReleaseAndProject() throws Exception {
-    assertThat(submissionRepository.findSubmissions("R1", ImmutableList.of("P1"))).hasSize(1);
-    assertThat(submissionRepository.findSubmissions("R1", ImmutableList.of("P1", "P2"))).hasSize(2);
-    assertThat(submissionRepository.findSubmissions("R2", ImmutableList.of("P3", "P2"))).hasSize(1);
-    assertThat(submissionRepository.findSubmissions("R2", ImmutableList.of("P2"))).hasSize(0);
-  }
+    public void testFindSubmissionByReleaseNameAndProjectKeysByReleaseAndProject() throws Exception {
+      assertThat(submissionRepository.findSubmissionsByReleaseNameAndProjectKey("R1", ImmutableList.of("P1"))).hasSize(1);
+      assertThat(submissionRepository.findSubmissionsByReleaseNameAndProjectKey("R1", ImmutableList.of("P1", "P2"))).hasSize(2);
+      assertThat(submissionRepository.findSubmissionsByReleaseNameAndProjectKey("R2", ImmutableList.of("P3", "P2"))).hasSize(1);
+      assertThat(submissionRepository.findSubmissionsByReleaseNameAndProjectKey("R2", ImmutableList.of("P2"))).hasSize(0);
+    }
 
   @Test
-  public void testFindSubmissionsByRelease() throws Exception {
-    val submissions = submissionRepository.findSubmissions("R1");
-    assertThat(submissions).hasSize(2);
-    assertThat(submissions.get(0).getProjectKey()).isEqualTo("P1");
-    assertThat(submissions.get(1).getProjectKey()).isEqualTo("P2");
-  }
+    public void testFindSubmissionByReleaseNameAndProjectKeysByRelease() throws Exception {
+      val submissions = submissionRepository.findSubmissionsByReleaseName("R1");
+      assertThat(submissions).hasSize(2);
+      assertThat(submissions.get(0).getProjectKey()).isEqualTo("P1");
+      assertThat(submissions.get(1).getProjectKey()).isEqualTo("P2");
+    }
 
   @Test
   public void testFindAllSubmissions() throws Exception {

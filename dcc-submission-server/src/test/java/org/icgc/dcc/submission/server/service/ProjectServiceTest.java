@@ -9,8 +9,6 @@ import lombok.val;
 import org.bson.types.ObjectId;
 import org.elasticsearch.common.collect.Lists;
 import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
-import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.server.repository.ProjectRepository;
 import org.junit.After;
 import org.junit.Before;
@@ -120,26 +118,6 @@ public class ProjectServiceTest {
     expected.setAlias("PA");
 
     val actual = projectService.cleanProject(dirty);
-
-    assertThat(actual).isEqualTo(expected);
-  }
-
-  @Test
-  public void testExtractSubmissions() throws Exception {
-    val releaseOne = new ReleaseSubmissionView("R1");
-    val releaseTwo = new ReleaseSubmissionView("R2");
-    val releaseThree = new ReleaseSubmissionView("R3");
-    val submissionOne = new Submission(projectOne.getKey(), projectOne.getName(), releaseOne.getName());
-    val submissionTwo = new Submission(projectOne.getKey(), projectOne.getName(), releaseTwo.getName());
-
-    // releaseOne.addSubmission(submissionOne);
-    // releaseTwo.addSubmission(submissionTwo);
-
-    val releases = Sets.newHashSet(releaseOne, releaseTwo, releaseThree);
-
-    val expected = Sets.newHashSet(submissionOne, submissionTwo);
-
-    val actual = projectService.getSubmissions(releases, projectOne.getKey());
 
     assertThat(actual).isEqualTo(expected);
   }

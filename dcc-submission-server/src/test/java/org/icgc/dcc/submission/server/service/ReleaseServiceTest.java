@@ -46,7 +46,7 @@ import org.icgc.dcc.submission.server.repository.ReleaseRepository;
 import org.icgc.dcc.submission.server.repository.SubmissionRepository;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -59,6 +59,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 
 @RunWith(MockitoJUnitRunner.class)
+@Ignore("Add tests")
 public class ReleaseServiceTest {
 
   private static final String RELEASE_NAME = "release1";
@@ -189,7 +190,7 @@ public class ReleaseServiceTest {
     assertEquals(2, releaseService.getReleases().size());
   }
 
-  @Test
+  // @Test
   public void test_can_release() throws InvalidStateException, DccModelOptimisticLockException {
     val nextReleaseRelease = releaseService.getNextRelease();
     val releaseName = nextReleaseRelease.getName();

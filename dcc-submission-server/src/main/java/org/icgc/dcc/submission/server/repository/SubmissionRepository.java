@@ -70,18 +70,19 @@ public class SubmissionRepository extends AbstractRepository<Submission, QSubmis
         .list(entity.state);
   }
 
-  public Submission findSubmission(@NonNull String releaseName, @NonNull String projectKey) {
+  public Submission findSubmissionByReleaseNameAndProjectKey(@NonNull String releaseName, @NonNull String projectKey) {
     return createFilterByReleaseNameQuery(releaseName)
         .where(entity.projectKey.eq(projectKey)).singleResult();
   }
 
-  public List<Submission> findSubmissions(@NonNull String releaseName, @NonNull Collection<String> projectKeys) {
+  public List<Submission> findSubmissionsByReleaseNameAndProjectKey(@NonNull String releaseName,
+      @NonNull Collection<String> projectKeys) {
     return createFilterByReleaseNameQuery(releaseName)
         .where(entity.projectKey.in(projectKeys))
         .list();
   }
 
-  public List<Submission> findSubmissions(@NonNull String releaseName) {
+  public List<Submission> findSubmissionsByReleaseName(@NonNull String releaseName) {
     return createFilterByReleaseNameQuery(releaseName).list();
   }
 
@@ -89,7 +90,7 @@ public class SubmissionRepository extends AbstractRepository<Submission, QSubmis
     return list();
   }
 
-  public List<Submission> findSubmissionByProjectKey(@NonNull String projectKey) {
+  public List<Submission> findSubmissionsByProjectKey(@NonNull String projectKey) {
     return query()
         .where(entity.projectKey.eq(projectKey))
         .list();

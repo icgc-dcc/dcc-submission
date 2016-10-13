@@ -19,6 +19,9 @@ package org.icgc.dcc.submission.server.service;
 
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableMap;
+import static org.icgc.dcc.submission.core.security.Authorizations.ALL_PROJECTS_LIST;
+import static org.icgc.dcc.submission.core.security.Authorizations.getProjectAuthorities;
+import static org.icgc.dcc.submission.core.security.Authorizations.getUsername;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 
 import java.util.Collection;
@@ -27,15 +30,18 @@ import java.util.Map;
 
 import lombok.NonNull;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.server.repository.SubmissionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
+@Slf4j
 public class SubmissionService extends AbstractService {
 
   private final SubmissionRepository submissionRepository;
@@ -50,7 +56,7 @@ public class SubmissionService extends AbstractService {
 
   public Map<String, Submission> findProjectKeysToSubmissions(@NonNull String releaseName,
       @NonNull Collection<String> projectKeys) {
-    val submissions = submissionRepository.findSubmissions(releaseName, projectKeys);
+    val submissions = submissionRepository.findSubmissionsByReleaseNameAndProjectKey(releaseName, projectKeys);
     return submissions.stream()
         .collect(toImmutableMap(Submission::getProjectKey, submission -> submission));
   }
@@ -65,15 +71,15 @@ public class SubmissionService extends AbstractService {
   }
 
   public Optional<Submission> findSubmission(@NonNull String releaseName, @NonNull String projectKey) {
-    return Optional.fromNullable(submissionRepository.findSubmission(releaseName, projectKey));
+    return Optional.fromNullable(submissionRepository.findSubmissionByReleaseNameAndProjectKey(releaseName, projectKey));
   }
 
   public List<Submission> findSubmissions(@NonNull String releaseName) {
-    return submissionRepository.findSubmissions(releaseName);
+    return submissionRepository.findSubmissionsByReleaseName(releaseName);
   }
 
   public List<Submission> findSubmissionByProjectKey(@NonNull String projectKey) {
-    return submissionRepository.findSubmissionByProjectKey(projectKey);
+    return submissionRepository.findSubmissionsByProjectKey(projectKey);
   }
 
   public Multimap<String, Submission> findReleaseNameToSubmissions() {
@@ -90,6 +96,18 @@ public class SubmissionService extends AbstractService {
     return findSubmissions(releaseName).stream()
         .map(Submission::getProjectKey)
         .collect(toImmutableList());
+  }
+
+  public List<Submission> findSubmissionsBySubject(@NonNull String releaseName, @NonNull Authentication authentication) {
+    log.debug("Getting submissions for {}", getUsername(authentication));
+    val permittedProjectKeys = getProjectAuthorities(authentication);
+    log.debug("User is allowed to view projects: {}", permittedProjectKeys);
+
+    if (permittedProjectKeys == ALL_PROJECTS_LIST) {
+      return submissionRepository.findSubmissionsByReleaseNameAndProjectKey(releaseName, permittedProjectKeys);
+    }
+
+    return submissionRepository.findSubmissionsByReleaseName(releaseName);
   }
 
   /**

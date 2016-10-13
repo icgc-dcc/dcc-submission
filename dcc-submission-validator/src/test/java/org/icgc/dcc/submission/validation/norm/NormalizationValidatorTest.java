@@ -49,7 +49,7 @@ import org.icgc.dcc.submission.core.config.SubmissionProperties.NormalizerProper
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
+import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationReport.NormalizationCounter;
 import org.icgc.dcc.submission.validation.norm.core.NormalizationReporter;
@@ -115,7 +115,7 @@ public class NormalizationValidatorTest {
   private DccFileSystem2 mockDccFileSystem2;
 
   @Mock
-  private ReleaseSubmissionView mockRelease;
+  private Release mockRelease;
 
   @Mock
   private Dictionary mockDictionary;

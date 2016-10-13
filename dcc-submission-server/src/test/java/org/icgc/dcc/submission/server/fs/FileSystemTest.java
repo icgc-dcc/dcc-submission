@@ -21,18 +21,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.User;
-import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
+import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.junit.Before;
-
-import com.google.common.base.Optional;
 
 public class FileSystemTest {
 
@@ -54,7 +50,7 @@ public class FileSystemTest {
 
   protected static final String FILEPATH_2 = ROOT_DIR + RELEASE_NAME + "/" + PROJECT_KEY + "/" + FILENAME_2;
 
-  protected ReleaseSubmissionView mockRelease;
+  protected Release mockRelease;
 
   protected User mockUser;
 
@@ -66,7 +62,7 @@ public class FileSystemTest {
 
   @Before
   public void setUp() throws IOException {
-    this.mockRelease = mock(ReleaseSubmissionView.class);
+    this.mockRelease = mock(Release.class);
     this.mockUser = mock(User.class);
     this.mockProject = mock(Project.class);
     this.mockSubmission = mock(Submission.class);
@@ -82,12 +78,6 @@ public class FileSystemTest {
     when(this.mockProject.hasUser(this.mockUser.getName())).thenReturn(true);
 
     when(this.mockSubmission.getState()).thenReturn(SubmissionState.SIGNED_OFF);
-
-    when(this.mockRelease.getSubmission(this.mockProject.getKey())).thenReturn(
-        Optional.<Submission> of(mockSubmission));
-    List<String> projectKeys = Arrays.asList(this.mockProject.getKey()); // must be separated from thenReturn call
-    // (mockito bug:
-    // http://code.google.com/p/mockito/issues/detail?id=53)
-    when(this.mockRelease.getProjectKeys()).thenReturn(projectKeys);
   }
+
 }

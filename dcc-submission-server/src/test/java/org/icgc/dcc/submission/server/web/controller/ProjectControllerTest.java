@@ -39,6 +39,7 @@ import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.server.service.ReleaseService;
+import org.icgc.dcc.submission.server.service.SubmissionService;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -46,7 +47,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mongodb.CommandResult;
@@ -62,7 +62,6 @@ public class ProjectControllerTest extends ControllerTest {
   private static final String AUTH_NOT_ALLOWED_USER = "ricardo";
 
   private Submission submissionOne;
-  private Submission submissionTwo;
   private Project projectOne;
   private Project projectTwo;
   private List<Release> releases;
@@ -72,6 +71,8 @@ public class ProjectControllerTest extends ControllerTest {
    */
   @MockBean
   private ReleaseService releaseService;
+  @MockBean
+  private SubmissionService submissionService;
 
   @Before
   public void setUp() {
@@ -86,16 +87,13 @@ public class ProjectControllerTest extends ControllerTest {
     projectTwo = new Project("PRJ2", "Project Two");
     val projects = Lists.newArrayList(projectOne, projectTwo);
 
-    submissionOne = new Submission("PRJ1", "Project One", release.getName());
-    submissionTwo = new Submission("PRJ2", "Project Two", release.getName());
-    val submissions = ImmutableSet.of(submissionOne, submissionTwo);
+    submissionOne = new Submission(projectOne.getKey(), projectOne.getName(), release.getName());
 
     when(projectService.getProjects()).thenReturn(projects);
     when(projectService.getProject(projectOne.getKey())).thenReturn(projectOne);
     when(projectService.getProjectByUser(projectOne.getKey(), AUTH_ALLOWED_USER)).thenReturn(projectOne);
     when(projectService.getProjectsByUser(AUTH_ALLOWED_USER)).thenReturn(Lists.newArrayList(projectOne));
-    // when(projectService.getSubmissions(releases, projectOne.getKey()))
-    // .thenReturn(submissions);
+    when(submissionService.findSubmissionByProjectKey(projectOne.getKey())).thenReturn(ImmutableList.of(submissionOne));
   }
 
   @Test
@@ -364,14 +362,9 @@ public class ProjectControllerTest extends ControllerTest {
             + submissionOne.getLastUpdated().getTime()
             + ",\"state\":\"NOT_VALIDATED\",\"report\":{\"dataTypeReports\":[]}"
             + "}"
-            + ","
-            + "{\"projectKey\":\"PRJ2\",\"projectName\":\"Project Two\",\"releaseName\":\"REL1\",\"lastUpdated\":"
-            + submissionTwo.getLastUpdated().getTime()
-            + ",\"state\":\"NOT_VALIDATED\",\"report\":{\"dataTypeReports\":[]}"
-            + "}"
             + "]"));
 
-    verify(releaseService).getReleases();
+    verify(submissionService).findSubmissionByProjectKey(projectOne.getKey());
     // verify(projectService).getSubmissions(releases, projectOne.getKey());
   }
 

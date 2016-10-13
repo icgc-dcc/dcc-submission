@@ -23,8 +23,6 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.lsFile;
-import static org.icgc.dcc.submission.core.security.Authorizations.getUsername;
-import static org.icgc.dcc.submission.core.security.Authorizations.hasSpecificProjectPrivilege;
 import static org.icgc.dcc.submission.core.util.NameValidator.validateEntityName;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
@@ -68,7 +66,6 @@ import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
-import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
 import org.icgc.dcc.submission.release.model.ReleaseView;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
@@ -131,36 +128,6 @@ public class ReleaseService extends AbstractService {
   public List<Release> getReleases() {
     log.info("Request to find all Releases");
     return releaseRepository.findReleases();
-  }
-
-  /**
-   * Returns a list of {@code Release}s with their @{code Submission} filtered based on the user's privilege on
-   * projects.
-   */
-  @Deprecated
-  public List<ReleaseSubmissionView> getReleasesBySubject(Authentication authentication) {
-    log.debug("getting releases for {}", getUsername(authentication));
-
-    val releases = releaseRepository.findReleaseSummaries();
-    val submissions = submissionService.findReleaseNameToSubmissions();
-    log.debug("Number of releases:{} ", releases.size());
-
-    val releaseViews = ImmutableList.<ReleaseSubmissionView> builder();
-    // Filter out all the submissions that the current user can not see
-    for (val release : releases) {
-      val permittedSubmissions = ImmutableList.<Submission> builder();
-      for (val releaseSubmission : submissions.get(release.getName())) {
-        val permitted = hasSpecificProjectPrivilege(authentication, releaseSubmission.getProjectKey());
-        if (permitted) {
-          permittedSubmissions.add(releaseSubmission);
-        }
-      }
-
-      releaseViews.add(new ReleaseSubmissionView(release, permittedSubmissions.build()));
-    }
-
-    log.debug("Number of releases visible: {}", releases.size());
-    return releaseViews.build();
   }
 
   public List<Release> getCompletedReleases() throws IllegalReleaseStateException {

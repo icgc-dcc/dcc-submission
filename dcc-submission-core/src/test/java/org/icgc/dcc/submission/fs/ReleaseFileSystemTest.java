@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.fs;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,13 +35,10 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.ReleaseSubmissionView;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import com.google.common.base.Optional;
 
 public class ReleaseFileSystemTest {
 
@@ -72,7 +68,7 @@ public class ReleaseFileSystemTest {
 
     // But there was a dark past:
     val previousReleaseName = "ICGC14";
-    val previousRelease = mock(ReleaseSubmissionView.class);
+    val previousRelease = mock(Release.class);
     val previousReleaseFileSystem = mock(ReleaseFileSystem.class);
     val previousReleaseDir = new File(rootDir, previousReleaseName);
 
@@ -108,8 +104,6 @@ public class ReleaseFileSystemTest {
 
     // Mock
     when(previousRelease.getName()).thenReturn(previousReleaseName);
-    when(previousRelease.getSubmission(anyString())).thenReturn(
-        Optional.<Submission> of(previousSubmission));
     when(previousReleaseFileSystem.getSubmissionDirectory(projectKey)).thenReturn(previousSubmissionDirectory);
     when(previousReleaseFileSystem.getSystemDirPath()).thenReturn(previousSystemPath);
     when(previousSubmissionDirectory.getValidationDirPath()).thenReturn(previousSubmissionValidationDirPath);
