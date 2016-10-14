@@ -25,6 +25,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import lombok.val;
 
+import org.icgc.dcc.submission.core.model.Project;
+import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.server.service.ReleaseService;
@@ -65,14 +67,20 @@ public class ReleaseControllerTest extends ControllerTest {
     release.setDictionaryVersion("0.6e");
     release.setName(RELEASE_NAME);
     release.setReleaseDate();
-    val submissionOne = new Submission("project1", "project one", release.getName());
-    val submissionTwo = new Submission("project2", "project two", release.getName());
+
+    val projectOne = new Project("project1", "project one");
+    val submissionOne = new Submission(projectOne.getKey(), projectOne.getName(), release.getName());
     submissionOne.setLastUpdated(release.getReleaseDate());
+    val dSubmissionOne = new DetailedSubmission(submissionOne, projectOne);
+
+    val projectTwo = new Project("project2", "project two");
+    val submissionTwo = new Submission(projectTwo.getKey(), projectTwo.getName(), release.getName());
     submissionTwo.setLastUpdated(release.getReleaseDate());
+    val dSubmissionTwo = new DetailedSubmission(submissionTwo, projectTwo);
 
     when(releaseService.getReleases()).thenReturn(ImmutableList.of(release));
-    when(submissionService.findSubmissionsBySubject(eq(RELEASE_NAME), any(Authentication.class))).thenReturn(
-        ImmutableList.of(submissionOne, submissionTwo));
+    when(releaseService.getDetailedSubmissionsBySubject(eq(RELEASE_NAME), any(Authentication.class))).thenReturn(
+        ImmutableList.of(dSubmissionOne, dSubmissionTwo));
   }
 
   @Test
@@ -104,13 +112,15 @@ public class ReleaseControllerTest extends ControllerTest {
         .andExpect(
             content()
                 .json(
-                    "[{\"projectKey\":\"project1\",\"projectName\":\"project one\",\"releaseName\":\"ICGC13\","
-                        + "\"lastUpdated\":" + releaseDate
-                        + ",\"state\":\"NOT_VALIDATED\",\"report\":{\"dataTypeReports\":[]}}"
+                    "[{\"projectKey\":\"project1\",\"projectName\":\"project one\",\"locked\":false,\"projectAlias\":null,"
+                        + "\"lastUpdated\":"
+                        + releaseDate
+                        + ",\"state\":\"NOT_VALIDATED\",\"report\":{\"dataTypeReports\":[]},\"releaseName\":null,\"submissionFiles\":[]}"
                         + ","
-                        + "{\"projectKey\":\"project2\",\"projectName\":\"project two\",\"releaseName\":\"ICGC13\","
-                        + "\"lastUpdated\":" + releaseDate
-                        + ",\"state\":\"NOT_VALIDATED\",\"report\":{\"dataTypeReports\":[]}}]",
+                        + "{\"projectKey\":\"project2\",\"projectName\":\"project two\",\"locked\":false,\"projectAlias\":null,"
+                        + "\"lastUpdated\":"
+                        + releaseDate
+                        + ",\"state\":\"NOT_VALIDATED\",\"report\":{\"dataTypeReports\":[]},\"releaseName\":null,\"submissionFiles\":[]}]",
                     true));
   }
 
