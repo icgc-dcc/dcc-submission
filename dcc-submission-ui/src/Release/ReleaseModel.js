@@ -1,5 +1,6 @@
 import {observable, action } from 'mobx';
 import { fetchRelease } from '~/services/release';
+import { fetchSubmissions } from '~/services/submissions';
 import { fetchNextRelease, performRelease } from '~/services/nextRelease';
 
 class ReleaseModel {
@@ -22,9 +23,12 @@ class ReleaseModel {
     this.isLoading = true;
     console.log('fetch release');
     const fetchMethod = shouldFetchUpcomingRelease ? fetchNextRelease : fetchRelease;
-    const responseData = await fetchMethod({releaseName: this.name});
+    const [release, submissions] = [
+      await fetchMethod({releaseName: this.name}),
+      await fetchSubmissions(shouldFetchUpcomingRelease ? {} : {releaseName: this.name})
+    ];
     this.isLoading = false;
-    Object.assign(this, responseData);
+    Object.assign(this, Object.assign({}, release, {submissions}));
   }
 
   performRelease = () => {
