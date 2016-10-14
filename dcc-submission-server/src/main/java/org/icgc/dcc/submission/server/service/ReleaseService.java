@@ -543,11 +543,15 @@ public class ReleaseService extends AbstractService {
     });
   }
 
+  /**
+   * Removes queued submissions from the validation queue.
+   * @param targets - submissions to remove. Removes all if the argument is empty.
+   */
   @Synchronized
   public void removeQueuedSubmissions(@NonNull String... targets) throws InvalidStateException {
     val release = getNextRelease();
     val releaseName = release.getName();
-    val projectKeys = targets.length > 0 ? release.getQueuedProjectKeys() : ImmutableList.<String> copyOf(targets);
+    val projectKeys = targets.length > 0 ? ImmutableList.<String> copyOf(targets) : release.getQueuedProjectKeys();
 
     log.info("Deleting queued request for project(s) '{}'", projectKeys);
     val queue = ImmutableList.<QueuedProject> copyOf(release.getQueue());

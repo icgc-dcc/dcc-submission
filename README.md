@@ -2,6 +2,8 @@
 
 Parent project of the submission system which is responsible for accepting and validating ICGC clinical and experimental data files submitted to the DCC.
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/29bb5857a70d4861b46cbcc94d569009)](https://www.codacy.com/app/icgc-dcc/dcc-portal?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=icgc-dcc/dcc-portal&amp;utm_campaign=Badge_Grade)
+
 ## Setup
 
 Follow the setup instructions in each of the system modules before attempting to build the top level project.
