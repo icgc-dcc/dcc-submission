@@ -189,8 +189,9 @@ class Admin extends Component {
             }
           </h2>
 
+          { this.validationQueue.length ? <span>Lower numbers will be processed before higher numbers</span> : null }
 
-          <ul className="validation-list">
+          <ol className="validation-list">
           {
             this.validationQueue.length
               ? this.validationQueue.map(projectKey => (
@@ -200,7 +201,7 @@ class Admin extends Component {
               ))
               : <li>No submissions are currently queued for validation.</li>
           }
-          </ul>
+          </ol>
 
           <h2>SFTP</h2>
           <ul>
