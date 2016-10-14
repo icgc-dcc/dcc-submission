@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.server.repository;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.submission.release.model.QRelease.release;
-import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 
 import java.util.List;
@@ -56,10 +55,6 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
     return list();
   }
 
-  public List<Release> findReleaseSummaries() {
-    return list(entity.name, entity.dictionaryVersion, entity.releaseDate, entity.state);
-  }
-
   public Release findNextRelease() {
     return singleResult(entity.state.eq(OPENED));
   }
@@ -78,15 +73,7 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
 
   public Release findReleaseSummaryByName(@NonNull String releaseName) {
     return uniqueResult(entity.name.eq(releaseName), entity.name, entity.dictionaryVersion, entity.releaseDate,
-        entity.state);
-  }
-
-  public Release findCompletedRelease(@NonNull String releaseName) {
-    return uniqueResult(entity.state.eq(COMPLETED).and(entity.name.eq(releaseName)));
-  }
-
-  public List<Release> findCompletedReleases() {
-    return list(entity.state.eq(COMPLETED));
+        entity.state, entity.created, entity.lastUpdate);
   }
 
   public void saveNewRelease(@NonNull Release newRelease) {

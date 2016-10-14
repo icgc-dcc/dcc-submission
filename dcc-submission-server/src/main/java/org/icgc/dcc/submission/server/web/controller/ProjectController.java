@@ -171,7 +171,7 @@ public class ProjectController {
       return Responses.notFound(projectKey);
     }
 
-    val submissions = submissionService.findSubmissionByProjectKey(projectKey);
+    val submissions = submissionService.findSubmissionsByProjectKey(projectKey);
 
     return ResponseEntity.ok(submissions);
   }

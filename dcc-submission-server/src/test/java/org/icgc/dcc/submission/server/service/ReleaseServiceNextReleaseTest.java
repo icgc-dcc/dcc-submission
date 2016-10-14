@@ -106,7 +106,7 @@ public class ReleaseServiceNextReleaseTest {
     when(release.getName()).thenReturn(FIRST_RELEASE_NAME);
     when(release.getState()).thenReturn(ReleaseState.OPENED);
     when(release.getState()).thenReturn(ReleaseState.OPENED).thenReturn(ReleaseState.COMPLETED);
-    when(submissionService.findSubmissionStateByReleaseName(FIRST_RELEASE_NAME))
+    when(submissionService.findSubmissionStatesByReleaseName(FIRST_RELEASE_NAME))
         .thenReturn(singletonList(new Submission(PROJECT_NAME, PROJECT_NAME, FIRST_RELEASE_NAME, SIGNED_OFF)));
 
     when(releaseRepository.findNextRelease()).thenReturn(release);

@@ -62,24 +62,25 @@ public class SubmissionService extends AbstractService {
         .collect(toImmutableMap(Submission::getProjectKey, submission -> submission));
   }
 
-  public Map<String, Submission> findSubmissionsByProjectKey(@NonNull String releaseName) {
-    return findSubmissions(releaseName).stream()
+  public Map<String, Submission> findProjectKeyToSubmissionByReleaseName(@NonNull String releaseName) {
+    return findSubmissionsByReleaseName(releaseName).stream()
         .collect(toImmutableMap(Submission::getProjectKey, submission -> submission));
   }
 
-  public List<Submission> findSubmissionStateByReleaseName(@NonNull String releaseName) {
+  public List<Submission> findSubmissionStatesByReleaseName(@NonNull String releaseName) {
     return submissionRepository.findSubmissionStateByReleaseName(releaseName);
   }
 
-  public Optional<Submission> findSubmission(@NonNull String releaseName, @NonNull String projectKey) {
+  public Optional<Submission> findSubmissionByReleaseNameAndProjectKey(@NonNull String releaseName,
+      @NonNull String projectKey) {
     return fromNullable(submissionRepository.findSubmissionByReleaseNameAndProjectKey(releaseName, projectKey));
   }
 
-  public List<Submission> findSubmissions(@NonNull String releaseName) {
+  public List<Submission> findSubmissionsByReleaseName(@NonNull String releaseName) {
     return submissionRepository.findSubmissionsByReleaseName(releaseName);
   }
 
-  public List<Submission> findSubmissionByProjectKey(@NonNull String projectKey) {
+  public List<Submission> findSubmissionsByProjectKey(@NonNull String projectKey) {
     return submissionRepository.findSubmissionsByProjectKey(projectKey);
   }
 
@@ -94,7 +95,7 @@ public class SubmissionService extends AbstractService {
   }
 
   public List<String> findReleaseProjectKeys(@NonNull String releaseName) {
-    return findSubmissions(releaseName).stream()
+    return findSubmissionsByReleaseName(releaseName).stream()
         .map(Submission::getProjectKey)
         .collect(toImmutableList());
   }

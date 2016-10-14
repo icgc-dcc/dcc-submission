@@ -193,7 +193,7 @@ public class ValidationService extends AbstractScheduledService {
     try {
       // Try to find a queued validation
       val release = releaseService.getNextRelease();
-      val submissions = submissionService.findSubmissionsByProjectKey(release.getName());
+      val submissions = submissionService.findProjectKeyToSubmissionByReleaseName(release.getName());
       nextProject = release.nextInQueue();
 
       if (nextProject.isPresent()) {

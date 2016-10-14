@@ -108,7 +108,7 @@ public class SftpContext {
   // TODO: Return Paths or Strings and nothing in org.dcc.filesystem.*
   public ReleaseFileSystem getReleaseFileSystem(Authentication authentication) {
     val nextRelease = getNextRelease();
-    val submissions = submissionService.findSubmissionsByProjectKey(nextRelease.getName());
+    val submissions = submissionService.findProjectKeyToSubmissionByReleaseName(nextRelease.getName());
 
     return fs.getReleaseFilesystem(nextRelease, submissions, authentication);
   }

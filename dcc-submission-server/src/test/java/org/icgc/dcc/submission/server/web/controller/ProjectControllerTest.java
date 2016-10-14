@@ -93,7 +93,7 @@ public class ProjectControllerTest extends ControllerTest {
     when(projectService.getProject(projectOne.getKey())).thenReturn(projectOne);
     when(projectService.getProjectByUser(projectOne.getKey(), AUTH_ALLOWED_USER)).thenReturn(projectOne);
     when(projectService.getProjectsByUser(AUTH_ALLOWED_USER)).thenReturn(Lists.newArrayList(projectOne));
-    when(submissionService.findSubmissionByProjectKey(projectOne.getKey())).thenReturn(ImmutableList.of(submissionOne));
+    when(submissionService.findSubmissionsByProjectKey(projectOne.getKey())).thenReturn(ImmutableList.of(submissionOne));
   }
 
   @Test
@@ -364,7 +364,7 @@ public class ProjectControllerTest extends ControllerTest {
             + "}"
             + "]"));
 
-    verify(submissionService).findSubmissionByProjectKey(projectOne.getKey());
+    verify(submissionService).findSubmissionsByProjectKey(projectOne.getKey());
     // verify(projectService).getSubmissions(releases, projectOne.getKey());
   }
 

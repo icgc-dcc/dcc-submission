@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.server.web.controller;
 
+import static org.icgc.dcc.common.core.model.FileTypes.FileType.BIOMARKER_TYPE;
+import static org.icgc.dcc.common.test.json.JsonNodes.$;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
@@ -26,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import lombok.val;
 
 import org.icgc.dcc.submission.core.model.Project;
+import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
@@ -72,6 +75,8 @@ public class ReleaseControllerTest extends ControllerTest {
     val submissionOne = new Submission(projectOne.getKey(), projectOne.getName(), release.getName());
     submissionOne.setLastUpdated(release.getReleaseDate());
     val dSubmissionOne = new DetailedSubmission(submissionOne, projectOne);
+    dSubmissionOne.setSubmissionFiles(ImmutableList.of(new SubmissionFile("/f1.txt", release.getReleaseDate(), 1,
+        BIOMARKER_TYPE, false)));
 
     val projectTwo = new Project("project2", "project two");
     val submissionTwo = new Submission(projectTwo.getKey(), projectTwo.getName(), release.getName());
@@ -81,10 +86,14 @@ public class ReleaseControllerTest extends ControllerTest {
     when(releaseService.getReleases()).thenReturn(ImmutableList.of(release));
     when(releaseService.getDetailedSubmissionsBySubject(eq(RELEASE_NAME), any(Authentication.class))).thenReturn(
         ImmutableList.of(dSubmissionOne, dSubmissionTwo));
+
+    when(systemService.getTransferringFiles("project1")).thenReturn(ImmutableList.of("/f1.txt"));
   }
 
   @Test
   public void testGetReleases() throws Exception {
+    val expectedJson = $("[{name:'ICGC13', state:'OPENED', releaseDate:"
+        + release.getReleaseDate().getTime() + ",dictionaryVersion:'0.6e'}]").toString();
     mvc
         .perform(
             get("/ws/releases")
@@ -92,36 +101,32 @@ public class ReleaseControllerTest extends ControllerTest {
                 .with(admin()))
         .andExpect(status().isOk())
         .andExpect(
-            content()
-                .json(
-                    "[{\"name\":\"ICGC13\",\"state\":\"OPENED\",\"releaseDate\":"
-                        + release.getReleaseDate().getTime()
-                        + ",\"dictionaryVersion\":\"0.6e\"}]",
-                    true));
+            content().json(expectedJson, true));
   }
 
   @Test
   public void testGetSubmissions() throws Exception {
     val releaseDate = release.getReleaseDate().getTime();
+    val expectedJson = $(
+        "["
+            + "{projectKey:'project1', projectName:'project one', locked:true, projectAlias:null, lastUpdated:"
+            + releaseDate
+            + ",state:'NOT_VALIDATED',report:{dataTypeReports:[]},releaseName:null,submissionFiles:["
+            + "{name:'/f1.txt',lastUpdate:" + releaseDate
+            + ",size:1,fileType:'BIOMARKER_TYPE',transferring:true}]}"
+            + ","
+            + "{projectKey:'project2', projectName:'project two', locked:true, projectAlias:null, lastUpdated:"
+            + releaseDate
+            + ",state:'NOT_VALIDATED',report:{dataTypeReports:[]},releaseName:null,submissionFiles:[]}"
+            + "]").toString();
+
     mvc
         .perform(
             get("/ws/releases/ICGC13/submissions")
                 .accept(MediaType.APPLICATION_JSON)
                 .with(admin()))
         .andExpect(status().isOk())
-        .andExpect(
-            content()
-                .json(
-                    "[{\"projectKey\":\"project1\",\"projectName\":\"project one\",\"locked\":false,\"projectAlias\":null,"
-                        + "\"lastUpdated\":"
-                        + releaseDate
-                        + ",\"state\":\"NOT_VALIDATED\",\"report\":{\"dataTypeReports\":[]},\"releaseName\":null,\"submissionFiles\":[]}"
-                        + ","
-                        + "{\"projectKey\":\"project2\",\"projectName\":\"project two\",\"locked\":false,\"projectAlias\":null,"
-                        + "\"lastUpdated\":"
-                        + releaseDate
-                        + ",\"state\":\"NOT_VALIDATED\",\"report\":{\"dataTypeReports\":[]},\"releaseName\":null,\"submissionFiles\":[]}]",
-                    true));
+        .andExpect(content().json(expectedJson, true));
   }
 
 }

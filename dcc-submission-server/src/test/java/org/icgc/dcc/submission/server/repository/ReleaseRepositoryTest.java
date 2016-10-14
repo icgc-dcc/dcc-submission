@@ -66,14 +66,6 @@ public class ReleaseRepositoryTest extends AbstractRepositoryTest {
   }
 
   @Test
-  public void testFindReleaseSummaries() {
-    val actual = releaseRepository.findReleaseSummaries();
-    val full = releaseRepository.findReleases();
-
-    assertThat(actual).hasSize(full.size());
-  }
-
-  @Test
   public void testFindNextReleaseQueue() {
     val actual = releaseRepository.findNextReleaseQueue();
     val full = releaseRepository.findNextRelease();

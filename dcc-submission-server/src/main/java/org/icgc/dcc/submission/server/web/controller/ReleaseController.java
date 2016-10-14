@@ -75,8 +75,6 @@ public class ReleaseController {
   @JsonView(Digest.class)
   public ResponseEntity<?> getReleases(Authentication authentication) {
     log.debug("Getting visible releases");
-    // TODO: Consult with UI devs what type of Auth is required
-
     if (hasReleaseViewAuthority(authentication) == false) {
       return unauthorizedResponse();
     }
@@ -97,7 +95,6 @@ public class ReleaseController {
 
     val result = releaseView.get();
     result.setLocked(!systemService.isEnabled());
-    // TODO: updateTransferingFiles() was here.
 
     return ResponseEntity.ok(result);
   }
@@ -106,12 +103,14 @@ public class ReleaseController {
   public ResponseEntity<?> getSubmissions(
       @PathVariable("name") String releaseName,
       Authentication authentication) {
-    // TODO: Consult with UI devs what type of Auth is required
     if (hasReleaseViewAuthority(authentication) == false) {
       return unauthorizedResponse();
     }
 
-    return ResponseEntity.ok(releaseService.getDetailedSubmissionsBySubject(releaseName, authentication));
+    val submissions = releaseService.getDetailedSubmissionsBySubject(releaseName, authentication);
+    submissions.forEach(this::finalizeDetailedSubmission);
+
+    return ResponseEntity.ok(submissions);
   }
 
   @GetMapping("{name}/submissions/{projectKey:.+}")
@@ -124,14 +123,9 @@ public class ReleaseController {
       return Responses.unauthorizedResponse();
     }
 
-    // TODO: use Optional...
-    DetailedSubmission detailedSubmission = releaseService.getDetailedSubmission(releaseName, projectKey);
-    if (detailedSubmission == null) {
-      return noSuchEntityResponse(releaseName, projectKey);
-    }
-
-    detailedSubmission.setLocked(!systemService.isEnabled());
-    updateTransferingFiles(detailedSubmission);
+    // Never null (value returned or exception thrown)
+    val detailedSubmission = releaseService.getDetailedSubmission(releaseName, projectKey);
+    finalizeDetailedSubmission(detailedSubmission);
 
     return ResponseEntity.ok(detailedSubmission);
   }
@@ -146,11 +140,8 @@ public class ReleaseController {
       return Responses.unauthorizedResponse();
     }
 
-    // TODO: use Optional...
+    // Never null (exception is thrown if a value is missing)
     val submission = releaseService.getSubmission(releaseName, projectKey);
-    if (submission == null) {
-      return noSuchEntityResponse(releaseName, projectKey);
-    }
 
     // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
     // dcc-submission-server and dcc-submission-core.
@@ -223,6 +214,11 @@ public class ReleaseController {
           .status(HttpStatus.BAD_REQUEST)
           .body(new ServerErrorResponseMessage(EMPTY_REQUEST));
     }
+  }
+
+  private void finalizeDetailedSubmission(DetailedSubmission submission) {
+    submission.setLocked(!systemService.isEnabled());
+    updateTransferingFiles(submission);
   }
 
   private void updateTransferingFiles(DetailedSubmission detailedSubmission) {

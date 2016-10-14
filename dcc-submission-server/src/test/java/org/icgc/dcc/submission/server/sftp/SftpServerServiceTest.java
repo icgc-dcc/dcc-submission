@@ -159,7 +159,7 @@ public class SftpServerServiceTest {
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
     when(projectService.getProject(not(eq(PROJECT_KEY)))).thenThrow(new RuntimeException(""));
     when(projectService.getProjects()).thenReturn(newArrayList(project));
-    when(submissionService.findSubmissionsByProjectKey(RELEASE_NAME)).thenReturn(releaseSubmissions);
+    when(submissionService.findProjectKeyToSubmissionByReleaseName(RELEASE_NAME)).thenReturn(releaseSubmissions);
 
     // Mock file system
     when(fs.buildReleaseStringPath(release.getName())).thenReturn(root.getAbsolutePath());
