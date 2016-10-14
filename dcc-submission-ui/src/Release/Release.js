@@ -82,7 +82,7 @@ class Release extends Component {
   handleRequestSubmitCancelValidation = async () => {
     await cancelSubmissionValidation({projectKey: this.submissionToCancelValidation.projectKey});
     this.release.fetch();
-    this.closeResetModal();
+    this.closeCancelValidationModal();
   }
 
   componentWillMount() {

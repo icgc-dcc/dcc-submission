@@ -25,7 +25,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
   </parent>
 
   <artifactId>dcc-submission</artifactId>
-  <version>4.3.16-SNAPSHOT</version>
+  <version>4.3.18-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>${project.artifactId}</name>
@@ -223,7 +223,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
   <properties>
     <!-- Versions - DCC -->
-    <dcc-common.version>4.2.12</dcc-common.version>
+    <dcc-common.version>4.2.15</dcc-common.version>
 
     <!-- Versions - Spring -->
     <spring.version>4.3.3.RELEASE</spring.version>
