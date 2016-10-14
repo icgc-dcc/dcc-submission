@@ -1,4 +1,4 @@
-import {observable, action, extendObservable } from 'mobx';
+import {observable, action } from 'mobx';
 import { fetchRelease } from '~/services/release';
 import { fetchSubmissions } from '~/services/submissions';
 import { fetchNextRelease, performRelease } from '~/services/nextRelease';
