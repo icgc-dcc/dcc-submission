@@ -1,11 +1,10 @@
 package org.icgc.dcc.submission.server.repository;
 
-import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import lombok.val;
 
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.QProject;
-import org.icgc.dcc.submission.server.repository.ProjectRepository;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,8 +17,6 @@ import com.google.common.collect.Sets;
 import com.mongodb.MongoClientURI;
 import com.mongodb.MongoException.DuplicateKey;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
-
-import lombok.val;
 
 public class ProjectRepositoryTest extends AbstractRepositoryTest {
 
@@ -152,10 +149,6 @@ public class ProjectRepositoryTest extends AbstractRepositoryTest {
     // Need to create two objects so it tries to add and not update
     projectRepository.upsertProject(new Project("PRJ3", "Project Three"));
     projectRepository.upsertProject(new Project("PRJ3", "Project Three"));
-  }
-
-  private String getMongoUri() {
-    return format("mongodb://localhost:%s/dcc-submission-server.ProjectRepository", embeddedMongo.getPort());
   }
 
 }

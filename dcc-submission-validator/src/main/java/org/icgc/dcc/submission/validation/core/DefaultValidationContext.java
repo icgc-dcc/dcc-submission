@@ -22,6 +22,14 @@ import static java.util.regex.Pattern.matches;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+import lombok.val;
+import lombok.experimental.Delegate;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -31,22 +39,16 @@ import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-import lombok.val;
-import lombok.experimental.Delegate;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * The "default" implementation of the {@link ValidationContext}.
@@ -74,6 +76,8 @@ public class DefaultValidationContext implements ValidationContext {
   private final List<DataType> dataTypes;
   @NonNull
   private final Release release;
+  @NonNull
+  private final Map<String, Submission> submissions;
   @NonNull
   private final Dictionary dictionary;
   @NonNull
@@ -131,7 +135,7 @@ public class DefaultValidationContext implements ValidationContext {
 
   @Override
   public ReleaseFileSystem getReleaseFileSystem() {
-    return submissionFileSystem.getReleaseFilesystem(release);
+    return submissionFileSystem.getReleaseFilesystem(release, submissions);
   }
 
   @Override
@@ -192,6 +196,17 @@ public class DefaultValidationContext implements ValidationContext {
   @Override
   public FileSchema getFileSchema(FileType fileType) {
     return getDictionary().getFileSchemaByName(fileType.getId()).orNull();
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.icgc.dcc.submission.validation.core.ValidationContext#getReleaseSubmissions()
+   */
+  @Override
+  public Map<String, Submission> getReleaseSubmissions() {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

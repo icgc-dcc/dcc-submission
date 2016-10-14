@@ -25,15 +25,15 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 
+import lombok.SneakyThrows;
+import lombok.val;
+
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.server.service.MailService;
 import org.icgc.dcc.submission.server.service.ProjectService;
 import org.icgc.dcc.submission.server.service.ReleaseService;
-import org.icgc.dcc.submission.server.sftp.SftpAuthenticator;
-import org.icgc.dcc.submission.server.sftp.SftpContext;
-import org.icgc.dcc.submission.server.sftp.SftpServerService;
-import org.icgc.dcc.submission.server.sftp.SshServerProvider;
+import org.icgc.dcc.submission.server.service.SubmissionService;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,9 +49,6 @@ import com.google.common.io.Files;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.KeyPair;
-
-import lombok.SneakyThrows;
-import lombok.val;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SftpPublicKeyAuthenticatorTest {
@@ -78,6 +75,8 @@ public class SftpPublicKeyAuthenticatorTest {
   ProjectService projectService;
   @Mock
   ReleaseService releaseService;
+  @Mock
+  SubmissionService submissionService;
   @Mock
   MailService mailService;
 
@@ -138,7 +137,7 @@ public class SftpPublicKeyAuthenticatorTest {
   }
 
   private SftpServerService createService() {
-    val context = new SftpContext(fs, releaseService, projectService, authenticator, mailService);
+    val context = new SftpContext(fs, releaseService, submissionService, projectService, authenticator, mailService);
     val sshd = new SshServerProvider(properties, context, sftpAuthenticator).get();
     val eventBus = new EventBus();
     eventBus.register(authenticator);

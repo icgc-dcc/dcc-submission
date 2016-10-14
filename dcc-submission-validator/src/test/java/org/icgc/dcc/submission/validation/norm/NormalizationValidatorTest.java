@@ -38,6 +38,9 @@ import java.io.File;
 import java.util.List;
 import java.util.UUID;
 
+import lombok.SneakyThrows;
+import lombok.val;
+
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.cascading.CascadingContext;
 import org.icgc.dcc.common.core.model.DataType.DataTypes;
@@ -63,11 +66,9 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.google.common.collect.ImmutableMap;
-
 import cascading.tap.Tap;
-import lombok.SneakyThrows;
-import lombok.val;
+
+import com.google.common.collect.ImmutableMap;
 
 @PowerMockIgnore({ "javax.management.*", "javax.xml.parsers.*", "com.sun.org.apache.xerces.internal.jaxp.*", "ch.qos.logback.*", "org.slf4j.*" })
 @RunWith(PowerMockRunner.class)

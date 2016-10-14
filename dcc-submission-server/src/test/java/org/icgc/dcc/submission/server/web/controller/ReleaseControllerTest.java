@@ -17,18 +17,19 @@
  */
 package org.icgc.dcc.submission.server.web.controller;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import lombok.val;
 
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.server.service.ReleaseService;
+import org.icgc.dcc.submission.server.service.SubmissionService;
 import org.icgc.dcc.submission.server.service.SystemService;
-import org.icgc.dcc.submission.server.web.controller.ReleaseController;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -36,8 +37,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 
+import com.google.common.collect.ImmutableList;
+
 @WebMvcTest(ReleaseController.class)
 public class ReleaseControllerTest extends ControllerTest {
+
+  private static final String RELEASE_NAME = "ICGC13";
 
   /**
    * Test data.
@@ -50,18 +55,24 @@ public class ReleaseControllerTest extends ControllerTest {
   @MockBean
   private ReleaseService releaseService;
   @MockBean
+  private SubmissionService submissionService;
+  @MockBean
   private SystemService systemService;
 
   @Before
   public void setUp() {
-    release = new Release();
+    release = new Release(RELEASE_NAME);
     release.setDictionaryVersion("0.6e");
-    release.setName("ICGC13");
+    release.setName(RELEASE_NAME);
     release.setReleaseDate();
-    release.addSubmission(new Submission("project1", "project one", release.getName()));
-    release.addSubmission(new Submission("project2", "project two", release.getName()));
+    val submissionOne = new Submission("project1", "project one", release.getName());
+    val submissionTwo = new Submission("project2", "project two", release.getName());
+    submissionOne.setLastUpdated(release.getReleaseDate());
+    submissionTwo.setLastUpdated(release.getReleaseDate());
 
-    when(releaseService.getReleasesBySubject(any(Authentication.class))).thenReturn(newArrayList(release));
+    when(releaseService.getReleases()).thenReturn(ImmutableList.of(release));
+    when(submissionService.findSubmissionsBySubject(eq(RELEASE_NAME), any(Authentication.class))).thenReturn(
+        ImmutableList.of(submissionOne, submissionTwo));
   }
 
   @Test
@@ -72,10 +83,35 @@ public class ReleaseControllerTest extends ControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .with(admin()))
         .andExpect(status().isOk())
-        .andExpect(content().string("[{\"name\":\"ICGC13\",\"state\":\"OPENED\",\"releaseDate\":"
-            + release.getReleaseDate().getTime()
-            + ",\"dictionaryVersion\":\"0.6e\",\"submissions\":[{\"projectKey\":\"project1\",\"projectName\":\"project one\",\"releaseName\":\"ICGC13\"},"
-            + "{\"projectKey\":\"project2\",\"projectName\":\"project two\",\"releaseName\":\"ICGC13\"}]}]"));
+        .andExpect(
+            content()
+                .json(
+                    "[{\"name\":\"ICGC13\",\"state\":\"OPENED\",\"releaseDate\":"
+                        + release.getReleaseDate().getTime()
+                        + ",\"dictionaryVersion\":\"0.6e\"}]",
+                    true));
+  }
+
+  @Test
+  public void testGetSubmissions() throws Exception {
+    val releaseDate = release.getReleaseDate().getTime();
+    mvc
+        .perform(
+            get("/ws/releases/ICGC13/submissions")
+                .accept(MediaType.APPLICATION_JSON)
+                .with(admin()))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .json(
+                    "[{\"projectKey\":\"project1\",\"projectName\":\"project one\",\"releaseName\":\"ICGC13\","
+                        + "\"lastUpdated\":" + releaseDate
+                        + ",\"state\":\"NOT_VALIDATED\",\"report\":{\"dataTypeReports\":[]}}"
+                        + ","
+                        + "{\"projectKey\":\"project2\",\"projectName\":\"project two\",\"releaseName\":\"ICGC13\","
+                        + "\"lastUpdated\":" + releaseDate
+                        + ",\"state\":\"NOT_VALIDATED\",\"report\":{\"dataTypeReports\":[]}}]",
+                    true));
   }
 
 }

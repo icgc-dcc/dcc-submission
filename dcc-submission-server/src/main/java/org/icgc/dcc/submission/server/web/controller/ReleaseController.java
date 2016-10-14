@@ -30,6 +30,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -38,8 +39,8 @@ import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.ReleaseView;
 import org.icgc.dcc.submission.server.service.ReleaseService;
+import org.icgc.dcc.submission.server.service.SubmissionService;
 import org.icgc.dcc.submission.server.service.SystemService;
 import org.icgc.dcc.submission.server.web.ServerErrorResponseMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,20 +64,24 @@ import com.google.common.collect.ImmutableList;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ReleaseController {
 
+  @NonNull
   private final ReleaseService releaseService;
+  @NonNull
+  private final SubmissionService submissionService;
+  @NonNull
   private final SystemService systemService;
 
   @GetMapping
   @JsonView(Digest.class)
   public ResponseEntity<?> getReleases(Authentication authentication) {
     log.debug("Getting visible releases");
+    // TODO: Consult with UI devs what type of Auth is required
+
     if (hasReleaseViewAuthority(authentication) == false) {
       return unauthorizedResponse();
     }
 
-    val visibileReleases = releaseService.getReleasesBySubject(authentication);
-
-    return ResponseEntity.ok(visibileReleases);
+    return ResponseEntity.ok(releaseService.getReleases());
   }
 
   @GetMapping("{name}")
@@ -92,9 +97,21 @@ public class ReleaseController {
 
     val result = releaseView.get();
     result.setLocked(!systemService.isEnabled());
-    updateTransferingFiles(result);
+    // TODO: updateTransferingFiles() was here.
 
     return ResponseEntity.ok(result);
+  }
+
+  @GetMapping("{name}/submissions")
+  public ResponseEntity<?> getSubmissions(
+      @PathVariable("name") String releaseName,
+      Authentication authentication) {
+    // TODO: Consult with UI devs what type of Auth is required
+    if (hasReleaseViewAuthority(authentication) == false) {
+      return unauthorizedResponse();
+    }
+
+    return ResponseEntity.ok(releaseService.getDetailedSubmissionsBySubject(releaseName, authentication));
   }
 
   @GetMapping("{name}/submissions/{projectKey:.+}")
@@ -206,11 +223,6 @@ public class ReleaseController {
           .status(HttpStatus.BAD_REQUEST)
           .body(new ServerErrorResponseMessage(EMPTY_REQUEST));
     }
-  }
-
-  private void updateTransferingFiles(ReleaseView result) {
-    result.getSubmissions()
-        .forEach(this::updateTransferingFiles);
   }
 
   private void updateTransferingFiles(DetailedSubmission detailedSubmission) {

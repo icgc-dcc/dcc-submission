@@ -15,43 +15,39 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.server.repository;
+package org.icgc.dcc.submission.core.security;
 
-import org.icgc.dcc.submission.server.config.AbstractConfig;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import static java.util.Arrays.stream;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
+import static org.icgc.dcc.submission.core.security.Authorizations.getProjectAuthorities;
 
-@Configuration
-public class RepositoryConfig extends AbstractConfig {
+import java.util.List;
 
-  @Bean
-  public CodeListRepository codeListRepository() {
-    return singleton(CodeListRepository.class);
+import org.junit.Test;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+public class AuthorizationsTest {
+
+  private static final String PROJECT = "TEST-DCC";
+  private static final String AUTHORITY = "project:" + PROJECT + ":view";
+
+  @Test
+  public void testGetProjectAuthorities() throws Exception {
+    assertThat(getProjectAuthorities(createAuthentication(AUTHORITY))).containsOnly(PROJECT);
+    assertThat(getProjectAuthorities(createAuthentication("*"))).containsOnly("*");
+    assertThat(getProjectAuthorities(createAuthentication(AUTHORITY, "*"))).containsOnly("*");
   }
 
-  @Bean
-  public DictionaryRepository dictionaryRepository() {
-    return singleton(DictionaryRepository.class);
-  }
+  private static Authentication createAuthentication(String... authorities) {
+    List<GrantedAuthority> grantedAuthorities = stream(authorities)
+        .map(authority -> new SimpleGrantedAuthority(authority))
+        .collect(toImmutableList());
 
-  @Bean
-  public ProjectRepository projectRepository() {
-    return singleton(ProjectRepository.class);
-  }
-
-  @Bean
-  public ReleaseRepository releaseRepository() {
-    return singleton(ReleaseRepository.class);
-  }
-
-  @Bean
-  public UserRepository userRepository() {
-    return singleton(UserRepository.class);
-  }
-
-  @Bean
-  public SubmissionRepository submissionRepository() {
-    return singleton(SubmissionRepository.class);
+    return new TestingAuthenticationToken(null, null, grantedAuthorities);
   }
 
 }

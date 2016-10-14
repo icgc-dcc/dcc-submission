@@ -19,7 +19,16 @@ package org.icgc.dcc.submission.validation.core;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -37,13 +46,6 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategyFactoryProvider;
-
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = true)
@@ -83,11 +85,13 @@ public class BasicValidationContext extends AbstractValidationContext {
   @Getter(lazy = true)
   private final SubmissionFileSystem submissionFileSystem = new SubmissionFileSystem(getProperties(), getFileSystem());
   @Getter(lazy = true)
-  private final ReleaseFileSystem releaseFileSystem = new ReleaseFileSystem(getSubmissionFileSystem(), getRelease());
+  private final ReleaseFileSystem releaseFileSystem = new ReleaseFileSystem(getSubmissionFileSystem(), getRelease(),
+      Collections.emptyMap());
   @Getter(lazy = true)
   private final SubmissionPlatformStrategy platformStrategy = createPlatformStrategy();
 
-  public BasicValidationContext(String releaseName, String projectKey, String fsRoot, String fsUrl) {
+  public BasicValidationContext(String releaseName, String projectKey, String fsRoot,
+      String fsUrl) {
     this(releaseName, projectKey, fsRoot, fsUrl, "localhost");
   }
 
@@ -145,6 +149,17 @@ public class BasicValidationContext extends AbstractValidationContext {
   @Override
   public String getOutputDirPath() {
     throw new UnsupportedOperationException("See DCC-2431");
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.icgc.dcc.submission.validation.core.ValidationContext#getReleaseSubmissions()
+   */
+  @Override
+  public Map<String, Submission> getReleaseSubmissions() {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

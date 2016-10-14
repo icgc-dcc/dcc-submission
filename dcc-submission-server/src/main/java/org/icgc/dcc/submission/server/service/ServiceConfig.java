@@ -59,4 +59,9 @@ public class ServiceConfig extends AbstractConfig {
     return singleton(ValidationService.class);
   }
 
+  @Bean
+  public SubmissionService submissionService() {
+    return singleton(SubmissionService.class);
+  }
+
 }

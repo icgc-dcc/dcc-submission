@@ -17,9 +17,12 @@
  */
 package org.icgc.dcc.submission.release.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
+
+import lombok.val;
 
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.junit.AfterClass;
@@ -27,8 +30,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
-
-import lombok.val;
 
 /**
  * 
@@ -52,14 +53,6 @@ public class ReleaseTest {
   private final Release release = new Release();
 
   private static final String EMAIL = "a@a.com";
-
-  @Test
-  public void test_addSubmission() {
-    assertEquals(0, release.getSubmissions().size());
-    Submission submission = new Submission();
-    release.addSubmission(submission);
-    assertEquals(1, release.getSubmissions().size());
-  }
 
   @Test
   public void test_enqueue_oneKey() {
@@ -150,4 +143,16 @@ public class ReleaseTest {
     release.emptyQueue();
     assertEquals(0, release.getQueuedProjectKeys().size());
   }
+
+  @Test
+  public void testComplete() throws Exception {
+    assertThat(release.getState()).isEqualTo(ReleaseState.OPENED);
+    assertThat(release.getReleaseDate()).isNull();
+
+    release.complete();
+
+    assertThat(release.getState()).isEqualTo(ReleaseState.COMPLETED);
+    assertThat(release.getReleaseDate()).isNotNull();
+  }
+
 }

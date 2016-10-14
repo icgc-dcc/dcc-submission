@@ -37,6 +37,11 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.common.core.util.stream.Collectors;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -68,11 +73,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.net.HttpHeaders;
 
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 @RestController
 @RequestMapping("/ws/nextRelease")
@@ -88,13 +88,25 @@ public class NextReleaseController {
 
   @GetMapping
   public ResponseEntity<?> getNextRelease(Authentication authentication) {
-    log.debug("Getting nextRelease...");
+    log.debug("Getting next release...");
     if (hasReleaseViewAuthority(authentication) == false) {
       return unauthorizedResponse();
     }
 
     val nextReleaseName = releaseService.getNextRelease().getName();
     val redirectLocation = getNextReleaseURL(nextReleaseName).toString();
+    return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, redirectLocation).build();
+  }
+
+  @GetMapping("submissions")
+  public ResponseEntity<?> getNextReleaseSubmissions(Authentication authentication) {
+    log.debug("Getting next release submissions...");
+    if (hasReleaseViewAuthority(authentication) == false) {
+      return unauthorizedResponse();
+    }
+
+    val nextReleaseName = releaseService.getNextRelease().getName();
+    val redirectLocation = getNextReleaseURL(nextReleaseName).toString() + "/submissions";
     return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, redirectLocation).build();
   }
 

@@ -17,17 +17,13 @@
  */
 package org.icgc.dcc.submission.release.model;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
-import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.fs.SubmissionFile;
-import org.icgc.dcc.submission.release.ReleaseException;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -47,14 +43,12 @@ public class ReleaseView {
   protected boolean locked;
   protected String name;
   protected ReleaseState state;
-  @Setter
-  protected List<DetailedSubmission> submissions = new ArrayList<DetailedSubmission>();
   protected List<String> queue = new ArrayList<String>();
   protected Date releaseDate;
   protected String dictionaryVersion;
   protected Map<SubmissionState, Integer> summary = newHashMap();
 
-  public ReleaseView(Release release, List<Project> projects, Map<String, List<SubmissionFile>> submissionFiles) {
+  public ReleaseView(Release release, Collection<SubmissionState> submissionsStates) {
     this.created = release.getCreated();
     this.lastUpdate = release.getLastUpdate();
     this.name = release.name;
@@ -63,34 +57,10 @@ public class ReleaseView {
     this.releaseDate = release.releaseDate;
     this.dictionaryVersion = release.dictionaryVersion;
 
-    for (val project : projects) {
-      String projectKey = project.getKey();
-      val optional = release.getSubmission(projectKey);
-      checkState(optional.isPresent(), "Could not find project '%s' in release '%s'", projectKey, name);
-
-      val submission = optional.get();
-      DetailedSubmission detailedSubmission = new DetailedSubmission(submission, project);
-      detailedSubmission.setSubmissionFiles(submissionFiles.get(projectKey));
-      this.submissions.add(detailedSubmission);
-
-      Integer stateCount = this.summary.get(detailedSubmission.getState());
-      if (stateCount == null) {
-        stateCount = 0;
-      }
-      stateCount++;
-      this.summary.put(detailedSubmission.getState(), stateCount);
+    for (val submissionState : submissionsStates) {
+      val count = summary.getOrDefault(submissionState, 0);
+      summary.put(submissionState, count + 1);
     }
-  }
-
-  public DetailedSubmission getDetailedSubmission(String projectKey) {
-    for (val submission : submissions) {
-      val match = submission.getProjectKey().equals(projectKey);
-      if (match) {
-        return submission;
-      }
-    }
-
-    throw new ReleaseException("There is no project '%s' associated with release '%s'", projectKey, name);
   }
 
 }
