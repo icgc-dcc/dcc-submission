@@ -198,15 +198,9 @@ public class DefaultValidationContext implements ValidationContext {
     return getDictionary().getFileSchemaByName(fileType.getId()).orNull();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.icgc.dcc.submission.validation.core.ValidationContext#getReleaseSubmissions()
-   */
   @Override
   public Map<String, Submission> getReleaseSubmissions() {
-    // TODO Auto-generated method stub
-    return null;
+    return submissions;
   }
 
 }

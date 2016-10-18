@@ -151,15 +151,9 @@ public class BasicValidationContext extends AbstractValidationContext {
     throw new UnsupportedOperationException("See DCC-2431");
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.icgc.dcc.submission.validation.core.ValidationContext#getReleaseSubmissions()
-   */
   @Override
   public Map<String, Submission> getReleaseSubmissions() {
-    // TODO Auto-generated method stub
-    return null;
+    return Collections.emptyMap();
   }
 
 }
