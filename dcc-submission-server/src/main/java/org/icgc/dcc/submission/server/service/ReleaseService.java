@@ -577,7 +577,7 @@ public class ReleaseService extends AbstractService {
       }
     }
 
-    releaseRepository.updateRelease(releaseName, release);
+    releaseRepository.updateReleaseQueue(releaseName, release.getQueue());
     submissionService.updateExistingSubmissions(submissions.values());
   }
 

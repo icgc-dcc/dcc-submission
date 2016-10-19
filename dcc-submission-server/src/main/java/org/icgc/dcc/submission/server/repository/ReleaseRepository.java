@@ -27,6 +27,7 @@ import lombok.NonNull;
 import lombok.val;
 
 import org.icgc.dcc.submission.release.model.QRelease;
+import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
@@ -112,6 +113,18 @@ public class ReleaseRepository extends AbstractRepository<Release, QRelease> {
         createUpdateOperations()
             .set("state", completedRelease.getState())
             .set("releaseDate", completedRelease.getReleaseDate()));
+  }
+
+  public void updateReleaseQueue(@NonNull String releaseName, @NonNull List<QueuedProject> queue) {
+    val result = update(
+        createQuery()
+            .filter("name", releaseName),
+        createUpdateOperations()
+            .set("queue", queue));
+
+    checkState(result.getUpdatedCount() == 1,
+        "Updated more than one release when updating release '%s' with queue '%s'",
+        releaseName, queue);
   }
 
 }
