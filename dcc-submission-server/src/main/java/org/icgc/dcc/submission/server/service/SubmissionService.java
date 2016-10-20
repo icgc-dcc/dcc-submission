@@ -123,7 +123,7 @@ public class SubmissionService extends AbstractService {
   }
 
   public List<Submission> findValidatingSubmissions(@NonNull String releaseName) {
-    return submissionRepository.findSubmissionsByReleaseNameAndState(releaseName, VALIDATING);
+    return submissionRepository.findSubmissionSummariesByReleaseNameAndState(releaseName, VALIDATING);
   }
 
   /**

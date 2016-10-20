@@ -89,11 +89,11 @@ public class SubmissionRepository extends AbstractRepository<Submission, QSubmis
         .list();
   }
 
-  public List<Submission> findSubmissionsByReleaseNameAndState(@NonNull String releaseName,
+  public List<Submission> findSubmissionSummariesByReleaseNameAndState(@NonNull String releaseName,
       @NonNull SubmissionState state) {
     return createFilterByReleaseNameQuery(releaseName)
         .where(entity.state.eq(state))
-        .list();
+        .list(entity.releaseName, entity.projectKey, entity.state, entity.lastUpdated);
   }
 
   public List<Submission> findSubmissionsByReleaseName(@NonNull String releaseName) {
