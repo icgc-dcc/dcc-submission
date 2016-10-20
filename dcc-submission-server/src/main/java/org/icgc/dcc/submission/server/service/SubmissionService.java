@@ -24,6 +24,7 @@ import static org.icgc.dcc.submission.core.security.Authorizations.ALL_PROJECTS_
 import static org.icgc.dcc.submission.core.security.Authorizations.getProjectAuthorities;
 import static org.icgc.dcc.submission.core.security.Authorizations.getUsername;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
+import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
 
 import java.util.Collection;
 import java.util.List;
@@ -119,6 +120,10 @@ public class SubmissionService extends AbstractService {
     }
 
     return submissionRepository.findSubmissionsByReleaseNameAndProjectKey(releaseName, permittedProjectKeys);
+  }
+
+  public List<Submission> findValidatingSubmissions(@NonNull String releaseName) {
+    return submissionRepository.findSubmissionsByReleaseNameAndState(releaseName, VALIDATING);
   }
 
   /**

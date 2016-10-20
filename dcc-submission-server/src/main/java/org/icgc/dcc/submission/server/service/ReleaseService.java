@@ -38,6 +38,7 @@ import static org.icgc.dcc.submission.server.web.ServerErrorCode.SIGNED_OFF_SUBM
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.FileTypes.FileType;
 import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
@@ -71,6 +73,7 @@ import org.icgc.dcc.submission.release.model.ReleaseView;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.server.core.InvalidStateException;
+import org.icgc.dcc.submission.server.core.StartupListener;
 import org.icgc.dcc.submission.server.repository.DictionaryRepository;
 import org.icgc.dcc.submission.server.repository.ProjectRepository;
 import org.icgc.dcc.submission.server.repository.ReleaseRepository;
@@ -580,6 +583,32 @@ public class ReleaseService extends AbstractService {
 
     releaseRepository.updateReleaseQueue(releaseName, release.getQueue());
     submissionService.updateExistingSubmissions(submissions.values());
+  }
+
+  /**
+   * Cancels all validating submissions for the next release.<br>
+   * <b>NB:</b> This method should be used by {@link StartupListener} only to reset submission state on a start-up.
+   */
+  @Synchronized
+  public void cancelValidatingSubmissions() {
+    val release = getNextRelease();
+    val releaseName = release.getName();
+    val submissions = submissionService.findValidatingSubmissions(releaseName);
+    if (submissions.isEmpty()) {
+      return;
+    }
+
+    val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
+    for (val submission : submissions) {
+      val projectKey = submission.getProjectKey();
+      val submissionFiles = getSubmissionFiles(releaseName, projectKey, filePatternToTypeMap);
+      // Empty, because not used at all.
+      val dataTypes = Collections.<DataType> emptyList();
+      submission.cancelValidation(submissionFiles, dataTypes);
+      resetValidationFolder(projectKey, release);
+    }
+
+    submissionService.updateExistingSubmissions(submissions);
   }
 
   public void resetSubmissions() {

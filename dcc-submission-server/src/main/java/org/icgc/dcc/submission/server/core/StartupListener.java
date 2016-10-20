@@ -52,6 +52,7 @@ public class StartupListener {
     log.info("Clearing queue, if needed...");
     try {
       releaseService.removeQueuedSubmissions();
+      releaseService.cancelValidatingSubmissions();
     } catch (ReleaseException e) {
       log.warn("Could not clear queue: {}", e.getMessage());
     }
