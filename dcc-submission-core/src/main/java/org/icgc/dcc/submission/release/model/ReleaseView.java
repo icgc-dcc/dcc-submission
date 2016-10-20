@@ -17,7 +17,9 @@
  */
 package org.icgc.dcc.submission.release.model;
 
-import static com.google.common.collect.Maps.newHashMap;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,7 +31,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.val;
 
 @NoArgsConstructor
 @Getter
@@ -46,7 +47,7 @@ public class ReleaseView {
   protected List<String> queue = new ArrayList<String>();
   protected Date releaseDate;
   protected String dictionaryVersion;
-  protected Map<SubmissionState, Integer> summary = newHashMap();
+  protected Map<SubmissionState, ? extends Number> summary;
 
   public ReleaseView(Release release, Collection<SubmissionState> submissionsStates) {
     this.created = release.getCreated();
@@ -56,11 +57,9 @@ public class ReleaseView {
     this.queue = release.getQueuedProjectKeys();
     this.releaseDate = release.releaseDate;
     this.dictionaryVersion = release.dictionaryVersion;
+    this.summary = submissionsStates.stream()
+        .collect(groupingBy(identity(), counting()));
 
-    for (val submissionState : submissionsStates) {
-      val count = summary.getOrDefault(submissionState, 0);
-      summary.put(submissionState, count + 1);
-    }
   }
 
 }

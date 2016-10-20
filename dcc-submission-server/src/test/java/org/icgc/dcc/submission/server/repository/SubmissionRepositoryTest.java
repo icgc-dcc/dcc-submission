@@ -20,6 +20,8 @@ package org.icgc.dcc.submission.server.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import lombok.val;
 
+import org.icgc.dcc.common.core.model.FileTypes.FileType;
+import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.release.model.QSubmission;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
@@ -29,10 +31,13 @@ import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.mongodb.MongoClientURI;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
 public class SubmissionRepositoryTest extends AbstractRepositoryTest {
+
+  private static final Report EMPTY_REPORT = new Report();
 
   private MorphiaQuery<Submission> morphiaQuery;
   private Datastore datastore;
@@ -45,32 +50,40 @@ public class SubmissionRepositoryTest extends AbstractRepositoryTest {
     val submission1 = new Submission("P1", "Proj1", "R1");
     val submission2 = new Submission("P2", "Proj2", "R1");
     val submission3 = new Submission("P3", "Proj3", "R2");
+
+    val report = new Report(ImmutableMap.of("/donor.txt", FileType.DONOR_TYPE));
+    submission1.setReport(report);
+    submission2.setReport(report);
+    submission3.setReport(report);
+
     datastore.save(submission1, submission2, submission3);
     morphiaQuery = new MorphiaQuery<Submission>(morphia, datastore, QSubmission.submission);
     submissionRepository = new SubmissionRepository(morphia, datastore);
   }
 
   @Test
-    public void testFindSubmissionByReleaseNameAndProjectKey() throws Exception {
-      assertThat(submissionRepository.findSubmissionByReleaseNameAndProjectKey("R1", "P1")).isNotNull();
-      assertThat(submissionRepository.findSubmissionByReleaseNameAndProjectKey("fake", "P1")).isNull();
-    }
+  public void testFindSubmissionByReleaseNameAndProjectKey() throws Exception {
+    assertThat(submissionRepository.findSubmissionByReleaseNameAndProjectKey("R1", "P1")).isNotNull();
+    assertThat(submissionRepository.findSubmissionByReleaseNameAndProjectKey("fake", "P1")).isNull();
+  }
 
   @Test
-    public void testFindSubmissionByReleaseNameAndProjectKeysByReleaseAndProject() throws Exception {
-      assertThat(submissionRepository.findSubmissionsByReleaseNameAndProjectKey("R1", ImmutableList.of("P1"))).hasSize(1);
-      assertThat(submissionRepository.findSubmissionsByReleaseNameAndProjectKey("R1", ImmutableList.of("P1", "P2"))).hasSize(2);
-      assertThat(submissionRepository.findSubmissionsByReleaseNameAndProjectKey("R2", ImmutableList.of("P3", "P2"))).hasSize(1);
-      assertThat(submissionRepository.findSubmissionsByReleaseNameAndProjectKey("R2", ImmutableList.of("P2"))).hasSize(0);
-    }
+  public void testFindSubmissionByReleaseNameAndProjectKeysByReleaseAndProject() throws Exception {
+    assertThat(submissionRepository.findSubmissionsByReleaseNameAndProjectKey("R1", ImmutableList.of("P1"))).hasSize(1);
+    assertThat(submissionRepository.findSubmissionsByReleaseNameAndProjectKey("R1", ImmutableList.of("P1", "P2")))
+        .hasSize(2);
+    assertThat(submissionRepository.findSubmissionsByReleaseNameAndProjectKey("R2", ImmutableList.of("P3", "P2")))
+        .hasSize(1);
+    assertThat(submissionRepository.findSubmissionsByReleaseNameAndProjectKey("R2", ImmutableList.of("P2"))).hasSize(0);
+  }
 
   @Test
-    public void testFindSubmissionByReleaseNameAndProjectKeysByRelease() throws Exception {
-      val submissions = submissionRepository.findSubmissionsByReleaseName("R1");
-      assertThat(submissions).hasSize(2);
-      assertThat(submissions.get(0).getProjectKey()).isEqualTo("P1");
-      assertThat(submissions.get(1).getProjectKey()).isEqualTo("P2");
-    }
+  public void testFindSubmissionByReleaseNameAndProjectKeysByRelease() throws Exception {
+    val submissions = submissionRepository.findSubmissionsByReleaseName("R1");
+    assertThat(submissions).hasSize(2);
+    assertThat(submissions.get(0).getProjectKey()).isEqualTo("P1");
+    assertThat(submissions.get(1).getProjectKey()).isEqualTo("P2");
+  }
 
   @Test
   public void testFindAllSubmissions() throws Exception {
@@ -84,6 +97,29 @@ public class SubmissionRepositoryTest extends AbstractRepositoryTest {
 
     assertThat(submissionRepository.deleteByReleaseAndNotState("R1", SubmissionState.ERROR)).isEqualTo(2);
     assertThat(morphiaQuery.count()).isEqualTo(1);
+  }
+
+  @Test
+  public void testFindSubmissionSummariesByReleaseName() throws Exception {
+    val r2submission = submissionRepository.findSubmissionSummariesByReleaseName("R2").get(0);
+    assertThat(r2submission.getLastUpdated()).isNotNull();
+    assertThat(r2submission.getProjectKey()).isNotNull();
+    assertThat(r2submission.getReleaseName()).isNotNull();
+    assertThat(r2submission.getState()).isNotNull();
+    assertThat(r2submission.getProjectName()).isNull();
+    assertThat(r2submission.getReport()).isEqualTo(EMPTY_REPORT);
+  }
+
+  @Test
+  public void testFindSubmissionStateByReleaseName() throws Exception {
+    val r2submission = submissionRepository.findSubmissionStateByReleaseName("R2").get(0);
+    assertThat(r2submission.getState()).isNotNull();
+
+    assertThat(r2submission.getLastUpdated()).isNull();
+    assertThat(r2submission.getProjectKey()).isNull();
+    assertThat(r2submission.getReleaseName()).isNull();
+    assertThat(r2submission.getProjectName()).isNull();
+    assertThat(r2submission.getReport()).isEqualTo(EMPTY_REPORT);
   }
 
 }

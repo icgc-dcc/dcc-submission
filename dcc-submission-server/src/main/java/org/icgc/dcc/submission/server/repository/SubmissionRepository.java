@@ -75,6 +75,13 @@ public class SubmissionRepository extends AbstractRepository<Submission, QSubmis
         .where(entity.projectKey.eq(projectKey)).singleResult();
   }
 
+  public Submission findSubmissionSummaryByReleaseNameAndProjectKey(@NonNull String releaseName,
+      @NonNull String projectKey) {
+    return createFilterByReleaseNameQuery(releaseName)
+        .where(entity.projectKey.eq(projectKey))
+        .singleResult(entity.releaseName, entity.projectKey, entity.state, entity.lastUpdated);
+  }
+
   public List<Submission> findSubmissionsByReleaseNameAndProjectKey(@NonNull String releaseName,
       @NonNull Collection<String> projectKeys) {
     return createFilterByReleaseNameQuery(releaseName)
@@ -84,6 +91,14 @@ public class SubmissionRepository extends AbstractRepository<Submission, QSubmis
 
   public List<Submission> findSubmissionsByReleaseName(@NonNull String releaseName) {
     return createFilterByReleaseNameQuery(releaseName).list();
+  }
+
+  /**
+   * Find submissions without report and projectName by {@code releaseName}.
+   */
+  public List<Submission> findSubmissionSummariesByReleaseName(@NonNull String releaseName) {
+    return createFilterByReleaseNameQuery(releaseName)
+        .list(entity.releaseName, entity.projectKey, entity.state, entity.lastUpdated);
   }
 
   public List<Submission> findSubmissions() {

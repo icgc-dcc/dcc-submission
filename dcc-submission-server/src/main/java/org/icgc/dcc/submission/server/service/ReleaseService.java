@@ -21,6 +21,7 @@ import static com.google.common.base.Joiner.on;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
+import static java.util.function.Predicate.isEqual;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.lsFile;
 import static org.icgc.dcc.submission.core.util.NameValidator.validateEntityName;
@@ -150,7 +151,7 @@ public class ReleaseService extends AbstractService {
 
   public List<String> getSignedOffReleases() {
     val nextRelease = getNextRelease();
-    val submissions = submissionService.findSubmissionsByReleaseName(nextRelease.getName());
+    val submissions = submissionService.findSubmissionSummariesByReleaseName(nextRelease.getName());
 
     return getProjectKeysBySubmissionState(submissions, SIGNED_OFF);
   }
@@ -212,7 +213,7 @@ public class ReleaseService extends AbstractService {
     return submissionService.findSubmissionStatesByReleaseName(releaseName).stream()
         .map(Submission::getState)
         // At least one submission must be signed off on
-        .anyMatch(state -> state == SIGNED_OFF);
+        .anyMatch(isEqual(SIGNED_OFF));
   }
 
   @Synchronized
@@ -394,7 +395,7 @@ public class ReleaseService extends AbstractService {
   }
 
   public boolean submissionExists(String releaseName, String projectKey) {
-    return getSubmission(releaseName, projectKey) != null;
+    return getSubmissionSummary(releaseName, projectKey) != null;
   }
 
   public Submission getSubmission(String releaseName, String projectKey) {
@@ -590,8 +591,8 @@ public class ReleaseService extends AbstractService {
   public void resetInvalidSubmissions() {
     val release = getNextRelease();
     val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
-    val invalidProjectKeys = submissionService.findSubmissionsByReleaseName(release.getName()).stream()
-        .filter(submission -> submission.getState() == INVALID)
+    val invalidProjectKeys = submissionService.findSubmissionSummariesByReleaseName(release.getName()).stream()
+        .filter(isEqual(INVALID))
         .map(Submission::getProjectKey)
         .collect(toImmutableList());
 
@@ -804,6 +805,15 @@ public class ReleaseService extends AbstractService {
     }
 
     throw new ReleaseException("There is no project '%s' associated with release '%s'", projectKey, release.getName());
+  }
+
+  private Submission getSubmissionSummary(String releaseName, String projectKey) {
+    val optional = submissionService.findSubmissionSummaryByReleaseNameAndProjectKey(releaseName, projectKey);
+    if (optional.isPresent()) {
+      return optional.get();
+    }
+
+    throw new ReleaseException("There is no project '%s' associated with release '%s'", projectKey, releaseName);
   }
 
   private SubmissionFile getSubmissionFile(Map<String, FileType> filePatternToTypeMap, Path filePath)

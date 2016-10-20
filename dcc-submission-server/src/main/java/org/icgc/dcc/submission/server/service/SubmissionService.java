@@ -76,8 +76,17 @@ public class SubmissionService extends AbstractService {
     return fromNullable(submissionRepository.findSubmissionByReleaseNameAndProjectKey(releaseName, projectKey));
   }
 
+  public Optional<Submission> findSubmissionSummaryByReleaseNameAndProjectKey(@NonNull String releaseName,
+      @NonNull String projectKey) {
+    return fromNullable(submissionRepository.findSubmissionSummaryByReleaseNameAndProjectKey(releaseName, projectKey));
+  }
+
   public List<Submission> findSubmissionsByReleaseName(@NonNull String releaseName) {
     return submissionRepository.findSubmissionsByReleaseName(releaseName);
+  }
+
+  public List<Submission> findSubmissionSummariesByReleaseName(@NonNull String releaseName) {
+    return submissionRepository.findSubmissionSummariesByReleaseName(releaseName);
   }
 
   public List<Submission> findSubmissionsByProjectKey(@NonNull String projectKey) {
@@ -95,7 +104,7 @@ public class SubmissionService extends AbstractService {
   }
 
   public List<String> findReleaseProjectKeys(@NonNull String releaseName) {
-    return findSubmissionsByReleaseName(releaseName).stream()
+    return findSubmissionSummariesByReleaseName(releaseName).stream()
         .map(Submission::getProjectKey)
         .collect(toImmutableList());
   }
