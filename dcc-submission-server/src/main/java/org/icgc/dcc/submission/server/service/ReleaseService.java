@@ -24,7 +24,6 @@ import static java.lang.String.format;
 import static java.util.function.Predicate.isEqual;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.common.hadoop.fs.HadoopUtils.lsFile;
-import static org.icgc.dcc.submission.core.model.Outcome.CANCELLED;
 import static org.icgc.dcc.submission.core.util.NameValidator.validateEntityName;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
@@ -39,7 +38,6 @@ import static org.icgc.dcc.submission.server.web.ServerErrorCode.SIGNED_OFF_SUBM
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -598,16 +596,11 @@ public class ReleaseService extends AbstractService {
       return;
     }
 
-    for (val submission : submissions) {
-      val projectKey = submission.getProjectKey();
-      val queuedProject = new QueuedProject(projectKey, Collections.emptyList());
-      try {
-        resolveSubmission(queuedProject, CANCELLED, new Report());
-        resetValidationFolder(projectKey, release);
-      } catch (Exception e) {
-        log.error("An error happened while cancelling submission '{}'", submission.getId());
-      }
-    }
+    val projectKeys = submissions.stream()
+        .map(Submission::getProjectKey)
+        .collect(toImmutableList());
+
+    resetSubmissions(projectKeys);
   }
 
   public void resetSubmissions() {
