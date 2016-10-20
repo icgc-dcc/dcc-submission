@@ -68,7 +68,7 @@ export default function SubmissionActionButtons ({
     },
     {
       element: resetButton,
-      isVisible: releaseState === RELEASE_STATES.OPENED,
+      isVisible: releaseState === RELEASE_STATES.OPENED && !includes([SUBMISSION_STATES.QUEUED, SUBMISSION_STATES.VALIDATING], submissionState),
     },
     {
       element: <em key="uploadFilesMessage">Upload Files</em>,
