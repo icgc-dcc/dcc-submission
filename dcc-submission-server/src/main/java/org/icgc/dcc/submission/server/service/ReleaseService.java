@@ -613,7 +613,7 @@ public class ReleaseService extends AbstractService {
     val release = getNextRelease();
     val filePatternToTypeMap = dictionaryRepository.getFilePatternToTypeMap(release.getDictionaryVersion());
     val invalidProjectKeys = submissionService.findSubmissionSummariesByReleaseName(release.getName()).stream()
-        .filter(isEqual(INVALID))
+        .filter(submission -> submission.getState() == INVALID)
         .map(Submission::getProjectKey)
         .collect(toImmutableList());
 

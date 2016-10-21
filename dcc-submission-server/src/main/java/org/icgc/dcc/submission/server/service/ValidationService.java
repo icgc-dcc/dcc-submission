@@ -130,7 +130,10 @@ public class ValidationService extends AbstractScheduledService {
    * @throws InvalidStateException
    */
   public void cancelValidation(@NonNull String projectKey) throws InvalidStateException {
+    // Handle executing validations
     executor.cancel(projectKey);
+
+    // Handle queued validations
     log.info("Resetting database and file system state for cancelled '{}' validation...", projectKey);
     releaseService.removeQueuedSubmissions(projectKey);
   }
