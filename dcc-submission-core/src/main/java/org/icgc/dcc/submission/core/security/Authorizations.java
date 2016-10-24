@@ -97,11 +97,11 @@ public final class Authorizations {
     }
 
     return authorities.stream()
-        .map(Authorizations::extractProject)
+        .map(Authorizations::parseProject)
         .collect(toImmutableList());
   }
 
-  private static String extractProject(String permission) {
+  private static String parseProject(String permission) {
     val matcher = PERMISSION_PATTERN.matcher(permission);
     checkState(matcher.matches(), "Permission '%s' doesn't match pattern '%s'", permission, PERMISSION_PATTERN);
 
