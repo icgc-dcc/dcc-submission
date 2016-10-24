@@ -47,6 +47,7 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.server.service.MailService;
 import org.icgc.dcc.submission.server.service.ProjectService;
 import org.icgc.dcc.submission.server.service.ReleaseService;
+import org.icgc.dcc.submission.server.service.SubmissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -76,6 +77,8 @@ public class SftpContext {
   @NonNull
   private final ReleaseService releaseService;
   @NonNull
+  private final SubmissionService submissionService;
+  @NonNull
   private final ProjectService projectService;
   @NonNull
   private final AuthenticationManager authenticator;
@@ -104,7 +107,10 @@ public class SftpContext {
 
   // TODO: Return Paths or Strings and nothing in org.dcc.filesystem.*
   public ReleaseFileSystem getReleaseFileSystem(Authentication authentication) {
-    return fs.getReleaseFilesystem(getNextRelease(), authentication);
+    val nextRelease = getNextRelease();
+    val submissions = submissionService.findProjectKeyToSubmissionByReleaseName(nextRelease.getName());
+
+    return fs.getReleaseFilesystem(nextRelease, submissions, authentication);
   }
 
   public FileSystem getFileSystem() {

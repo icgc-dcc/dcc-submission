@@ -15,51 +15,39 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.release.model;
+package org.icgc.dcc.submission.core.security;
 
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.counting;
-import static java.util.stream.Collectors.groupingBy;
+import static java.util.Arrays.stream;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
+import static org.icgc.dcc.submission.core.security.Authorizations.getProjectAuthorities;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import org.junit.Test;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-@NoArgsConstructor
-@Getter
-@ToString
-public class ReleaseView {
+public class AuthorizationsTest {
 
-  protected Date created;
-  protected Date lastUpdate;
+  private static final String PROJECT = "TEST-DCC";
+  private static final String AUTHORITY = "project:" + PROJECT + ":view";
 
-  @Setter
-  protected boolean locked;
-  protected String name;
-  protected ReleaseState state;
-  protected List<String> queue = new ArrayList<String>();
-  protected Date releaseDate;
-  protected String dictionaryVersion;
-  protected Map<SubmissionState, ? extends Number> summary;
+  @Test
+  public void testGetProjectAuthorities() throws Exception {
+    assertThat(getProjectAuthorities(createAuthentication(AUTHORITY))).containsOnly(PROJECT);
+    assertThat(getProjectAuthorities(createAuthentication("*"))).containsOnly("*");
+    assertThat(getProjectAuthorities(createAuthentication(AUTHORITY, "*"))).containsOnly("*");
+  }
 
-  public ReleaseView(Release release, Collection<SubmissionState> submissionsStates) {
-    this.created = release.getCreated();
-    this.lastUpdate = release.getLastUpdate();
-    this.name = release.name;
-    this.state = release.state;
-    this.queue = release.getQueuedProjectKeys();
-    this.releaseDate = release.releaseDate;
-    this.dictionaryVersion = release.dictionaryVersion;
-    this.summary = submissionsStates.stream()
-        .collect(groupingBy(identity(), counting()));
+  private static Authentication createAuthentication(String... authorities) {
+    List<GrantedAuthority> grantedAuthorities = stream(authorities)
+        .map(authority -> new SimpleGrantedAuthority(authority))
+        .collect(toImmutableList());
 
+    return new TestingAuthenticationToken(null, null, grantedAuthorities);
   }
 
 }

@@ -19,18 +19,21 @@ package org.icgc.dcc.submission.fs;
 
 import static org.icgc.dcc.submission.core.security.Authorizations.hasSpecificProjectPrivilege;
 
+import java.util.Map;
+
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.hadoop.fs.HadoopUtils;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
+import org.icgc.dcc.submission.release.model.Submission;
 import org.springframework.security.core.Authentication;
-
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @AllArgsConstructor
@@ -48,10 +51,13 @@ public class ReleaseFileSystem {
   private final SubmissionFileSystem submissionFileSystem;
   @NonNull
   private final Release release;
+  @NonNull
+  private final Map<String, Submission> submissionsByProjectKey;
   private final Authentication authentication;
 
-  public ReleaseFileSystem(SubmissionFileSystem submissionFileSystem, Release release) {
-    this(submissionFileSystem, release, null);
+  public ReleaseFileSystem(SubmissionFileSystem submissionFileSystem, Release release,
+      Map<String, Submission> submissionsByProjectKey) {
+    this(submissionFileSystem, release, submissionsByProjectKey, null);
   }
 
   public SubmissionDirectory getSubmissionDirectory(@NonNull String projectKey) {
@@ -62,13 +68,12 @@ public class ReleaseFileSystem {
           authentication, authentication == null ? null : authentication.getName(), projectKey);
     }
 
-    val optional = release.getSubmission(projectKey);
-    if (!optional.isPresent()) {
+    val submission = submissionsByProjectKey.get(projectKey);
+    if (submission == null) {
       throw new ReleaseException("There is no project '%s' associated with release '%s'",
           projectKey, release.getName());
     }
 
-    val submission = optional.get();
     return new SubmissionDirectory(submissionFileSystem, this, release, projectKey, submission);
   }
 

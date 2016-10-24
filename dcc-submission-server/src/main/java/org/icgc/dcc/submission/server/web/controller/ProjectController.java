@@ -28,9 +28,15 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.server.service.ProjectService;
 import org.icgc.dcc.submission.server.service.ReleaseService;
+import org.icgc.dcc.submission.server.service.SubmissionService;
 import org.icgc.dcc.submission.server.web.ServerErrorCode;
 import org.icgc.dcc.submission.server.web.ServerErrorResponseMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,18 +52,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mongodb.MongoException.DuplicateKey;
 
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 @RestController
 @RequestMapping("/ws/projects")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ProjectController {
 
+  @NonNull
   private final ProjectService projectService;
+  @NonNull
   private final ReleaseService releaseService;
+  @NonNull
+  private final SubmissionService submissionService;
 
   @GetMapping
   public ResponseEntity<?> getProjects(Authentication authentication) {
@@ -165,8 +171,7 @@ public class ProjectController {
       return Responses.notFound(projectKey);
     }
 
-    val releases = releaseService.getReleases();
-    val submissions = projectService.getSubmissions(releases, projectKey);
+    val submissions = submissionService.findSubmissionsByProjectKey(projectKey);
 
     return ResponseEntity.ok(submissions);
   }

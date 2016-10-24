@@ -17,12 +17,21 @@
  */
 package org.icgc.dcc.submission.core.security;
 
-import org.icgc.dcc.submission.core.util.Constants;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.val;
+
+import org.icgc.dcc.submission.core.util.Constants;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 /**
  * Utils method to bring together logic pertaining to authorization checks.
@@ -31,6 +40,11 @@ import lombok.NoArgsConstructor;
 public final class Authorizations {
 
   public static final String ADMIN_ROLE = Constants.Authorizations_ADMIN_ROLE; // TODO: hardcoded value..!! (DCC-759)
+
+  private static final String ALL_PROJECTS = "*";
+  public static final List<String> ALL_PROJECTS_LIST = Collections.singletonList(ALL_PROJECTS);
+
+  private static final Pattern PERMISSION_PATTERN = Pattern.compile("project:(.*):view");
 
   public static String getUsername(Authentication authentication) {
     if (authentication == null) return null;
@@ -73,12 +87,33 @@ public final class Authorizations {
     return hasAuthority(authentication, Authority.projectViewPrivilege(projectKey));
   }
 
+  public static List<String> getProjectAuthorities(@NonNull Authentication authentication) {
+    val authorities = authentication.getAuthorities().stream()
+        .map(GrantedAuthority::getAuthority)
+        .collect(toImmutableList());
+
+    if (authorities.contains(ALL_PROJECTS)) {
+      return ALL_PROJECTS_LIST;
+    }
+
+    return authorities.stream()
+        .map(Authorizations::parseProject)
+        .collect(toImmutableList());
+  }
+
+  private static String parseProject(String permission) {
+    val matcher = PERMISSION_PATTERN.matcher(permission);
+    checkState(matcher.matches(), "Permission '%s' doesn't match pattern '%s'", permission, PERMISSION_PATTERN);
+
+    return matcher.group(1);
+  }
+
   private static boolean hasAuthority(Authentication authentication, String authority) {
     if (authentication == null) return false;
 
     return authentication.getAuthorities().stream()
         .map(GrantedAuthority::getAuthority)
-        .anyMatch(a -> a.equals(authority) || a.equals("*"));
+        .anyMatch(a -> a.equals(authority) || a.equals(ALL_PROJECTS));
   }
 
   private static boolean hasRole(Authentication authentication, String role) {

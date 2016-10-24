@@ -17,7 +17,8 @@
  */
 package org.icgc.dcc.submission.server.service;
 
-import static org.elasticsearch.common.collect.Lists.newArrayList;
+import static java.util.Collections.singletonList;
+import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
@@ -33,21 +34,17 @@ import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.DictionaryState;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
-import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.server.core.InvalidStateException;
 import org.icgc.dcc.submission.server.repository.CodeListRepository;
 import org.icgc.dcc.submission.server.repository.DictionaryRepository;
 import org.icgc.dcc.submission.server.repository.ProjectRepository;
 import org.icgc.dcc.submission.server.repository.ReleaseRepository;
-import org.icgc.dcc.submission.server.service.DictionaryService;
-import org.icgc.dcc.submission.server.service.MailService;
-import org.icgc.dcc.submission.server.service.ReleaseService;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -81,6 +78,8 @@ public class ReleaseServiceNextReleaseTest {
   ReleaseFileSystem releaseFileSystem;
   @Mock
   MailService mailService;
+  @Mock
+  SubmissionService submissionService;
 
   @Mock
   DictionaryService dictionaryService;
@@ -101,18 +100,14 @@ public class ReleaseServiceNextReleaseTest {
   @Before
   public void setUp() throws IOException {
     when(submissionFileSystem.getFileSystem()).thenReturn(FileSystem.getLocal(new Configuration()));
-    when(submissionFileSystem.getReleaseFilesystem(any(Release.class))).thenReturn(releaseFileSystem);
+    when(submissionFileSystem.getReleaseFilesystem(any(Release.class), any())).thenReturn(releaseFileSystem);
     when(submissionFileSystem.buildProjectStringPath(anyString(), anyString())).thenReturn("/");
 
     when(release.getName()).thenReturn(FIRST_RELEASE_NAME);
     when(release.getState()).thenReturn(ReleaseState.OPENED);
     when(release.getState()).thenReturn(ReleaseState.OPENED).thenReturn(ReleaseState.COMPLETED);
-    when(release.getProjectKeys()).thenReturn(
-        newArrayList(PROJECT_NAME));
-    when(release.getSubmissions()).thenReturn(
-        newArrayList(new Submission(PROJECT_NAME, PROJECT_NAME, FIRST_RELEASE_NAME, SubmissionState.SIGNED_OFF)));
-    when(release.getSubmissions()).thenReturn(
-        newArrayList(new Submission(PROJECT_NAME, PROJECT_NAME, FIRST_RELEASE_NAME, SubmissionState.SIGNED_OFF)));
+    when(submissionService.findSubmissionStatesByReleaseName(FIRST_RELEASE_NAME))
+        .thenReturn(singletonList(new Submission(PROJECT_NAME, PROJECT_NAME, FIRST_RELEASE_NAME, SIGNED_OFF)));
 
     when(releaseRepository.findNextRelease()).thenReturn(release);
     when(releaseRepository.findReleaseByName(FIRST_RELEASE_NAME)).thenReturn(release);
@@ -213,7 +208,6 @@ public class ReleaseServiceNextReleaseTest {
     when(dictionary.getVersion()).thenReturn("0.6c");
     when(dictionary.getFileSchemaByFileName(anyString())).thenReturn(Optional.<FileSchema> absent());
     when(release.getDictionaryVersion()).thenReturn("0.6c");
-    when(release.isSignOffAllowed()).thenReturn(true);
     when(release.isQueued()).thenReturn(false);
   }
 

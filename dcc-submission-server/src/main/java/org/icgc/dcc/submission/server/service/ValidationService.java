@@ -37,7 +37,13 @@ import static org.icgc.dcc.submission.core.model.Outcome.FAILED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Set;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.common.core.model.DataType;
 import org.icgc.dcc.common.core.model.Identifiable.Identifiables;
@@ -45,6 +51,7 @@ import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.server.core.InvalidStateException;
 import org.icgc.dcc.submission.server.repository.CodeListRepository;
 import org.icgc.dcc.submission.validation.ValidationExecutor;
@@ -62,11 +69,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.AbstractScheduledService;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Coordinator task that runs periodically to dispatch validations for execution.
@@ -88,6 +90,8 @@ public class ValidationService extends AbstractScheduledService {
    */
   @NonNull
   private final ReleaseService releaseService;
+  @NonNull
+  private final SubmissionService submissionService;
   @NonNull
   private final CodeListRepository codeListRepository;
   @NonNull
@@ -126,7 +130,10 @@ public class ValidationService extends AbstractScheduledService {
    * @throws InvalidStateException
    */
   public void cancelValidation(@NonNull String projectKey) throws InvalidStateException {
+    // Handle executing validations
     executor.cancel(projectKey);
+
+    // Handle queued validations
     log.info("Resetting database and file system state for cancelled '{}' validation...", projectKey);
     releaseService.removeQueuedSubmissions(projectKey);
   }
@@ -189,6 +196,7 @@ public class ValidationService extends AbstractScheduledService {
     try {
       // Try to find a queued validation
       val release = releaseService.getNextRelease();
+      val submissions = submissionService.findProjectKeyToSubmissionByReleaseName(release.getName());
       nextProject = release.nextInQueue();
 
       if (nextProject.isPresent()) {
@@ -196,7 +204,7 @@ public class ValidationService extends AbstractScheduledService {
         val next = nextProject.get();
         log.info("Trying to validate next eligible project in queue: '{}' ('{}': '{}')",
             new Object[] { next.getId(), queue.size(), copyOf(transform(queue, Identifiables.getId())) });
-        tryValidation(release, next);
+        tryValidation(release, submissions, next);
       }
     } catch (ValidationRejectedException e) {
       // No available slots
@@ -213,9 +221,10 @@ public class ValidationService extends AbstractScheduledService {
    * @param project the project to validate
    * @throws ValidationRejectedException if the validation could not be executed
    */
-  private void tryValidation(@NonNull final Release release, @NonNull final QueuedProject project) {
+  private void tryValidation(@NonNull final Release release, @NonNull final Map<String, Submission> submissions,
+      @NonNull final QueuedProject project) {
     // Prepare validation
-    val validationContext = createValidationContext(release, project);
+    val validationContext = createValidationContext(release, submissions, project);
     val validation = createValidation(validationContext);
 
     // Submit validation asynchronously for execution
@@ -295,7 +304,8 @@ public class ValidationService extends AbstractScheduledService {
    * @param project the project to create the validation context for
    * @return
    */
-  private ValidationContext createValidationContext(Release release, QueuedProject project) {
+  private ValidationContext createValidationContext(Release release, Map<String, Submission> submissions,
+      QueuedProject project) {
     val dictionary = releaseService.getNextDictionary();
     val codeLists = codeListRepository.findCodeLists();
     val prioritizedDataTypes = project.getDataTypes().stream()
@@ -309,6 +319,7 @@ public class ValidationService extends AbstractScheduledService {
         project.getEmails(),
         prioritizedDataTypes,
         release,
+        submissions,
         dictionary,
         codeLists,
         submissionFileSystem,

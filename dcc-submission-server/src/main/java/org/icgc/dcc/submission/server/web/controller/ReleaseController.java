@@ -30,6 +30,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -38,8 +39,8 @@ import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.ReleaseView;
 import org.icgc.dcc.submission.server.service.ReleaseService;
+import org.icgc.dcc.submission.server.service.SubmissionService;
 import org.icgc.dcc.submission.server.service.SystemService;
 import org.icgc.dcc.submission.server.web.ServerErrorResponseMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +64,11 @@ import com.google.common.collect.ImmutableList;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ReleaseController {
 
+  @NonNull
   private final ReleaseService releaseService;
+  @NonNull
+  private final SubmissionService submissionService;
+  @NonNull
   private final SystemService systemService;
 
   @GetMapping
@@ -74,9 +79,7 @@ public class ReleaseController {
       return unauthorizedResponse();
     }
 
-    val visibileReleases = releaseService.getReleasesBySubject(authentication);
-
-    return ResponseEntity.ok(visibileReleases);
+    return ResponseEntity.ok(releaseService.getReleases());
   }
 
   @GetMapping("{name}")
@@ -92,9 +95,22 @@ public class ReleaseController {
 
     val result = releaseView.get();
     result.setLocked(!systemService.isEnabled());
-    updateTransferingFiles(result);
 
     return ResponseEntity.ok(result);
+  }
+
+  @GetMapping("{name}/submissions")
+  public ResponseEntity<?> getSubmissions(
+      @PathVariable("name") String releaseName,
+      Authentication authentication) {
+    if (hasReleaseViewAuthority(authentication) == false) {
+      return unauthorizedResponse();
+    }
+
+    val submissions = releaseService.getDetailedSubmissionsBySubject(releaseName, authentication);
+    submissions.forEach(this::finalizeDetailedSubmission);
+
+    return ResponseEntity.ok(submissions);
   }
 
   @GetMapping("{name}/submissions/{projectKey:.+}")
@@ -107,14 +123,9 @@ public class ReleaseController {
       return Responses.unauthorizedResponse();
     }
 
-    // TODO: use Optional...
-    DetailedSubmission detailedSubmission = releaseService.getDetailedSubmission(releaseName, projectKey);
-    if (detailedSubmission == null) {
-      return noSuchEntityResponse(releaseName, projectKey);
-    }
-
-    detailedSubmission.setLocked(!systemService.isEnabled());
-    updateTransferingFiles(detailedSubmission);
+    // Never null (value returned or exception thrown)
+    val detailedSubmission = releaseService.getDetailedSubmission(releaseName, projectKey);
+    finalizeDetailedSubmission(detailedSubmission);
 
     return ResponseEntity.ok(detailedSubmission);
   }
@@ -129,11 +140,8 @@ public class ReleaseController {
       return Responses.unauthorizedResponse();
     }
 
-    // TODO: use Optional...
+    // Never null (exception is thrown if a value is missing)
     val submission = releaseService.getSubmission(releaseName, projectKey);
-    if (submission == null) {
-      return noSuchEntityResponse(releaseName, projectKey);
-    }
 
     // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
     // dcc-submission-server and dcc-submission-core.
@@ -208,9 +216,9 @@ public class ReleaseController {
     }
   }
 
-  private void updateTransferingFiles(ReleaseView result) {
-    result.getSubmissions()
-        .forEach(this::updateTransferingFiles);
+  private void finalizeDetailedSubmission(DetailedSubmission submission) {
+    submission.setLocked(!systemService.isEnabled());
+    updateTransferingFiles(submission);
   }
 
   private void updateTransferingFiles(DetailedSubmission detailedSubmission) {

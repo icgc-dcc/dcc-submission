@@ -64,11 +64,19 @@ export default function SubmissionActionButtons ({
     },
     {
       element: cancelValidationButton,
-      isVisible: includes([SUBMISSION_STATES.QUEUED, SUBMISSION_STATES.VALIDATING], submissionState),
+      isVisible: includes([
+        SUBMISSION_STATES.QUEUED,
+        SUBMISSION_STATES.VALIDATING,
+        ], submissionState),
     },
     {
       element: resetButton,
-      isVisible: releaseState === RELEASE_STATES.OPENED,
+      isVisible: releaseState === RELEASE_STATES.OPENED
+        && !includes([
+          SUBMISSION_STATES.QUEUED,
+          SUBMISSION_STATES.VALIDATING,
+          SUBMISSION_STATES.CANCELLING_VALIDATION,
+          ], submissionState),
     },
     {
       element: <em key="uploadFilesMessage">Upload Files</em>,

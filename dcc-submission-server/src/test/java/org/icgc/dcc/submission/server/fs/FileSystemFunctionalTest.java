@@ -17,12 +17,16 @@
  */
 package org.icgc.dcc.submission.server.fs;
 
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.fs.ReleaseFileSystem.SYSTEM_FILES_DIR_NAME;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Pattern;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -41,9 +45,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
-
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class FileSystemFunctionalTest extends FileSystemTest {
@@ -74,6 +75,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     log.info("ls0 = " + filenameList0);
 
     this.submissionFileSystem.createInitialReleaseFilesystem(this.mockRelease,
+        singletonMap(PROJECT_KEY, mockSubmission),
         Sets.newHashSet(this.mockProject.getKey()));
 
     Iterable<String> filenameList1 =
@@ -99,7 +101,8 @@ public class FileSystemFunctionalTest extends FileSystemTest {
         new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("*")));
 
     ReleaseFileSystem myReleaseFilesystem =
-        this.submissionFileSystem.getReleaseFilesystem(this.mockRelease, authentication);
+        this.submissionFileSystem.getReleaseFilesystem(this.mockRelease, singletonMap(PROJECT_KEY, mockSubmission),
+            authentication);
     Assert.assertNotNull(myReleaseFilesystem);
     log.info("release file system = " + myReleaseFilesystem);
 

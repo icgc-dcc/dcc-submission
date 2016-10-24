@@ -14,6 +14,7 @@ import ActionButton from '~/common/components/ActionButton/ActionButton';
 import SubmissionActionButtons from '~/Submission/SubmissionActionButtons';
 
 import RELEASE_STATES from './constants/RELEASE_STATES';
+import SUBMISSION_STATES from '~/Submission/SUBMISSION_STATES';
 
 import ReleaseModel from './ReleaseModel.js';
 
@@ -80,6 +81,7 @@ class Release extends Component {
   handleClickCancelValidation = (submission) => { this.submissionToCancelValidation = submission }
   closeCancelValidationModal = () => { this.submissionToCancelValidation = null };
   handleRequestSubmitCancelValidation = async () => {
+    this.submissionToCancelValidation.state = SUBMISSION_STATES.CANCELLING_VALIDATION;
     await cancelSubmissionValidation({projectKey: this.submissionToCancelValidation.projectKey});
     this.release.fetch();
     this.closeCancelValidationModal();

@@ -24,6 +24,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.DataType;
@@ -33,17 +37,13 @@ import org.icgc.dcc.submission.core.report.FieldReport;
 import org.icgc.dcc.submission.core.report.Report;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.fs.SubmissionFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 
 import com.google.common.collect.ImmutableList;
-
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -91,7 +91,7 @@ public abstract class AbstractValidationContext implements ValidationContext {
 
   @Override
   public ReleaseFileSystem getReleaseFileSystem() {
-    return new ReleaseFileSystem(getSubmissionFileSystem(), getRelease());
+    return new ReleaseFileSystem(getSubmissionFileSystem(), getRelease(), getReleaseSubmissions());
   }
 
   @Override
