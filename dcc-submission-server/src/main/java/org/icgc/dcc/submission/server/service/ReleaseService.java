@@ -137,7 +137,7 @@ public class ReleaseService extends AbstractService {
    */
   public Optional<ReleaseView> getReleaseViewBySubject(String releaseName, Authentication authentication) {
     val release = releaseRepository.findReleaseSummaryByName(releaseName);
-    val submissionStates = submissionService.findSubmissionStatesByReleaseName(releaseName)
+    val submissionStates = submissionService.findSubmissionStatesByReleaseNameAndSubject(releaseName, authentication)
         .stream()
         .map(Submission::getState)
         .collect(toImmutableList());

@@ -125,7 +125,9 @@ public class ReleaseServiceTest {
       val projectRepository = spy(new ProjectRepository(morphia, datastore));
       val submissionRepository = spy(new SubmissionRepository(morphia, datastore));
 
-      submissionService = new SubmissionService(mailService, submissionRepository);
+      val projectService = new ProjectService(projectRepository);
+
+      submissionService = new SubmissionService(mailService, projectService, submissionRepository);
       submissionService.addSubmission(validSubmission);
       submissionService.addSubmission(notValidatedSubmission);
       submissionService.addSubmission(queuedSubmission);
