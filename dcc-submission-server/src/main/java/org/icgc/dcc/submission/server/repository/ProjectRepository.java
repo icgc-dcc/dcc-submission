@@ -60,6 +60,10 @@ public class ProjectRepository extends AbstractRepository<Project, QProject> {
     return list(entity.users.contains(username));
   }
 
+  public List<Project> findProjectKeysByUser(@NonNull String username) {
+    return list(entity.users.contains(username), entity.key);
+  }
+
   /**
    * Upsert will either insert or update the Project depending on whether it already exists in the database. Existence
    * check is based on whether the Project already has an Id. If the Project is missing an Id and already exists, Mongo

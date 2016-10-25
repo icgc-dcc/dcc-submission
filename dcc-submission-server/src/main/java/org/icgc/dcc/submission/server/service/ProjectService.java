@@ -39,6 +39,11 @@ public class ProjectService {
     return projectRepository.findProjectsByUser(username);
   }
 
+  public List<Project> getProjectKeysByUser(String username) {
+    log.debug("Request to find Projects for User '{}'", username);
+    return projectRepository.findProjectKeysByUser(username);
+  }
+
   public Key<Project> addProject(Project project) {
     log.info("Adding Project '{}'", project);
     return projectRepository.upsertProject(project);

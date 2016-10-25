@@ -20,8 +20,6 @@ package org.icgc.dcc.submission.server.service;
 import static com.google.common.base.Optional.fromNullable;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableMap;
-import static org.icgc.dcc.submission.core.security.Authorizations.ALL_PROJECTS_LIST;
-import static org.icgc.dcc.submission.core.security.Authorizations.getProjectAuthorities;
 import static org.icgc.dcc.submission.core.security.Authorizations.getUsername;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
@@ -34,6 +32,7 @@ import lombok.NonNull;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.server.repository.SubmissionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,12 +46,15 @@ import com.google.common.collect.Multimap;
 public class SubmissionService extends AbstractService {
 
   private final SubmissionRepository submissionRepository;
+  private final ProjectService projectService;
 
   @Autowired
   public SubmissionService(
       @NonNull final MailService mailService,
+      @NonNull final ProjectService projectService,
       @NonNull final SubmissionRepository submissionRepository) {
     super(mailService);
+    this.projectService = projectService;
     this.submissionRepository = submissionRepository;
   }
 
@@ -70,6 +72,19 @@ public class SubmissionService extends AbstractService {
 
   public List<Submission> findSubmissionStatesByReleaseName(@NonNull String releaseName) {
     return submissionRepository.findSubmissionStateByReleaseName(releaseName);
+  }
+
+  public List<Submission> findSubmissionStatesByReleaseNameAndSubject(@NonNull String releaseName,
+      @NonNull Authentication authentication) {
+    log.debug("Getting submission states for {}", getUsername(authentication));
+    val permittedProjectKeys = getUserProjects(authentication);
+    log.debug("User is allowed to view projects: {}", permittedProjectKeys);
+
+    val submissions = submissionRepository
+        .findSubmissionStateByReleaseNameAndProjectKeys(releaseName, permittedProjectKeys);
+    log.debug("Found submissions: {}", submissions);
+
+    return submissions;
   }
 
   public Optional<Submission> findSubmissionByReleaseNameAndProjectKey(@NonNull String releaseName,
@@ -112,14 +127,13 @@ public class SubmissionService extends AbstractService {
 
   public List<Submission> findSubmissionsBySubject(@NonNull String releaseName, @NonNull Authentication authentication) {
     log.debug("Getting submissions for {}", getUsername(authentication));
-    val permittedProjectKeys = getProjectAuthorities(authentication);
+    val permittedProjectKeys = getUserProjects(authentication);
     log.debug("User is allowed to view projects: {}", permittedProjectKeys);
 
-    if (permittedProjectKeys == ALL_PROJECTS_LIST) {
-      return submissionRepository.findSubmissionsByReleaseName(releaseName);
-    }
+    val submissions = submissionRepository.findSubmissionsByReleaseNameAndProjectKey(releaseName, permittedProjectKeys);
+    log.debug("Found submissions: {}", submissions);
 
-    return submissionRepository.findSubmissionsByReleaseNameAndProjectKey(releaseName, permittedProjectKeys);
+    return submissions;
   }
 
   public List<Submission> findValidatingSubmissions(@NonNull String releaseName) {
@@ -150,6 +164,16 @@ public class SubmissionService extends AbstractService {
 
   public void deleteUnsignedSubmissions(@NonNull String releaseName) {
     submissionRepository.deleteByReleaseAndNotState(releaseName, SIGNED_OFF);
+  }
+
+  private List<String> getUserProjects(Authentication authentication) {
+    val username = getUsername(authentication);
+    val userProjects = projectService.getProjectKeysByUser(username).stream()
+        .map(Project::getKey)
+        .collect(toImmutableList());
+    log.debug("User is allowed to view projects: {}", userProjects);
+
+    return userProjects;
   }
 
 }

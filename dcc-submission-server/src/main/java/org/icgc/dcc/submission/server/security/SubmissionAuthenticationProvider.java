@@ -49,7 +49,9 @@ public class SubmissionAuthenticationProvider extends DaoAuthenticationProvider 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
     val username = getUsername(authentication);
+    log.debug("Trying to authenticate user '{}'...", username);
     User user = getUser(username);
+    log.debug("Found user {}", user);
 
     // Ensure not locked
     if (user.isLocked()) {
