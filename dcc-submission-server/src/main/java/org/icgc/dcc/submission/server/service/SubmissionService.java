@@ -21,6 +21,7 @@ import static com.google.common.base.Optional.fromNullable;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableMap;
 import static org.icgc.dcc.submission.core.security.Authorizations.getUsername;
+import static org.icgc.dcc.submission.core.security.Authorizations.isSuperUser;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
 
@@ -77,6 +78,10 @@ public class SubmissionService extends AbstractService {
   public List<Submission> findSubmissionStatesByReleaseNameAndSubject(@NonNull String releaseName,
       @NonNull Authentication authentication) {
     log.debug("Getting submission states for {}", getUsername(authentication));
+    if (isSuperUser(authentication)) {
+      return submissionRepository.findSubmissionStateByReleaseName(releaseName);
+    }
+
     val permittedProjectKeys = getUserProjects(authentication);
     log.debug("User is allowed to view projects: {}", permittedProjectKeys);
 
@@ -127,6 +132,10 @@ public class SubmissionService extends AbstractService {
 
   public List<Submission> findSubmissionsBySubject(@NonNull String releaseName, @NonNull Authentication authentication) {
     log.debug("Getting submissions for {}", getUsername(authentication));
+    if (isSuperUser(authentication)) {
+      return submissionRepository.findSubmissionsByReleaseName(releaseName);
+    }
+
     val permittedProjectKeys = getUserProjects(authentication);
     log.debug("User is allowed to view projects: {}", permittedProjectKeys);
 

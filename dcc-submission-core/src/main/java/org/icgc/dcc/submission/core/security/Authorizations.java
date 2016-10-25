@@ -32,7 +32,7 @@ public final class Authorizations {
 
   public static final String ADMIN_ROLE = Constants.Authorizations_ADMIN_ROLE; // TODO: hardcoded value..!! (DCC-759)
 
-  private static final String ALL_PROJECTS = "*";
+  private static final String SUPERUSER_AUTHORITY = "*";
 
   public static String getUsername(Authentication authentication) {
     if (authentication == null) return null;
@@ -80,7 +80,7 @@ public final class Authorizations {
 
     return authentication.getAuthorities().stream()
         .map(GrantedAuthority::getAuthority)
-        .anyMatch(a -> a.equals(authority) || a.equals(ALL_PROJECTS));
+        .anyMatch(a -> a.equals(authority) || a.equals(SUPERUSER_AUTHORITY));
   }
 
   private static boolean hasRole(Authentication authentication, String role) {
