@@ -52,7 +52,7 @@ export default function SubmissionActionButtons ({
   const elements = [
     {
       element: signOffButton,
-      isVisible: submissionState === SUBMISSION_STATES.VALID && userIsAdmin,
+      isVisible: submissionState === SUBMISSION_STATES.VALID,
     },
     {
       element: validateButton,
