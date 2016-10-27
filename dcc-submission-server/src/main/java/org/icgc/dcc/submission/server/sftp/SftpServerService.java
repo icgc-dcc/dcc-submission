@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.server.sftp;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.util.concurrent.Service.State.TERMINATED;
 import static java.lang.String.valueOf;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
@@ -25,7 +26,6 @@ import static org.icgc.dcc.submission.server.sftp.SftpSessions.getAuthentication
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -69,16 +69,21 @@ public class SftpServerService extends AbstractService {
   private volatile boolean enabled = true;
 
   public Status getActiveSessions() {
-    Status status = new Status(enabled, state());
+    val status = new Status(enabled, state());
     if (state() == TERMINATED) {
       return status;
     }
 
-    List<AbstractSession> activeSessions = sshd.getActiveSessions();
-    for (AbstractSession activeSession : activeSessions) {
+    val activeSessions = sshd.getActiveSessions();
+    log.debug("Active sessions: {}", activeSessions);
+    for (val activeSession : activeSessions) {
 
       // Shorthands
-      String username = activeSession.getUsername();
+      val username = activeSession.getUsername();
+      if (isNullOrEmpty(username)) {
+        log.debug("Skipping pending authentication session.");
+        continue;
+      }
 
       val ioSessionMap = getIoSessionMap(activeSession);
       log.info(getLogMessage(username),
