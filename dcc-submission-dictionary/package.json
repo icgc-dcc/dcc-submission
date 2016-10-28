@@ -32,7 +32,7 @@
     "jquery": "1.9.*",
     "js-beautify": "1.6.3",
     "json": "9.0.4",
-    "jsondiffpatch": "0.1.43",
+    "jsondiffpatch": "git@github.com:cheapsteak/jsondiffpatch.git#1bf3df4875e4af1d17034649332ed19f33dbc4b5",
     "jsoneditor": "5.1.*",
     "regex-colorizer": "0.3.*",
     "underscore": "1.8.*"
