@@ -168,6 +168,16 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
   @Test
   public void testScriptContextEvaluate() throws Exception {
     val script = "list_def = ['SA01','sa01']; if (list_def contains analyzed_sample_id) { true } else { false }";
+    testScriptContextEvaluate(script, true);
+  }
+
+  @Test
+  public void testScriptContextEvaluate_failure() throws Exception {
+    val script = "list_def = ['SA02','sa02']; if (list_def contains analyzed_sample_id) { true } else { false }";
+    testScriptContextEvaluate(script, false);
+  }
+
+  private void testScriptContextEvaluate(String script, boolean expectedResult) throws Exception {
     val context = new ScriptRestriction.ScriptContext("TEST-DCC", script);
 
     // Simulate upstream produced state
@@ -177,7 +187,7 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
     // Simulate a singleton tuple stream
     val tupleEntry = new TupleEntry(fields, tuple);
 
-    assertThat(context.evaluate(tupleEntry)).isTrue();
+    assertThat(context.evaluate(tupleEntry)).isEqualTo(expectedResult);
   }
 
 }
