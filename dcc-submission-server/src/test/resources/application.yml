@@ -73,7 +73,7 @@ reference:
 
 # Mail
 mail:
-  enabled: true
+  enabled: false
   smtpHost: localhost
   smtpPort: 9999
 

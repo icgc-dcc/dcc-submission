@@ -24,6 +24,8 @@ import static org.icgc.dcc.submission.validation.cascading.ValidationFields.STAT
 
 import java.util.List;
 
+import lombok.val;
+
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction.InvalidScriptException;
 import org.icgc.dcc.submission.validation.primary.restriction.ScriptRestriction.ScriptFunction;
@@ -32,7 +34,6 @@ import org.junit.Test;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
-import lombok.val;
 
 public class ScriptRestrictionTest extends BaseRestrictionTest {
 
@@ -162,6 +163,21 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
 
   private static Object[] row(Object... values) {
     return values;
+  }
+
+  @Test
+  public void testScriptContextEvaluate() throws Exception {
+    val script = "list_def = ['SA01','sa01']; if (list_def contains analyzed_sample_id) { true } else { false }";
+    val context = new ScriptRestriction.ScriptContext("TEST-DCC", script);
+
+    // Simulate upstream produced state
+    val fields = new Fields("analyzed_sample_id");
+    val tuple = new Tuple("SA01");
+
+    // Simulate a singleton tuple stream
+    val tupleEntry = new TupleEntry(fields, tuple);
+
+    assertThat(context.evaluate(tupleEntry)).isTrue();
   }
 
 }
