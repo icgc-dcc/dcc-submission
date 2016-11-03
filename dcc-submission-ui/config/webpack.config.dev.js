@@ -49,7 +49,7 @@ module.exports = {
     loaders: [
       {
         test: /\.js$/,
-        include: paths.appSrc,
+        include: [paths.appSrc, paths.appNodeModules + '/rgb-hex'],
         loaders: ['babel?' + JSON.stringify(require('./babel.dev'))],
       },
       {

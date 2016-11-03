@@ -54,7 +54,7 @@ module.exports = {
     loaders: [
       {
         test: /\.js$/,
-        include: paths.appSrc,
+        include: [paths.appSrc, paths.appNodeModules + '/rgb-hex'],
         loader: 'babel',
         query: require('./babel.prod')
       },
