@@ -333,7 +333,7 @@ public class ScriptRestriction implements RowBasedPlanElement {
       return result instanceof Boolean;
     }
 
-    private static Map<String, Object> variables(TupleEntry tupleEntry) {
+    private static Map<String, Object> variables(TupleEntry tupleEntry, String projectKey) {
       val variables = variables();
       for (int i = 0; i < tupleEntry.size(); i++) {
         val fieldName = tupleEntry.getFields().get(i).toString();
@@ -348,6 +348,9 @@ public class ScriptRestriction implements RowBasedPlanElement {
         variables.put(fieldName, fieldValue);
       }
 
+      // Add projectKey to the available fields
+      variables.put(PROJECT_VARIABLE_NAME, projectKey);
+
       return variables;
     }
 
@@ -357,8 +360,7 @@ public class ScriptRestriction implements RowBasedPlanElement {
     }
 
     private VariableResolverFactory variableResolverFactory(TupleEntry tupleEntry) {
-      val factory = new MapVariableResolverFactory(variables(tupleEntry));
-      factory.createVariable(PROJECT_VARIABLE_NAME, projectKey);
+      val factory = new MapVariableResolverFactory(variables(tupleEntry, projectKey));
 
       return factory;
     }
