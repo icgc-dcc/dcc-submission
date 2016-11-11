@@ -79,11 +79,11 @@ public class ReleaseResolver {
    * @return {@code VALID} and {@code SIGNED-OFF} projects for the {@code release}.
    */
   public List<Project> getValidProjects(@NonNull String release) {
-    val response = getResponse(url + "/" + release.toUpperCase());
+    val submissions = getResponse(url + "/" + release.toUpperCase() + "/submissions");
     val validProjects = ImmutableList.<Project> builder();
-    log.debug("Submissions: {}", response);
+    log.debug("Submissions: {}", submissions);
 
-    for (val submission : response.get("submissions")) {
+    for (val submission : submissions) {
       val submissionState = submission.get("state").textValue();
       if (isValidState(submissionState)) {
         validProjects.add(convertProject(submission));

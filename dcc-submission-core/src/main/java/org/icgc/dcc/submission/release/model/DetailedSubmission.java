@@ -43,11 +43,9 @@ public class DetailedSubmission extends Submission {
   private List<SubmissionFile> submissionFiles;
 
   public DetailedSubmission(Submission submission, Project project) {
-    super();
+    super(project.getKey(), project.getName(), submission.releaseName);
     checkArgument(submission.projectKey != null && //
         submission.projectKey.equals(project.getKey())); // By design
-    this.projectKey = project.getKey();
-    this.projectName = project.getName();
     this.projectAlias = project.getAlias();
 
     this.state = submission.state;
