@@ -54,6 +54,7 @@ public class ClientMain {
         log.info("Finished files load in {} second(s).", watch.elapsed(SECONDS));
       } catch (Exception e) {
         log.error("", e);
+        System.exit(1);
       } finally {
         DependencyFactory.getInstance().close();
       }

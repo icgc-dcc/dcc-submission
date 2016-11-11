@@ -50,6 +50,7 @@ public class DetailedSubmission extends Submission {
     this.projectName = project.getName();
     this.projectAlias = project.getAlias();
 
+    this.releaseName = submission.releaseName;
     this.state = submission.state;
     this.report = submission.report;
     this.lastUpdated = submission.lastUpdated;

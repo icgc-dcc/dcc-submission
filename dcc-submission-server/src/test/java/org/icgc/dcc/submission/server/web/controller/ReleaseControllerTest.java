@@ -111,13 +111,13 @@ public class ReleaseControllerTest extends ControllerTest {
         "["
             + "{projectKey:'project1', projectName:'project one', locked:true, projectAlias:null, lastUpdated:"
             + releaseDate
-            + ",state:'NOT_VALIDATED',report:{dataTypeReports:[]},releaseName:null,submissionFiles:["
+            + ",state:'NOT_VALIDATED',report:{dataTypeReports:[]},releaseName:'ICGC13',submissionFiles:["
             + "{name:'/f1.txt',lastUpdate:" + releaseDate
             + ",size:1,fileType:'BIOMARKER_TYPE',transferring:true}]}"
             + ","
             + "{projectKey:'project2', projectName:'project two', locked:true, projectAlias:null, lastUpdated:"
             + releaseDate
-            + ",state:'NOT_VALIDATED',report:{dataTypeReports:[]},releaseName:null,submissionFiles:[]}"
+            + ",state:'NOT_VALIDATED',report:{dataTypeReports:[]},releaseName:'ICGC13',submissionFiles:[]}"
             + "]").toString();
 
     mvc
