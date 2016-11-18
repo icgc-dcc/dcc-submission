@@ -480,11 +480,14 @@ var dictionaryApp = dictionaryApp || {};
   TableViewer.prototype.selectedAttributes = function (attributes) {
     if(_.isArray(attributes) && !_.isEmpty(attributes)){
       var selector = '.badges';
+      // First hide all the rows
       d3.selectAll('.dictionary_table').selectAll('tbody tr').style('display', 'none');
+      // Updating selector query for jQuery based on the selected attributes
       _.each(attributes, function(attribute){
         selector += ':contains('+ attribute +')';
       })
       $(selector).each(function(){
+        // Then show the ones that has user selected attribute filter
         d3.select(this.parentNode).style('display', 'table-row');
       });
     }

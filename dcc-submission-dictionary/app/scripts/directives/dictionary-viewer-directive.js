@@ -86,6 +86,7 @@ angular.module('DictionaryViewerApp')
           if(_firstRun){
             _firstRun = false;
             _controller.selectedAttributes = search.selectedAttributes ? search.selectedAttributes.split(',') : [];
+            // Give time to tableViewer to render first
             $timeout(function(){
               _controller.tableViewer.selectedAttributes(_controller.selectedAttributes);
             }, 300)
@@ -127,6 +128,7 @@ angular.module('DictionaryViewerApp')
             });
           };
 
+          // funtion to call when user selection chages
           _controller.updateAttributeFilter = function(){
             var search = $location.search();
             search.viewMode = 'details';
@@ -327,7 +329,7 @@ angular.module('DictionaryViewerApp')
           if (_controller.jsonEditor) {
             var dictionaryJSON = {};
             _controller.dictUtil.getDictionary(versionTo).then(function (dictionariesJSON) {
-              console.log('dictionariesJSON :', dictionariesJSON);
+
               if (_controller.dataType !== 'all' &&
                 dictionariesJSON && angular.isDefined(dictionariesJSON.files)) {
 
@@ -346,49 +348,54 @@ angular.module('DictionaryViewerApp')
                 }
 
                 dictionaryJSON.files = dictionaryFiles;
-              }else {
+              } else {
                 dictionaryJSON = dictionariesJSON;
               }
+              // Only go into the condition if any of the attribute filter is selected
+              // if(_.isArray(selectedAttributes) && !_.isEmpty(selectedAttributes) && !_.isEmpty(dictionaryJSON)){
+              //     var dictionaryFiles = _.map(dictionaryJSON.files, function(file){
+              //       var fields = [];
 
-              if(_.isArray(selectedAttributes) && !_.isEmpty(selectedAttributes) && !_.isEmpty(dictionaryJSON)){
-                  var dictionaryFiles = _.map(dictionaryJSON.files, function(file){
-                    var fields = [];
-
-                    _.each(file.fields, function(field){
-                      var shouldReturn = 0, 
-                        required = _.find(field.restrictions, function (restriction) {
-                          return restriction.type === 'required';
-                        });
-                      _.each(selectedAttributes, function(attribute){
-                        if(attribute === 'Open Access' && field.controlled === false){
-                          shouldReturn++;
-                        }else if(attribute === 'Controlled'  && field.controlled === true){
-                          shouldReturn++;
-                        }else if(attribute === 'Required' && required){
-                          shouldReturn++;
-                        }else if(attribute === 'N/A Valid' && required){
-                          if (required.config.acceptMissingCode === true) {
-                            shouldReturn++;
-                          }
-                        }else if(attribute === 'N/A Invalid' && required){
-                          if(required.config.acceptMissingCode !== true) {
-                            shouldReturn++;
-                          }
-                        }else if(attribute === 'Unique'){
-                          if(file.uniqueFields && file.uniqueFields.indexOf(field.name) >= 0){
-                            shouldReturn++;
-                          }
-                        }
-                      });
-                      if(shouldReturn === selectedAttributes.length){
-                        fields.push(field);
-                      }
-                    });
-                    file.fields = fields
-                    return file;
-                  });
-                dictionaryJSON.files = dictionaryFiles;
-              }
+              //       _.each(file.fields, function(field){
+              //           // Should return will be an integar because a filed must have all the selected attributes
+              //         var shouldReturn = 0, 
+              //           // Check to see if there are any required fields
+              //           required = _.find(field.restrictions, function (restriction) {
+              //             return restriction.type === 'required';
+              //           });
+              //         // Going through all the selected attributes
+              //         _.each(selectedAttributes, function(attribute){
+              //           if(attribute === 'Open Access' && field.controlled === false){
+              //             shouldReturn++;
+              //           }else if(attribute === 'Controlled'  && field.controlled === true){
+              //             shouldReturn++;
+              //           }else if(attribute === 'Required' && required){
+              //             shouldReturn++;
+              //           }else if(attribute === 'N/A Valid' && required){
+              //             if (required.config.acceptMissingCode === true) {
+              //               shouldReturn++;
+              //             }
+              //           }else if(attribute === 'N/A Invalid' && required){
+              //             if(required.config.acceptMissingCode !== true) {
+              //               shouldReturn++;
+              //             }
+              //           }else if(attribute === 'Unique'){
+              //             if(file.uniqueFields && file.uniqueFields.indexOf(field.name) >= 0){
+              //               shouldReturn++;
+              //             }
+              //           }
+              //         });
+              //         if(shouldReturn === selectedAttributes.length){
+              //           // Add only if the field has all the selected attributes therefore checking the shouldReturn
+              //           // variable with the length of selected attributes array
+              //           fields.push(field);
+              //         }
+              //       });
+              //       file.fields = fields
+              //       return file;
+              //     });
+              //   dictionaryJSON.files = dictionaryFiles;
+              // }
 
               _controller.jsonEditor.set(dictionaryJSON);
 
@@ -480,6 +487,7 @@ angular.module('DictionaryViewerApp')
           });
         }
 
+        // Waiting for angular to do its binding and then initializing multiselect
         $timeout(function(){
           jQuery('#fields-filter').multiselect({
             numberDisplayed: 2
