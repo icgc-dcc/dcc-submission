@@ -2,6 +2,7 @@
 
 # dependencies
 node_modules
+dictionary/app/bower_components
 
 # production
 build

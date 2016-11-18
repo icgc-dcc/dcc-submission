@@ -46,7 +46,7 @@ var dictionaryApp = dictionaryApp || {};
      var _self = this;
      var url = _self.webserviceURL + '/dictionaries/' + version;
      var dict = _self.dictionaryMap[version];
-     
+
      if (_.has(dict, 'files')) {
        return $.Deferred().promise(dict);
      } else if (_.has(dict, 'then')) {

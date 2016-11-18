@@ -1,7 +1,7 @@
 {
   "name": "@icgc/dictionary-viewer",
   "description": "ICGC Dictionary Viewer",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -29,10 +29,10 @@
     "d3": "3.5.6",
     "d3-tip": "0.6.*",
     "highlight.js": "9.0.*",
-    "jquery": "1.9.*",
+    "jquery": "1.11.*",
     "js-beautify": "1.6.3",
     "json": "9.0.4",
-    "jsondiffpatch": "git@github.com:cheapsteak/jsondiffpatch.git#1bf3df4875e4af1d17034649332ed19f33dbc4b5",
+    "jsondiffpatch": "https://github.com/cheapsteak/jsondiffpatch.git#1bf3df4875e4af1d17034649332ed19f33dbc4b5",
     "jsoneditor": "5.1.*",
     "regex-colorizer": "0.3.*",
     "underscore": "1.8.*"

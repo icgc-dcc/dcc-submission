@@ -307,12 +307,11 @@ var dictionaryApp = dictionaryApp || {};
       return null;
     });
 
-
     // Field
     elem.append('td').classed('monospaced', true).text(row.name);
 
     // Attribute
-    var attrBox = elem.append('td');
+    var attrBox = elem.append('td').classed('badges', true);
 
     function addBadge(txt, colour) {
       attrBox.append('div').classed('badge', true).style('background-color', colour).text(txt);
@@ -475,6 +474,22 @@ var dictionaryApp = dictionaryApp || {};
     }
   };
 
+  ////////////////////////////////////////////////////////////////////////////////
+  // Attributes filter, hide unmatched attribute rows
+  ////////////////////////////////////////////////////////////////////////////////
+  TableViewer.prototype.selectedAttributes = function (attributes) {
+    if(_.isArray(attributes) && !_.isEmpty(attributes)){
+      var selector = '.badges';
+      d3.selectAll('.dictionary_table').selectAll('tbody tr').style('display', 'none');
+      _.each(attributes, function(attribute){
+        selector += ':contains('+ attribute +')';
+      })
+      $(selector).each(function(){
+        d3.select(this.parentNode).style('display', 'table-row');
+      });
+    }
+  };
+
 ////////////////////////////////////////////////////////////////////////////////
 // Builds a mini-map row (one row per table)
 ////////////////////////////////////////////////////////////////////////////////
@@ -511,15 +526,14 @@ var dictionaryApp = dictionaryApp || {};
 ////////////////////////////////////////////////////////////////////////////////
 // Search and filter dictionary
 ////////////////////////////////////////////////////////////////////////////////
-  TableViewer.prototype.filter = function (txt) {
+  TableViewer.prototype.filter = function (txt, fieldFilter) {
     var _self = this;
     var re = new RegExp(txt, 'i');
     var datatypeMap = {};
 
     window.scrollTo(0, 0);
 
-    d3.selectAll('.dictionary_table').selectAll('tr').style('display', 'table-row');
-    if (!txt || txt === '') {
+    if ((!txt || txt === '') && (!_.isArray(fieldFilter) || _.isEmpty(fieldFilter))) {
       d3.selectAll('.dictionary_table').selectAll('tr').style('display', 'table-row');
       d3.selectAll('.filter_wrapper').style('display', 'block');
     } else {

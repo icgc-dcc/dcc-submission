@@ -21,7 +21,7 @@
     "tests"
   ],
   "dependencies": {
-    "jquery": "1.9.*",
+    "jquery": "1.11.*",
     "angularjs": "~1.4.*",
     "angular-sanitize": "~1.4.*",
     "angular-animate": "~1.4.*",
