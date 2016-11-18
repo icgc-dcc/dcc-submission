@@ -49,8 +49,6 @@ var dictionaryApp = dictionaryApp || {};
 
      if (_.has(dict, 'files')) {
        return $.Deferred().promise(dict);
-     } else if (_.has(dict, 'then')) {
-       return dict;
      } else {
        _self.dictionaryMap[version] = $.ajax({
          url: url,
