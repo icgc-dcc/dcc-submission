@@ -8,7 +8,7 @@ var d3 = require('d3');
 require('d3-tip')(d3);
 var js_beautify = require('js-beautify').js_beautify;
 var JSONEditor = require('jsoneditor/dist/jsoneditor.js');
-
+var multiselect = require('bootstrap-multiselect/dist/js/bootstrap-multiselect.js');
 global.jsondiffpatch = require('jsondiffpatch');
 global.jsondiffpatch.formatters = {
   html: require('jsondiffpatch/src/formatters/html')

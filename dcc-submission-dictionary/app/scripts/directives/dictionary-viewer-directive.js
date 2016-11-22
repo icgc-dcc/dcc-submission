@@ -349,53 +349,54 @@ angular.module('DictionaryViewerApp')
 
                 dictionaryJSON.files = dictionaryFiles;
               } else {
-                dictionaryJSON = dictionariesJSON;
+                angular.copy(dictionariesJSON, dictionaryJSON);
               }
-              // Only go into the condition if any of the attribute filter is selected
-              // if(_.isArray(selectedAttributes) && !_.isEmpty(selectedAttributes) && !_.isEmpty(dictionaryJSON)){
-              //     var dictionaryFiles = _.map(dictionaryJSON.files, function(file){
-              //       var fields = [];
 
-              //       _.each(file.fields, function(field){
-              //           // Should return will be an integar because a filed must have all the selected attributes
-              //         var shouldReturn = 0, 
-              //           // Check to see if there are any required fields
-              //           required = _.find(field.restrictions, function (restriction) {
-              //             return restriction.type === 'required';
-              //           });
-              //         // Going through all the selected attributes
-              //         _.each(selectedAttributes, function(attribute){
-              //           if(attribute === 'Open Access' && field.controlled === false){
-              //             shouldReturn++;
-              //           }else if(attribute === 'Controlled'  && field.controlled === true){
-              //             shouldReturn++;
-              //           }else if(attribute === 'Required' && required){
-              //             shouldReturn++;
-              //           }else if(attribute === 'N/A Valid' && required){
-              //             if (required.config.acceptMissingCode === true) {
-              //               shouldReturn++;
-              //             }
-              //           }else if(attribute === 'N/A Invalid' && required){
-              //             if(required.config.acceptMissingCode !== true) {
-              //               shouldReturn++;
-              //             }
-              //           }else if(attribute === 'Unique'){
-              //             if(file.uniqueFields && file.uniqueFields.indexOf(field.name) >= 0){
-              //               shouldReturn++;
-              //             }
-              //           }
-              //         });
-              //         if(shouldReturn === selectedAttributes.length){
-              //           // Add only if the field has all the selected attributes therefore checking the shouldReturn
-              //           // variable with the length of selected attributes array
-              //           fields.push(field);
-              //         }
-              //       });
-              //       file.fields = fields
-              //       return file;
-              //     });
-              //   dictionaryJSON.files = dictionaryFiles;
-              // }
+              // Only go into the condition if any of the attribute filter is selected
+              if(_.isArray(selectedAttributes) && !_.isEmpty(selectedAttributes) && !_.isEmpty(dictionaryJSON)){
+                  var dictionaryFiles = _.map(dictionaryJSON.files, function(file){
+                    var fields = [];
+
+                    _.each(file.fields, function(field){
+                        // Should return will be an integar because a filed must have all the selected attributes
+                      var shouldReturn = 0, 
+                        // Check to see if there are any required fields
+                        required = _.find(field.restrictions, function (restriction) {
+                          return restriction.type === 'required';
+                        });
+                      // Going through all the selected attributes
+                      _.each(selectedAttributes, function(attribute){
+                        if(attribute === 'Open Access' && field.controlled === false){
+                          shouldReturn++;
+                        }else if(attribute === 'Controlled'  && field.controlled === true){
+                          shouldReturn++;
+                        }else if(attribute === 'Required' && required){
+                          shouldReturn++;
+                        }else if(attribute === 'N/A Valid' && required){
+                          if (required.config.acceptMissingCode === true) {
+                            shouldReturn++;
+                          }
+                        }else if(attribute === 'N/A Invalid' && required){
+                          if(required.config.acceptMissingCode !== true) {
+                            shouldReturn++;
+                          }
+                        }else if(attribute === 'Unique'){
+                          if(file.uniqueFields && file.uniqueFields.indexOf(field.name) >= 0){
+                            shouldReturn++;
+                          }
+                        }
+                      });
+                      if(shouldReturn === selectedAttributes.length){
+                        // Add only if the field has all the selected attributes therefore checking the shouldReturn
+                        // variable with the length of selected attributes array
+                        fields.push(field);
+                      }
+                    });
+                    file.fields = fields
+                    return file;
+                  });
+                dictionaryJSON.files = dictionaryFiles;
+              }
 
               _controller.jsonEditor.set(dictionaryJSON);
 

@@ -26,6 +26,7 @@
     "angular-mocks": "~1.4.*",
     "angular-sanitize": "~1.4.*",
     "bootstrap": "3.3.*",
+    "bootstrap-multiselect": "0.9.13",
     "d3": "3.5.6",
     "d3-tip": "0.6.*",
     "highlight.js": "9.0.*",
