@@ -45,7 +45,10 @@ angular.module('DictionaryViewerApp')
         _controller.vTo = searchParams.vTo ||'';
         _controller.q = typeof $scope.searchQuery === 'string' ?  $scope.searchQuery : (searchParams.q || '');
         _controller.dataType = $scope.filterDataType || 'all';
+        _controller.selectedAttributes = $scope.selectedAttributes || [];
         _controller.selectedDetailFormatType = DictionaryAppConstants.DETAIL_FORMAT_TYPES.table;
+
+        _controller.attributes = DictionaryAppConstants.FIELD_ATTRIBUTES_TYPE;
 
         _controller.detailFormatTypes = DictionaryAppConstants.DETAIL_FORMAT_TYPES;
 
@@ -79,6 +82,15 @@ angular.module('DictionaryViewerApp')
           //if (search.viewMode) _controller.viewMode = search.viewMode;
           _controller.dataType = search.dataType || 'all';
           _controller.q = search.q || '';
+          // We do not want to do this every time therefore first run check
+          if(_firstRun){
+            _firstRun = false;
+            _controller.selectedAttributes = search.selectedAttributes ? search.selectedAttributes.split(',') : [];
+            // Give time to tableViewer to render first
+            $timeout(function(){
+              _controller.tableViewer.selectedAttributes(_controller.selectedAttributes);
+            }, 300)
+          }
           _controller.isReportOpen = search.isReportOpen === 'true' ? true : false;
 
           _controller.render(shouldForceUpdate || false);
@@ -115,6 +127,14 @@ angular.module('DictionaryViewerApp')
               $location.search(search);
             });
           };
+
+          // funtion to call when user selection changes
+          _controller.updateAttributeFilter = function(){
+            var search = $location.search();
+            search.viewMode = 'details';
+            search.selectedAttributes = [_controller.selectedAttributes];
+            $location.search(search);
+          }
 
           // Externalized function
           _controller.tableViewer.toggleNodeFunc = handleGraphToggle;
@@ -242,14 +262,14 @@ angular.module('DictionaryViewerApp')
 
         _controller.doFilter = function () {
           $timeout.cancel(qPromise);
-          _controller.tableViewer.filter(_controller.q);
+          _controller.tableViewer.filter(_controller.q, _controller.selectedAttributes);
 
           qPromise = $timeout(function () {
             var search = $location.search();
             var txt = _controller.q;
             search.q = txt;
 
-            _controller.tableViewer.filter(_controller.q);
+            _controller.tableViewer.filter(_controller.q, _controller.selectedAttributes);
             $location.search(search);
           }, 300);
         };
@@ -261,6 +281,7 @@ angular.module('DictionaryViewerApp')
           var viewMode = _controller.getCurrentView();
           var query = _controller.q;
           var dataType = _controller.dataType;
+          var selectedAttributes = _controller.selectedAttributes;
 
           if (shouldForceRender !== true &&
               _previousVersion.from === versionFrom &&
@@ -280,8 +301,9 @@ angular.module('DictionaryViewerApp')
 
           _controller.tableViewer.showDictionaryTable(versionFrom, versionTo);
           _controller.tableViewer.selectDataType(dataType);
+          _controller.tableViewer.selectedAttributes(selectedAttributes);
           _controller.tableViewer.showDictionaryGraph(versionFrom, versionTo, function() {
-            _controller.tableViewer.filter(query);
+            _controller.tableViewer.filter(query, selectedAttributes);
           });
 
 
@@ -325,9 +347,54 @@ angular.module('DictionaryViewerApp')
                 }
 
                 dictionaryJSON.files = dictionaryFiles;
+              } else {
+                angular.copy(dictionariesJSON, dictionaryJSON);
               }
-              else {
-                dictionaryJSON = dictionariesJSON;
+
+              // Only go into the condition if any of the attribute filter is selected
+              if(_.isArray(selectedAttributes) && !_.isEmpty(selectedAttributes) && !_.isEmpty(dictionaryJSON)){
+                  var dictionaryFiles = _.map(dictionaryJSON.files, function(file){
+                    var fields = [];
+
+                    _.each(file.fields, function(field){
+                      
+                      var fieldAttributes = 0, 
+                        // Check to see if there are any required fields
+                        required = _.find(field.restrictions, function (restriction) {
+                          return restriction.type === 'required';
+                        });
+                      // Going through all the selected attributes
+                      _.each(selectedAttributes, function(attribute){
+                        if(attribute === 'Open Access' && field.controlled === false){
+                          fieldAttributes++;
+                        }else if(attribute === 'Controlled'  && field.controlled === true){
+                          fieldAttributes++;
+                        }else if(attribute === 'Required' && required){
+                          fieldAttributes++;
+                        }else if(attribute === 'N/A Valid' && required){
+                          if (required.config.acceptMissingCode === true) {
+                            fieldAttributes++;
+                          }
+                        }else if(attribute === 'N/A Invalid' && required){
+                          if(required.config.acceptMissingCode !== true) {
+                            fieldAttributes++;
+                          }
+                        }else if(attribute === 'Unique'){
+                          if(file.uniqueFields && file.uniqueFields.indexOf(field.name) >= 0){
+                            fieldAttributes++;
+                          }
+                        }
+                      });
+                      // Add this field only if it has all the selected attributes
+                      // therefore the vaue of fieldAttributes should be equal to the length of selectedAttributes array
+                      if(fieldAttributes === selectedAttributes.length){
+                        fields.push(field);
+                      }
+                    });
+                    file.fields = fields
+                    return file;
+                  });
+                dictionaryJSON.files = dictionaryFiles;
               }
 
               _controller.jsonEditor.set(dictionaryJSON);
@@ -418,9 +485,14 @@ angular.module('DictionaryViewerApp')
             $anchorScroll();
 
           });
-
-
         }
+
+        // Waiting for angular to do its binding and then initializing multiselect
+        $timeout(function(){
+          jQuery('#fields-filter').multiselect({
+            numberDisplayed: 2
+          });
+        }, 300);
       },
       controllerAs: 'dictionaryViewerCtrl'
     };

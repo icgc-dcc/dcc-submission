@@ -35,7 +35,8 @@ var dictionaryApp = dictionaryApp || {};
       DETAIL_FORMAT_TYPES: {
         table: 'Table',
         json: 'JSON'
-      }
+      },
+      FIELD_ATTRIBUTES_TYPE: ['Open Access', 'Controlled', 'Required', 'N/A Valid', 'N/A Invalid', 'Unique']
     })
     .controller('DictionaryViewerController', function (DictionaryBaseURLConstants) {
       this.DictionaryBaseURLConstants = DictionaryBaseURLConstants;

@@ -90,32 +90,51 @@
                     <div class="vis-wrapper">
                         <!-- template for table viewer-->
                         <div class="clearfix">
-                            <div id="datatypeSelector" class="minimap-container col-md-12">
-                                <div class="pull-left col-md-3 file-container">
-                                    <label for="detail-format-type">Files: </label>
-                                    <button id="minimapLabel" class="btn btn-primary"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
-                                    <div id="minimapWrapper">
-                                        <svg id="minimap" height="0px" width="275px" style="pointer-events:visibleFill; z-index:10"></svg>
+                            <div class="minimap-container col-md-12">
+                                <div id="datatypeSelector" class="col-md-12">
+                                    <div class="col-md-3 file-container">
+                                        <label for="detail-format-type">Files: </label>
+                                        <button id="minimapLabel" class="btn btn-primary"><span>all</span><i class="glyphicon glyphicon-chevron-down"></i></button><br>
+                                        <div id="minimapWrapper">
+                                            <svg id="minimap" height="0px" width="275px" style="pointer-events:visibleFill; z-index:10"></svg>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1"></div>
+                                    <div class="col-md-4">
+                                        <label for="fields-filter">Attributes: &nbsp;</label>
+                                        <select class="form-control" id="fields-filter" 
+                                            multiple
+                                            data-ng-change="dictionaryViewerCtrl.updateAttributeFilter()"
+                                            data-ng-model="dictionaryViewerCtrl.selectedAttributes">
+                                                <option ng-repeat="attribute in dictionaryViewerCtrl.attributes">
+                                                    {{attribute}}
+                                                </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-1"></div>
+                                    <div class="col-md-3 detail-format-container" style="text-align: right">
+                                        <label for="detail-format-type">Format: </label>
+                                        <select class="form-control" id="detail-format-type"
+                                                data-ng-options="formatTypeName for (formatTypeKey, formatTypeName) in dictionaryViewerCtrl.detailFormatTypes"
+                                                data-ng-model="dictionaryViewerCtrl.selectedDetailFormatType">
+                                        </select>
                                     </div>
                                 </div>
-                                <div class="col-md-2 file-data-container">
-                                    <label>Version: </label><br/>
-                                    <span>{{dictionaryViewerCtrl.vTo}}</span>
-                                </div>
-                                <div class="col-md-2 file-data-container">
-                                    <label>Last updated: </label><br/>
-                                    <span>{{dictionaryViewerCtrl.lastUpdate | date:'shortDate'}}</span>
-                                </div>
-                                <div class="col-md-2 file-data-container">
-                                    <label>State: </label><br/>
-                                    <span ng-style="{'color' : dictionaryViewerCtrl.state==='OPEN' ? '#499246' : '#a71617'}">{{dictionaryViewerCtrl.state}}</span>
-                                </div>
-                                <div class="pull-right col-md-3 detail-format-container" style="text-align: right">
-                                    <label for="detail-format-type">Format: </label>
-                                    <select class="form-control" id="detail-format-type"
-                                            data-ng-options="formatTypeName for (formatTypeKey, formatTypeName) in dictionaryViewerCtrl.detailFormatTypes"
-                                            data-ng-model="dictionaryViewerCtrl.selectedDetailFormatType">
-                                    </select>
+                                <div id="datatypeSelector" class="col-md-12">
+                                    <div class="col-md-3 file-data-container">
+                                        <label>Version: &nbsp;</label>
+                                        <span>{{dictionaryViewerCtrl.vTo}}</span>
+                                    </div>
+                                    <div class="col-md-1"></div>
+                                    <div class="col-md-4 file-data-container">
+                                        <label>Last updated: &nbsp;</label>
+                                        <span>{{dictionaryViewerCtrl.lastUpdate | date:'shortDate'}}</span>
+                                    </div>
+                                    <div class="col-md-1"></div>
+                                    <div class="col-md-3 file-data-container">
+                                        <label>State: &nbsp;</label>
+                                        <span ng-style="{'color' : dictionaryViewerCtrl.state==='OPEN' ? '#499246' : '#a71617'}">{{dictionaryViewerCtrl.state}}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
