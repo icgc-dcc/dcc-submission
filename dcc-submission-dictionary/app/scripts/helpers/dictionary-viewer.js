@@ -529,14 +529,14 @@ var dictionaryApp = dictionaryApp || {};
 ////////////////////////////////////////////////////////////////////////////////
 // Search and filter dictionary
 ////////////////////////////////////////////////////////////////////////////////
-  TableViewer.prototype.filter = function (txt, fieldFilter) {
+  TableViewer.prototype.filter = function (txt, attributeFilter) {
     var _self = this;
     var re = new RegExp(txt, 'i');
     var datatypeMap = {};
 
     window.scrollTo(0, 0);
 
-    if ((!txt || txt === '') && (!_.isArray(fieldFilter) || _.isEmpty(fieldFilter))) {
+    if ((!txt || txt === '') && (!_.isArray(attributeFilter) || _.isEmpty(attributeFilter))) {
       d3.selectAll('.dictionary_table').selectAll('tr').style('display', 'table-row');
       d3.selectAll('.filter_wrapper').style('display', 'block');
     } else {

@@ -128,7 +128,7 @@ angular.module('DictionaryViewerApp')
             });
           };
 
-          // funtion to call when user selection chages
+          // funtion to call when user selection changes
           _controller.updateAttributeFilter = function(){
             var search = $location.search();
             search.viewMode = 'details';
@@ -329,7 +329,6 @@ angular.module('DictionaryViewerApp')
           if (_controller.jsonEditor) {
             var dictionaryJSON = {};
             _controller.dictUtil.getDictionary(versionTo).then(function (dictionariesJSON) {
-
               if (_controller.dataType !== 'all' &&
                 dictionariesJSON && angular.isDefined(dictionariesJSON.files)) {
 
@@ -358,8 +357,8 @@ angular.module('DictionaryViewerApp')
                     var fields = [];
 
                     _.each(file.fields, function(field){
-                        // Should return will be an integar because a filed must have all the selected attributes
-                      var shouldReturn = 0, 
+                      
+                      var fieldAttributes = 0, 
                         // Check to see if there are any required fields
                         required = _.find(field.restrictions, function (restriction) {
                           return restriction.type === 'required';
@@ -367,28 +366,28 @@ angular.module('DictionaryViewerApp')
                       // Going through all the selected attributes
                       _.each(selectedAttributes, function(attribute){
                         if(attribute === 'Open Access' && field.controlled === false){
-                          shouldReturn++;
+                          fieldAttributes++;
                         }else if(attribute === 'Controlled'  && field.controlled === true){
-                          shouldReturn++;
+                          fieldAttributes++;
                         }else if(attribute === 'Required' && required){
-                          shouldReturn++;
+                          fieldAttributes++;
                         }else if(attribute === 'N/A Valid' && required){
                           if (required.config.acceptMissingCode === true) {
-                            shouldReturn++;
+                            fieldAttributes++;
                           }
                         }else if(attribute === 'N/A Invalid' && required){
                           if(required.config.acceptMissingCode !== true) {
-                            shouldReturn++;
+                            fieldAttributes++;
                           }
                         }else if(attribute === 'Unique'){
                           if(file.uniqueFields && file.uniqueFields.indexOf(field.name) >= 0){
-                            shouldReturn++;
+                            fieldAttributes++;
                           }
                         }
                       });
-                      if(shouldReturn === selectedAttributes.length){
-                        // Add only if the field has all the selected attributes therefore checking the shouldReturn
-                        // variable with the length of selected attributes array
+                      // Add this field only if it has all the selected attributes
+                      // therefore the vaue of fieldAttributes should be equal to the length of selectedAttributes array
+                      if(fieldAttributes === selectedAttributes.length){
                         fields.push(field);
                       }
                     });
