@@ -25,7 +25,7 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.common.ega.client.EGAClient;
+import org.icgc.dcc.common.ega.client.EGAAPIClient;
 import org.icgc.dcc.common.hadoop.fs.DccFileSystem2;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
@@ -280,7 +280,7 @@ public class ValidationConfig extends AbstractConfig {
         firstNonNull(properties.getAccession().getDictionaryUrl(),
             AccessionDictionary.DEFAULT_ACCESSION_DICTIONARY_URL);
     log.info("Using accession dictionary url: {}", dictionaryUrl);
-    val egaClient = new EGAClient(properties.getEga().getUsername(), properties.getEga().getPassword());
+    val egaClient = new EGAAPIClient(properties.getEga().getUsername(), properties.getEga().getPassword());
     val egaValidator = new EGAFileAccessionValidator(egaClient);
 
     return new AccessionValidator(new AccessionDictionary(dictionaryUrl), egaValidator);

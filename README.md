@@ -35,7 +35,7 @@ The following are static files for use in any project:
 The following are utility modules related to submissions:
 
 - [Submission Loader](dcc-submission-loader/README.md)
-- [Submission Generator](dcc-submission-generator/README.md)
+- [Submission EGA](dcc-submission-ega/README.md)
 
 The following module is a project testing libraries:
 

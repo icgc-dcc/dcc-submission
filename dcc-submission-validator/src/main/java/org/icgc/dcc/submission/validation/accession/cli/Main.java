@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.accession.cli;
 
-import org.icgc.dcc.common.ega.client.EGAClient;
+import org.icgc.dcc.common.ega.client.EGAAPIClient;
 import org.icgc.dcc.submission.validation.accession.AccessionValidator;
 import org.icgc.dcc.submission.validation.accession.core.AccessionDictionary;
 import org.icgc.dcc.submission.validation.accession.ega.EGAFileAccessionValidator;
@@ -71,7 +71,7 @@ public class Main {
   }
 
   private static AccessionValidator getValidator() {
-    val egaClient = new EGAClient();
+    val egaClient = new EGAAPIClient();
     val egaValidator = new EGAFileAccessionValidator(egaClient);
 
     return new AccessionValidator(new AccessionDictionary(), egaValidator);

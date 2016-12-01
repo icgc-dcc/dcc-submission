@@ -19,7 +19,7 @@ package org.icgc.dcc.submission.validation.accession.ega;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import org.icgc.dcc.common.ega.client.EGAClient;
+import org.icgc.dcc.common.ega.client.EGAAPIClient;
 import org.icgc.dcc.common.ega.client.EGAEntityNotFoundException;
 import org.icgc.dcc.common.ega.client.EGANotAuthorizedException;
 import org.icgc.dcc.common.ega.model.EGAAccessionType;
@@ -54,7 +54,7 @@ public class EGAFileAccessionValidator {
    * Dependencies.
    */
   @NonNull
-  private final EGAClient client;
+  private final EGAAPIClient client;
 
   public Result validate(String fileId) {
     checkFileAccession(fileId);

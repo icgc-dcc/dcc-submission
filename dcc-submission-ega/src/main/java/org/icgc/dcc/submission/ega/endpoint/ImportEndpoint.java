@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2015 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,51 +15,55 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.accession.ega;
+package org.icgc.dcc.submission.ega.endpoint;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.icgc.dcc.submission.ega.imports.EGAImporter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.endpoint.Endpoint;
+import org.springframework.boot.actuate.endpoint.mvc.MvcEndpoint;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import org.icgc.dcc.common.ega.client.EGAAPIClient;
-import org.icgc.dcc.submission.validation.accession.ega.EGAFileAccessionValidator.Result;
-import org.junit.Ignore;
-import org.junit.Test;
+import lombok.extern.slf4j.Slf4j;
 
-import lombok.val;
+@Slf4j
+@Component
+public class ImportEndpoint implements MvcEndpoint {
 
-@Ignore("Need EGA credentials to run")
-public class EGAFileAccessionValidatorTest {
+  /**
+   * Dependencies
+   */
+  @Autowired
+  EGAImporter importer;
 
-  EGAAPIClient client = new EGAAPIClient();
-  EGAFileAccessionValidator verifier = new EGAFileAccessionValidator(client);
+  @PostMapping
+  public @ResponseBody String execute() {
+    log.info("Requesting import...");
+    if (importer.isRunning()) {
+      log.info("Already running, skipping...");
+      return "Already running, skipping...";
+    }
 
-  @Test
-  public void testValidateValid() throws Exception {
-    val fileId = "EGAF00001160861";
-    val result = verify(fileId);
-    assertThat(result.isValid()).isTrue();
+    log.info("Starging import...");
+    importer.execute();
+    return "Started!";
   }
 
-  @Test
-  public void testValidateInvalid() throws Exception {
-    val fileId = "EGAF00000000000";
-    val result = verify(fileId);
-    assertThat(result.isValid()).isFalse();
-    assertThat(result.getReason()).startsWith("Not authorized to access entity at path /files/" + fileId);
+  @Override
+  public String getPath() {
+    return "import";
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void testValidateError() throws Exception {
-    val fileId = "xxx";
-    verify(fileId);
+  @Override
+  public boolean isSensitive() {
+    return true;
   }
 
-  @Test(expected = NullPointerException.class)
-  public void testValidateNull() throws Exception {
-    verifier.validate(null);
-  }
-
-  private Result verify(String fileId) {
-    return verifier.validate(fileId);
+  @Override
+  @SuppressWarnings("rawtypes")
+  public Class<? extends Endpoint> getEndpointType() {
+    return null;
   }
 
 }
