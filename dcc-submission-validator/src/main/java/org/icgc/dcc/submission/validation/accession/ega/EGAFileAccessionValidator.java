@@ -18,16 +18,26 @@
 package org.icgc.dcc.submission.validation.accession.ega;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Suppliers.memoizeWithExpiration;
+import static java.util.concurrent.TimeUnit.HOURS;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
-import org.icgc.dcc.common.ega.client.EGAAPIClient;
-import org.icgc.dcc.common.ega.client.EGAEntityNotFoundException;
-import org.icgc.dcc.common.ega.client.EGANotAuthorizedException;
+import java.net.URL;
+import java.util.Collection;
+import java.util.List;
+
 import org.icgc.dcc.common.ega.model.EGAAccessionType;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Stopwatch;
+import com.google.common.base.Supplier;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -51,40 +61,71 @@ import lombok.extern.slf4j.Slf4j;
 public class EGAFileAccessionValidator {
 
   /**
+   * Constants.
+   */
+  public static final String DEFAULT_REPORT_URL = "http://hsubmission-dcc.oicr.on.ca:8080/api/v1/ega/report";
+
+  /**
    * Dependencies.
    */
   @NonNull
-  private final EGAAPIClient client;
+  private String reportUrl;
 
-  public Result validate(String fileId) {
+  /**
+   * State.
+   */
+  private final Supplier<Multimap<String, ObjectNode>> memoizer = memoizeWithExpiration(this::indexFiles, 1, HOURS);
+
+  public EGAFileAccessionValidator() {
+    this(DEFAULT_REPORT_URL);
+  }
+
+  public Result validate(@NonNull String analyzedSampleId, String fileId) {
     checkFileAccession(fileId);
     try {
-      val file = getFile(fileId);
-      log.debug("Found file: {}", file);
+      val files = getFilesById(fileId);
+      if (files.isEmpty()) {
+        return invalid("No files found with id " + fileId);
+      }
 
-      return valid();
-    } catch (EGAEntityNotFoundException e) {
-      log.warn("Could not find file with id: {}: {}", fileId, e.getMessage());
-      return invalid(e.getMessage());
-    } catch (EGANotAuthorizedException e) {
-      log.warn("Not authorized to access file with id: {}: {}", fileId, e.getMessage());
-      return invalid(e.getMessage());
+      for (val file : files) {
+        val submitterSampleId = file.get("submitterSampleId").textValue();
+        if (analyzedSampleId.equals(submitterSampleId)) {
+          log.debug("Found files: {}", files);
+          return valid();
+        }
+      }
+
+      return invalid("Could not match file to sample in: " + files);
     } catch (Exception e) {
       log.error("Unexpected error getting file " + fileId + ": ", e);
       return invalid("Unexpected error getting file " + fileId + ": " + e.getMessage());
     }
   }
 
-  private ArrayNode getFile(String fileId) {
-    // Always need to login
-    client.login();
-    return client.getFile(fileId);
-  }
-
   private static void checkFileAccession(String fileId) {
     val accessionType = EGAAccessionType.from(fileId);
     checkState(accessionType.isPresent(), "Could not detect accession type for value %s", fileId);
     checkState(accessionType.get().isFile(), "Accession type not file for value %s", fileId);
+  }
+
+  private Collection<ObjectNode> getFilesById(String fileId) {
+    return memoizer.get().get(fileId);
+  }
+
+  private Multimap<String, ObjectNode> indexFiles() {
+    return Multimaps.index(readFiles(), file -> file.get("fileId").textValue());
+  }
+
+  @SneakyThrows
+  private List<ObjectNode> readFiles() {
+    val watch = Stopwatch.createStarted();
+    try {
+      log.info("Reading file report...");
+      return DEFAULT.readValue(new URL(reportUrl), new TypeReference<List<ObjectNode>>() {});
+    } finally {
+      log.info("Finished reading file report in {}", watch);
+    }
   }
 
   /**

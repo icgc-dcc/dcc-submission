@@ -106,8 +106,7 @@ public class SubmissionProperties {
   @Data
   public static class EGAProperties {
 
-    String username;
-    String password;
+    String reportUrl;
 
   }
 

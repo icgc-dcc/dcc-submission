@@ -40,12 +40,24 @@ import lombok.val;
 @RestController
 public class EGAController {
 
+  /**
+   * Constants.
+   */
+  private static final MediaType APPLICATION_TAR = new MediaType("application", "tar");
+
+  /**
+   * Dependencies.
+   */
   @Autowired
   EGAService service;
 
   @GetMapping("/api/v1/ega/report")
-  public List<ObjectNode> getReport() {
-    return service.getReport();
+  public ResponseEntity<List<ObjectNode>> getReport() {
+    val report = service.getReport();
+    return ResponseEntity
+        .ok()
+        .lastModified(report.getLastModified())
+        .body(report.getFiles());
   }
 
   @Cacheable("/api/v1/ega/datasets")
@@ -80,7 +92,7 @@ public class EGAController {
     return ResponseEntity
         .ok()
         .header("Content-Disposition", "attachment; filename=" + datasetId + "tar.gz")
-        .contentType(new MediaType("application", "tar"))
+        .contentType(APPLICATION_TAR)
         .body(new InputStreamResource(archive));
   }
 

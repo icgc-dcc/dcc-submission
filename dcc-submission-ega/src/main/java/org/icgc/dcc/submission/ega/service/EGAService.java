@@ -69,19 +69,21 @@ public class EGAService {
     return ftp.getListing();
   }
 
-  public List<ObjectNode> getReport() {
+  public Report getReport() {
     val reportFile = new File(workspaceDir, "icgc-ega-report.jsonl");
     if (!reportFile.exists()) {
-      return emptyList();
+      return new Report(0, emptyList());
     }
 
-    return new EGAMetadataDumpReader()
+    val files = new EGAMetadataDumpReader()
         .read(reportFile)
         .map(file -> object()
             .with("projectId", file.path("projectId").path(0))
             .with("fileId", file.get("fileId"))
             .with("submitterSampleId", file.path("samples").path(0).path("submitterSampleId")).end())
         .collect(toList());
+
+    return new Report(System.currentTimeMillis(), files);
   }
 
   public List<ObjectNode> getDatasetFiles(@NonNull String datasetId) {
@@ -95,6 +97,14 @@ public class EGAService {
   public InputStream getArchive(@NonNull String datasetId) throws IOException {
     val archiveUrl = archiveResolver.resolveArchiveUrl(datasetId);
     return archiveUrl.openStream();
+  }
+
+  @lombok.Value
+  public static class Report {
+
+    long lastModified;
+    List<ObjectNode> files;
+
   }
 
 }

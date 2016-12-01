@@ -63,8 +63,7 @@ normalizer:
 
 # EGA
 ega:
-  username: user
-  password: password
+  reportUrl: http://localhost:5380
   
 reference:
   # The reference genome assembly. Assumes the existence of a .fasta.fai file in the same directory. 

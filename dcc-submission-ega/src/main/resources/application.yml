@@ -19,7 +19,7 @@
 #
 
 # Application
-spring.application.name: dcc-portal
+spring.application.name: dcc-submission-ega
 
 # API
 server:
@@ -34,7 +34,7 @@ workspace.dir: /tmp
 
 # Import
 importer:
-  cron: 0 00,12 * * * *
+  cron: 0 0 0/4 * * ?
 
 # Banner
 spring.main.banner-mode: log    

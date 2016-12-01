@@ -200,7 +200,7 @@ public class AccessionValidator implements Validator {
 
     // [Existence] Ensure file accession exists when specified
     for (val fileId : fileIds) {
-      val result = egaValidator.validate(fileId);
+      val result = egaValidator.validate(analyzedSampleId, fileId);
       if (!result.isValid()) {
         val type = ErrorType.FILE_ACCESSION_INVALID;
         val value = rawDataRepository;
