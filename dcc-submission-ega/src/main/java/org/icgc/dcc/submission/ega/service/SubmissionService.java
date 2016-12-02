@@ -37,7 +37,7 @@ public class SubmissionService {
   JdbcTemplate template;
 
   public List<ObjectNode> getRawAccessions() {
-    val release = "icgc22";
+    val release = "icgc23";
     val repo = "EGA";
 
     // @formatter:off
@@ -47,17 +47,17 @@ public class SubmissionService {
       "   DISTINCT *\n"+
       " FROM \n"+
       "   (\n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".cnsm_m       WHERE raw_data_repository = \'" + repo + " \' UNION\n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".exp_array_m  WHERE raw_data_repository = \'" + repo + " \' UNION \n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".exp_seq_m    WHERE raw_data_repository = \'" + repo + " \' UNION \n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".jcn_m        WHERE raw_data_repository = \'" + repo + " \' UNION \n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".meth_array_m WHERE raw_data_repository = \'" + repo + " \' UNION \n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".meth_seq_m   WHERE raw_data_repository = \'" + repo + " \' UNION \n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".mirna_seq_m  WHERE raw_data_repository = \'" + repo + " \' UNION \n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".pexp_m       WHERE raw_data_repository = \'" + repo + " \' UNION \n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".sgv_m        WHERE raw_data_repository = \'" + repo + " \' UNION\n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".ssm_m        WHERE raw_data_repository = \'" + repo + " \' UNION\n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".stsm_m       WHERE raw_data_repository = \'" + repo + " \'\n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".cnsm_m       WHERE raw_data_repository = \'" + repo + "\' UNION\n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".exp_array_m  WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".exp_seq_m    WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".jcn_m        WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".meth_array_m WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".meth_seq_m   WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".mirna_seq_m  WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".pexp_m       WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".sgv_m        WHERE raw_data_repository = \'" + repo + "\' UNION\n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".ssm_m        WHERE raw_data_repository = \'" + repo + "\' UNION\n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".stsm_m       WHERE raw_data_repository = \'" + repo + "\'\n"+
       "   ) AS i\n"+
       " ";
     
