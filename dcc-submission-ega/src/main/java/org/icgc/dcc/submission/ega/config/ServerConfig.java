@@ -21,6 +21,8 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 
 import java.util.concurrent.ConcurrentMap;
 
+import javax.sql.DataSource;
+
 import org.icgc.dcc.common.core.mail.Mailer;
 import org.icgc.dcc.common.ega.client.EGAAPIClient;
 import org.icgc.dcc.common.ega.client.EGAFTPClient;
@@ -40,6 +42,8 @@ import org.springframework.cache.interceptor.SimpleKeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -98,6 +102,24 @@ public class ServerConfig {
     @Bean
     public EGADatasetMetaArchiveResolver archiveResolver() {
       return new EGADatasetMetaArchiveResolver(api(), ftp());
+    }
+
+  }
+
+  @Configuration
+  public static class SubmissionConfig {
+
+    @Bean
+    public JdbcTemplate template(DataSource dataSource) {
+      return new JdbcTemplate(dataSource);
+    }
+
+    @Bean
+    public DataSource dataSource(
+        @Value("${loader.db.url}") String url,
+        @Value("${loader.db.username}") String username,
+        @Value("${loader.db.password}") String password) {
+      return new SingleConnectionDataSource(url, username, password, true);
     }
 
   }
