@@ -64,9 +64,6 @@ public class ServerConfig {
     log.info("**** Started!");
   }
 
-  /**
-   * Server wide mail configuration.
-   */
   @Configuration
   public static class EGAConfig {
 
@@ -124,9 +121,6 @@ public class ServerConfig {
 
   }
 
-  /**
-   * Server wide caching configuration.
-   */
   @Configuration
   @EnableCaching
   public static class CacheConfig extends CachingConfigurerSupport {
@@ -167,9 +161,6 @@ public class ServerConfig {
 
   }
 
-  /**
-   * Server wide mail configuration.
-   */
   @Configuration
   public static class MailerConfig {
 

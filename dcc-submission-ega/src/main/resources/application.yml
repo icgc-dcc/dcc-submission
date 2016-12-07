@@ -34,6 +34,7 @@ workspace.dir: /tmp
 
 # Import
 importer:
+  retainCount: 4
   cron: 0 0 0/4 * * ?
 
 # Banner

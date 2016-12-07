@@ -18,14 +18,18 @@
 package org.icgc.dcc.submission.ega.imports;
 
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Comparator.comparing;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import org.icgc.dcc.common.core.mail.Mailer;
 import org.icgc.dcc.common.ega.dump.EGAMetadataDumpAnalyzer;
@@ -39,6 +43,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Stopwatch;
 
 import lombok.Cleanup;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,6 +56,8 @@ public class EGAImporter {
    */
   @Value("${workspace.dir}")
   File workspaceDir;
+  @Value("${importer.retainCount}")
+  int retainCount;
 
   /**
    * Dependencies
@@ -95,7 +102,7 @@ public class EGAImporter {
     running = true;
     val watch = Stopwatch.createStarted();
 
-    val date = getDate();
+    val date = formatDate();
     val dumpFile = getDumpFile(date);
     val reportFile = getReportFile(date);
 
@@ -105,14 +112,19 @@ public class EGAImporter {
         checkState(workspaceDir.mkdirs(), "Could not create workspace dir %s", workspaceDir);
       }
 
-      log.info("Writing dump file to: {}", dumpFile.getAbsolutePath());
-      dump(dumpFile);
-      relink(dumpFile, "icgc-ega-dump.jsonl");
-
-      log.info("Reading dump file from: {}", dumpFile.getAbsolutePath());
-      log.info("Writing report file to: {}", reportFile.getAbsolutePath());
-      analyze(dumpFile, reportFile);
-      relink(reportFile, "icgc-ega-report.jsonl");
+      {
+        log.info("Writing dump file to: {}", dumpFile.getAbsolutePath());
+        createDump(dumpFile);
+        relinkFile(dumpFile, "icgc-ega-dump.jsonl");
+        pruneFiles("icgc-ega-dump");
+      }
+      {
+        log.info("Reading dump file from: {}", dumpFile.getAbsolutePath());
+        log.info("Writing report file to: {}", reportFile.getAbsolutePath());
+        analyzeDump(dumpFile, reportFile);
+        relinkFile(reportFile, "icgc-ega-report.jsonl");
+        pruneFiles("icgc-ega-report");
+      }
     } catch (Exception e) {
       log.error("Error importing EGA: {}", e);
       mailer.sendMail("EGA Failure Importing - " + date, e.getMessage());
@@ -126,7 +138,7 @@ public class EGAImporter {
     mailer.sendMail("EGA Success Importing - " + date, "Finished in " + watch);
   }
 
-  private void relink(File file, String symlink) throws IOException {
+  private void relinkFile(File file, String symlink) throws IOException {
     val reportSymlink = new File(workspaceDir, symlink);
     if (reportSymlink.exists()) {
       reportSymlink.delete();
@@ -135,26 +147,50 @@ public class EGAImporter {
     Files.createSymbolicLink(reportSymlink.toPath(), file.toPath());
   }
 
-  private void dump(File dumpFile) {
+  private void createDump(File dumpFile) {
     dumper.create(dumpFile);
   }
 
-  private void analyze(File dumpFile, File reportFile) throws FileNotFoundException {
+  private void analyzeDump(File dumpFile, File reportFile) throws FileNotFoundException {
     @Cleanup
     val writer = new PrintWriter(reportFile);
     val analyzer = new EGAMetadataDumpAnalyzer(writer);
     analyzer.analyze(dumpFile);
   }
 
+  private void pruneFiles(String fileName) {
+    val files = getFiles(fileName);
+
+    for (int i = 0; i < files.size() - retainCount; i++) {
+      val file = files.get(i);
+      log.info("Deleting {}...", file);
+      file.delete();
+    }
+  }
+
   private File getDumpFile(String date) {
-    return new File(workspaceDir, "icgc-ega-dump." + date + ".jsonl");
+    return getFile("icgc-ega-dump", date);
   }
 
   private File getReportFile(String date) {
-    return new File(workspaceDir, "icgc-ega-report." + date + ".jsonl");
+    return getFile("icgc-ega-report", date);
   }
 
-  private static String getDate() {
+  @SneakyThrows
+  private List<File> getFiles(String fileName) {
+    return Files
+        .list(workspaceDir.toPath())
+        .map(Path::toFile)
+        .filter(file -> file.getName().matches(fileName + "\\.[^.]+\\.jsonl"))
+        .sorted(comparing(File::getName))
+        .collect(toImmutableList());
+  }
+
+  private File getFile(String fileName, String date) {
+    return new File(workspaceDir, fileName + "." + date + ".jsonl");
+  }
+
+  private static String formatDate() {
     return DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss").format(LocalDateTime.now());
   }
 

@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import lombok.val;
+
 @RestController
 public class SubmissionController {
 
@@ -39,7 +41,8 @@ public class SubmissionController {
   @Cacheable("/api/v1/submission/accessions")
   @GetMapping("/api/v1/submission/accessions")
   public List<ObjectNode> getReport() {
-    return service.getRawAccessions();
+    val release = "ICGC23";
+    return service.getRawAccessions(release);
   }
 
 }

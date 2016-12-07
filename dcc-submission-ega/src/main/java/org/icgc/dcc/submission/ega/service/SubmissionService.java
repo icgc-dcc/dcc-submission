@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import lombok.NonNull;
 import lombok.val;
 
 @Service
@@ -36,8 +37,8 @@ public class SubmissionService {
   @Autowired
   JdbcTemplate template;
 
-  public List<ObjectNode> getRawAccessions() {
-    val release = "icgc23";
+  public List<ObjectNode> getRawAccessions(@NonNull String release) {
+    val schema = release.toLowerCase();
     val repo = "EGA";
 
     // @formatter:off
@@ -47,17 +48,17 @@ public class SubmissionService {
       "   DISTINCT *\n"+
       " FROM \n"+
       "   (\n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".cnsm_m       WHERE raw_data_repository = \'" + repo + "\' UNION\n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".exp_array_m  WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".exp_seq_m    WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".jcn_m        WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".meth_array_m WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".meth_seq_m   WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".mirna_seq_m  WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".pexp_m       WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".sgv_m        WHERE raw_data_repository = \'" + repo + "\' UNION\n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".ssm_m        WHERE raw_data_repository = \'" + repo + "\' UNION\n"+
-      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + release + ".stsm_m       WHERE raw_data_repository = \'" + repo + "\'\n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + schema + ".cnsm_m       WHERE raw_data_repository = \'" + repo + "\' UNION\n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + schema + ".exp_array_m  WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + schema + ".exp_seq_m    WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + schema + ".jcn_m        WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + schema + ".meth_array_m WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + schema + ".meth_seq_m   WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + schema + ".mirna_seq_m  WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + schema + ".pexp_m       WHERE raw_data_repository = \'" + repo + "\' UNION \n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + schema + ".sgv_m        WHERE raw_data_repository = \'" + repo + "\' UNION\n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + schema + ".ssm_m        WHERE raw_data_repository = \'" + repo + "\' UNION\n"+
+      "     SELECT project_id, donor_id, raw_data_accession, analyzed_sample_id FROM " + schema + ".stsm_m       WHERE raw_data_repository = \'" + repo + "\'\n"+
       "   ) AS i\n"+
       " ";
     
