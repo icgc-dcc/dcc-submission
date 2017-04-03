@@ -279,7 +279,8 @@ module.exports =
       name: "At least one file accession is required"
       description: (source) ->
         """
-        At least one file accession is required for <span class="mono-font">analysis_id</span>: #{source.parameters.VALUE}
+        At least one EGA file accession is required for <span class="mono-font">analysis_id</span>: #{source.parameters.VALUE}.
+        Please refer to <a href='http://docs.icgc.org/submission/guide/ega_file_validation/'>http://docs.icgc.org/submission/guide/ega_file_validation/ </a> for more information.
         """
     FILE_ACCESSION_INVALID:
       name: "Could not find accession in remote repository"
