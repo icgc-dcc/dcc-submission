@@ -29,7 +29,8 @@ public final class ReferenceUtils {
    * 
    * @see http://legacy-portal.dcc.icgc.org/pages/docs/dictionaries/latest/#ssm_p.0.mutation_type.v1
    */
-  public static final String INSERTION_MUTATION_TYPE = "2";
+  public static final String INSERTION_MUTATION_CODE = "2";
+  public static final String INSERTION_MUTATION_VALUE = "insertion of <=200bp";
 
   /**
    * Value that is used to convey an insertion for the reference allele.
@@ -37,7 +38,7 @@ public final class ReferenceUtils {
   public static final String REFERENCE_INSERTION_VALUE = "-";
 
   public static boolean isInsertionType(String mutationType) {
-    return mutationType.equals(INSERTION_MUTATION_TYPE);
+    return mutationType.equals(INSERTION_MUTATION_CODE) || mutationType.equals(INSERTION_MUTATION_VALUE);
   }
 
 }
