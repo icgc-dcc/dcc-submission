@@ -452,18 +452,26 @@ var dictionaryApp = dictionaryApp || {};
 ////////////////////////////////////////////////////////////////////////////////
   TableViewer.prototype.selectDataType = function (label) {
 
+    var wrapper = d3.selectAll('.selection_wrapper'), _this = this, timeout;
+
+    if(!wrapper.node()) {
+      timeout = setTimeout(function(){ _this.selectDataType(label); }, 0);
+    } else {
+      clearTimeout(timeout);
+    }
+
     d3.select('#minimapLabel').select('span').html(label + '&nbsp;&nbsp;');
     d3.select('#minimapWrapper').style('display', 'none');
 
     window.scrollTo(0, 0);
 
-    d3.selectAll('.selection_wrapper').style('display', 'block');
+    wrapper.style('display', 'block');
 
     // if (val === 'all') {
     if (label === 'all') {
-      d3.selectAll('.selection_wrapper').style('display', 'block');
+      wrapper.style('display', 'block');
     } else {
-      d3.selectAll('.selection_wrapper').filter(function (section) {
+      wrapper.filter(function (section) {
 
         if (section.name === label) {
           return 0;
