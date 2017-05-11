@@ -468,9 +468,7 @@ var dictionaryApp = dictionaryApp || {};
     wrapper.style('display', 'block');
 
     // if (val === 'all') {
-    if (label === 'all') {
-      wrapper.style('display', 'block');
-    } else {
+    if(label != 'all') {
       wrapper.filter(function (section) {
 
         if (section.name === label) {
