@@ -2,10 +2,8 @@ package org.icgc.dcc.submission.validation.accession.ega.extractor.impl;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
-import org.apache.avro.generic.GenericData;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.icgc.dcc.common.core.util.Separators;
-import org.icgc.dcc.common.core.util.Splitters;
 import org.icgc.dcc.submission.validation.accession.ega.extractor.DataExtractor;
 import rx.Observable;
 
@@ -30,7 +28,7 @@ import java.util.List;
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
+@Slf4j
 public class EGASampleFileExtractor implements DataExtractor<Pair<String, String>> {
   @Override
   public Observable<Pair<String, String>> extract(File file) {
@@ -47,11 +45,11 @@ public class EGASampleFileExtractor implements DataExtractor<Pair<String, String
       }
       return Observable.from(buffer);
     } catch (FileNotFoundException e) {
-      return Observable.empty();
+      e.printStackTrace();
     } catch (IOException e) {
       e.printStackTrace();
     }
 
-    return null;
+    return Observable.empty();
   }
 }

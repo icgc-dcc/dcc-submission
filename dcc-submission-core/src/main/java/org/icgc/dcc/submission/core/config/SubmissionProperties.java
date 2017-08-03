@@ -106,7 +106,7 @@ public class SubmissionProperties {
   @Data
   public static class EGAProperties {
 
-    String reportUrl;
+//    String reportUrl;
 
     String ftpConnectionUrl;
 

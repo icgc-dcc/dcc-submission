@@ -1,6 +1,20 @@
 package org.icgc.dcc.submission.validation.accession.ega;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.ftpserver.FtpServer;
+import org.apache.ftpserver.FtpServerFactory;
+import org.apache.ftpserver.ftplet.*;
+import org.apache.ftpserver.listener.ListenerFactory;
+import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
+import org.apache.ftpserver.usermanager.UserManagerFactory;
+import org.icgc.dcc.submission.validation.accession.ega.download.impl.ShellScriptDownloader;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.*;
+import java.util.Optional;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -20,9 +34,20 @@ import org.junit.Test;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class EGAFileAccessionValidatorTest {
+public class ShellScriptDownloaderTest {
+
   @Test
-  public void test_validate(){
+  public void test_download(){
+    ShellScriptDownloader downloader = new ShellScriptDownloader(
+        "ftp://admin:admin@localhost:"+ EGAFileAccessionValidatorTestSuite.defaultFtpPort + "/ICGC_metadata",
+        "/tmp/submission/ega/test/data",
+        "/fixtures/validation/accession/ega/metadata.sh"
+    );
+
+    Optional<File> file = downloader.download();
+    Assert.assertTrue( file.isPresent() );
+
+    Assert.assertEquals(file.get().getAbsolutePath(), "/tmp/submission/ega/test/data");
 
   }
 }

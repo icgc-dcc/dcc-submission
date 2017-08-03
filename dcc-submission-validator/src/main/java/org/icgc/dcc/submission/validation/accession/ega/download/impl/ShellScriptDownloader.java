@@ -70,19 +70,6 @@ public class ShellScriptDownloader implements EGAMetadataDownloader {
     try {
       Process proc = (new ProcessBuilder("sh", tmp_data_directory + "/metadata.sh", tmp_data_directory, ftp_connection)).inheritIO().start();
 
-      Thread thread = new Thread(() -> {
-        BufferedReader br = new BufferedReader( new InputStreamReader( proc.getInputStream() ) );
-        String line;
-        try {
-          while((line = br.readLine()) != null){
-            System.out.println(line);
-          }
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      });
-      thread.start();
-
       int exitVal = proc.waitFor();
       if(exitVal != 0)
         return Optional.empty();

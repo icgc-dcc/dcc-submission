@@ -64,6 +64,8 @@ normalizer:
 # EGA
 ega:
   reportUrl: http://localhost:5380
+  ftpConnectionUrl: ftp://$user:$password@$hostname/ICGC_metadata
+  metadataUpdateTrigger: 0 0 9,21 * * ?
   
 reference:
   # The reference genome assembly. Assumes the existence of a .fasta.fai file in the same directory. 

@@ -1,105 +1,167 @@
-/*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
- *                                                                                                               
- * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
- * You should have received a copy of the GNU General Public License along with                                  
- * this program. If not, see <http://www.gnu.org/licenses/>.                                                     
- *                                                                                                               
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY                           
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES                          
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT                           
- * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,                                
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED                          
- * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;                               
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER                              
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 package org.icgc.dcc.submission.validation.accession.ega;
 
-import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.base.Suppliers.memoizeWithExpiration;
-import static java.util.concurrent.TimeUnit.HOURS;
-import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
-
-import java.net.URL;
-import java.util.Collection;
-import java.util.List;
-
-import org.icgc.dcc.common.ega.model.EGAAccessionType;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Stopwatch;
-import com.google.common.base.Supplier;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-
+import com.google.common.base.Preconditions;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.Value;
-import lombok.val;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.apache.commons.lang3.tuple.Pair;
+import org.icgc.dcc.common.ega.model.EGAAccessionType;
+import org.icgc.dcc.submission.core.config.SubmissionProperties;
+import org.icgc.dcc.submission.validation.accession.ega.download.EGAMetadataDownloader;
+import org.icgc.dcc.submission.validation.accession.ega.download.impl.ShellScriptDownloader;
+import org.icgc.dcc.submission.validation.accession.ega.extractor.impl.EGASampleFileExtractor;
+import org.quartz.*;
+import rx.Observable;
+import rx.schedulers.Schedulers;
+
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import static com.google.common.base.Preconditions.checkState;
 
 /**
- * EGA specific file accession validator.
+ * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
  * <p>
- * Validates that a file accession (e.g. {@code EGAF00000000001} exists in EGA.
+ * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
  * <p>
- * Note that a 401 is returned from the EGA {@code https://ega.ebi.ac.uk/ega/rest/access/v2/files/EGF00000000001} API
- * when either:
- * <ul>
- * <li>The request is unauthorized, or</li>
- * <li>The file does not exist</li>
- * </ul>
- * This ambiguity implies that existence can be certain where as non-existence is most likely true if the DAC of the
- * {@link EGAClient} has access to the corresponding study's dataset.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 @Slf4j
-@RequiredArgsConstructor
 public class EGAFileAccessionValidator {
 
-  /**
-   * Constants.
-   */
-  public static final String DEFAULT_REPORT_URL = "http://hsubmission-dcc.oicr.on.ca:8080/api/v1/ega/report";
+  private static String defaultFtpConnectionUrl = "ftp://ega-box-138:tMHG3Uke@ftp-private.ebi.ac.uk/ICGC_metadata";
+  private static String defaultMetaDataUpdateTrigger = "0 0 9,21 * * ?";
 
-  /**
-   * Dependencies.
-   */
-  @NonNull
-  private String reportUrl;
+  private SubmissionProperties.EGAProperties properties;
 
-  /**
-   * State.
-   */
-  private final Supplier<Multimap<String, ObjectNode>> memoizer = memoizeWithExpiration(this::indexFiles, 1, HOURS);
+  private Scheduler scheduler;
 
-  public EGAFileAccessionValidator() {
-    this(DEFAULT_REPORT_URL);
+  private Cache<String, Set<String>> cache = null;
+
+  private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+
+  private EGAMetadataDownloader downloader = null;
+
+  public EGAFileAccessionValidator(){
+    this(defaultFtpConnectionUrl, defaultMetaDataUpdateTrigger);
   }
 
-  public Result validate(@NonNull String analyzedSampleId, String fileId) {
-    checkFileAccession(fileId);
+  public EGAFileAccessionValidator(String ftpConnectionUrl, String metaDataUpdateTrigger) {
+    this.properties = new SubmissionProperties.EGAProperties();
+    this.properties.setFtpConnectionUrl(ftpConnectionUrl);
+    this.properties.setMetadataUpdateTrigger(metaDataUpdateTrigger);
+    downloader = initializeMetadataDownloader();
+    scheduler = Preconditions.checkNotNull(initializeScheduler(), "failed to create the scheduler!");
+  }
+
+  public EGAFileAccessionValidator(SubmissionProperties.EGAProperties properties){
+    this.properties = properties;
+    downloader = initializeMetadataDownloader();
+    scheduler = Preconditions.checkNotNull(initializeScheduler(), "failed to create the scheduler!");
+  }
+
+  private EGAMetadataDownloader initializeMetadataDownloader() {
+    return new ShellScriptDownloader(this.properties.getFtpConnectionUrl(), System.getProperty("java.io.tmpDir") + "/ega/metadata", "/metadata.sh");
+  }
+
+  private Scheduler initializeScheduler() {
+
     try {
-      val files = getFilesById(fileId);
-      if (files.isEmpty()) {
-        return invalid("No files found with id " + fileId);
-      }
+      SchedulerFactory schedFact = new org.quartz.impl.StdSchedulerFactory();
+      Scheduler sched = schedFact.getScheduler();
+      sched.start();
 
-      for (val file : files) {
-        val submitterSampleId = file.get("submitterSampleId").textValue();
-        if (analyzedSampleId.equals(submitterSampleId)) {
-          log.debug("Found files: {}", files);
-          return valid();
-        }
-      }
+      sched.scheduleJob(
+          JobBuilder.newJob(MetadataUpdateJob.class).withIdentity("metadata_job", "ega_validator").build(),
+          TriggerBuilder.newTrigger().withIdentity("metadata_trigger", "ega_validator").withSchedule(CronScheduleBuilder.cronSchedule("")).forJob("metadata_job").startNow().build()
+      );
 
+      return sched;
+    } catch (SchedulerException e) {
+      e.printStackTrace();
+    }
+    return null;
+
+  }
+
+  private Cache<String, Set<String>> initializeCache() {
+
+    Optional<File> dataDir = this.downloader.download();
+    if(!dataDir.isPresent())
+      throw new RuntimeException("Downloading EGA metadata failed ...");
+
+    return this.buildCache(
+        parseSampleFiles(
+            getSampleFiles(dataDir.get())
+        )
+    );
+  }
+
+  private Observable<File> getSampleFiles(File dataDir){
+
+    return
+      Observable.from(
+        dataDir.listFiles((dir, fileName) -> fileName.startsWith("EGA") )
+      ).subscribeOn(Schedulers.io()).flatMap(dir -> {
+        File mapFile = new File(dir.getAbsolutePath() + "/delimited_maps/Sample_File.map");
+        if (mapFile.exists())
+          return Observable.just(mapFile);
+        else
+          return Observable.empty();
+      });
+
+  }
+
+  private Observable<Pair<String, String>> parseSampleFiles(Observable<File> sampleFiles) {
+    EGASampleFileExtractor extractor = new EGASampleFileExtractor();
+    return sampleFiles.flatMap(extractor::extract);
+  }
+
+  private Cache<String, Set<String>> buildCache(Observable<Pair<String, String>> rawData){
+
+    Cache<String, Set<String>> inst = CacheBuilder.newBuilder().<String, Set<String>>build();
+    rawData.groupBy(pair -> pair.getLeft(), pair -> pair.getRight()).subscribe(group -> {
+      String key = group.getKey();
+      Set<String> set = new HashSet<>();
+      group.distinct().subscribe(ega_file_id -> {
+        set.add(ega_file_id);
+      });
+      inst.put(key, set);
+    });
+
+    return inst;
+  }
+
+  public Result validate(@NonNull String analyzedSampleId, String fileId){
+    lock.readLock().lock();
+
+    if(cache == null)
+      return initializing();
+
+    checkFileAccession(fileId);
+
+    Set<String> files = this.cache.getIfPresent(analyzedSampleId);
+    if(files != null && files.contains(fileId)) {
+      lock.readLock().unlock();
+      return valid();
+    }
+    else{
+      lock.readLock().unlock();
       return invalid("Could not match file to sample in: " + files);
-    } catch (Exception e) {
-      log.error("Unexpected error getting file " + fileId + ": ", e);
-      return invalid("Unexpected error getting file " + fileId + ": " + e.getMessage());
     }
   }
 
@@ -109,28 +171,6 @@ public class EGAFileAccessionValidator {
     checkState(accessionType.get().isFile(), "Accession type not file for value %s", fileId);
   }
 
-  private Collection<ObjectNode> getFilesById(String fileId) {
-    return memoizer.get().get(fileId);
-  }
-
-  private Multimap<String, ObjectNode> indexFiles() {
-    return Multimaps.index(readFiles(), file -> file.get("fileId").textValue());
-  }
-
-  @SneakyThrows
-  private List<ObjectNode> readFiles() {
-    val watch = Stopwatch.createStarted();
-    try {
-      log.info("Reading file report...");
-      return DEFAULT.readValue(new URL(reportUrl), new TypeReference<List<ObjectNode>>() {});
-    } finally {
-      log.info("Finished reading file report in {}", watch);
-    }
-  }
-
-  /**
-   * Validation result.
-   */
   @Value
   public static class Result {
 
@@ -147,4 +187,18 @@ public class EGAFileAccessionValidator {
     return new Result(false, reason);
   }
 
+  private static Result initializing() {
+    return invalid("EGA file accession validator is initializing ... ");
+  }
+
+  private class MetadataUpdateJob implements Job {
+
+    @Override
+    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+      Cache<String, Set<String>> newCache = initializeCache();
+      lock.writeLock().lock();
+      cache = newCache;
+      lock.writeLock().unlock();
+    }
+  }
 }
