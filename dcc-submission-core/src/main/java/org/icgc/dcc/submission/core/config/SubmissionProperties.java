@@ -108,6 +108,10 @@ public class SubmissionProperties {
 
     String reportUrl;
 
+    String ftpConnectionUrl;
+
+    String metadataUpdateTrigger;
+
   }
 
   @Data
