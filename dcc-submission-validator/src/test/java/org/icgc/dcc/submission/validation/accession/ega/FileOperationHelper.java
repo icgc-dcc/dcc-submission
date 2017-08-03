@@ -1,11 +1,6 @@
 package org.icgc.dcc.submission.validation.accession.ega;
 
-import org.icgc.dcc.submission.validation.accession.ega.download.impl.ShellScriptDownloader;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.io.*;
-import java.util.Optional;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -25,20 +20,28 @@ import java.util.Optional;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class ShellScriptDownloaderTest extends EGAFileAccessionValidatorFtpProvider {
+class FileOperationHelper {
 
-  @Test
-  public void test_download(){
-    ShellScriptDownloader downloader = new ShellScriptDownloader(
-        "ftp://admin:admin@localhost:"+ defaultFtpPort + "/ICGC_metadata",
-        "/tmp/submission/ega/test/data",
-        "/fixtures/validation/accession/ega/metadata.sh"
-    );
+  public static void copyFileFromClasspathToTmpDir(String classpath, String fileName, String targetPath){
+    try {
 
-    Optional<File> file = downloader.download();
-    Assert.assertTrue( file.isPresent() );
+      File target = new File(targetPath + "/" + fileName);
+      target.createNewFile();
 
-    Assert.assertEquals(file.get().getAbsolutePath(), "/tmp/submission/ega/test/data");
-
+      FileOutputStream fos = new FileOutputStream(target);
+      InputStream is = ShellScriptDownloaderTest.class.getResourceAsStream(classpath + "/" + fileName);
+      byte[] buffer = new byte[512];
+      int len = 0;
+      while((len = is.read(buffer)) > 0){
+        fos.write(buffer, 0, len);
+      }
+      fos.flush();
+      fos.close();
+      is.close();
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 }

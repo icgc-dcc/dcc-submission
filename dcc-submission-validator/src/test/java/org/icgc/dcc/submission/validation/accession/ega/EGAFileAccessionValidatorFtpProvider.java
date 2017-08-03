@@ -30,12 +30,7 @@ import java.io.*;
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-    ShellScriptDownloaderTest.class,
-    EGAFileAccessionValidatorTest.class
-})
-public class EGAFileAccessionValidatorTestSuite {
+public class EGAFileAccessionValidatorFtpProvider {
   private static FtpServer ftpServer = null;
   private static String adminHomePath = "/tmp/submission/ega/test";
   private static File adminHomeDir = new File(adminHomePath);
@@ -51,9 +46,9 @@ public class EGAFileAccessionValidatorTestSuite {
       adminHomeDir.mkdirs();
       (new File(dataPath)).mkdir();
 
-      copyFileFromClasspathToTmpDir("/fixtures/validation/accession/ftp", "users.properties", adminHomePath);
-      copyFileFromClasspathToTmpDir("/fixtures/validation/accession/ftp", "EGAD00001000045.tar.gz", dataPath);
-      copyFileFromClasspathToTmpDir("/fixtures/validation/accession/ftp", "EGAD00001000083.tar.gz", dataPath);
+      FileOperationHelper.copyFileFromClasspathToTmpDir("/fixtures/validation/accession/ftp", "users.properties", adminHomePath);
+      FileOperationHelper.copyFileFromClasspathToTmpDir("/fixtures/validation/accession/ftp", "EGAD00001000045.tar.gz", dataPath);
+      FileOperationHelper.copyFileFromClasspathToTmpDir("/fixtures/validation/accession/ftp", "EGAD00001000083.tar.gz", dataPath);
 
       FtpServerFactory serverFactory = new FtpServerFactory();
 
@@ -84,29 +79,6 @@ public class EGAFileAccessionValidatorTestSuite {
     try {
       FileUtils.deleteDirectory(adminHomeDir);
       FileUtils.deleteDirectory(new File("/tmp/submission"));
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  private static void copyFileFromClasspathToTmpDir(String classpath, String fileName, String targetPath){
-    try {
-
-      File target = new File(targetPath + "/" + fileName);
-      target.createNewFile();
-
-      FileOutputStream fos = new FileOutputStream(target);
-      InputStream is = ShellScriptDownloaderTest.class.getResourceAsStream(classpath + "/" + fileName);
-      byte[] buffer = new byte[512];
-      int len = 0;
-      while((len = is.read(buffer)) > 0){
-        fos.write(buffer, 0, len);
-      }
-      fos.flush();
-      fos.close();
-      is.close();
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
     } catch (IOException e) {
       e.printStackTrace();
     }

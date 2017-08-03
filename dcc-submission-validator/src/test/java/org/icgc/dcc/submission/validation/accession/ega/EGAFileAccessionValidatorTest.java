@@ -20,7 +20,7 @@ import org.junit.Test;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class EGAFileAccessionValidatorTest {
+public class EGAFileAccessionValidatorTest extends EGAFileAccessionValidatorFtpProvider{
   @Test
   public void test_validate(){
 
