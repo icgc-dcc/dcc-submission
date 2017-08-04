@@ -213,7 +213,6 @@ public class EGAFileAccessionValidator {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-      System.out.println("Downloading metadata files is triggered at " + jobExecutionContext.getFireTime().toString());
       log.info("Downloading metadata files is triggered at " + jobExecutionContext.getFireTime().toString());
       Date next = jobExecutionContext.getNextFireTime();
       EGAFileAccessionValidator validator = (EGAFileAccessionValidator) jobExecutionContext.getJobDetail().getJobDataMap().get("validator");
@@ -221,8 +220,8 @@ public class EGAFileAccessionValidator {
       validator.lock.writeLock().lock();
       validator.cache = newCache;
       validator.lock.writeLock().unlock();
+      log.info("Updating the metadata cache is finished ...");
       if(next != null) {
-        System.out.println("Next downloading will be triggered at " + next.toString());
         log.info("Next downloading will be triggered at " + next.toString());
       }
     }
