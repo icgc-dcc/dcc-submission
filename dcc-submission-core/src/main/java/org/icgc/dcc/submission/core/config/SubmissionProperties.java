@@ -24,8 +24,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Data;
-import lombok.ToString;
+import lombok.*;
 
 @Data
 public class SubmissionProperties {
@@ -103,10 +102,10 @@ public class SubmissionProperties {
 
   }
 
+  @NoArgsConstructor
+  @AllArgsConstructor
   @Data
   public static class EGAProperties {
-
-//    String reportUrl;
 
     String ftpConnectionUrl;
 

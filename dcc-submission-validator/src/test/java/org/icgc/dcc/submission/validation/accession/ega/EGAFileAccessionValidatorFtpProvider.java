@@ -8,8 +8,6 @@ import org.apache.ftpserver.listener.ListenerFactory;
 import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
 
 import java.io.*;
 
@@ -77,8 +75,7 @@ public class EGAFileAccessionValidatorFtpProvider {
     ftpServer.stop();
 
     try {
-      FileUtils.deleteDirectory(adminHomeDir);
-      FileUtils.deleteDirectory(new File("/tmp/submission"));
+      FileUtils.deleteDirectory(new File("/tmp/submission/ega"));
     } catch (IOException e) {
       e.printStackTrace();
     }

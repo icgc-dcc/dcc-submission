@@ -7,6 +7,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.icgc.dcc.common.ega.model.EGAAccessionType;
 import org.icgc.dcc.submission.core.config.SubmissionProperties;
@@ -61,21 +62,16 @@ public class EGAFileAccessionValidator {
   }
 
   public EGAFileAccessionValidator(String ftpConnectionUrl, String metaDataUpdateTrigger) {
-    this.properties = new SubmissionProperties.EGAProperties();
-    this.properties.setFtpConnectionUrl(ftpConnectionUrl);
-    this.properties.setMetadataUpdateTrigger(metaDataUpdateTrigger);
-    downloader = initializeMetadataDownloader();
-    scheduler = Preconditions.checkNotNull(initializeScheduler(), "failed to create the scheduler!");
+    this(new SubmissionProperties.EGAProperties(ftpConnectionUrl, metaDataUpdateTrigger));
   }
 
   public EGAFileAccessionValidator(SubmissionProperties.EGAProperties properties){
     this.properties = properties;
     downloader = initializeMetadataDownloader();
-    scheduler = Preconditions.checkNotNull(initializeScheduler(), "failed to create the scheduler!");
   }
 
   private EGAMetadataDownloader initializeMetadataDownloader() {
-    return new ShellScriptDownloader(this.properties.getFtpConnectionUrl(), System.getProperty("java.io.tmpDir") + "/ega/metadata", "/metadata.sh");
+    return new ShellScriptDownloader(this.properties.getFtpConnectionUrl(), System.getProperty("java.io.tmpdir") + "ega/metadata", "/metadata.sh");
   }
 
   private Scheduler initializeScheduler() {
@@ -85,10 +81,15 @@ public class EGAFileAccessionValidator {
       Scheduler sched = schedFact.getScheduler();
       sched.start();
 
-      sched.scheduleJob(
-          JobBuilder.newJob(MetadataUpdateJob.class).withIdentity("metadata_job", "ega_validator").build(),
-          TriggerBuilder.newTrigger().withIdentity("metadata_trigger", "ega_validator").withSchedule(CronScheduleBuilder.cronSchedule("")).forJob("metadata_job").startNow().build()
-      );
+      JobKey jobKey = new JobKey("metadata_job", "ega_validator");
+      JobDataMap jobData = new JobDataMap();
+      jobData.put("validator", this);
+      JobDetail job = JobBuilder.newJob(MetadataUpdateJob.class).withIdentity(jobKey).setJobData(jobData).build();
+      Trigger trigger = TriggerBuilder.newTrigger().withIdentity("metadata_trigger", "ega_validator").withSchedule(CronScheduleBuilder.cronSchedule(this.properties.getMetadataUpdateTrigger())).forJob(jobKey).startNow().build();
+
+      sched.scheduleJob(job, trigger);
+
+      sched.triggerJob(jobKey);
 
       return sched;
     } catch (SchedulerException e) {
@@ -104,11 +105,20 @@ public class EGAFileAccessionValidator {
     if(!dataDir.isPresent())
       throw new RuntimeException("Downloading EGA metadata failed ...");
 
-    return this.buildCache(
+    Cache<String, Set<String>> ret =
+      this.buildCache(
         parseSampleFiles(
             getSampleFiles(dataDir.get())
         )
     );
+
+    try {
+      FileUtils.deleteDirectory(new File(System.getProperty("java.io.tmpDir") + "/ega"));
+    } catch (IOException e) {
+      log.warn("Can't clean the downloading directory ...");
+    }
+
+    return ret;
   }
 
   private Observable<File> getSampleFiles(File dataDir){
@@ -116,7 +126,7 @@ public class EGAFileAccessionValidator {
     return
       Observable.from(
         dataDir.listFiles((dir, fileName) -> fileName.startsWith("EGA") )
-      ).subscribeOn(Schedulers.io()).flatMap(dir -> {
+      ).flatMap(dir -> {
         File mapFile = new File(dir.getAbsolutePath() + "/delimited_maps/Sample_File.map");
         if (mapFile.exists())
           return Observable.just(mapFile);
@@ -137,7 +147,7 @@ public class EGAFileAccessionValidator {
     rawData.groupBy(pair -> pair.getLeft(), pair -> pair.getRight()).subscribe(group -> {
       String key = group.getKey();
       Set<String> set = new HashSet<>();
-      group.distinct().subscribe(ega_file_id -> {
+      group.subscribe(ega_file_id -> {
         set.add(ega_file_id);
       });
       inst.put(key, set);
@@ -146,11 +156,19 @@ public class EGAFileAccessionValidator {
     return inst;
   }
 
+  public void start() {
+    if(scheduler == null){
+      scheduler = Preconditions.checkNotNull(initializeScheduler(), "failed to create the scheduler!");
+    }
+  }
+
   public Result validate(@NonNull String analyzedSampleId, String fileId){
     lock.readLock().lock();
 
-    if(cache == null)
+    if(cache == null) {
+      lock.readLock().unlock();
       return initializing();
+    }
 
     checkFileAccession(fileId);
 
@@ -191,14 +209,22 @@ public class EGAFileAccessionValidator {
     return invalid("EGA file accession validator is initializing ... ");
   }
 
-  private class MetadataUpdateJob implements Job {
+  public static class MetadataUpdateJob implements Job {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-      Cache<String, Set<String>> newCache = initializeCache();
-      lock.writeLock().lock();
-      cache = newCache;
-      lock.writeLock().unlock();
+      System.out.println("Downloading metadata files is triggered at " + jobExecutionContext.getFireTime().toString());
+      log.info("Downloading metadata files is triggered at " + jobExecutionContext.getFireTime().toString());
+      Date next = jobExecutionContext.getNextFireTime();
+      EGAFileAccessionValidator validator = (EGAFileAccessionValidator) jobExecutionContext.getJobDetail().getJobDataMap().get("validator");
+      Cache<String, Set<String>> newCache = validator.initializeCache();
+      validator.lock.writeLock().lock();
+      validator.cache = newCache;
+      validator.lock.writeLock().unlock();
+      if(next != null) {
+        System.out.println("Next downloading will be triggered at " + next.toString());
+        log.info("Next downloading will be triggered at " + next.toString());
+      }
     }
   }
 }

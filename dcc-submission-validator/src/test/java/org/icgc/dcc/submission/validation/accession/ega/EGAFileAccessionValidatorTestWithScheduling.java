@@ -1,5 +1,6 @@
 package org.icgc.dcc.submission.validation.accession.ega;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -20,9 +21,39 @@ import org.junit.Test;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class EGAFileAccessionValidatorTest extends EGAFileAccessionValidatorFtpProvider{
+public class EGAFileAccessionValidatorTestWithScheduling extends EGAFileAccessionValidatorFtpProvider{
+
   @Test
   public void test_validate(){
+    EGAFileAccessionValidator validator = new EGAFileAccessionValidator(
+        "ftp://admin:admin@localhost:"+ defaultFtpPort + "/ICGC_metadata",
+        "0 0 9,21 * * ?");
+
+    validator.start();
+
+    try {
+      while(true){
+        Thread.sleep(5000);
+
+        EGAFileAccessionValidator.Result ret = validator.validate("168-02-8TR", "EGAF00000143419");
+        if(!ret.isValid()) {
+          System.out.println(ret.getReason());
+          continue;
+        }
+        else
+          break;
+
+      }
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    Assert.assertTrue( validator.validate("168-02-8TR", "EGAF00000143419").isValid() );
+    Assert.assertTrue( validator.validate("168-02-8TR", "EGAF00000143420").isValid() );
+
+    Assert.assertFalse( validator.validate("abcde", "EGAF00000143420").isValid() );
+    Assert.assertFalse( validator.validate("168-02-8TR", "EGAF00000143366").isValid() );
 
   }
+
 }

@@ -47,7 +47,7 @@ public class ShellScriptDownloader implements EGAMetadataDownloader {
       }
     }
 
-    if(dataDir.mkdir() == false)
+    if(dataDir.mkdirs() == false)
       return Optional.empty();
 
     try {
@@ -83,4 +83,5 @@ public class ShellScriptDownloader implements EGAMetadataDownloader {
     return Optional.of(dataDir);
 
   }
+
 }

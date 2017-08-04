@@ -30,4 +30,5 @@ public interface EGAMetadataDownloader {
    * @return a local directory which holds unzipped EGA metadata files
    */
   Optional<File> download();
+
 }
