@@ -2,6 +2,7 @@ package org.icgc.dcc.submission.validation.accession.ega.download.impl;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.icgc.dcc.submission.validation.accession.ega.download.EGAMetadataDownloader;
 
@@ -26,6 +27,7 @@ import java.util.Optional;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 @RequiredArgsConstructor
+@Slf4j
 public class ShellScriptDownloader implements EGAMetadataDownloader {
 
   @NonNull
@@ -68,7 +70,24 @@ public class ShellScriptDownloader implements EGAMetadataDownloader {
     }
 
     try {
-      Process proc = (new ProcessBuilder("sh", tmp_data_directory + "/metadata.sh", tmp_data_directory, ftp_connection)).inheritIO().start();
+      Process proc = (new ProcessBuilder("sh", tmp_data_directory + "/metadata.sh", tmp_data_directory, ftp_connection)).start();
+
+      Thread download_monitor_thread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+
+          try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+            String line;
+            while((line = br.readLine()) != null){
+              log.info(line);
+            }
+          } catch (IOException e) {
+
+          }
+        }
+      });
+      download_monitor_thread.start();
 
       int exitVal = proc.waitFor();
       if(exitVal != 0)
