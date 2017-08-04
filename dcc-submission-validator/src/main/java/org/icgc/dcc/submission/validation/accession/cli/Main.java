@@ -71,6 +71,7 @@ public class Main {
 
   private static AccessionValidator getValidator() {
     val egaValidator = new EGAFileAccessionValidator();
+    egaValidator.start();
 
     return new AccessionValidator(new AccessionDictionary(), egaValidator);
   }

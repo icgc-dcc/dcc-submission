@@ -280,6 +280,7 @@ public class ValidationConfig extends AbstractConfig {
             AccessionDictionary.DEFAULT_ACCESSION_DICTIONARY_URL);
     log.info("Using accession dictionary url: {}", dictionaryUrl);
     val egaValidator = new EGAFileAccessionValidator(properties.getEga());
+    egaValidator.start();
 
     return new AccessionValidator(new AccessionDictionary(dictionaryUrl), egaValidator);
   }
