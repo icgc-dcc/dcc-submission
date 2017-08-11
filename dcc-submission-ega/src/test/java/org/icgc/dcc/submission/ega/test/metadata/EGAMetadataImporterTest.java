@@ -2,7 +2,6 @@ package org.icgc.dcc.submission.ega.test.metadata;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
-import lombok.NonNull;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.icgc.dcc.submission.ega.metadata.EGAMetadataImporter;
@@ -47,7 +46,7 @@ import java.util.stream.Collectors;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class EGAMetadataImporterTest extends ResourcesProvider{
+public class EGAMetadataImporterTest extends EGAMetadataResourcesProvider {
 
   private static EGAMetadataDownloader downloader;
 

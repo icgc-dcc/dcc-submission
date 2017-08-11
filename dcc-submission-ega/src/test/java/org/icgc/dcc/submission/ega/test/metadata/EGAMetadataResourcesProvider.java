@@ -34,7 +34,7 @@ import java.sql.SQLException;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public abstract class ResourcesProvider {
+public abstract class EGAMetadataResourcesProvider {
 
   // postgres
   protected static String tmp_dir = "/tmp/submission/ega/test/postgres";
@@ -83,6 +83,8 @@ public abstract class ResourcesProvider {
 
       server = Server.createPgServer("-baseDir", tmp_dir);
       server.start();
+
+      System.out.println(server.getURL() + ":" + server.getPort());
 
       JdbcTemplate jdbcTemplate = new JdbcTemplate(new DriverManagerDataSource("jdbc:postgresql://localhost:5435/ICGC_metadata?user=sa&password="));
       jdbcTemplate.execute("create schema if not exists ega");

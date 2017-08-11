@@ -10,6 +10,8 @@ import org.icgc.dcc.submission.ega.metadata.extractor.DataExtractor;
 import org.icgc.dcc.submission.ega.metadata.extractor.impl.EGASampleFileExtractor;
 import org.icgc.dcc.submission.ega.metadata.repo.EGAMetadataRepo;
 import org.icgc.dcc.submission.ega.metadata.repo.impl.EGAMetadataRepoPostgres;
+import org.icgc.dcc.submission.ega.metadata.service.EGAMetadataService;
+import org.icgc.dcc.submission.ega.metadata.service.impl.EGAMetadataServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -84,6 +86,13 @@ public class EGAMetadataConfig {
   @Bean
   public EGAMetadataRepo repo() {
     return new EGAMetadataRepoPostgres(
+        postgresqlConfig()
+    );
+  }
+
+  @Bean
+  public EGAMetadataService egaMetadataService() {
+    return new EGAMetadataServiceImpl(
         postgresqlConfig()
     );
   }

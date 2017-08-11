@@ -1,24 +1,16 @@
 package org.icgc.dcc.submission.ega.test.metadata;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.h2.tools.Server;
 import org.icgc.dcc.submission.ega.metadata.config.EGAMetadataConfig;
 import org.icgc.dcc.submission.ega.metadata.repo.EGAMetadataRepo;
 import org.icgc.dcc.submission.ega.metadata.repo.impl.EGAMetadataRepoPostgres;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import rx.Observable;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -38,7 +30,7 @@ import java.util.stream.Collectors;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class EGAMetadataRepoPostgresTest extends ResourcesProvider{
+public class EGAMetadataRepoPostgresTest extends EGAMetadataResourcesProvider {
 
   @Test
   public void test_persist() {

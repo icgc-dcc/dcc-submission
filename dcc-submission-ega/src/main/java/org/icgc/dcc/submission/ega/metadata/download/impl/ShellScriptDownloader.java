@@ -52,17 +52,16 @@ public class ShellScriptDownloader implements EGAMetadataDownloader {
     if(dataDir.mkdirs() == false)
       return Optional.empty();
 
-    try {
-      FileOutputStream fos = new FileOutputStream(new File(tmp_data_directory + "/download_ega_metadata.sh"));
-      InputStream is = ShellScriptDownloader.class.getResourceAsStream(script_file_path);
+    try(
+        FileOutputStream fos = new FileOutputStream(new File(tmp_data_directory + "/download_ega_metadata.sh"));
+        InputStream is = ShellScriptDownloader.class.getResourceAsStream(script_file_path);
+    ) {
       byte[] buffer = new byte[512];
       int len = 0;
       while((len = is.read(buffer)) > 0){
         fos.write(buffer, 0, len);
       }
       fos.flush();
-      fos.close();
-      is.close();
     } catch (FileNotFoundException e) {
       return Optional.empty();
     } catch (IOException e) {

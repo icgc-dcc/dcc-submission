@@ -1,6 +1,15 @@
 package org.icgc.dcc.submission.ega.metadata.controller;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import org.icgc.dcc.submission.ega.metadata.service.EGAMetadataService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -22,4 +31,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class EGAMetadataController {
+
+  EGAMetadataService service;
+
+  @GetMapping("/api/v1/ega/metadata")
+  public ResponseEntity<List<ObjectNode>> getData() {
+    return ResponseEntity
+        .ok()
+        .lastModified(System.currentTimeMillis())
+        .body(service.getData());
+  }
+
 }

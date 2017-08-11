@@ -1,6 +1,8 @@
 package org.icgc.dcc.submission.ega.metadata.service;
 
-import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import java.util.List;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -19,7 +21,6 @@ import org.springframework.stereotype.Service;
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-@Service
-public class EGAMetadataService {
+public interface EGAMetadataService {
+  List<ObjectNode> getData();
 }
