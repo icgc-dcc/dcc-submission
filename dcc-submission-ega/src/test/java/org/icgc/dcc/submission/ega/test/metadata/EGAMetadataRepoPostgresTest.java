@@ -38,40 +38,7 @@ import java.util.stream.Collectors;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class EGAMetadataRepoPostgresTest {
-
-  private static String tmp_dir = "/tmp/submission/ega/test/postgres";
-  private static Server server;
-
-  @BeforeClass
-  public static void initialize() {
-    try {
-
-      File dir = new File(tmp_dir);
-      if(dir.exists()){
-        FileUtils.deleteDirectory(dir);
-      }
-
-      server = Server.createPgServer("-baseDir", tmp_dir);
-      server.start();
-
-      JdbcTemplate jdbcTemplate = new JdbcTemplate(new DriverManagerDataSource("jdbc:postgresql://localhost:5435/ICGC_metadata?user=sa&password="));
-      jdbcTemplate.execute("create schema if not exists ega");
-
-    } catch (SQLException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  @AfterClass
-  public static void tearDown() {
-    if(server != null){
-      server.stop();
-      server.shutdown();
-    }
-  }
+public class EGAMetadataRepoPostgresTest extends ResourcesProvider{
 
   @Test
   public void test_persist() {

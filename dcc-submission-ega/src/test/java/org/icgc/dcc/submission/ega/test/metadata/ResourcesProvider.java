@@ -6,11 +6,15 @@ import org.apache.ftpserver.FtpServerFactory;
 import org.apache.ftpserver.ftplet.FtpException;
 import org.apache.ftpserver.listener.ListenerFactory;
 import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
+import org.h2.tools.Server;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -30,16 +34,23 @@ import java.io.IOException;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class EGAMetadataFtpProvider {
+public abstract class ResourcesProvider {
+
+  // postgres
+  protected static String tmp_dir = "/tmp/submission/ega/test/postgres";
+  protected static Server server;
+
+  // ftp
   private static FtpServer ftpServer = null;
   private static String adminHomePath = "/tmp/submission/ega/test";
   private static File adminHomeDir = new File(adminHomePath);
   private static String dataPath = adminHomePath + "/ICGC_metadata";
   public static int defaultFtpPort = 2222;
+
   @BeforeClass
   public static void initialize() {
-
     try {
+
       if(adminHomeDir.exists())
         FileUtils.deleteDirectory(adminHomeDir);
 
@@ -65,6 +76,19 @@ public class EGAMetadataFtpProvider {
       ftpServer = serverFactory.createServer();
       ftpServer.start();
 
+      File dir = new File(tmp_dir);
+      if(dir.exists()){
+        FileUtils.deleteDirectory(dir);
+      }
+
+      server = Server.createPgServer("-baseDir", tmp_dir);
+      server.start();
+
+      JdbcTemplate jdbcTemplate = new JdbcTemplate(new DriverManagerDataSource("jdbc:postgresql://localhost:5435/ICGC_metadata?user=sa&password="));
+      jdbcTemplate.execute("create schema if not exists ega");
+
+    } catch (SQLException e) {
+      e.printStackTrace();
     } catch (IOException e) {
       e.printStackTrace();
     } catch (FtpException e) {
@@ -73,9 +97,13 @@ public class EGAMetadataFtpProvider {
   }
 
   @AfterClass
-  public static void destroy(){
-    ftpServer.stop();
+  public static void tearDown() {
+    if(server != null){
+      server.stop();
+      server.shutdown();
+    }
 
+    ftpServer.stop();
     try {
       FileUtils.deleteDirectory(new File("/tmp/submission/ega"));
     } catch (IOException e) {

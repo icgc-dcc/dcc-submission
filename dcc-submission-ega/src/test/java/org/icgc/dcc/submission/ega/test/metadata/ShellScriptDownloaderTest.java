@@ -25,7 +25,7 @@ import java.util.Optional;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class ShellScriptDownloaderTest extends EGAMetadataFtpProvider {
+public class ShellScriptDownloaderTest extends ResourcesProvider {
 
   @Test
   public void test_download(){

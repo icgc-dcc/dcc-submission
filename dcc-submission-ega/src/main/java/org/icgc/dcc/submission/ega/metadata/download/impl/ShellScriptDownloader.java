@@ -53,7 +53,7 @@ public class ShellScriptDownloader implements EGAMetadataDownloader {
       return Optional.empty();
 
     try {
-      FileOutputStream fos = new FileOutputStream(new File(tmp_data_directory + "/ega/metadata/download_ega_metadata.sh"));
+      FileOutputStream fos = new FileOutputStream(new File(tmp_data_directory + "/download_ega_metadata.sh"));
       InputStream is = ShellScriptDownloader.class.getResourceAsStream(script_file_path);
       byte[] buffer = new byte[512];
       int len = 0;
@@ -70,7 +70,7 @@ public class ShellScriptDownloader implements EGAMetadataDownloader {
     }
 
     try {
-      Process proc = (new ProcessBuilder("sh", tmp_data_directory + "/metadata.sh", tmp_data_directory, ftp_connection)).start();
+      Process proc = (new ProcessBuilder("sh", tmp_data_directory + "/download_ega_metadata.sh", tmp_data_directory, ftp_connection)).start();
 
       Thread download_monitor_thread = new Thread(new Runnable() {
         @Override
