@@ -55,7 +55,7 @@ ega:
       path: /ICGC_metadata
     cron:
       data: 0 0 9,21 * * ?
-      clean:
+      clean: 0 0 0 ? * 2 ?
     postgresql:
       host: hcn-117.res.oicr.on.ca
       database: ICGC_Metadata

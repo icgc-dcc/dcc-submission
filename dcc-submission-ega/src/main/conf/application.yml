@@ -41,7 +41,9 @@ ega:
       user: ega-box-138
       password:
       path: /ICGC_metadata
-    cron: 0 0 9,21 * * ?
+    cron:
+      data: 0 0 9,21 * * ?
+      clean: 0 0 0 ? * 2 ?
     postgresql:
       host: hcn-117.res.oicr.on.ca
       database: ICGC_Metadata

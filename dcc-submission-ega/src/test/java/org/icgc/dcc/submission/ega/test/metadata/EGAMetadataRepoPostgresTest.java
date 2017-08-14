@@ -64,7 +64,7 @@ public class EGAMetadataRepoPostgresTest extends EGAMetadataResourcesProvider {
 
     JdbcTemplate jdbcTemplate = new JdbcTemplate(new DriverManagerDataSource("jdbc:postgresql://localhost:5435/ICGC_metadata?user=sa&password="));
 
-    List<Map<String, Object>> ret = jdbcTemplate.queryForList("select * from view_ega_sample_mapping;");
+    List<Map<String, Object>> ret = jdbcTemplate.queryForList("select * from ega.view_ega_sample_mapping;");
 
     Assert.assertEquals(200, ret.size());
 
@@ -92,21 +92,23 @@ public class EGAMetadataRepoPostgresTest extends EGAMetadataResourcesProvider {
 
     JdbcTemplate jdbcTemplate = new JdbcTemplate(new DriverManagerDataSource("jdbc:postgresql://localhost:5435/ICGC_metadata?user=sa&password="));
 
+    jdbcTemplate.execute("create schema if not exists \"ega\";");
+
     String sql = "CREATE TABLE IF NOT EXISTS ega.{table_name} ( " +
         "sample_id varchar(64), " +
         "file_id varchar(64), " +
         "PRIMARY KEY(sample_id, file_id) " +
         ");";
-    jdbcTemplate.update(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_100"));
-    jdbcTemplate.update(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_110"));
-    jdbcTemplate.update(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_150"));
-    jdbcTemplate.update(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_200"));
-    jdbcTemplate.update(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_300"));
-    jdbcTemplate.update(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_500"));
+    jdbcTemplate.execute(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_100"));
+    jdbcTemplate.execute(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_110"));
+    jdbcTemplate.execute(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_150"));
+    jdbcTemplate.execute(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_200"));
+    jdbcTemplate.execute(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_300"));
+    jdbcTemplate.execute(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_500"));
 
     repo.cleanHistoryData(250);
 
-    sql = "select tablename from pg_catalog.pg_tables where schemaname = 'ega' and tablename = 'ega_sample_mapping_%';";
+    sql = "select table_name from information_schema.tables where table_schema = 'ega' and table_name like 'ega_sample_mapping_%';";
 
     jdbcTemplate.query(sql, new RowCallbackHandler() {
       @Override

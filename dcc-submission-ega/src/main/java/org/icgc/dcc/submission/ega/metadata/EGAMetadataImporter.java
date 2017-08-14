@@ -113,6 +113,9 @@ public class EGAMetadataImporter {
    */
   @Scheduled(cron = "${ega.metadata.cron.clean}")
   public void cleanHistoryData() {
+
+    log.info("starting");
+
     repo.cleanHistoryData(
         LocalDateTime.now().minusDays(7).toEpochSecond(ZoneOffset.ofHours(-5))
     );

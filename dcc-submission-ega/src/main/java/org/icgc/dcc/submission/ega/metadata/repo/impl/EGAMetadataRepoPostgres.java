@@ -104,15 +104,15 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
         new DriverManagerDataSource("jdbc:postgresql://" + config.getHost() + "/" + config.getDatabase() + "?user=" + config.getUser() + "&password=" + config.getPassword())
     );
 
-    String sql = "select tablename from pg_catalog.pg_tables where schemaname = 'ega' and tablename = 'ega_sample_mapping_%';";
-    jdbcTemplate.query("", new RowCallbackHandler() {
+    String sql = "select table_name from information_schema.tables where table_schema = 'ega' and table_name like 'ega_sample_mapping_%';";
+    jdbcTemplate.query(sql, new RowCallbackHandler() {
       @Override
       public void processRow(ResultSet resultSet) throws SQLException {
         while(resultSet.next()){
           String table_name = resultSet.getString(1);
           long time = Long.parseLong( table_name.substring(table_name.lastIndexOf("_") + 1) );
           if(time < timstamp)
-            jdbcTemplate.update("DROP TABLE ega.?;", table_name);
+            jdbcTemplate.execute("DROP TABLE ega." + table_name);
         }
       }
     });
