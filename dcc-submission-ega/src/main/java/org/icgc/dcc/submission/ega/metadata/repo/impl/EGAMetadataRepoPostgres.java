@@ -9,14 +9,17 @@ import org.icgc.dcc.submission.ega.metadata.repo.EGAMetadataRepo;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ParameterizedPreparedStatementSetter;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import rx.Observable;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -45,15 +48,15 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
   private String table_name_prefix = "ega_sample_mapping_";
 
   private String sql_create_table =
-      "CREATE TABLE IF NOT EXISTS {table_name} ( " +
+      "CREATE TABLE IF NOT EXISTS ega.{table_name} ( " +
       "sample_id varchar(64), " +
       "file_id varchar(64), " +
       "PRIMARY KEY(sample_id, file_id) " +
       ");";
 
-  private String sql_create_view = "CREATE OR REPLACE VIEW {view_name} AS SELECT * from {table_name}";
+  private String sql_create_view = "CREATE OR REPLACE VIEW ega.{view_name} AS SELECT * from ega.{table_name}";
 
-  private String sql_batch_insert = "INSERT INTO {table_name} VALUES(?, ?)";
+  private String sql_batch_insert = "INSERT INTO ega.{table_name} VALUES(?, ?)";
 
   /**
    * every time the persis(...) function is triggered, create a new data table with a timestamp postfix on the table name
@@ -94,4 +97,27 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
     jdbcTemplate.execute(sql_create_view.replaceAll("\\{view_name\\}", config.getViewName()).replaceAll("\\{table_name\\}", table_name));
 
   }
+
+  @Override
+  public void cleanHistoryData(long timstamp) {
+    JdbcTemplate jdbcTemplate = new JdbcTemplate(
+        new DriverManagerDataSource("jdbc:postgresql://" + config.getHost() + "/" + config.getDatabase() + "?user=" + config.getUser() + "&password=" + config.getPassword())
+    );
+
+    String sql = "select tablename from pg_catalog.pg_tables where schemaname = 'ega' and tablename = 'ega_sample_mapping_%';";
+    jdbcTemplate.query("", new RowCallbackHandler() {
+      @Override
+      public void processRow(ResultSet resultSet) throws SQLException {
+        while(resultSet.next()){
+          String table_name = resultSet.getString(1);
+          long time = Long.parseLong( table_name.substring(table_name.lastIndexOf("_") + 1) );
+          if(time < timstamp)
+            jdbcTemplate.update("DROP TABLE ega.?;", table_name);
+        }
+      }
+    });
+
+  }
+
+
 }

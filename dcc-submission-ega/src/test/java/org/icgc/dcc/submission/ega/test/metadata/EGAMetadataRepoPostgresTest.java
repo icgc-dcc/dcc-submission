@@ -1,5 +1,6 @@
 package org.icgc.dcc.submission.ega.test.metadata;
 
+import cascading.operation.assertion.AssertEquals;
 import org.apache.commons.lang3.tuple.Pair;
 import org.icgc.dcc.submission.ega.metadata.config.EGAMetadataConfig;
 import org.icgc.dcc.submission.ega.metadata.repo.EGAMetadataRepo;
@@ -7,9 +8,12 @@ import org.icgc.dcc.submission.ega.metadata.repo.impl.EGAMetadataRepoPostgres;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import rx.Observable;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -72,6 +76,48 @@ public class EGAMetadataRepoPostgresTest extends EGAMetadataResourcesProvider {
 
     });
 
+
+  }
+
+  @Test
+  public void test_cleanHistoryData() {
+    EGAMetadataConfig.EGAMetadataPostgresqlConfig config = new EGAMetadataConfig.EGAMetadataPostgresqlConfig();
+    config.setHost("localhost:5435");
+    config.setDatabase("ICGC_metadata");
+    config.setUser("sa");
+    config.setPassword("");
+    config.setViewName("view_ega_sample_mapping");
+
+    EGAMetadataRepo repo = new EGAMetadataRepoPostgres(config);
+
+    JdbcTemplate jdbcTemplate = new JdbcTemplate(new DriverManagerDataSource("jdbc:postgresql://localhost:5435/ICGC_metadata?user=sa&password="));
+
+    String sql = "CREATE TABLE IF NOT EXISTS ega.{table_name} ( " +
+        "sample_id varchar(64), " +
+        "file_id varchar(64), " +
+        "PRIMARY KEY(sample_id, file_id) " +
+        ");";
+    jdbcTemplate.update(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_100"));
+    jdbcTemplate.update(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_110"));
+    jdbcTemplate.update(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_150"));
+    jdbcTemplate.update(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_200"));
+    jdbcTemplate.update(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_300"));
+    jdbcTemplate.update(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_500"));
+
+    repo.cleanHistoryData(250);
+
+    sql = "select tablename from pg_catalog.pg_tables where schemaname = 'ega' and tablename = 'ega_sample_mapping_%';";
+
+    jdbcTemplate.query(sql, new RowCallbackHandler() {
+      @Override
+      public void processRow(ResultSet resultSet) throws SQLException {
+        while(resultSet.next()) {
+          String table_name = resultSet.getString(1);
+          long timstamp = Long.parseLong(table_name.substring(table_name.lastIndexOf("_") + 1));
+          Assert.assertTrue(timstamp == 300 || timstamp == 500);
+        }
+      }
+    });
 
   }
 }

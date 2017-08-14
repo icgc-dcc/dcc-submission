@@ -25,4 +25,6 @@ import java.util.List;
 public interface EGAMetadataRepo {
 
   void persist(Observable<List<Pair<String, String>>> data);
+
+  void cleanHistoryData(long timstamp); // remove all of the data before "timestamp"
 }

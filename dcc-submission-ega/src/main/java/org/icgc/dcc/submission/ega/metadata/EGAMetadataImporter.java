@@ -57,7 +57,7 @@ public class EGAMetadataImporter {
   @NonNull
   private EGAMetadataRepo repo;
 
-  @Scheduled(cron = "${ega.metadata.cron}", initialDelay = 10000)
+  @Scheduled(cron = "${ega.metadata.cron.data}", initialDelay = 10000)
   public void executePeriodically() {
     Optional<File> dataDir = this.downloader.download();
 
@@ -84,7 +84,6 @@ public class EGAMetadataImporter {
         Observable.from(
             dataDir.listFiles((dir, fileName) -> fileName.startsWith("EGA") )
         )
-//        .observeOn(Schedulers.io())
         .flatMap(dir -> {
           File mapFile = new File(dir.getAbsolutePath() + "/delimited_maps/Sample_File.map");
           if (mapFile.exists())
@@ -103,6 +102,20 @@ public class EGAMetadataImporter {
   private void persist(Observable<List<Pair<String, String>>> rawData) {
     repo.persist(rawData);
 
+  }
+
+  /**
+   *  every time executePeriodically() runs, a new sample metadata table is created and the view points to it
+   *  so this function is used to clean the old tables
+   *
+   *  only save one-week data
+   *
+   */
+  @Scheduled(cron = "${ega.metadata.cron.clean}")
+  public void cleanHistoryData() {
+    repo.cleanHistoryData(
+        LocalDateTime.now().minusDays(7).toEpochSecond(ZoneOffset.ofHours(-5))
+    );
   }
 
 }

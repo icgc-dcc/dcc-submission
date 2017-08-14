@@ -30,8 +30,10 @@ import java.util.List;
  */
 
 @RestController
+@RequiredArgsConstructor
 public class EGAMetadataController {
 
+  @NonNull
   EGAMetadataService service;
 
   @GetMapping("/api/v1/ega/metadata")
