@@ -40,6 +40,7 @@ public class ShellScriptDownloader implements EGAMetadataDownloader {
   @Override
   public Optional<File> download() {
 
+    log.info("Starting to download the metadata files to the directory: " + tmp_data_directory );
     File dataDir = new File(tmp_data_directory);
     if (dataDir.exists()){
       try {

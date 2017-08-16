@@ -34,7 +34,7 @@ import java.util.List;
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@Service
+//@Service
 @RequiredArgsConstructor
 public class EGAMetadataServiceImpl implements EGAMetadataService {
 
@@ -45,7 +45,7 @@ public class EGAMetadataServiceImpl implements EGAMetadataService {
   public List<ObjectNode> getData() {
 
     String jdbcUrl = "jdbc:postgresql://" + config.getHost() + "/" + config.getDatabase() + "?user=" + config.getUser() + "&password=" + config.getPassword();
-    String sql = "select * from " + config.getViewName() + ";";
+    String sql = "select * from ega." + config.getViewName() + ";";
     JdbcTemplate jdbcTemplate = new JdbcTemplate(new DriverManagerDataSource(jdbcUrl));
 
     List<ObjectNode> data = new ArrayList<>();

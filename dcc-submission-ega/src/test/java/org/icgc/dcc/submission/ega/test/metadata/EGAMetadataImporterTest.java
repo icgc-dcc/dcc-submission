@@ -166,14 +166,14 @@ public class EGAMetadataImporterTest extends EGAMetadataResourcesProvider {
 
       JdbcTemplate jdbcTemplate = new JdbcTemplate(new DriverManagerDataSource("jdbc:postgresql://localhost:5435/ICGC_metadata?user=sa&password="));
 
-      String sql = "select * from view_ega_sample_mapping where sample_id = '" + "168-02-8TR';";
+      String sql = "select * from ega.view_ega_sample_mapping where sample_id = '" + "168-02-8TR';";
       List<Map<String, Object>> ret = jdbcTemplate.queryForList(sql);
       Assert.assertTrue(2 == ret.size());
       ret.stream().forEach(map -> {
         Assert.assertTrue( fileIds.contains(map.get("file_id").toString()) );
       });
 
-      sql = "select * from view_ega_sample_mapping where sample_id = '" + "PD7436c-sc-2013-08-02T02:01:54Z-1674523';";
+      sql = "select * from ega.view_ega_sample_mapping where sample_id = '" + "PD7436c-sc-2013-08-02T02:01:54Z-1674523';";
       ret = jdbcTemplate.queryForList(sql);
       Assert.assertEquals(1, ret.size());
       ret.stream().forEach(map -> {
@@ -239,14 +239,14 @@ public class EGAMetadataImporterTest extends EGAMetadataResourcesProvider {
 
       JdbcTemplate jdbcTemplate = new JdbcTemplate(new DriverManagerDataSource("jdbc:postgresql://localhost:5435/ICGC_metadata?user=sa&password="));
 
-      String sql = "select * from view_ega_sample_mapping where sample_id = '" + "168-02-8TR';";
+      String sql = "select * from ega.view_ega_sample_mapping where sample_id = '" + "168-02-8TR';";
       List<Map<String, Object>> ret = jdbcTemplate.queryForList(sql);
       Assert.assertTrue(2 == ret.size());
       ret.stream().forEach(map -> {
         Assert.assertTrue( fileIds.contains(map.get("file_id").toString()) );
       });
 
-      sql = "select * from view_ega_sample_mapping where sample_id = '" + "PD7436c-sc-2013-08-02T02:01:54Z-1674523';";
+      sql = "select * from ega.view_ega_sample_mapping where sample_id = '" + "PD7436c-sc-2013-08-02T02:01:54Z-1674523';";
       ret = jdbcTemplate.queryForList(sql);
       Assert.assertEquals(1, ret.size());
       ret.stream().forEach(map -> {

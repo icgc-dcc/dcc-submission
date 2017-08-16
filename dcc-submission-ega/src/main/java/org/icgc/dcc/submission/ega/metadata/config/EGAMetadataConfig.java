@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
@@ -47,7 +48,7 @@ public class EGAMetadataConfig {
   String ftpPassword;
   @Value("${ega.metadata.ftp.path}")
   String ftpPath;
-  @Value("${ega.metadata.cron}")
+  @Value("${ega.metadata.cron.data}")
   String cron;
 
   @Data
@@ -66,7 +67,7 @@ public class EGAMetadataConfig {
     return new ShellScriptDownloader(
         "ftp://" + ftpUser + ":" + ftpPassword + "@" + ftpHost + ftpPath,
         System.getProperty("java.io.tmpdir") + "ega/metadata",
-        "ega/metadata/download_ega_metadata.sh"
+        "/ega/metadata/download_ega_metadata.sh"
     );
 
   }

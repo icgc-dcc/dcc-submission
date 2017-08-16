@@ -11,11 +11,14 @@ import org.icgc.dcc.submission.ega.metadata.repo.EGAMetadataRepo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -57,7 +60,15 @@ public class EGAMetadataImporter {
   @NonNull
   private EGAMetadataRepo repo;
 
-  @Scheduled(cron = "${ega.metadata.cron.data}", initialDelay = 10000)
+  @PostConstruct
+  public void executeOnBooting() {
+    ( new Thread(() -> {
+      executePeriodically();
+    }) ).start();
+
+  }
+
+  @Scheduled(cron = "${ega.metadata.cron.data}")
   public void executePeriodically() {
     Optional<File> dataDir = this.downloader.download();
 
@@ -71,7 +82,7 @@ public class EGAMetadataImporter {
     );
 
     try {
-      FileUtils.deleteDirectory(new File(System.getProperty("java.io.tmpDir") + "/ega"));
+      FileUtils.deleteDirectory(new File(System.getProperty("java.io.tmpdir") + "/ega"));
     } catch (IOException e) {
       log.warn("Can't clean the downloading directory ...");
     }
@@ -80,10 +91,13 @@ public class EGAMetadataImporter {
 
   private Observable<File> getSampleFiles(File dataDir){
 
+    File[] lstFile = dataDir.listFiles((dir, fileName) -> fileName.startsWith("EGA") );
+
+    if (lstFile == null || lstFile.length == 0)
+      return Observable.empty();
+
     return
-        Observable.from(
-            dataDir.listFiles((dir, fileName) -> fileName.startsWith("EGA") )
-        )
+        Observable.from(lstFile)
         .flatMap(dir -> {
           File mapFile = new File(dir.getAbsolutePath() + "/delimited_maps/Sample_File.map");
           if (mapFile.exists())

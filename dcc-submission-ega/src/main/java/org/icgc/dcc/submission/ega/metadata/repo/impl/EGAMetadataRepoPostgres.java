@@ -50,8 +50,8 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
   private String sql_create_table =
       "CREATE TABLE IF NOT EXISTS ega.{table_name} ( " +
       "sample_id varchar(64), " +
-      "file_id varchar(64), " +
-      "PRIMARY KEY(sample_id, file_id) " +
+      "file_id varchar(64) " +
+//      "PRIMARY KEY(sample_id, file_id) " +
       ");";
 
   private String sql_create_view = "CREATE OR REPLACE VIEW ega.{view_name} AS SELECT * from ega.{table_name}";
@@ -69,7 +69,7 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
   public void persist(Observable<List<Pair<String, String>>> data) {
 
     String table_name = table_name_prefix + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(-5));
-    System.out.println(table_name);
+    log.info("Writing data to table: " + table_name);
 
     JdbcTemplate jdbcTemplate = new JdbcTemplate(
         new DriverManagerDataSource("jdbc:postgresql://" + config.getHost() + "/" + config.getDatabase() + "?user=" + config.getUser() + "&password=" + config.getPassword())
@@ -96,10 +96,11 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
 
     jdbcTemplate.execute(sql_create_view.replaceAll("\\{view_name\\}", config.getViewName()).replaceAll("\\{table_name\\}", table_name));
 
+    log.info("Finish writing data to table: " + table_name);
   }
 
   @Override
-  public void cleanHistoryData(long timstamp) {
+  public void cleanHistoryData(long timestamp) {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(
         new DriverManagerDataSource("jdbc:postgresql://" + config.getHost() + "/" + config.getDatabase() + "?user=" + config.getUser() + "&password=" + config.getPassword())
     );
@@ -111,7 +112,7 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
         while(resultSet.next()){
           String table_name = resultSet.getString(1);
           long time = Long.parseLong( table_name.substring(table_name.lastIndexOf("_") + 1) );
-          if(time < timstamp)
+          if(time < timestamp)
             jdbcTemplate.execute("DROP TABLE ega." + table_name);
         }
       }
