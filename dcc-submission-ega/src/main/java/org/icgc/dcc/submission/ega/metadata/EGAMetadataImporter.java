@@ -24,9 +24,12 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -60,6 +63,8 @@ public class EGAMetadataImporter {
   @NonNull
   private EGAMetadataRepo repo;
 
+  private EGAMetadataImporterStatus status = EGAMetadataImporterStatus.WAITING;
+
   @PostConstruct
   public void executeOnBooting() {
     ( new Thread(() -> {
@@ -70,6 +75,15 @@ public class EGAMetadataImporter {
 
   @Scheduled(cron = "${ega.metadata.cron.data}")
   public void executePeriodically() {
+
+    synchronized (status){
+      if (status == EGAMetadataImporterStatus.TRIGGERED)
+        return;
+      else
+        status = EGAMetadataImporterStatus.TRIGGERED;
+    }
+
+    log.info("EGA data import is triggered on " + LocalDateTime.now(ZoneId.of("America/Toronto")).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
     Optional<File> dataDir = this.downloader.download();
 
     if(!dataDir.isPresent())
@@ -86,6 +100,11 @@ public class EGAMetadataImporter {
     } catch (IOException e) {
       log.warn("Can't clean the downloading directory ...");
     }
+
+    synchronized (status){
+      status = EGAMetadataImporterStatus.WAITING;
+    }
+
 
   }
 
@@ -131,8 +150,13 @@ public class EGAMetadataImporter {
     log.info("starting");
 
     repo.cleanHistoryData(
-        LocalDateTime.now().minusDays(7).toEpochSecond(ZoneOffset.ofHours(-5))
+        LocalDateTime.now(ZoneId.of("America/Toronto")).atZone(ZoneId.of("America/Toronto")).toEpochSecond()
     );
+  }
+
+  public enum EGAMetadataImporterStatus {
+    TRIGGERED,
+    WAITING
   }
 
 }

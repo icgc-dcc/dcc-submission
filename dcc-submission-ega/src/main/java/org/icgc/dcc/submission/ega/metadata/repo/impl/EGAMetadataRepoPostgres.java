@@ -17,6 +17,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -68,7 +69,7 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
   @Override
   public void persist(Observable<List<Pair<String, String>>> data) {
 
-    String table_name = table_name_prefix + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(-5));
+    String table_name = table_name_prefix + LocalDateTime.now(ZoneId.of("America/Toronto")).atZone(ZoneId.of("America/Toronto")).toEpochSecond();
     log.info("Writing data to table: " + table_name);
 
     JdbcTemplate jdbcTemplate = new JdbcTemplate(

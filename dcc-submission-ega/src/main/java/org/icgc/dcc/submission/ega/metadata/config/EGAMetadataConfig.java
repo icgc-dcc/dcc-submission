@@ -64,9 +64,11 @@ public class EGAMetadataConfig {
 
   @Bean
   public EGAMetadataDownloader downloader() {
+
+    String systemDir = System.getProperty("java.io.tmpdir");
     return new ShellScriptDownloader(
         "ftp://" + ftpUser + ":" + ftpPassword + "@" + ftpHost + ftpPath,
-        System.getProperty("java.io.tmpdir") + "ega/metadata",
+        systemDir.endsWith("/")?systemDir.substring(0, systemDir.length()-1):systemDir + "/ega/metadata",
         "/ega/metadata/download_ega_metadata.sh"
     );
 
