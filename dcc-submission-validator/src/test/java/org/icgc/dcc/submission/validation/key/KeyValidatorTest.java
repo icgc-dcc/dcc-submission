@@ -55,6 +55,7 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.platform.SubmissionPlatformStrategy;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -92,6 +93,7 @@ public class KeyValidatorTest {
   }
 
   @Test
+  @Ignore
   public void testValidate() throws InterruptedException, IOException {
     val context = mockContext();
     validator.validate(context);
