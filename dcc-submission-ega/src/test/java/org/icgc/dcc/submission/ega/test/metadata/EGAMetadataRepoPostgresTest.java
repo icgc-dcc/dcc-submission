@@ -1,6 +1,5 @@
 package org.icgc.dcc.submission.ega.test.metadata;
 
-import cascading.operation.assertion.AssertEquals;
 import org.apache.commons.lang3.tuple.Pair;
 import org.icgc.dcc.submission.ega.metadata.config.EGAMetadataConfig;
 import org.icgc.dcc.submission.ega.metadata.repo.EGAMetadataRepo;
