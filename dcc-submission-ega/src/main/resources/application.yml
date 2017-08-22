@@ -44,9 +44,9 @@ ega:
   api:
       userName: # Fill in
       password: # Fill in
-    ftp:
-      userName: # Fill in
-      password: # Fill in
+  ftp:
+    userName: # Fill in
+    password: # Fill in
   metadata:
     ftp:
       host: ftp-private.ebi.ac.uk
