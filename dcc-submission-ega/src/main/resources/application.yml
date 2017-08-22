@@ -57,7 +57,7 @@ ega:
       data: 0 0 9,21 * * ?
       clean: 0 0 0 ? * 2 ?
     postgresql:
-      host: hcn-117.res.oicr.on.ca
+      host:
       database: ICGC_Metadata
       user: dcc
       password:
