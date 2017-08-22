@@ -35,6 +35,23 @@ ega:
   ftp:
     userName: # Fill in
     password: # Fill in
+  metadata:
+    ftp:
+      host: ftp-private.ebi.ac.uk
+      user: ega-box-138
+      password:
+      path: /ICGC_metadata
+    cron:
+      data: "0 0 9,21 * * ?"
+      clean: "0 0 0 ? * MON"
+    postgresql:
+      host: hcn-117.res.oicr.on.ca
+      database: ICGC_Metadata
+      user: dcc
+      password:
+      viewName: view_ega_sample_mapping
+
+
 
 # Mail
 mailer:
