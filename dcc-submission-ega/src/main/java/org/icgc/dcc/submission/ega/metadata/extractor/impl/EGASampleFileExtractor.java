@@ -1,12 +1,9 @@
 package org.icgc.dcc.submission.ega.metadata.extractor.impl;
 
-import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.icgc.dcc.common.core.util.Separators;
 import org.icgc.dcc.submission.ega.metadata.extractor.DataExtractor;
-import rx.Observable;
 
 import java.io.*;
 import java.util.ArrayList;
