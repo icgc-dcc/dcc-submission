@@ -197,7 +197,7 @@ public class EGAMetadataImporterTest extends EGAMetadataResourcesProvider {
 
       String line;
       while((line = br.readLine()) != null){
-        List<String> fields = Splitter.on(CharMatcher.BREAKING_WHITESPACE).omitEmptyStrings().trimResults().splitToList(line);
+        List<String> fields = Splitter.on('\t').omitEmptyStrings().trimResults().splitToList(line);
         data1.add(Pair.of(fields.get(0), fields.get(3)));
       }
       br.close();
@@ -205,7 +205,7 @@ public class EGAMetadataImporterTest extends EGAMetadataResourcesProvider {
       List<Pair<String, String>> data2 = new ArrayList<>();
       br = new BufferedReader(new InputStreamReader(EGAMetadataImporterTest.class.getResourceAsStream("/ega/metadata/sample/Sample_file_83.map")));
       while((line = br.readLine()) != null){
-        List<String> fields = Splitter.on(CharMatcher.BREAKING_WHITESPACE).omitEmptyStrings().trimResults().splitToList(line);
+        List<String> fields = Splitter.on('\t').omitEmptyStrings().trimResults().splitToList(line);
         data2.add(Pair.of(fields.get(0), fields.get(3)));
       }
       br.close();

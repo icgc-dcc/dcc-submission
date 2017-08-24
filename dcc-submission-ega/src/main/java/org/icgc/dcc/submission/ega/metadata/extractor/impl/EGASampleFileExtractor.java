@@ -4,6 +4,7 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.icgc.dcc.common.core.util.Separators;
 import org.icgc.dcc.submission.ega.metadata.extractor.DataExtractor;
 import rx.Observable;
 
@@ -38,9 +39,8 @@ public class EGASampleFileExtractor implements DataExtractor<Pair<String, String
       List<Pair<String, String>> buffer = new ArrayList<>();
       String line;
       while((line = br.readLine()) != null){
-
-        List<String> fields = Splitter.on(CharMatcher.BREAKING_WHITESPACE).trimResults().omitEmptyStrings().splitToList(line);
-
+        System.out.println(line);
+        List<String> fields = Splitter.on('\t').trimResults().omitEmptyStrings().splitToList(line);
         buffer.add(Pair.of(fields.get(0), fields.get(3)));
       }
       return buffer;
