@@ -36,7 +36,6 @@ public class EGASampleFileExtractor implements DataExtractor<Pair<String, String
       List<Pair<String, String>> buffer = new ArrayList<>();
       String line;
       while((line = br.readLine()) != null){
-        System.out.println(line);
         List<String> fields = Splitter.on('\t').trimResults().omitEmptyStrings().splitToList(line);
         buffer.add(Pair.of(fields.get(0), fields.get(3)));
       }
