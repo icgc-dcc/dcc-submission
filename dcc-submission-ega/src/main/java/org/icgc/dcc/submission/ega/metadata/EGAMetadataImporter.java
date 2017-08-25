@@ -86,8 +86,9 @@ public class EGAMetadataImporter {
     log.info("EGA data import is triggered on " + LocalDateTime.now(ZoneId.of("America/Toronto")).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
     Optional<File> dataDir = this.downloader.download();
 
-    if(!dataDir.isPresent())
-      throw new RuntimeException("Downloading EGA metadata failed ...");
+    if(!dataDir.isPresent()) {
+      throw new RuntimeException("Data directory which holds the downloaded data is not present at " + dataDir.get().getAbsolutePath());
+    }
 
     this.persist(
         parseSampleFiles(
@@ -95,10 +96,11 @@ public class EGAMetadataImporter {
         )
     );
 
+    String tmpDir = System.getProperty("java.io.tmpdir") + "/ega";
     try {
-      FileUtils.deleteDirectory(new File(System.getProperty("java.io.tmpdir") + "/ega"));
+      FileUtils.deleteDirectory(new File(tmpDir));
     } catch (IOException e) {
-      log.warn("Can't clean the downloading directory ...");
+      log.warn("Failed to clean the downloading directory at " + tmpDir);
     }
 
     synchronized (status){

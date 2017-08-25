@@ -45,7 +45,11 @@ public class EGAMetadataRepoPostgresTest extends EGAMetadataResourcesProvider {
     config.setPassword("");
     config.setViewName("view_ega_sample_mapping");
 
-    EGAMetadataRepo repo = new EGAMetadataRepoPostgres(config);
+    DriverManagerDataSource dataSource = new DriverManagerDataSource(
+        "jdbc:postgresql://" + config.getHost() + "/" + config.getDatabase() + "?user=" + config.getUser() + "&password=" + config.getPassword()
+    );
+
+    EGAMetadataRepo repo = new EGAMetadataRepoPostgres(config, dataSource);
 
     List<Pair<String, String>> data = new ArrayList<>();
     Set<String> keySet = new HashSet<>();
@@ -87,7 +91,11 @@ public class EGAMetadataRepoPostgresTest extends EGAMetadataResourcesProvider {
     config.setPassword("");
     config.setViewName("view_ega_sample_mapping");
 
-    EGAMetadataRepo repo = new EGAMetadataRepoPostgres(config);
+    DriverManagerDataSource dataSource = new DriverManagerDataSource(
+        "jdbc:postgresql://" + config.getHost() + "/" + config.getDatabase() + "?user=" + config.getUser() + "&password=" + config.getPassword()
+    );
+
+    EGAMetadataRepo repo = new EGAMetadataRepoPostgres(config, dataSource);
 
     JdbcTemplate jdbcTemplate = new JdbcTemplate(new DriverManagerDataSource("jdbc:postgresql://localhost:5435/ICGC_metadata?user=sa&password="));
 

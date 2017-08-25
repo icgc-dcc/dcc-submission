@@ -1,14 +1,21 @@
 package org.icgc.dcc.submission.ega.metadata.extractor.impl;
 
 import com.google.common.base.Splitter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.icgc.dcc.submission.ega.metadata.extractor.BadFormattedDataLogger;
 import org.icgc.dcc.submission.ega.metadata.extractor.DataExtractor;
 
 import java.io.*;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -29,15 +36,50 @@ import java.util.List;
  */
 @Slf4j
 public class EGASampleFileExtractor implements DataExtractor<Pair<String, String>> {
+
+  private BadFormattedDataLogger badFormattedDataLogger;
+
+  private Pattern pattern4Filename = Pattern.compile(".+/(EGA.\\d+)/.+");
+
+  public EGASampleFileExtractor(){
+    badFormattedDataLogger = null;
+  }
+
+  public EGASampleFileExtractor(BadFormattedDataLogger logger) {
+    this.badFormattedDataLogger = logger;
+  }
+
   @Override
   public List<Pair<String, String>> extract(File file) {
 
+    Matcher matcher = pattern4Filename.matcher(file.getAbsolutePath());
+    matcher.matches();
+    String filename = matcher.group(1);
+
+    log.info("Extracting the sample data out of file: " + filename + "/.../Sample_File.map");
     try( BufferedReader br = new BufferedReader(new FileReader(file)) ) {
       List<Pair<String, String>> buffer = new ArrayList<>();
+      List<BadFormattedDataLogger.BadFormattedData> badData = new ArrayList<>();
       String line;
+      int lineNo = -1;
       while((line = br.readLine()) != null){
+        lineNo++;
         List<String> fields = Splitter.on('\t').trimResults().omitEmptyStrings().splitToList(line);
-        buffer.add(Pair.of(fields.get(0), fields.get(3)));
+        if(fields.size() == 4)
+          buffer.add(Pair.of(fields.get(0), fields.get(3)));
+        else {
+          if(badFormattedDataLogger != null) {
+            badData.add(new BadFormattedDataLogger.BadFormattedData(
+                filename,
+                line,
+                lineNo,
+                LocalDateTime.now(ZoneId.of("America/Toronto")).atZone(ZoneId.of("America/Toronto")).toEpochSecond()
+            ));
+          }
+        }
+      }
+      if(!badData.isEmpty()){
+        badFormattedDataLogger.log(badData);
       }
       return buffer;
 
@@ -51,4 +93,5 @@ public class EGASampleFileExtractor implements DataExtractor<Pair<String, String
 
     return Collections.<Pair<String, String>>emptyList();
   }
+  
 }

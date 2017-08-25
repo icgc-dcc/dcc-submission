@@ -87,4 +87,5 @@ public class EGASampleFileExtractorTest {
     assertEquals( data.get("PD12852b-sc-2013-08-02T01:56:51Z-1674528"), "EGAF00000406986");
     assertEquals( data.get("PD9179a-sc-1927644"), "EGAF00000604559");
   }
+
 }

@@ -56,6 +56,8 @@ public class EGAMetadataImporterTest extends EGAMetadataResourcesProvider {
 
   private static EGAMetadataConfig.EGAMetadataPostgresqlConfig config;
 
+  private static DriverManagerDataSource dataSource;
+
   @BeforeClass
   public static void download(){
     downloader = new ShellScriptDownloader(
@@ -74,7 +76,11 @@ public class EGAMetadataImporterTest extends EGAMetadataResourcesProvider {
     config.setPassword("");
     config.setViewName("view_ega_sample_mapping");
 
-    repo = new EGAMetadataRepoPostgres(config);
+    dataSource = new DriverManagerDataSource(
+        "jdbc:postgresql://" + config.getHost() + "/" + config.getDatabase() + "?user=" + config.getUser() + "&password=" + config.getPassword()
+    );
+
+    repo = new EGAMetadataRepoPostgres(config, dataSource);
 
   }
 
