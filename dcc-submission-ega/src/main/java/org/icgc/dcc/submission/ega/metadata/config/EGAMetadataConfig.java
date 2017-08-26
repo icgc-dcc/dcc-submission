@@ -2,6 +2,7 @@ package org.icgc.dcc.submission.ega.metadata.config;
 
 import lombok.Data;
 import org.apache.commons.lang3.tuple.Pair;
+import org.icgc.dcc.submission.ega.config.DriverManagerDataSourceWrapper;
 import org.icgc.dcc.submission.ega.metadata.download.EGAMetadataDownloader;
 import org.icgc.dcc.submission.ega.metadata.download.impl.ShellScriptDownloader;
 import org.icgc.dcc.submission.ega.metadata.extractor.BadFormattedDataLogger;
@@ -12,6 +13,7 @@ import org.icgc.dcc.submission.ega.metadata.repo.EGAMetadataRepo;
 import org.icgc.dcc.submission.ega.metadata.repo.impl.EGAMetadataRepoPostgres;
 import org.icgc.dcc.submission.ega.metadata.service.EGAMetadataService;
 import org.icgc.dcc.submission.ega.metadata.service.impl.EGAMetadataServiceImpl;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -87,8 +89,8 @@ public class EGAMetadataConfig {
   }
 
   @Bean
-  public EGAMetadataRepo repo(EGAMetadataPostgresqlConfig config, DriverManagerDataSource dataSource) {
-    return new EGAMetadataRepoPostgres(config, dataSource);
+  public EGAMetadataRepo repo(EGAMetadataPostgresqlConfig config, @Qualifier("driverManagerDataSource") DriverManagerDataSourceWrapper dataSource) {
+    return new EGAMetadataRepoPostgres(config, dataSource.getDataSource());
 
   }
 
@@ -100,17 +102,20 @@ public class EGAMetadataConfig {
   }
 
   @Bean
-  public DriverManagerDataSource driverManagerDataSource() {
+  public DriverManagerDataSourceWrapper driverManagerDataSource() {
     EGAMetadataPostgresqlConfig config = postgresqlConfig();
 
-    return new DriverManagerDataSource(
-        "jdbc:postgresql://" + config.getHost() + "/" + config.getDatabase() + "?user=" + config.getUser() + "&password=" + config.getPassword()
-    );
+    return
+      new DriverManagerDataSourceWrapper(
+        new DriverManagerDataSource(
+      "jdbc:postgresql://" + config.getHost() + "/" + config.getDatabase() + "?user=" + config.getUser() + "&password=" + config.getPassword()
+        )
+      );
 
   }
 
   @Bean
-  public BadFormattedDataLogger badFormattedDataLogger(DriverManagerDataSource dataSource) {
-    return new EGAPostgresqlBadFormattedDataLogger(dataSource);
+  public BadFormattedDataLogger badFormattedDataLogger(@Qualifier("driverManagerDataSource") DriverManagerDataSourceWrapper dataSource) {
+    return new EGAPostgresqlBadFormattedDataLogger(dataSource.getDataSource());
   }
 }

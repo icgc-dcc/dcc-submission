@@ -1,8 +1,6 @@
 package org.icgc.dcc.submission.ega.metadata.extractor.impl;
 
 import com.google.common.base.Splitter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.icgc.dcc.submission.ega.metadata.extractor.BadFormattedDataLogger;
