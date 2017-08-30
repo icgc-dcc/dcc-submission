@@ -8,7 +8,9 @@ import org.icgc.dcc.submission.ega.metadata.EGAMetadataImporter;
 import org.icgc.dcc.submission.ega.metadata.config.EGAMetadataConfig;
 import org.icgc.dcc.submission.ega.metadata.download.EGAMetadataDownloader;
 import org.icgc.dcc.submission.ega.metadata.download.impl.ShellScriptDownloader;
+import org.icgc.dcc.submission.ega.metadata.extractor.BadFormattedDataLogger;
 import org.icgc.dcc.submission.ega.metadata.extractor.DataExtractor;
+import org.icgc.dcc.submission.ega.metadata.extractor.impl.EGAPostgresqlBadFormattedDataLogger;
 import org.icgc.dcc.submission.ega.metadata.extractor.impl.EGASampleFileExtractor;
 import org.icgc.dcc.submission.ega.metadata.repo.EGAMetadataRepo;
 import org.icgc.dcc.submission.ega.metadata.repo.impl.EGAMetadataRepoPostgres;
@@ -17,6 +19,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import java.util.Collection;
 import java.util.List;
@@ -49,6 +52,10 @@ public class EGAMetadataServiceImplTest extends EGAMetadataResourcesProvider {
 
   private static EGAMetadataConfig.EGAMetadataPostgresqlConfig config;
 
+  private static DriverManagerDataSource dataSource;
+
+  private static BadFormattedDataLogger badFormattedDataLogger;
+
   @BeforeClass
   public static void prepare() {
     downloader = new ShellScriptDownloader(
@@ -57,8 +64,6 @@ public class EGAMetadataServiceImplTest extends EGAMetadataResourcesProvider {
         "/ega/metadata/script/download_ega_metadata.sh"
     );
 
-    extractor = new EGASampleFileExtractor();
-
     config = new EGAMetadataConfig.EGAMetadataPostgresqlConfig();
     config.setHost("localhost:5435");
     config.setDatabase("ICGC_metadata");
@@ -66,7 +71,16 @@ public class EGAMetadataServiceImplTest extends EGAMetadataResourcesProvider {
     config.setPassword("");
     config.setViewName("view_ega_sample_mapping");
 
-    repo = new EGAMetadataRepoPostgres(config);
+    dataSource = new DriverManagerDataSource(
+        "jdbc:postgresql://" + config.getHost() + "/" + config.getDatabase() + "?user=" + config.getUser() + "&password=" + config.getPassword()
+    );
+
+    repo = new EGAMetadataRepoPostgres(config, dataSource);
+
+    badFormattedDataLogger = new EGAPostgresqlBadFormattedDataLogger(dataSource);
+
+    extractor = new EGASampleFileExtractor(badFormattedDataLogger);
+
   }
 
   @AfterClass

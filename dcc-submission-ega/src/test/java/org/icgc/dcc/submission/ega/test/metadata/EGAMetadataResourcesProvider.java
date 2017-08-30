@@ -87,7 +87,7 @@ public abstract class EGAMetadataResourcesProvider {
       System.out.println(server.getURL() + ":" + server.getPort());
 
       JdbcTemplate jdbcTemplate = new JdbcTemplate(new DriverManagerDataSource("jdbc:postgresql://localhost:5435/ICGC_metadata?user=sa&password="));
-      jdbcTemplate.execute("create schema if not exists ega");
+      jdbcTemplate.execute("create schema if not exists ega;");
 
     } catch (SQLException e) {
       e.printStackTrace();

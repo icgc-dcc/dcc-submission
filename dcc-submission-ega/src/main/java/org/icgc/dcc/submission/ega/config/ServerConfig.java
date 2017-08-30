@@ -29,6 +29,7 @@ import org.icgc.dcc.common.ega.client.EGAFTPClient;
 import org.icgc.dcc.common.ega.dataset.EGADatasetMetaArchiveResolver;
 import org.icgc.dcc.common.ega.dataset.EGADatasetMetaReader;
 import org.icgc.dcc.common.ega.dump.EGAMetadataDumper;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cache.Cache;
@@ -107,12 +108,12 @@ public class ServerConfig {
   public static class SubmissionConfig {
 
     @Bean
-    public JdbcTemplate template(DataSource dataSource) {
+    public JdbcTemplate template(@Qualifier("submissionDataSource") DataSource dataSource) {
       return new JdbcTemplate(dataSource);
     }
 
     @Bean
-    public DataSource dataSource(
+    public DataSource submissionDataSource(
         @Value("${loader.db.url}") String url,
         @Value("${loader.db.username}") String username,
         @Value("${loader.db.password}") String password) {

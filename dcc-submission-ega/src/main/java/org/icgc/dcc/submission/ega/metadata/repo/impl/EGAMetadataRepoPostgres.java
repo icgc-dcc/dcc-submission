@@ -8,7 +8,6 @@ import org.icgc.dcc.submission.ega.metadata.config.EGAMetadataConfig;
 import org.icgc.dcc.submission.ega.metadata.repo.EGAMetadataRepo;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.ParameterizedPreparedStatementSetter;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import rx.Observable;
@@ -18,9 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -45,6 +42,9 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
 
   @NonNull
   private EGAMetadataConfig.EGAMetadataPostgresqlConfig config;
+
+  @NonNull
+  private DriverManagerDataSource dataSource;
 
   private String table_name_prefix = "ega_sample_mapping_";
 
@@ -72,9 +72,7 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
     String table_name = table_name_prefix + LocalDateTime.now(ZoneId.of("America/Toronto")).atZone(ZoneId.of("America/Toronto")).toEpochSecond();
     log.info("Writing data to table: " + table_name);
 
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(
-        new DriverManagerDataSource("jdbc:postgresql://" + config.getHost() + "/" + config.getDatabase() + "?user=" + config.getUser() + "&password=" + config.getPassword())
-    );
+    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
     jdbcTemplate.update(sql_create_table.replaceAll("\\{table_name\\}", table_name));
 

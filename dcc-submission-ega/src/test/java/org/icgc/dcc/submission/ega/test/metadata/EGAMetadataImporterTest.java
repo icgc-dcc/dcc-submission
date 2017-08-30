@@ -56,6 +56,8 @@ public class EGAMetadataImporterTest extends EGAMetadataResourcesProvider {
 
   private static EGAMetadataConfig.EGAMetadataPostgresqlConfig config;
 
+  private static DriverManagerDataSource dataSource;
+
   @BeforeClass
   public static void download(){
     downloader = new ShellScriptDownloader(
@@ -74,7 +76,11 @@ public class EGAMetadataImporterTest extends EGAMetadataResourcesProvider {
     config.setPassword("");
     config.setViewName("view_ega_sample_mapping");
 
-    repo = new EGAMetadataRepoPostgres(config);
+    dataSource = new DriverManagerDataSource(
+        "jdbc:postgresql://" + config.getHost() + "/" + config.getDatabase() + "?user=" + config.getUser() + "&password=" + config.getPassword()
+    );
+
+    repo = new EGAMetadataRepoPostgres(config, dataSource);
 
   }
 
@@ -197,7 +203,7 @@ public class EGAMetadataImporterTest extends EGAMetadataResourcesProvider {
 
       String line;
       while((line = br.readLine()) != null){
-        List<String> fields = Splitter.on(CharMatcher.BREAKING_WHITESPACE).omitEmptyStrings().trimResults().splitToList(line);
+        List<String> fields = Splitter.on('\t').omitEmptyStrings().trimResults().splitToList(line);
         data1.add(Pair.of(fields.get(0), fields.get(3)));
       }
       br.close();
@@ -205,7 +211,7 @@ public class EGAMetadataImporterTest extends EGAMetadataResourcesProvider {
       List<Pair<String, String>> data2 = new ArrayList<>();
       br = new BufferedReader(new InputStreamReader(EGAMetadataImporterTest.class.getResourceAsStream("/ega/metadata/sample/Sample_file_83.map")));
       while((line = br.readLine()) != null){
-        List<String> fields = Splitter.on(CharMatcher.BREAKING_WHITESPACE).omitEmptyStrings().trimResults().splitToList(line);
+        List<String> fields = Splitter.on('\t').omitEmptyStrings().trimResults().splitToList(line);
         data2.add(Pair.of(fields.get(0), fields.get(3)));
       }
       br.close();
