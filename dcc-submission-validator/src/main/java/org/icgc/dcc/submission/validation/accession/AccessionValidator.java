@@ -21,6 +21,7 @@ import static org.icgc.dcc.common.core.util.Splitters.COLON;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.submission.core.parser.SubmissionFileParsers.newMapFileParser;
 import static org.icgc.dcc.submission.core.report.Error.error;
+import static org.icgc.dcc.submission.core.report.ErrorType.FILE_ACCESSION_INVALID;
 import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.RAW_DATA_ACCESSION_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.getAnalysisId;
 import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.getAnalyzedSampleId;
@@ -43,6 +44,7 @@ import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.dictionary.util.CodeLists;
 import org.icgc.dcc.submission.validation.accession.core.AccessionDictionary;
 import org.icgc.dcc.submission.validation.accession.ega.EGAFileAccessionValidator;
+import org.icgc.dcc.submission.validation.accession.ega.EGAFileAccessionValidator.Result;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.core.Validator;
@@ -198,17 +200,20 @@ public class AccessionValidator implements Validator {
       return;
     }
 
-    // [Existence] Ensure file accession exists when specified
-    for (val fileId : fileIds) {
-      val result = egaValidator.validate(analyzedSampleId, fileId);
-      if (!result.isValid()) {
-        val type = ErrorType.FILE_ACCESSION_INVALID;
-        val value = rawDataRepository;
-        val columnName = RAW_DATA_ACCESSION_FIELD_NAME;
-        val param = result.getReason();
+    // [Existence] Ensure file accession exists when specified (in at least one file)
+    val results = fileIds.stream()
+        .map(fileId -> egaValidator.validat/e(analyzedSampleId, fileId))
+        .collect(toImmutableList());
 
-        reportError(context, writer, fileName, lineNumber, type, value, columnName, param);
-      }
+    val numValid = results.stream().filter(Result::isValid).count();
+    // Only report if not a single file was related to analyzed sample (tumour)
+    if (numValid == 0) {
+      results.stream()
+          .filter(result -> !result.isValid())
+          .forEach(result -> {
+            reportError(context, writer, fileName, lineNumber,
+                FILE_ACCESSION_INVALID, rawDataRepository, RAW_DATA_ACCESSION_FIELD_NAME, result.getReason());
+          });
     }
   }
 
@@ -216,8 +221,9 @@ public class AccessionValidator implements Validator {
     return context.getDataTypes().stream().anyMatch(DataType::isFeatureType);
   }
 
+  @SneakyThrows
   private static void reportError(ValidationContext context, TupleStateWriter writer, String fileName, long lineNumber,
-      ErrorType type, String value, String columnName, String param) throws IOException {
+      ErrorType type, String value, String columnName, String param) {
     // Database
     context.reportError(
         error()
