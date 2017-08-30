@@ -202,12 +202,12 @@ public class AccessionValidator implements Validator {
 
     // [Existence] Ensure file accession exists when specified (in at least one file)
     val results = fileIds.stream()
-        .map(fileId -> egaValidator.validat/e(analyzedSampleId, fileId))
+        .map(fileId -> egaValidator.validate(analyzedSampleId, fileId))
         .collect(toImmutableList());
 
-    val numValid = results.stream().filter(Result::isValid).count();
+    long numValid = results.stream().filter(Result::isValid).count();
     // Only report if not a single file was related to analyzed sample (tumour)
-    if (numValid == 0) {
+    if (numValid < 1) {
       results.stream()
           .filter(result -> !result.isValid())
           .forEach(result -> {
