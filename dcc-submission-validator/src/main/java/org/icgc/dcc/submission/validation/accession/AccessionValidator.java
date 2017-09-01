@@ -17,21 +17,20 @@
  */
 package org.icgc.dcc.submission.validation.accession;
 
+import static java.lang.String.format;
 import static org.icgc.dcc.common.core.util.Splitters.COLON;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.submission.core.parser.SubmissionFileParsers.newMapFileParser;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.FILE_ACCESSION_INVALID;
-import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.RAW_DATA_ACCESSION_FIELD_NAME;
-import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.getAnalysisId;
-import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.getAnalyzedSampleId;
-import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.getRawDataAccession;
-import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.getRawDataRepository;
+import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.*;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.DataType;
@@ -178,6 +177,7 @@ public class AccessionValidator implements Validator {
     // Access field values required for validation
     val analysisId = getAnalysisId(record);
     val analyzedSampleId = getAnalyzedSampleId(record);
+    val matchedSampleId = getMatchedSampleId(record);
     val rawDataAccession = getRawDataAccession(record);
 
     // Apply whitelist to exclude historical "grandfathered" records
@@ -200,21 +200,43 @@ public class AccessionValidator implements Validator {
       return;
     }
 
+    Consumer<Result> errorFunction =
+        (Result errorResult) ->
+            reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
+                RAW_DATA_ACCESSION_FIELD_NAME, errorResult.getReason());
+
+    // [Existence] Check files listed in metadata exist in ICGC Data Set
+    fileIds.stream().map(egaValidator::checkFile)
+        .filter(result -> !result.isValid())
+        .forEach(errorFunction);
+
     // [Existence] Ensure file accession exists when specified (in at least one file)
+    val invalidAnalyzed = checkSample(analyzedSampleId, fileIds, errorFunction);
+    val invalidMatched = checkSample(matchedSampleId, fileIds, errorFunction);
+
+    invalidAnalyzed.stream()
+        .filter(invalidMatched::contains)
+        .forEach(f -> {
+          reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
+              RAW_DATA_ACCESSION_FIELD_NAME,
+              format("%s was not map to either analyzed_sample_id or matched_sample_id", f));
+        });
+
+  }
+
+  private List<String> checkSample(String sampleId, List<String> fileIds, Consumer<Result> errorFunction) {
     val results = fileIds.stream()
-        .map(fileId -> egaValidator.validate(analyzedSampleId, fileId))
+        .map(fileId -> egaValidator.validate(sampleId, fileId))
         .collect(toImmutableList());
 
     long numValid = results.stream().filter(Result::isValid).count();
-    // Only report if not a single file was related to analyzed sample (tumour)
+    val invalid = results.stream()
+        .filter(result -> !result.isValid()).collect(toImmutableList());
     if (numValid < 1) {
-      results.stream()
-          .filter(result -> !result.isValid())
-          .forEach(result -> {
-            reportError(context, writer, fileName, lineNumber,
-                FILE_ACCESSION_INVALID, rawDataRepository, RAW_DATA_ACCESSION_FIELD_NAME, result.getReason());
-          });
+      invalid.forEach(errorFunction);
     }
+
+    return invalid.stream().map(Result::getFileId).collect(toImmutableList());
   }
 
   private static boolean isValidatable(ValidationContext context) {

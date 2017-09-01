@@ -80,12 +80,21 @@ public class EGAFileAccessionValidator {
     this(DEFAULT_REPORT_URL);
   }
 
+  public Result checkFile(String fileId) {
+    checkFileAccession(fileId);
+    val files = getFilesById(fileId);
+    if (files.isEmpty()) {
+      return invalid("No files found with id " + fileId, fileId);
+    }
+    return valid();
+  }
+
   public Result validate(@NonNull String analyzedSampleId, String fileId) {
     checkFileAccession(fileId);
     try {
       val files = getFilesById(fileId);
       if (files.isEmpty()) {
-        return invalid("No files found with id " + fileId);
+        return invalid("No files found with id " + fileId, fileId);
       }
 
       for (val file : files) {
@@ -96,10 +105,10 @@ public class EGAFileAccessionValidator {
         }
       }
 
-      return invalid("Could not match file to sample in: " + files);
+      return invalid("Could not match file to sample in: " + files, fileId);
     } catch (Exception e) {
       log.error("Unexpected error getting file " + fileId + ": ", e);
-      return invalid("Unexpected error getting file " + fileId + ": " + e.getMessage());
+      return invalid("Unexpected error getting file " + fileId + ": " + e.getMessage(), fileId);
     }
   }
 
@@ -136,15 +145,16 @@ public class EGAFileAccessionValidator {
 
     boolean valid;
     String reason;
+    String fileId;
 
   }
 
   private static Result valid() {
-    return new Result(true, null);
+    return new Result(true, null, "");
   }
 
-  private static Result invalid(String reason) {
-    return new Result(false, reason);
+  private static Result invalid(String reason, String fileId) {
+    return new Result(false, reason, fileId);
   }
 
 }
