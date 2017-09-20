@@ -182,6 +182,7 @@ public class AccessionValidator implements Validator {
 
     // Apply whitelist to exclude historical "grandfathered" records
     if (dictionary.isExcluded(context.getProjectKey(), fileType, analysisId, analyzedSampleId)) {
+      log.info("EXCLUDED: whitelist to exclude historical \"grandfathered\" records: {}, {}, {}, {}", context.getProjectKey(), fileType, analysisId, analyzedSampleId);
       return;
     }
 
@@ -211,22 +212,23 @@ public class AccessionValidator implements Validator {
         .forEach(errorFunction);
 
     // [Existence] Ensure file accession exists when specified (in at least one file)
-    val invalidAnalyzed = checkSample(analyzedSampleId, fileIds, errorFunction);
-    val invalidMatched = checkSample(matchedSampleId, fileIds, errorFunction);
-
-    invalidAnalyzed.stream()
-        .filter(invalidMatched::contains)
-        .forEach(f -> {
-          reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
-              RAW_DATA_ACCESSION_FIELD_NAME,
-              format("%s was not map to either analyzed_sample_id or matched_sample_id", f));
-        });
+    val invalidAnalyzed = checkSample(analyzedSampleId, ANALYZED_SAMPLE_ID_FIELD_NAME, fileIds, errorFunction);
+    if ("-888".equals(matchedSampleId)) {
+      val invalidMatched = checkSample(matchedSampleId, MATCHED_SAMPLE_ID_FIELD_NAME, fileIds, errorFunction);
+      invalidAnalyzed.stream()
+          .filter(invalidMatched::contains)
+          .forEach(f -> {
+            reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
+                RAW_DATA_ACCESSION_FIELD_NAME,
+                format("%s does not map to either analyzed_sample_id or matched_sample_id", f));
+          });
+    }
 
   }
 
-  private List<String> checkSample(String sampleId, List<String> fileIds, Consumer<Result> errorFunction) {
+  private List<String> checkSample(String sampleId, String fieldName, List<String> fileIds, Consumer<Result> errorFunction) {
     val results = fileIds.stream()
-        .map(fileId -> egaValidator.validate(sampleId, fileId))
+        .map(fileId -> egaValidator.validate(sampleId, fieldName, fileId))
         .collect(toImmutableList());
 
     long numValid = results.stream().filter(Result::isValid).count();

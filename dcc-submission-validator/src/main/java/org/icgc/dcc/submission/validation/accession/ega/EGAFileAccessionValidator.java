@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.accession.ega;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Suppliers.memoizeWithExpiration;
+import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
@@ -89,7 +90,7 @@ public class EGAFileAccessionValidator {
     return valid();
   }
 
-  public Result validate(@NonNull String analyzedSampleId, String fileId) {
+  public Result validate(@NonNull String sampleId, String fieldName, String fileId) {
     checkFileAccession(fileId);
     try {
       val files = getFilesById(fileId);
@@ -99,13 +100,13 @@ public class EGAFileAccessionValidator {
 
       for (val file : files) {
         val submitterSampleId = file.get("submitterSampleId").textValue();
-        if (analyzedSampleId.equals(submitterSampleId)) {
+        if (sampleId.equals(submitterSampleId)) {
           log.debug("Found files: {}", files);
           return valid();
         }
       }
 
-      return invalid("Could not match file to sample in: " + files, fileId);
+      return invalid( format("Missing EGA File ID for %s: %s", fieldName, sampleId), fileId);
     } catch (Exception e) {
       log.error("Unexpected error getting file " + fileId + ": ", e);
       return invalid("Unexpected error getting file " + fileId + ": " + e.getMessage(), fileId);
