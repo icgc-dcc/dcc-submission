@@ -213,10 +213,15 @@ public class AccessionValidator implements Validator {
 
     // [Existence] Ensure file accession exists when specified (in at least one file)
     val invalidAnalyzed = checkSample(analyzedSampleId, ANALYZED_SAMPLE_ID_FIELD_NAME, fileIds, errorFunction);
-    if ("-888".equals(matchedSampleId)) {
+    invalidAnalyzed.stream()
+        .forEach(f -> {
+      reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
+          RAW_DATA_ACCESSION_FIELD_NAME,
+          format("%s does not map to either analyzed_sample_id or matched_sample_id", f));
+    });
+    if ( !("-888".equals(matchedSampleId) && "-777".equals(matchedSampleId)) ) {
       val invalidMatched = checkSample(matchedSampleId, MATCHED_SAMPLE_ID_FIELD_NAME, fileIds, errorFunction);
-      invalidAnalyzed.stream()
-          .filter(invalidMatched::contains)
+      invalidMatched.stream()
           .forEach(f -> {
             reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
                 RAW_DATA_ACCESSION_FIELD_NAME,
