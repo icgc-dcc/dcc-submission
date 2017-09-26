@@ -11,6 +11,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import rx.Observable;
+import rx.Subscription;
+import rx.subscriptions.CompositeSubscription;
+import rx.subscriptions.Subscriptions;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -77,6 +80,7 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
     jdbcTemplate.update(sql_create_table.replaceAll("\\{table_name\\}", table_name));
 
     String sql = sql_batch_insert.replaceAll("\\{table_name\\}", table_name);
+    Subscription sub =
     data.subscribe(list -> {
       jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
         @Override
@@ -92,6 +96,7 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
         }
       });
     });
+    Subscriptions.from(sub).clear();
 
     jdbcTemplate.execute(sql_create_view.replaceAll("\\{view_name\\}", config.getViewName()).replaceAll("\\{table_name\\}", table_name));
 

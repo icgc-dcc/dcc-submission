@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation.accession;
 import static java.lang.String.format;
 import static org.icgc.dcc.common.core.util.Splitters.COLON;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.submission.core.parser.SubmissionFileParsers.newMapFileParser;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.FILE_ACCESSION_INVALID;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import org.apache.hadoop.fs.Path;
@@ -213,25 +215,35 @@ public class AccessionValidator implements Validator {
 
     // [Existence] Ensure file accession exists when specified (in at least one file)
     val invalidAnalyzed = checkSample(analyzedSampleId, ANALYZED_SAMPLE_ID_FIELD_NAME, fileIds, errorFunction);
-    invalidAnalyzed.stream()
-        .forEach(f -> {
-      reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
-          RAW_DATA_ACCESSION_FIELD_NAME,
-          format("%s does not map to either analyzed_sample_id or matched_sample_id", f));
-    });
-    if ( !("-888".equals(matchedSampleId) && "-777".equals(matchedSampleId)) ) {
+
+    if ( !("-888".equals(matchedSampleId) || "-777".equals(matchedSampleId)) ) {
       val invalidMatched = checkSample(matchedSampleId, MATCHED_SAMPLE_ID_FIELD_NAME, fileIds, errorFunction);
-      invalidMatched.stream()
-          .forEach(f -> {
-            reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
-                RAW_DATA_ACCESSION_FIELD_NAME,
-                format("%s does not map to either analyzed_sample_id or matched_sample_id", f));
-          });
+
+      invalidMatched.stream().forEach(file_id -> {
+        if(invalidAnalyzed.contains(file_id)){
+          invalidAnalyzed.remove(file_id);
+          reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
+              RAW_DATA_ACCESSION_FIELD_NAME,
+              format("%s does not map to either analyzed_sample_id or matched_sample_id", file_id)
+              );
+        }
+        else{
+          reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
+              RAW_DATA_ACCESSION_FIELD_NAME,
+              format("Missing EGA File ID for matched_sample_id: %s", matchedSampleId)
+          );
+        }
+      });
     }
+
+    invalidAnalyzed.stream().forEach(file_id -> reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
+        RAW_DATA_ACCESSION_FIELD_NAME,
+        format("Missing EGA File ID for analyzed_sample_id: %s", analyzedSampleId) )
+    );
 
   }
 
-  private List<String> checkSample(String sampleId, String fieldName, List<String> fileIds, Consumer<Result> errorFunction) {
+  private Set<String> checkSample(String sampleId, String fieldName, List<String> fileIds, Consumer<Result> errorFunction) {
     val results = fileIds.stream()
         .map(fileId -> egaValidator.validate(sampleId, fieldName, fileId))
         .collect(toImmutableList());
@@ -243,7 +255,8 @@ public class AccessionValidator implements Validator {
       invalid.forEach(errorFunction);
     }
 
-    return invalid.stream().map(Result::getFileId).collect(toImmutableList());
+    return invalid.stream().map(Result::getFileId).collect(toImmutableSet());
+
   }
 
   private static boolean isValidatable(ValidationContext context) {
