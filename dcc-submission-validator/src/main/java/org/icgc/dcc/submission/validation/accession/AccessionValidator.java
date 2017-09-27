@@ -211,24 +211,41 @@ public class AccessionValidator implements Validator {
         .forEach(errorFunction);
 
     // [Existence] Ensure file accession exists when specified (in at least one file)
-    Set<String> invalidMatched = ( !("-888".equals(matchedSampleId) || "-777".equals(matchedSampleId)) ) ? checkSample(matchedSampleId, MATCHED_SAMPLE_ID_FIELD_NAME, fileIds, errorFunction): new HashSet<>();
     Set<String> invalidAnalyzed = checkSample(analyzedSampleId, ANALYZED_SAMPLE_ID_FIELD_NAME, fileIds, errorFunction);
 
-    if(invalidMatched.size() == fileIds.size()){
+    if(invalidAnalyzed.size() == fileIds.size()) {
       reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
           RAW_DATA_ACCESSION_FIELD_NAME,
-          format("Missing EGA File ID for matched_sample_id: %s", matchedSampleId)
+          format("Missing EGA File ID for analyzed_sample_id: %s", analyzedSampleId)
       );
     }
-    invalidMatched.stream().forEach(file_id -> {
-      if(invalidAnalyzed.contains(file_id)){
+
+    if( !("-888".equals(matchedSampleId) || "-777".equals(matchedSampleId)) ) {
+      Set<String> invalidMatched = checkSample(matchedSampleId, MATCHED_SAMPLE_ID_FIELD_NAME, fileIds, errorFunction);
+      if(invalidMatched.size() == fileIds.size()) {
         reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
             RAW_DATA_ACCESSION_FIELD_NAME,
-            format("%s does not map to either analyzed_sample_id or matched_sample_id", file_id)
+            format("Missing EGA File ID for matched_sample_id: %s", matchedSampleId)
         );
       }
-    });
-    
+      invalidMatched.stream().forEach(file_id -> {
+        if(invalidAnalyzed.contains(file_id)){
+          reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
+              RAW_DATA_ACCESSION_FIELD_NAME,
+              format("%s does not map to either analyzed_sample_id or matched_sample_id", file_id)
+          );
+        }
+      });
+    }
+    else if(invalidAnalyzed.size() != fileIds.size()){
+      invalidAnalyzed.stream().forEach(file_id -> {
+        reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
+            RAW_DATA_ACCESSION_FIELD_NAME,
+            format("%s does not map to analyzed_sample_id: %s", file_id, analyzedSampleId)
+        );
+      });
+    }
+
   }
 
   private Set<String> checkSample(String sampleId, String fieldName, List<String> fileIds, Consumer<Result> errorFunction) {
