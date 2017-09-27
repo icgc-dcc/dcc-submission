@@ -28,10 +28,7 @@ import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 import org.apache.hadoop.fs.Path;
@@ -214,33 +211,24 @@ public class AccessionValidator implements Validator {
         .forEach(errorFunction);
 
     // [Existence] Ensure file accession exists when specified (in at least one file)
-    val invalidAnalyzed = checkSample(analyzedSampleId, ANALYZED_SAMPLE_ID_FIELD_NAME, fileIds, errorFunction);
+    Set<String> invalidMatched = ( !("-888".equals(matchedSampleId) || "-777".equals(matchedSampleId)) ) ? checkSample(matchedSampleId, MATCHED_SAMPLE_ID_FIELD_NAME, fileIds, errorFunction): new HashSet<>();
+    Set<String> invalidAnalyzed = checkSample(analyzedSampleId, ANALYZED_SAMPLE_ID_FIELD_NAME, fileIds, errorFunction);
 
-    if ( !("-888".equals(matchedSampleId) || "-777".equals(matchedSampleId)) ) {
-      val invalidMatched = checkSample(matchedSampleId, MATCHED_SAMPLE_ID_FIELD_NAME, fileIds, errorFunction);
-
-      invalidMatched.stream().forEach(file_id -> {
-        if(invalidAnalyzed.contains(file_id)){
-          invalidAnalyzed.remove(file_id);
-          reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
-              RAW_DATA_ACCESSION_FIELD_NAME,
-              format("%s does not map to either analyzed_sample_id or matched_sample_id", file_id)
-              );
-        }
-        else{
-          reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
-              RAW_DATA_ACCESSION_FIELD_NAME,
-              format("Missing EGA File ID for matched_sample_id: %s", matchedSampleId)
-          );
-        }
-      });
+    if(invalidMatched.size() == fileIds.size()){
+      reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
+          RAW_DATA_ACCESSION_FIELD_NAME,
+          format("Missing EGA File ID for matched_sample_id: %s", matchedSampleId)
+      );
     }
-
-    invalidAnalyzed.stream().forEach(file_id -> reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
-        RAW_DATA_ACCESSION_FIELD_NAME,
-        format("Missing EGA File ID for analyzed_sample_id: %s", analyzedSampleId) )
-    );
-
+    invalidMatched.stream().forEach(file_id -> {
+      if(invalidAnalyzed.contains(file_id)){
+        reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
+            RAW_DATA_ACCESSION_FIELD_NAME,
+            format("%s does not map to either analyzed_sample_id or matched_sample_id", file_id)
+        );
+      }
+    });
+    
   }
 
   private Set<String> checkSample(String sampleId, String fieldName, List<String> fileIds, Consumer<Result> errorFunction) {
