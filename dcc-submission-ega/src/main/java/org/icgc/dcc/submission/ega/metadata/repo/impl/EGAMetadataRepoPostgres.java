@@ -62,6 +62,8 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
 
   private String sql_batch_insert = "INSERT INTO ega.{table_name} VALUES(?, ?)";
 
+  private String bad_data_table_name = "bad_ega_sample_metadata";
+
   /**
    * every time the persis(...) function is triggered, create a new data table with a timestamp postfix on the table name
    * then update the view to point to the new table
@@ -121,6 +123,10 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
         }
       }
     });
+
+    String delete = "delete from ega." + bad_data_table_name + " where timestamp < " + timestamp + ";";
+
+    jdbcTemplate.update(delete);
 
   }
 
