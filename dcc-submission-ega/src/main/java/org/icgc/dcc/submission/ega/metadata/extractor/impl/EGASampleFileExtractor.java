@@ -65,6 +65,10 @@ public class EGASampleFileExtractor implements DataExtractor<Pair<String, String
         List<String> fields = Splitter.on('\t').trimResults().omitEmptyStrings().splitToList(line);
         if(fields.size() == 4)
           buffer.add(Pair.of(fields.get(0), fields.get(3)));
+        else if(fields.size() == 5) {
+          buffer.add(Pair.of(fields.get(0), fields.get(3)));
+          buffer.add(Pair.of(fields.get(4), fields.get(3)));
+        }
         else {
           if(badFormattedDataLogger != null) {
             badData.add(new BadFormattedDataLogger.BadFormattedData(

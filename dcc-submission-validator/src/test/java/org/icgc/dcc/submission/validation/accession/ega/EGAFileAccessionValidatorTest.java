@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.accession.ega;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.ANALYZED_SAMPLE_ID_FIELD_NAME;
 
 import org.icgc.dcc.submission.validation.accession.ega.EGAFileAccessionValidator.Result;
 import org.junit.Ignore;
@@ -66,11 +67,11 @@ public class EGAFileAccessionValidatorTest {
 
   @Test(expected = NullPointerException.class)
   public void testValidateNull() throws Exception {
-    verifier.validate("SA1", null);
+    verifier.validate("SA1", ANALYZED_SAMPLE_ID_FIELD_NAME, null);
   }
 
   private Result verify(String analyzedSampleId, String fileId) {
-    return verifier.validate(analyzedSampleId, fileId);
+    return verifier.validate(analyzedSampleId, ANALYZED_SAMPLE_ID_FIELD_NAME, fileId);
   }
 
 }

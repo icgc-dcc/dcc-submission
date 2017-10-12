@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.validation.accession.ega;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Suppliers.memoizeWithExpiration;
+import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
@@ -80,26 +81,35 @@ public class EGAFileAccessionValidator {
     this(DEFAULT_REPORT_URL);
   }
 
-  public Result validate(@NonNull String analyzedSampleId, String fileId) {
+  public Result checkFile(String fileId) {
+    checkFileAccession(fileId);
+    val files = getFilesById(fileId);
+    if (files.isEmpty()) {
+      return invalid("No files found with id " + fileId, fileId);
+    }
+    return valid();
+  }
+
+  public Result validate(@NonNull String sampleId, String fieldName, String fileId) {
     checkFileAccession(fileId);
     try {
       val files = getFilesById(fileId);
       if (files.isEmpty()) {
-        return invalid("No files found with id " + fileId);
+        return invalid("No files found with id " + fileId, fileId);
       }
 
       for (val file : files) {
         val submitterSampleId = file.get("submitterSampleId").textValue();
-        if (analyzedSampleId.equals(submitterSampleId)) {
+        if (sampleId.equals(submitterSampleId)) {
           log.debug("Found files: {}", files);
           return valid();
         }
       }
 
-      return invalid("Could not match file to sample in: " + files);
+      return invalid( format("Missing EGA File ID for %s: %s", fieldName, sampleId), fileId);
     } catch (Exception e) {
       log.error("Unexpected error getting file " + fileId + ": ", e);
-      return invalid("Unexpected error getting file " + fileId + ": " + e.getMessage());
+      return invalid("Unexpected error getting file " + fileId + ": " + e.getMessage(), fileId);
     }
   }
 
@@ -136,15 +146,16 @@ public class EGAFileAccessionValidator {
 
     boolean valid;
     String reason;
+    String fileId;
 
   }
 
   private static Result valid() {
-    return new Result(true, null);
+    return new Result(true, null, "");
   }
 
-  private static Result invalid(String reason) {
-    return new Result(false, reason);
+  private static Result invalid(String reason, String fileId) {
+    return new Result(false, reason, fileId);
   }
 
 }

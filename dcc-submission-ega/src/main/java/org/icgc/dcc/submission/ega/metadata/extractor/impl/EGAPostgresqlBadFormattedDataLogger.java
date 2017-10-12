@@ -44,7 +44,7 @@ public class EGAPostgresqlBadFormattedDataLogger implements BadFormattedDataLogg
       "timestamp bigint, " +
       "file_name varchar(64), " +
       "line_number int, " +
-      "line_content varchar(128)" +
+      "line_content varchar(256)" +
       ");";
   private String sql_batch_insert = "INSERT INTO ega." + bad_data_table_name + " VALUES (?, ?, ?, ?);";
 

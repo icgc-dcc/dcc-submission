@@ -149,10 +149,11 @@ public class EGAMetadataImporter {
   @Scheduled(cron = "${ega.metadata.cron.clean}")
   public void cleanHistoryData() {
 
-    log.info("starting");
+    log.info("starting to clean old tables...");
 
+    // save one-week history data
     repo.cleanHistoryData(
-        LocalDateTime.now(ZoneId.of("America/Toronto")).atZone(ZoneId.of("America/Toronto")).toEpochSecond()
+        LocalDateTime.now(ZoneId.of("America/Toronto")).atZone(ZoneId.of("America/Toronto")).toEpochSecond() - 7 * 24 * 3600
     );
   }
 

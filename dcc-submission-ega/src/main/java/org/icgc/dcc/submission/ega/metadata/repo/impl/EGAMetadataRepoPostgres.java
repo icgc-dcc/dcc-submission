@@ -11,6 +11,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import rx.Observable;
+import rx.Subscription;
+import rx.subscriptions.CompositeSubscription;
+import rx.subscriptions.Subscriptions;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -59,6 +62,8 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
 
   private String sql_batch_insert = "INSERT INTO ega.{table_name} VALUES(?, ?)";
 
+  private String bad_data_table_name = "bad_ega_sample_metadata";
+
   /**
    * every time the persis(...) function is triggered, create a new data table with a timestamp postfix on the table name
    * then update the view to point to the new table
@@ -77,6 +82,7 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
     jdbcTemplate.update(sql_create_table.replaceAll("\\{table_name\\}", table_name));
 
     String sql = sql_batch_insert.replaceAll("\\{table_name\\}", table_name);
+    Subscription sub =
     data.subscribe(list -> {
       jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
         @Override
@@ -92,6 +98,7 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
         }
       });
     });
+    Subscriptions.from(sub).clear();
 
     jdbcTemplate.execute(sql_create_view.replaceAll("\\{view_name\\}", config.getViewName()).replaceAll("\\{table_name\\}", table_name));
 
@@ -116,6 +123,10 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
         }
       }
     });
+
+    String delete = "delete from ega." + bad_data_table_name + " where timestamp < " + timestamp + ";";
+
+    jdbcTemplate.update(delete);
 
   }
 

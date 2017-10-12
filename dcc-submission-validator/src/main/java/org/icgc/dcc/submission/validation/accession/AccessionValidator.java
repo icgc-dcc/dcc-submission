@@ -17,21 +17,19 @@
  */
 package org.icgc.dcc.submission.validation.accession;
 
+import static java.lang.String.format;
 import static org.icgc.dcc.common.core.util.Splitters.COLON;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.submission.core.parser.SubmissionFileParsers.newMapFileParser;
 import static org.icgc.dcc.submission.core.report.Error.error;
 import static org.icgc.dcc.submission.core.report.ErrorType.FILE_ACCESSION_INVALID;
-import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.RAW_DATA_ACCESSION_FIELD_NAME;
-import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.getAnalysisId;
-import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.getAnalyzedSampleId;
-import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.getRawDataAccession;
-import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.getRawDataRepository;
+import static org.icgc.dcc.submission.validation.accession.core.AccessionFields.*;
 import static org.icgc.dcc.submission.validation.core.Validators.checkInterrupted;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.common.core.model.DataType;
@@ -178,10 +176,12 @@ public class AccessionValidator implements Validator {
     // Access field values required for validation
     val analysisId = getAnalysisId(record);
     val analyzedSampleId = getAnalyzedSampleId(record);
+    val matchedSampleId = getMatchedSampleId(record);
     val rawDataAccession = getRawDataAccession(record);
 
     // Apply whitelist to exclude historical "grandfathered" records
     if (dictionary.isExcluded(context.getProjectKey(), fileType, analysisId, analyzedSampleId)) {
+      log.info("EXCLUDED: whitelist to exclude historical \"grandfathered\" records: {}, {}, {}, {}", context.getProjectKey(), fileType, analysisId, analyzedSampleId);
       return;
     }
 
@@ -200,21 +200,68 @@ public class AccessionValidator implements Validator {
       return;
     }
 
+    Consumer<Result> errorFunction =
+        (Result errorResult) ->
+            reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
+                RAW_DATA_ACCESSION_FIELD_NAME, errorResult.getReason());
+
+    // [Existence] Check files listed in metadata exist in ICGC Data Set
+    fileIds.stream().map(egaValidator::checkFile)
+        .filter(result -> !result.isValid())
+        .forEach(errorFunction);
+
     // [Existence] Ensure file accession exists when specified (in at least one file)
+    Set<String> invalidAnalyzed = checkSample(analyzedSampleId, ANALYZED_SAMPLE_ID_FIELD_NAME, fileIds, errorFunction);
+
+    if(invalidAnalyzed.size() == fileIds.size()) {
+      reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
+          RAW_DATA_ACCESSION_FIELD_NAME,
+          format("Missing EGA File ID for analyzed_sample_id: %s", analyzedSampleId)
+      );
+    }
+
+    if( !("-888".equals(matchedSampleId) || "-777".equals(matchedSampleId)) ) {
+      Set<String> invalidMatched = checkSample(matchedSampleId, MATCHED_SAMPLE_ID_FIELD_NAME, fileIds, errorFunction);
+      if(invalidMatched.size() == fileIds.size()) {
+        reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
+            RAW_DATA_ACCESSION_FIELD_NAME,
+            format("Missing EGA File ID for matched_sample_id: %s", matchedSampleId)
+        );
+      }
+      invalidMatched.stream().forEach(file_id -> {
+        if(invalidAnalyzed.contains(file_id)){
+          reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
+              RAW_DATA_ACCESSION_FIELD_NAME,
+              format("%s does not map to either analyzed_sample_id or matched_sample_id", file_id)
+          );
+        }
+      });
+    }
+    else if(invalidAnalyzed.size() != fileIds.size()){
+      invalidAnalyzed.stream().forEach(file_id -> {
+        reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
+            RAW_DATA_ACCESSION_FIELD_NAME,
+            format("%s does not map to analyzed_sample_id: %s", file_id, analyzedSampleId)
+        );
+      });
+    }
+
+  }
+
+  private Set<String> checkSample(String sampleId, String fieldName, List<String> fileIds, Consumer<Result> errorFunction) {
     val results = fileIds.stream()
-        .map(fileId -> egaValidator.validate(analyzedSampleId, fileId))
+        .map(fileId -> egaValidator.validate(sampleId, fieldName, fileId))
         .collect(toImmutableList());
 
     long numValid = results.stream().filter(Result::isValid).count();
-    // Only report if not a single file was related to analyzed sample (tumour)
+    val invalid = results.stream()
+        .filter(result -> !result.isValid()).collect(toImmutableList());
     if (numValid < 1) {
-      results.stream()
-          .filter(result -> !result.isValid())
-          .forEach(result -> {
-            reportError(context, writer, fileName, lineNumber,
-                FILE_ACCESSION_INVALID, rawDataRepository, RAW_DATA_ACCESSION_FIELD_NAME, result.getReason());
-          });
+      invalid.forEach(errorFunction);
     }
+
+    return invalid.stream().map(Result::getFileId).collect(toImmutableSet());
+
   }
 
   private static boolean isValidatable(ValidationContext context) {
