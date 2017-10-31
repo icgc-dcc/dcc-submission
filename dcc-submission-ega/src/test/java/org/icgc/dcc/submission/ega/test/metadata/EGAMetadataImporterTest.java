@@ -257,6 +257,8 @@ public class EGAMetadataImporterTest extends EGAMetadataResourcesProvider {
       Assert.assertEquals(1, ret.size());
       ret.stream().forEach(map -> {
         Assert.assertTrue( fileIds.contains(map.get("file_id").toString()) );
+
+        Assert.assertTrue(map.get("dataset_id").equals("EGAD00001000045"));
       });
 
     } catch (NoSuchMethodException e) {
