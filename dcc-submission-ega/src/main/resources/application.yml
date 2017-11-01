@@ -55,10 +55,10 @@ ega:
       path: /ICGC_metadata
     cron:
       data: 0 0 9,21 * * ?
-      clean: 0 0 0 ? * 2 ?
+      clean: 0 0 0 ? * MON
     postgresql:
       host:
-      database: ICGC_Metadata
+      database: ICGC_metadata
       user: dcc
       password:
       viewName: view_ega_sample_mapping

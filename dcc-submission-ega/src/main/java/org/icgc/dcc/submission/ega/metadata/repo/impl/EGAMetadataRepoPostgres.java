@@ -54,13 +54,13 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
   private String sql_create_table =
       "CREATE TABLE IF NOT EXISTS ega.{table_name} ( " +
       "sample_id varchar(64), " +
-      "file_id varchar(64) " +
-//      "PRIMARY KEY(sample_id, file_id) " +
+      "file_id varchar(64), " +
+      "dataset_id varchar(64)" +
       ");";
 
   private String sql_create_view = "CREATE OR REPLACE VIEW ega.{view_name} AS SELECT * from ega.{table_name}";
 
-  private String sql_batch_insert = "INSERT INTO ega.{table_name} VALUES(?, ?)";
+  private String sql_batch_insert = "INSERT INTO ega.{table_name} VALUES(?, ?, ?)";
 
   private String bad_data_table_name = "bad_ega_sample_metadata";
 
@@ -72,7 +72,7 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
    * @param data list of (sample_id, file_id) tuple
    */
   @Override
-  public void persist(Observable<List<Pair<String, String>>> data) {
+  public void persist(Observable<Pair<String, List<Pair<String, String>>>> data) {
 
     String table_name = table_name_prefix + LocalDateTime.now(ZoneId.of("America/Toronto")).atZone(ZoneId.of("America/Toronto")).toEpochSecond();
     log.info("Writing data to table: " + table_name);
@@ -83,13 +83,17 @@ public class EGAMetadataRepoPostgres implements EGAMetadataRepo{
 
     String sql = sql_batch_insert.replaceAll("\\{table_name\\}", table_name);
     Subscription sub =
-    data.subscribe(list -> {
+    data.subscribe(pair -> {
+
+      List<Pair<String, String>> list = pair.getRight();
+
       jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
         @Override
         public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
-          Pair<String, String> pair = list.get(i);
-          preparedStatement.setString(1, pair.getKey());
-          preparedStatement.setString(2, pair.getValue());
+          Pair<String, String> pair_ = list.get(i);
+          preparedStatement.setString(1, pair_.getKey());
+          preparedStatement.setString(2, pair_.getValue());
+          preparedStatement.setString(3, pair.getKey());
         }
 
         @Override

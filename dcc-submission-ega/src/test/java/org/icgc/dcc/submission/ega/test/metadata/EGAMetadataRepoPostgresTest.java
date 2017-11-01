@@ -63,7 +63,7 @@ public class EGAMetadataRepoPostgresTest extends EGAMetadataResourcesProvider {
       valueSet.add("file_id_" + i + "" + i);
     }
 
-    repo.persist(Observable.just(data));
+    repo.persist(Observable.just(Pair.of("dataset-1", data)));
 
     JdbcTemplate jdbcTemplate = new JdbcTemplate(new DriverManagerDataSource("jdbc:postgresql://localhost:5435/ICGC_metadata?user=sa&password="));
 
@@ -76,6 +76,7 @@ public class EGAMetadataRepoPostgresTest extends EGAMetadataResourcesProvider {
 
       Assert.assertTrue( keySet.contains(map.get("sample_id")) );
       Assert.assertTrue( valueSet.contains(map.get("file_id")) );
+      Assert.assertTrue( map.get("dataset_id").equals("dataset-1"));
 
     });
 
@@ -104,7 +105,7 @@ public class EGAMetadataRepoPostgresTest extends EGAMetadataResourcesProvider {
     String sql = "CREATE TABLE IF NOT EXISTS ega.{table_name} ( " +
         "sample_id varchar(64), " +
         "file_id varchar(64), " +
-        "PRIMARY KEY(sample_id, file_id) " +
+        "dataset_id varchar(64)" +
         ");";
     jdbcTemplate.execute(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_100"));
     jdbcTemplate.execute(sql.replaceAll("\\{table_name\\}", "ega_sample_mapping_110"));

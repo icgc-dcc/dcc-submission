@@ -110,7 +110,7 @@ public class EGAMetadataImporter {
 
   }
 
-  private Observable<File> getSampleFiles(File dataDir){
+  private Observable<Pair<String,File>> getSampleFiles(File dataDir){
 
     File[] lstFile = dataDir.listFiles((dir, fileName) -> fileName.startsWith("EGA") );
 
@@ -122,19 +122,26 @@ public class EGAMetadataImporter {
         .flatMap(dir -> {
           File mapFile = new File(dir.getAbsolutePath() + "/delimited_maps/Sample_File.map");
           if (mapFile.exists())
-            return Observable.just(mapFile);
+            return Observable.just(Pair.of(dir.getName(), mapFile));
           else
             return Observable.empty();
         });
 
   }
 
-  private Observable<List<Pair<String, String>>> parseSampleFiles(Observable<File> sampleFiles) {
-    return sampleFiles.map(extractor::extract);
+  private Observable<Pair<String, List<Pair<String, String>>>> parseSampleFiles(Observable<Pair<String,File>> sampleFiles) {
+
+    return
+      sampleFiles.map(pair ->
+        Pair.of(
+          pair.getLeft(),
+          extractor.extract(pair.getRight())
+        )
+      );
 
   }
 
-  private void persist(Observable<List<Pair<String, String>>> rawData) {
+  private void persist(Observable<Pair<String, List<Pair<String, String>>>> rawData) {
     repo.persist(rawData);
 
   }
