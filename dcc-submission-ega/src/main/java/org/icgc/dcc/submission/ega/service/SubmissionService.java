@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.NonNull;
 import lombok.val;
 
-@Service
+//@Service
 public class SubmissionService {
 
   @Autowired

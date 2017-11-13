@@ -54,9 +54,9 @@ import com.google.common.cache.CacheBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Configuration
-@EnableAsync
-@EnableScheduling
+//@Configuration
+//@EnableAsync
+//@EnableScheduling
 public class ServerConfig {
 
   @Async
@@ -65,7 +65,7 @@ public class ServerConfig {
     log.info("**** Started!");
   }
 
-  @Configuration
+//  @Configuration
   public static class EGAConfig {
 
     @Value("${ega.api.userName}")
@@ -122,8 +122,8 @@ public class ServerConfig {
 
   }
 
-  @Configuration
-  @EnableCaching
+//  @Configuration
+//  @EnableCaching
   public static class CacheConfig extends CachingConfigurerSupport {
 
     /**
@@ -162,7 +162,7 @@ public class ServerConfig {
 
   }
 
-  @Configuration
+//  @Configuration
   public static class MailerConfig {
 
     @Bean

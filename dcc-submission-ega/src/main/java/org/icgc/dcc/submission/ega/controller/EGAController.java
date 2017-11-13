@@ -37,7 +37,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.val;
 
-@RestController
+//@RestController
 public class EGAController {
 
   /**
