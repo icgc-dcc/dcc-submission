@@ -104,7 +104,7 @@ public class ServerConfig {
 
   }
 
-  @Configuration
+//  @Configuration
   public static class SubmissionConfig {
 
     @Bean
