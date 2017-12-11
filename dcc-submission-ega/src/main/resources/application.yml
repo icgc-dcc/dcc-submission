@@ -51,7 +51,7 @@ ega:
     ftp:
       host: ftp-private.ebi.ac.uk
       user: ega-box-138
-      password: tMHG3Uke
+      password: 
       path: /ICGC_metadata
     cron:
       data: 0 0 9,21 * * ?
@@ -64,6 +64,6 @@ ega:
       viewName: view_ega_sample_mapping
 loader:
   db:
-    username: dcc
-    password: zzz123
-    url: jdbc:postgresql://10.30.128.126/dcc
+    username: # Fill in
+    password: # Fill in
+    url: # Fill in
