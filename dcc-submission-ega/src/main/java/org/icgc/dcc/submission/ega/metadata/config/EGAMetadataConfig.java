@@ -18,8 +18,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.scheduling.annotation.EnableScheduling;
+
+import javax.sql.DataSource;
 
 /**
  * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.
@@ -84,6 +88,7 @@ public class EGAMetadataConfig {
 
   @Bean
   @ConfigurationProperties(prefix = "ega.metadata.postgresql")
+  @Scope("singleton")
   public EGAMetadataPostgresqlConfig postgresqlConfig() {
     return new EGAMetadataPostgresqlConfig();
   }
@@ -95,15 +100,12 @@ public class EGAMetadataConfig {
   }
 
   @Bean
-  public EGAMetadataService egaMetadataService() {
-    return new EGAMetadataServiceImpl(
-        postgresqlConfig()
-    );
+  public EGAMetadataService egaMetadataService(EGAMetadataPostgresqlConfig config) {
+    return new EGAMetadataServiceImpl(config);
   }
 
   @Bean
-  public DriverManagerDataSourceWrapper driverManagerDataSource() {
-    EGAMetadataPostgresqlConfig config = postgresqlConfig();
+  public DriverManagerDataSourceWrapper driverManagerDataSource(EGAMetadataPostgresqlConfig config) {
 
     return
       new DriverManagerDataSourceWrapper(
@@ -112,6 +114,15 @@ public class EGAMetadataConfig {
         )
       );
 
+  }
+
+  @Bean
+  @Lazy
+  public DataSource dataSource(EGAMetadataPostgresqlConfig config){
+    return
+        new DriverManagerDataSource(
+            "jdbc:postgresql://" + config.getHost() + "/" + config.getDatabase() + "?user=" + config.getUser() + "&password=" + config.getPassword()
+        );
   }
 
   @Bean
