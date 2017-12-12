@@ -220,7 +220,7 @@ public class AccessionValidator implements Validator {
       );
     }
 
-    if( !("-888".equals(matchedSampleId) || "-777".equals(matchedSampleId)) ) {
+    if( (matchedSampleId != null) && (!("-888".equals(matchedSampleId) || "-777".equals(matchedSampleId))) ) {
       Set<String> invalidMatched = checkSample(matchedSampleId, MATCHED_SAMPLE_ID_FIELD_NAME, fileIds, errorFunction);
       if(invalidMatched.size() == fileIds.size()) {
         reportError(context, writer, fileName, lineNumber, FILE_ACCESSION_INVALID, rawDataRepository,
